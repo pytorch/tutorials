@@ -1,7 +1,7 @@
 PyTorch 2 Export Quantization with Intel GPU Backend through Inductor
 ==================================================================
 
-**Author**: `Yan Zhiwei <https://github.com/ZhiweiYan-96>`_, `Wang Eikan <https://github.com/EikanWang>`_, `Liu River <https://github.com/riverliuintel>`, `Cui Yifeng <https://github.com/CuiYifeng>`_
+**Author**: `Yan Zhiwei <https://github.com/ZhiweiYan-96>`_, `Wang Eikan <https://github.com/EikanWang>`_, `Liu River <https://github.com/riverliuintel>`_, `Cui Yifeng <https://github.com/CuiYifeng>`_
 
 Prerequisites
 ---------------
@@ -13,7 +13,7 @@ Introduction
 --------------
 
 This tutorial introduces XPUInductorQuantizer aiming for serving the quantized model inference on Intel GPUs. The tutorial will cover how it 
-utilze PyTorch 2 Export Quantization flow and lower the quantized model into the inductor.
+utilzes PyTorch 2 Export Quantization flow and lowers the quantized model into the inductor.
 
 The pytorch 2 export quantization flow uses the torch.export to capture the model into a graph and perform quantization transformations on top of the ATen graph.
 This approach is expected to have significantly higher model coverage, better programmability, and a simplified UX.
@@ -26,9 +26,9 @@ The quantization flow mainly includes three steps:
   performing the prepared model's calibration or quantization-aware training, and converting the prepared model into the quantized model.
 - Step 3: Lower the quantized model into inductor with the API ``torch.compile``. 
 
-During Step3, the inductor would decide which kernels are dispatched into. There are two kinds of kernels the Intel GPU would obtain benefits, oneDNN kernels and triton kernels. `Intel oneAPI Deep Neural Network Library (oneDNN) <https://github.com/uxlfoundation/oneDNN>` contains 
-highly-optimized quantized Cong/GEMM kernels for bot CPU and GPU. Furthermore, oneDNN supports extra operator fusion on these operators, like quantized linear with eltwise activation function(ReLU) and binary operation(add, inplace sum).
-Besides oneDNN kernels, triton would be responsible to generate kernels on our GPUs, like operators `quantize` and `dequantize`. The triton kernels are optimized by `Intel XPU Backend for Triton <https://github.com/intel/intel-xpu-backend-for-triton>`
+During Step 3, the inductor would decide which kernels are dispatched into. There are two kinds of kernels the Intel GPU would obtain benefits, oneDNN kernels and triton kernels. `Intel oneAPI Deep Neural Network Library (oneDNN) <https://github.com/uxlfoundation/oneDNN>` contains 
+highly-optimized quantized Cong/GEMM kernels for both CPU and GPU. Furthermore, oneDNN supports extra operator fusion on these operators, like quantized linear with eltwise activation function(ReLU) and binary operation(add, inplace sum).
+Besides oneDNN kernels, triton would be responsible for generating kernels on our GPUs, like operators `quantize` and `dequantize`. The triton kernels are optimized by `Intel XPU Backend for Triton <https://github.com/intel/intel-xpu-backend-for-triton>`
 
 
 The high-level architecture of this flow could look like this:
@@ -68,9 +68,9 @@ The high-level architecture of this flow could look like this:
 Post Training Quantization
 ----------------------------
 
-Static quantization is the only method we support currently. QAT and dynami quantization will be avaliable in later versions.
+Static quantization is the only method we support currently. QAT and dynamic quantization will be available in later versions.
 
-The dependencies packages are recommend to be installed through Intel GPU channel as follows
+The dependencies packages are recommended to be installed through Intel GPU channel as follows
 
 ::
 
@@ -123,7 +123,7 @@ quantize the model.
     quantizer = XPUInductorQuantizer()
     quantizer.set_global(xpuiq.get_default_xpu_inductor_quantization_config())
 
-The default quantization configuration in ``XPUInductorQuantizer`` uses signed 8-bits for both activations and weights. The tensor is per-tensor quantized, while weight is signed 8-bit per-channel quantized.
+The default quantization configuration in ``XPUInductorQuantizer`` uses signed 8-bits for both activations and weights. The tensor is per-tensor quantized, while the weight is signed 8-bit per-channel quantized.
 
 Besides the default quant configuration (asymmetric quantized activation), we also support signed 8-bits symmetric quantized activation, which has the potential to provide better performance.
 
