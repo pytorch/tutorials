@@ -547,7 +547,7 @@ except AssertionError:
 
 i = -1
 for i in range(100):
-    # Create a tensor in pin-memory
+    # Create a tensor in pageable memory
     cpu_tensor = torch.ones(1024, 1024)
     torch.cuda.synchronize()
     # Send the tensor to CUDA
