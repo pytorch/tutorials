@@ -1,15 +1,13 @@
 PyTorch 2 Export Quantization with Intel GPU Backend through Inductor
 ==================================================================
 
-**Author**: `Yan Zhiwei <https://github.com/ZhiweiYan-96>`, `Wang Eikan <https://github.com/EikanWang>`, `Liu River <https://github.com/riverliuintel>`, `Cui Yifeng <https://github.com/CuiYifeng>`
-
+**Author**: `Yan Zhiwei <https://github.com/ZhiweiYan-96>`_, `Wang Eikan <https://github.com/EikanWang>`_, `Liu River <https://github.com/riverliuintel>`, `Cui Yifeng <https://github.com/CuiYifeng>`_
 
 Prerequisites
 ---------------
 
 -  `PyTorch 2 Export Post Training Quantization <https://pytorch.org/tutorials/prototype/pt2e_quant_ptq.html>`_
 -  `TorchInductor and torch.compile concepts in PyTorch <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`_
-
 
 Introduction
 --------------
@@ -64,22 +62,19 @@ The high-level architecture of this flow could look like this:
                              Inductor
                                 |
     —--------------------------------------------------------
-    |  oneDNN Kernels       ATen Ops     Triton Kernels     |
+    |  oneDNN Kernels       ATen Ops        Triton Kernels  |
     —--------------------------------------------------------
-
-
 
 Post Training Quantization
 ----------------------------
 
 Static quantization is the only method we support currently. QAT and dynami quantization will be avaliable in later versions.
 
-Please install dependencies package through Intel GPU channels as follows
+The dependencies packages are recommend to be installed through Intel GPU channel as follows
 
 ::
 
     pip install torchvision pytorch-triton-xpu --index-url https://download.pytorch.org/whl/nightly/xpu
-
 
 1. Capture FX Graph
 ^^^^^^^^^^^^^^^^^^^^^
@@ -128,14 +123,12 @@ quantize the model.
     quantizer = XPUInductorQuantizer()
     quantizer.set_global(xpuiq.get_default_xpu_inductor_quantization_config())
 
-.. note::
+The default quantization configuration in ``XPUInductorQuantizer`` uses signed 8-bits for both activations and weights. The tensor is per-tensor quantized, while weight is signed 8-bit per-channel quantized.
 
-    The default quantization configuration in ``XPUInductorQuantizer`` uses signed 8-bits for both activations and weights. The tensor is per-tensor quantized, while weight is signed 8-bit per-channel quantized.
-
-    Besides the default quant configuration, we also support signed 8-bits symmetric quantized activation, which has the potential
-    to provide better performance.
+Besides the default quant configuration (asymmetric quantized activation), we also support signed 8-bits symmetric quantized activation, which has the potential to provide better performance.
 
 ::
+
     from torch.ao.quantization.observer import HistogramObserver, PerChannelMinMaxObserver
     from torch.ao.quantization.quantizer.quantizer import QuantizationSpec
     from torch.ao.quantization.quantizer.xnnpack_quantizer_utils import QuantizationConfig
@@ -182,14 +175,14 @@ quantize the model.
         )
         return quantization_config
 
-    Then, the user can set the quantization configuration to the quantizer.
+Then, we can set the quantization configuration to the quantizer.
 
 ::
     quantizer = XPUInductorQuantizer()
     quantizer.set_global(get_xpu_inductor_symm_quantization_config())
 
-    After we import the backend-specific Quantizer, we will prepare the model for post-training quantization.
-    ``prepare_pt2e`` folds BatchNorm operators into preceding Conv2d operators, and inserts observers in appropriate places in the model.
+After we import the backend-specific Quantizer, we will prepare the model for post-training quantization.
+``prepare_pt2e`` folds BatchNorm operators into preceding Conv2d operators, and inserts observers in appropriate places in the model.
 
 ::
 
