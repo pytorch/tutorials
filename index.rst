@@ -3,13 +3,13 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
-* `Compiled Autograd: Capturing a larger backward graph for torch.compile <https://pytorch.org/tutorials/intermediate/compiled_autograd_tutorial>`__
-* `Reducing torch.compile cold start compilation time with regional compilation <https://pytorch.org/tutorials/recipes/regional_compilation.html>`__
-* `Introduction to TorchRec <https://pytorch.org/tutorials/intermediate/torchrec_intro_tutorial.html>`__
-* `(prototype) Flight Recorder for Debugging Stuck Jobs <https://pytorch.org/tutorials/prototype/flight_recorder_tutorial.html>`__
-* `(prototype) How to use TorchInductor on Windows CPU <https://pytorch.org/tutorials/prototype/inductor_windows_cpu.html>`__
-* `(prototype) Using Max-Autotune Compilation on CPU for Better Performance <https://pytorch.org/tutorials/prototype/max_autotune_on_CPU_tutorial.html>`__
-* `(prototype) Autoloading Out-of-Tree Extension <https://pytorch.org/tutorials/prototype/python_extension_autoload.html>`__
+* `Dynamic Compilation Control with torch.compiler.set_stance <https://pytorch.org/tutorials/recipes/torch_compiler_set_stance_tutorial.html>`__
+* `Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile() <https://pytorch.org/tutorials/intermediate/transformer_building_blocks.html>`__
+* `Understanding the torch.export Flow and Solutions to Common Challenges <https://pytorch.org/tutorials/recipes/torch_export_challenges_solutions.html>`__
+* Updated `torch.export Tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html#constraints-dynamic-shapes>`__ with automatic dynamic shapes ``Dim.AUTO``
+* Updated `torch.export AOTInductor Tutorial for Python runtime <https://pytorch.org/tutorials/recipes/torch_export_aoti_python.html>`__
+* Updated `Using User-Defined Triton Kernels with torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_user_defined_triton_kernel_tutorial.html#composability>`__ with new ``torch.library.triton_op``
+* Updated `Compile Time Caching in torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_caching_tutorial.html>`__ with new ``Mega-Cache``
 
 .. raw:: html
 
@@ -265,10 +265,17 @@ Welcome to PyTorch Tutorials
    :tags: Production,ONNX,Backends
 
 .. customcarditem::
-   :header: Introduction to ONNX Registry
-   :card_description: Demonstrate end-to-end how to address unsupported operators by using ONNX Registry.
+   :header: Extending the ONNX exporter operator support
+   :card_description: Demonstrate end-to-end how to address unsupported operators in ONNX.
    :image: _static/img/thumbnails/cropped/Exporting-PyTorch-Models-to-ONNX-Graphs.png
-   :link: advanced/onnx_registry_tutorial.html
+   :link: beginner/onnx/onnx_registry_tutorial.html
+   :tags: Production,ONNX,Backends
+
+.. customcarditem::
+   :header: Exporting a model with control flow to ONNX
+   :card_description: Demonstrate how to handle control flow logic while exporting a PyTorch model to ONNX.
+   :image: _static/img/thumbnails/cropped/Exporting-PyTorch-Models-to-ONNX-Graphs.png
+   :link: beginner/onnx/export_control_flow_model_to_onnx_tutorial.html
    :tags: Production,ONNX,Backends
 
 .. Reinforcement Learning
