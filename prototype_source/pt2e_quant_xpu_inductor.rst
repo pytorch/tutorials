@@ -33,37 +33,8 @@ Besides oneDNN kernels, triton would be responsible for generating kernels on ou
 
 The high-level architecture of this flow could look like this:
 
-::
-
-    float_model(Python)                          Example Input
-        \                                              /
-         \                                            /
-    —--------------------------------------------------------
-    |                         export                       |
-    —--------------------------------------------------------
-                                |
-                        FX Graph in ATen     
-                                |            XPUInductorQuantizer
-                                |                 /
-    —--------------------------------------------------------
-    |                      prepare_pt2e                     |
-    |                           |                           |
-    |                     Calibrate/Train                   |
-    |                           |                           |
-    |                      convert_pt2e                     |
-    —--------------------------------------------------------
-                                |
-                         Quantized Model
-                                |
-    —--------------------------------------------------------
-    |                    Lower into Inductor                |
-    —--------------------------------------------------------
-                                |
-                             Inductor
-                                |
-    —--------------------------------------------------------
-    |  oneDNN Kernels       ATen Ops        Triton Kernels  |
-    —--------------------------------------------------------
+.. image:: /_static/img/pt2e_quant_xpu_inductor.png
+    :align: center
 
 Post Training Quantization
 ----------------------------
