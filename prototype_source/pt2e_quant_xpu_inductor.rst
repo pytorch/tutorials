@@ -33,7 +33,7 @@ Besides oneDNN kernels, triton would be responsible for generating kernels on ou
 
 The high-level architecture of this flow could look like this:
 
-.. image:: /_static/img/pt2e_quant_xpu_inductor.png
+.. image:: ../_static/img/pt2e_quant_xpu_inductor.png
     :align: center
 
 Post Training Quantization
