@@ -1207,3 +1207,5 @@ examples displayed in this note `here
 <https://github.com/pytorch/extension-cpp>`_. If you have questions, please use
 `the forums <https://discuss.pytorch.org>`_. Also be sure to check our `FAQ
 <https://pytorch.org/cppdocs/notes/faq.html>`_ in case you run into any issues.
+A blog on writing extensions for AMD ROCm can be found `here
+<https://rocm.blogs.amd.com/artificial-intelligence/cpp-extn/readme.html>`_.
