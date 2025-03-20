@@ -13,7 +13,7 @@ Introduction
 --------------
 
 This tutorial introduces XPUInductorQuantizer aiming for serving the quantized model inference on Intel GPUs. The tutorial will cover how it 
-utilzes PyTorch 2 Export Quantization flow and lowers the quantized model into the inductor.
+utilizes PyTorch 2 Export Quantization flow and lowers the quantized model into the inductor.
 
 The pytorch 2 export quantization flow uses the torch.export to capture the model into a graph and perform quantization transformations on top of the ATen graph.
 This approach is expected to have significantly higher model coverage, better programmability, and a simplified UX.
