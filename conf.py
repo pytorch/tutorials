@@ -31,7 +31,10 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('./.jenkins'))
-import pytorch_sphinx_theme
+import pytorch_sphinx_theme2
+
+html_theme = "pytorch_sphinx_theme2"
+html_theme_path = [pytorch_sphinx_theme2.get_html_theme_path()]
 import torch
 import glob
 import random
@@ -122,6 +125,14 @@ extensions = [
     'sphinx_gallery.gen_gallery',
     'sphinx_design',
     'sphinx_sitemap'
+    'sphinxcontrib.mermaid',
+    'myst_parser'
+]
+
+myst_enable_extensions = [
+    "colon_fence",
+    "deflist",
+    "html_image",
 ]
 
 intersphinx_mapping = {
@@ -158,6 +169,81 @@ sitemap_excludes = [
     "genindex.html",
 ]
 sitemap_url_scheme = "{link}"
+
+html_theme_options = {
+    "navigation_with_keys": False,
+    "analytics_id": "GTM-T8XT4PS",
+    "pytorch_project": "tutorials",
+    "logo": {
+        "text": "Home",
+    },
+    "language_bindings_links": [
+        {
+            "url": "https://pytorch.org/docs/stable/cpp_index.html",
+            "name": "C++",
+        },
+        {
+            "url": "https://pytorch.org/javadoc/",
+            "name": "Javadoc",
+        },
+        {
+            "url": "https://github.com/pytorch/multipy",
+            "name": "torch.multiply",
+        },
+    ],
+    "external_links": [
+        {
+            "name": "Tutorials",
+            "url": "https://pytorch.org/tutorials/",
+        },
+    ],
+    "icon_links": [
+        {
+            "name": "X",
+            "url": "https://x.com/PyTorch",
+            "icon": "fa-brands fa-x-twitter",
+        },
+        {
+            "name": "GitHub",
+            "url": "https://github.com/pytorch/pytorch",
+            "icon": "fa-brands fa-github",
+        },
+        {
+            "name": "Discourse",
+            "url": "https://dev-discuss.pytorch.org/",
+            "icon": "fa-brands fa-discourse",
+        },
+        {
+            "name": "PyPi",
+            "url": "https://pypi.org/project/torch/",
+            "icon": "fa-brands fa-python",
+        },
+    ],
+    "use_edit_page_button": True,
+    "logo": {
+        "text": "Home",
+    },
+}
+
+theme_variables = pytorch_sphinx_theme2.get_theme_variables()
+
+html_context = {
+    "theme_variables": theme_variables,
+    "display_github": True,
+    "github_url": "https://github.com",
+    "github_user": "pytorch",
+    "github_repo": "pytorch",
+    "feedback_url": "https://github.com/pytorch/tutorials",
+    "github_version": "main",
+    "doc_path": "docs/source",
+    "library_links": theme_variables.get("library_links", []),
+    "icon_links": theme_variables.get("icon_links", []),
+    "community_links": theme_variables.get("community_links", []),
+    "pytorch_project": "docs",
+    "language_bindings_links": html_theme_options.get("language_bindings_links", []),
+}
+
+
 
 if os.getenv('GALLERY_PATTERN'):
     # GALLERY_PATTERN is to be used when you want to work on a single
