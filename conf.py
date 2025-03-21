@@ -124,7 +124,7 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_gallery.gen_gallery',
     'sphinx_design',
-    'sphinx_sitemap'
+    'sphinx_sitemap',
     'sphinxcontrib.mermaid',
     'myst_parser'
 ]
