@@ -1040,7 +1040,7 @@ loss_module = DDPGLoss(actor, qnet)
 
 ###############################################################################
 # let's use the TD(lambda) estimator!
-loss_module.make_value_estimator(ValueEstimators.TDLambda, gamma=gamma, lmbda=lmbda)
+loss_module.make_value_estimator(ValueEstimators.TDLambda, gamma=gamma, lmbda=lmbda, device=device)
 
 ###############################################################################
 # .. note::

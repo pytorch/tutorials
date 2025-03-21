@@ -210,6 +210,8 @@ import transformers
 SparseSemiStructuredTensor._FORCE_CUTLASS = True
 torch.manual_seed(100)
 
+# Set default device to "cuda:0"
+torch.set_default_device(torch.device("cuda:0" if torch.cuda.is_available() else "cpu"))
 
 ######################################################################
 # We’ll also need to define some helper functions that are specific to the
