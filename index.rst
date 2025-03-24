@@ -679,6 +679,13 @@ Welcome to PyTorch Tutorials
    :link: intermediate/transformer_building_blocks.html
    :tags: Transformer
 
+.. customcarditem::
+   :header: PyTorch 2 Export Quantization with Intel GPU Backend through Inductor
+   :card_description: Learn how to export quantized models on Intel GPU backend
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: intermediate/pt2e_quant_xpu_inductor.html
+   :tags: Quantization,Model-Optimization
+
 .. Parallel-and-Distributed-Training
 
 

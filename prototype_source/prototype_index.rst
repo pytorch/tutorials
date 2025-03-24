@@ -96,13 +96,6 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/pt2e_quant_x86_inductor.html
    :tags: Quantization
 
-.. customcarditem::
-   :header: PyTorch 2 Export Quantization with Intel GPU Backend through Inductor
-   :card_description: Learn how to use PT2 Export Quantization with Intel GPU Backend through Inductor.
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../prototype/pt2e_quant_xpu_inductor.html
-   :tags: Quantization
-
 .. Sparsity
 
 .. customcarditem::
