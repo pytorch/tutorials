@@ -25,9 +25,7 @@ sudo apt-get install -y pandoc
 sudo pip uninstall -y torch torchvision torchaudio torchtext torchdata torchrl tensordict
 pip3 install torch==2.7.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu126
 sudo pip uninstall -y fbgemm-gpu torchrec
-sudo pip3 install -y https://download.pytorch.org/whl/nightly/fbgemm-gpu/
-sudo pip3 install -y https://download.pytorch.org/whl/nightly/torchrec/
-
+sudo pip3 install --pre fbgemm-gpu --index-url https://download.pytorch.org/whl/nightly/cu126/
 #sudo pip3 install fbgemm-gpu==1.1.0 torchrec==1.0.0 --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu126
 
 
