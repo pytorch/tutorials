@@ -1,7 +1,7 @@
 PyTorch 2 Export Quantization with Intel GPU Backend through Inductor
 ==================================================================
 
-**Author**: `Yan Zhiwei <https://github.com/ZhiweiYan-96>`_, `Wang Eikan <https://github.com/EikanWang>`_, `Zhang, Liangang <https://github.com/liangan1>`_, `Liu River <https://github.com/riverliuintel>`_, `Cui Yifeng <https://github.com/CuiYifeng>`_
+**Author**: `Yan Zhiwei <https://github.com/ZhiweiYan-96>`_, `Wang Eikan <https://github.com/EikanWang>`_, `Zhang Liangang <https://github.com/liangan1>`_, `Liu River <https://github.com/riverliuintel>`_, `Cui Yifeng <https://github.com/CuiYifeng>`_
 
 Prerequisites
 ---------------
@@ -109,7 +109,7 @@ Besides the default quant configuration (asymmetric quantized activation), we al
             dtype=torch.int8,
             quant_min=-128,
             quant_max=127,
-            qscheme=torch.per_tensor_symmetric,
+            qscheme=torch.per_tensor_symmetric,  # Change the activation quant config to symmetric
             is_dynamic=False,
             observer_or_fake_quant_ctr=act_observer_or_fake_quant_ctr.with_args(
                 **extra_args
@@ -124,7 +124,7 @@ Besides the default quant configuration (asymmetric quantized activation), we al
             dtype=torch.int8,
             quant_min=-128,
             quant_max=127,
-            qscheme=torch.per_channel_symmetric,
+            qscheme=torch.per_channel_symmetric, # Same as the default config, the only supported option for weight
             ch_axis=0,  # 0 corresponding to weight shape = (oc, ic, kh, kw) of conv
             is_dynamic=False,
             observer_or_fake_quant_ctr=weight_observer_or_fake_quant_ctr.with_args(
