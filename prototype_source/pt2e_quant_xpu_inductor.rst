@@ -59,7 +59,7 @@ We will start by performing the necessary imports, capturing the FX Graph from t
 
     # Create the Eager Model
     model_name = "resnet18"
-    models.__dict__[model_name](weights=models.ResNet18_Weights.DEFAULT)
+    model = models.__dict__[model_name](weights=models.ResNet18_Weights.DEFAULT)
 
     # Set the model to eval mode
     model = model.eval().to("xpu")
