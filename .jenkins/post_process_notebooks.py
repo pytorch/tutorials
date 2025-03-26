@@ -12,7 +12,7 @@ in the notebook. This script is included in build.sh.
 
 
 # Pattern to search ``` {.python .jupyter-code-cell}
-pattern = re.compile(r'(.*?)``` {.python .jupyter-code-cell}\n\n(from IPython.display import display, HTML\nhtml_code = """\n.*?\n"""\ndisplay\(HTML\(html_code\)\))\n```(.*)', re.DOTALL)
+pattern = re.compile(r'(.*?)``` {\.python \.jupyter-code-cell}\n(.*?from IPython\.display import display, HTML.*?display\(HTML\(html_code\)\))\n```(.*)', re.DOTALL)
 
 
 def process_video_cell(notebook_path):
