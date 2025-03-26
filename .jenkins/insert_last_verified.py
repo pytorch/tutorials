@@ -6,7 +6,6 @@ from datetime import datetime
 
 from bs4 import BeautifulSoup
 
-
 json_file_path = "tutorials-review-data.json"
 
 # paths to skip from the post-processing script
@@ -31,6 +30,7 @@ source_to_build_mapping = {
     "": "",  # root dir for index.rst
 }
 
+
 def get_git_log_date(file_path, git_log_args):
     try:
         result = subprocess.run(
@@ -46,12 +46,16 @@ def get_git_log_date(file_path, git_log_args):
         pass
     raise ValueError(f"Could not find date for {file_path}")
 
+
 def get_creation_date(file_path):
-    return get_git_log_date(file_path, ["--diff-filter=A", "--format=%aD"]).strftime("%b %d, %Y")
+    return get_git_log_date(file_path, ["--diff-filter=A", "--format=%aD"]).strftime(
+        "%b %d, %Y"
+    )
 
 
 def get_last_updated_date(file_path):
     return get_git_log_date(file_path, ["-1", "--format=%aD"]).strftime("%b %d, %Y")
+
 
 # Try to find the source file with the given base path and the extensions .rst and .py
 def find_source_file(base_path):
@@ -63,7 +67,7 @@ def find_source_file(base_path):
 
 
 # Function to process a JSON file and insert the "Last Verified" information into the HTML files
-def process_json_file(build_dir , json_file_path):
+def process_json_file(build_dir, json_file_path):
     with open(json_file_path, "r", encoding="utf-8") as json_file:
         json_data = json.load(json_file)
 
@@ -148,13 +152,14 @@ def main():
         exit(1)
     build_dir = sys.argv[1]
     print(f"Build directory: {build_dir}")
-    process_json_file(build_dir , json_file_path)
+    process_json_file(build_dir, json_file_path)
     print(
         "Finished processing JSON file. Please check the output for any warnings. "
         "Pages like `nlp/index.html` are generated only during the full `make docs` "
         "or `make html` build. Warnings about these files when you run `make html-noplot` "
         "can be ignored."
     )
+
 
 if __name__ == "__main__":
     main()
