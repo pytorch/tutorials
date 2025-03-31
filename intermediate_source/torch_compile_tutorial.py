@@ -30,6 +30,10 @@ Introduction to ``torch.compile``
 # - ``numpy``
 # - ``scipy``
 # - ``tabulate``
+#
+# **System Requirements**
+# - A C++ compile (e.g. `g++`)
+# - Python development package (`python-devel`/`python-dev`)
 
 ######################################################################
 # NOTE: a modern NVIDIA GPU (H100, A100, or V100) is recommended for this tutorial in
