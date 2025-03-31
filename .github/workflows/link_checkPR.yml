@@ -1,5 +1,5 @@
 #Checks links in a PR to ensure they are valid. If link is valid but failing, it can be added to the .lycheeignore file
-#Code source: https://github.com/lycheeverse/lychee-action/issues/238
+#Use the skip-link-check label on a PR to skip checking links on a PR
 
 name: link check on PR
 
@@ -8,56 +8,45 @@ on:
     branches: [main]
 
 jobs:
-  check-links:
+  linkChecker:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Clone repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          ref: ${{github.event.pull_request.head.ref}}
-          repository: ${{github.event.pull_request.head.repo.full_name}}
+          fetch-depth: 1
 
-      - name: Check out main branch
-        run: git checkout main
+      - name: Get Changed Files
+        id: changed-files
+        uses: tj-actions/changed-files@d6e91a2266cdb9d62096cebf1e8546899c6aa18f # v45.0.6
 
-      - name: Dump all links from main
-        id: dump_links_from_main
+      - name: Check for Skip Label
+        id: skip-label
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            return labels.data.some(label => label.name === 'skip-link-check');
+          
+      - name: Check Links
+        if: steps.skip-label.outputs.result == 'false'
         uses: lycheeverse/lychee-action@v1
         with:
-          args: |
-            --dump
-            --include-fragments
-            .
-          output: ./links-main.txt
-
-      - name: Stash untracked files
-        run: git stash push --include-untracked
-
-      - name: Check out feature branch
-        run: git checkout ${{ github.head_ref }}
-
-      - name: Apply stashed changes
-        # Apply stashed changes, ignore errors if stash is empty
-        run: git stash pop || true
-
-      - name: Append links-main.txt to .lycheeignore
-        run: cat links-main.txt >> .lycheeignore
-
-      - name: Check links
-        uses: lycheeverse/lychee-action@v1
-        with:
-          args: |
-            --no-progress
-            --include-fragments
-            .
-          # Fail action on broken links
+          args: --accept=200,403,429 --base . --verbose --no-progress ${{ steps.changed-files.outputs.all_changed_files }}
+          token: ${{ secrets.CUSTOM_TOKEN }}
           fail: true
-
+          
+      - name: Skip Message
+        if: steps.skip-label.outputs.result == 'true'
+        run: echo "Link check was skipped due to the presence of the 'skip-link-check' label."
+        
       - name: Suggestions
         if: failure()
         run: |
           echo -e "\nPlease review the links reported in the Check links step above."
-          echo -e "If a link is valid but fails due to a CAPTCHA challenge, IP blocking, login requirements, etc.,
-          consider adding such links to .lycheeignore file to bypass future checks.\n"
+          echo -e "If a link is valid but fails due to a CAPTCHA challenge, IP blocking, login requirements, etc., consider adding such links to .lycheeignore file to bypass future checks.\n"
           exit 1

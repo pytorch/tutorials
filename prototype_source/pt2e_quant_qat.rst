@@ -18,7 +18,7 @@ to the post training quantization (PTQ) flow for the most part:
     prepare_qat_pt2e,
     convert_pt2e,
   )
-  from torch.ao.quantization.quantizer import (
+  from torch.ao.quantization.quantizer.xnnpack_quantizer import (
     XNNPACKQuantizer,
     get_symmetric_quantization_config,
   )
@@ -36,9 +36,9 @@ to the post training quantization (PTQ) flow for the most part:
   m = M()
 
   # Step 1. program capture
-  # NOTE: this API will be updated to torch.export API in the future, but the captured
-  # result shoud mostly stay the same
-  m = capture_pre_autograd_graph(m, *example_inputs)
+  # This is available for pytorch 2.5+, for more details on lower pytorch versions
+  # please check `Export the model with torch.export` section
+  m = torch.export.export_for_training(m, example_inputs).module()
   # we get a model with aten ops
 
   # Step 2. quantization-aware training
@@ -272,24 +272,35 @@ Here is how you can use ``torch.export`` to export the model:
     from torch._export import capture_pre_autograd_graph
 
     example_inputs = (torch.rand(2, 3, 224, 224),)
-    exported_model = capture_pre_autograd_graph(float_model, example_inputs)
+    # for pytorch 2.5+
+    exported_model = torch.export.export_for_training(float_model, example_inputs).module()
+    # for pytorch 2.4 and before
+    # from torch._export import capture_pre_autograd_graph
+    # exported_model = capture_pre_autograd_graph(model_to_quantize, example_inputs)
 
 
 .. code:: python
 
     # or, to capture with dynamic dimensions:
-    from torch._export import dynamic_dim
 
-    example_inputs = (torch.rand(2, 3, 224, 224),)
-    exported_model = capture_pre_autograd_graph(
-        float_model,
-        example_inputs,
-        constraints=[dynamic_dim(example_inputs[0], 0)],
+    # for pytorch 2.5+
+    dynamic_shapes = tuple(
+      {0: torch.export.Dim("dim")} if i == 0 else None
+      for i in range(len(example_inputs))
     )
-.. note::
+    exported_model = torch.export.export_for_training(float_model, example_inputs, dynamic_shapes=dynamic_shapes).module()
+    
+    # for pytorch 2.4 and before
+    # dynamic_shape API may vary as well
+    # from torch._export import dynamic_dim
 
-   ``capture_pre_autograd_graph`` is a short term API, it will be updated to use the offical ``torch.export`` API when that is ready.
-
+    # example_inputs = (torch.rand(2, 3, 224, 224),)
+    # exported_model = capture_pre_autograd_graph(
+    #     float_model,
+    #     example_inputs,
+    #     constraints=[dynamic_dim(example_inputs[0], 0)],
+    # )
+    
 
 Import the Backend Specific Quantizer and Configure how to Quantize the Model
 -----------------------------------------------------------------------------

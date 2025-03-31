@@ -1,6 +1,8 @@
 Extending TorchScript with Custom C++ Classes
 ===============================================
 
+.. warning:: TorchScript is no longer in active development.
+
 This tutorial is a follow-on to the
 :doc:`custom operator <torch_script_custom_ops>`
 tutorial, and introduces the API we've built for binding C++ classes into TorchScript

@@ -10,6 +10,7 @@ REPO_ROOT = Path(__file__).parent.parent
 
 NOT_RUN = [
     "beginner_source/basics/intro",  # no code
+    "beginner_source/introyt/introyt_index", # no code
     "beginner_source/onnx/intro_onnx",
     "beginner_source/profiler",
     "beginner_source/saving_loading_models",
@@ -49,7 +50,7 @@ NOT_RUN = [
     "intermediate_source/flask_rest_api_tutorial",
     "intermediate_source/text_to_speech_with_torchaudio",
     "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
-    "intermediate_source/torch_export_tutorial" # reenable after 2940 is fixed.
+    "advanced_source/semi_structured_sparse" # reenable after 3303 is fixed.
 ]
 
 def tutorial_source_dirs() -> List[Path]:

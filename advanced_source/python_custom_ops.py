@@ -3,7 +3,7 @@
 """
 .. _python-custom-ops-tutorial:
 
-Python Custom Operators
+Custom Python Operators
 =======================
 
 .. grid:: 2
@@ -29,6 +29,12 @@ operators. Reasons why you may wish to create a custom operator in PyTorch inclu
   to ``torch.compile`` (that is, prevent ``torch.compile`` from tracing
   into the function).
 - Adding training support to an arbitrary Python function
+
+Use :func:`torch.library.custom_op` to create Python custom operators.
+Use the C++ ``TORCH_LIBRARY`` APIs to create C++ custom operators (these
+work in Python-less environments).
+See the `Custom Operators Landing Page <https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html>`_
+for more details.
 
 Please note that if your operation can be expressed as a composition of
 existing PyTorch operators, then there is usually no need to use the custom operator
@@ -106,7 +112,10 @@ def crop(pic: torch.Tensor, box: Sequence[int]) -> torch.Tensor:
 def _(pic, box):
     channels = pic.shape[0]
     x0, y0, x1, y1 = box
-    return pic.new_empty(channels, y1 - y0, x1 - x0)
+    result = pic.new_empty(y1 - y0, x1 - x0, channels).permute(2, 0, 1)
+    # The result should have the same metadata (shape/strides/``dtype``/device)
+    # as running the ``crop`` function above.
+    return result
 
 ######################################################################
 # After this, ``crop`` now works without graph breaks:

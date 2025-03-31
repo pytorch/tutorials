@@ -3,13 +3,13 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
-* `Compiled Autograd: Capturing a larger backward graph for torch.compile <https://pytorch.org/tutorials/intermediate/compiled_autograd_tutorial>`__
-* `Reducing torch.compile cold start compilation time with regional compilation <https://pytorch.org/tutorials/recipes/regional_compilation.html>`__
-* `Introduction to TorchRec <https://pytorch.org/tutorials/intermediate/torchrec_intro_tutorial.html>`__
-* `(prototype) Flight Recorder for Debugging Stuck Jobs <https://pytorch.org/tutorials/prototype/flight_recorder_tutorial.html>`__
-* `(prototype) How to use TorchInductor on Windows CPU <https://pytorch.org/tutorials/prototype/inductor_windows_cpu.html>`__
-* `(prototype) Using Max-Autotune Compilation on CPU for Better Performance <https://pytorch.org/tutorials/prototype/max_autotune_on_CPU_tutorial.html>`__
-* `(prototype) Autoloading Out-of-Tree Extension <https://pytorch.org/tutorials/prototype/python_extension_autoload.html>`__
+* `Dynamic Compilation Control with torch.compiler.set_stance <https://pytorch.org/tutorials/recipes/torch_compiler_set_stance_tutorial.html>`__
+* `Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile() <https://pytorch.org/tutorials/intermediate/transformer_building_blocks.html>`__
+* `Understanding the torch.export Flow and Solutions to Common Challenges <https://pytorch.org/tutorials/recipes/torch_export_challenges_solutions.html>`__
+* Updated `torch.export Tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html#constraints-dynamic-shapes>`__ with automatic dynamic shapes ``Dim.AUTO``
+* Updated `torch.export AOTInductor Tutorial for Python runtime <https://pytorch.org/tutorials/recipes/torch_export_aoti_python.html>`__
+* Updated `Using User-Defined Triton Kernels with torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_user_defined_triton_kernel_tutorial.html#composability>`__ with new ``torch.library.triton_op``
+* Updated `Compile Time Caching in torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_caching_tutorial.html>`__ with new ``Mega-Cache``
 
 .. raw:: html
 
@@ -71,7 +71,7 @@ Welcome to PyTorch Tutorials
    :header: Introduction to PyTorch on YouTube
    :card_description: An introduction to building a complete ML workflow with PyTorch. Follows the PyTorch Beginner Series on YouTube.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: beginner/introyt.html
+   :link: beginner/introyt/introyt_index.html
    :tags: Getting-Started
 
 .. customcarditem::
@@ -265,10 +265,17 @@ Welcome to PyTorch Tutorials
    :tags: Production,ONNX,Backends
 
 .. customcarditem::
-   :header: Introduction to ONNX Registry
-   :card_description: Demonstrate end-to-end how to address unsupported operators by using ONNX Registry.
+   :header: Extending the ONNX exporter operator support
+   :card_description: Demonstrate end-to-end how to address unsupported operators in ONNX.
    :image: _static/img/thumbnails/cropped/Exporting-PyTorch-Models-to-ONNX-Graphs.png
-   :link: advanced/onnx_registry_tutorial.html
+   :link: beginner/onnx/onnx_registry_tutorial.html
+   :tags: Production,ONNX,Backends
+
+.. customcarditem::
+   :header: Exporting a model with control flow to ONNX
+   :card_description: Demonstrate how to handle control flow logic while exporting a PyTorch model to ONNX.
+   :image: _static/img/thumbnails/cropped/Exporting-PyTorch-Models-to-ONNX-Graphs.png
+   :link: beginner/onnx/export_control_flow_model_to_onnx_tutorial.html
    :tags: Production,ONNX,Backends
 
 .. Reinforcement Learning
@@ -397,14 +404,14 @@ Welcome to PyTorch Tutorials
    :tags: Frontend-APIs,C++
 
 .. customcarditem::
-   :header: Python Custom Operators Landing Page
+   :header: PyTorch Custom Operators Landing Page
    :card_description: This is the landing page for all things related to custom operators in PyTorch.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/custom_ops_landing_page.html
    :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
 
 .. customcarditem::
-   :header: Python Custom Operators
+   :header: Custom Python Operators
    :card_description: Create Custom Operators in Python. Useful for black-boxing a Python function for use with torch.compile.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/python_custom_ops.html
@@ -426,14 +433,14 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Custom C++ and CUDA Extensions
-   :card_description:  Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights.
+   :card_description: Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/cpp_extension.html
    :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
 
 .. customcarditem::
    :header: Extending TorchScript with Custom C++ Operators
-   :card_description:  Implement a custom TorchScript operator in C++, how to build it into a shared library, how to use it in Python to define TorchScript models and lastly how to load it into a C++ application for inference workloads.
+   :card_description: Implement a custom TorchScript operator in C++, how to build it into a shared library, how to use it in Python to define TorchScript models and lastly how to load it into a C++ application for inference workloads.
    :image: _static/img/thumbnails/cropped/Extending-TorchScript-with-Custom-Cpp-Operators.png
    :link: advanced/torch_script_custom_ops.html
    :tags: Extending-PyTorch,Frontend-APIs,TorchScript,C++
@@ -664,6 +671,14 @@ Welcome to PyTorch Tutorials
    :link: beginner/knowledge_distillation_tutorial.html
    :tags: Model-Optimization,Image/Video
 
+
+.. customcarditem::
+   :header: Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile()
+   :card_description: This tutorial goes over recommended best practices for implementing Transformers with native PyTorch.
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: intermediate/transformer_building_blocks.html
+   :tags: Transformer
+
 .. Parallel-and-Distributed-Training
 
 
@@ -763,7 +778,7 @@ Welcome to PyTorch Tutorials
    :header: Advanced Model Training with Fully Sharded Data Parallel (FSDP)
    :card_description: Explore advanced model training with Fully Sharded Data Parallel package.
    :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
-   :link: intermediate/FSDP_adavnced_tutorial.html
+   :link: intermediate/FSDP_advanced_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
@@ -906,7 +921,7 @@ Additional Resources
 .. Page TOC
 .. -----------------------------------------
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :hidden:
    :includehidden:
    :caption: PyTorch Recipes
@@ -915,39 +930,15 @@ Additional Resources
    See All Prototype Recipes <prototype/prototype_index>
 
 .. toctree::
-   :maxdepth: 2
    :hidden:
    :includehidden:
    :caption: Introduction to PyTorch
 
    beginner/basics/intro
-   beginner/basics/quickstart_tutorial
-   beginner/basics/tensorqs_tutorial
-   beginner/basics/data_tutorial
-   beginner/basics/transforms_tutorial
-   beginner/basics/buildmodel_tutorial
-   beginner/basics/autogradqs_tutorial
-   beginner/basics/optimization_tutorial
-   beginner/basics/saveloadrun_tutorial
-   advanced/custom_ops_landing_page
+   beginner/introyt/introyt_index
 
 .. toctree::
-   :maxdepth: 2
-   :hidden:
-   :includehidden:
-   :caption: Introduction to PyTorch on YouTube
-
-   beginner/introyt
-   beginner/introyt/introyt1_tutorial
-   beginner/introyt/tensors_deeper_tutorial
-   beginner/introyt/autogradyt_tutorial
-   beginner/introyt/modelsyt_tutorial
-   beginner/introyt/tensorboardyt_tutorial
-   beginner/introyt/trainingyt
-   beginner/introyt/captumyt
-
-.. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :hidden:
    :includehidden:
    :caption: Learning PyTorch
@@ -960,7 +951,7 @@ Additional Resources
    intermediate/pinmem_nonblock
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :includehidden:
    :hidden:
    :caption: Image and Video
@@ -991,7 +982,7 @@ Additional Resources
    intermediate/forced_alignment_with_torchaudio_tutorial
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :includehidden:
    :hidden:
    :caption: Backends
@@ -1010,7 +1001,7 @@ Additional Resources
    advanced/pendulum
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :includehidden:
    :hidden:
    :caption: Deploying PyTorch Models in Production
@@ -1115,7 +1106,7 @@ Additional Resources
    intermediate/ddp_tutorial
    intermediate/dist_tuto
    intermediate/FSDP_tutorial
-   intermediate/FSDP_adavnced_tutorial
+   intermediate/FSDP_advanced_tutorial
    intermediate/TCPStore_libuv_backend
    intermediate/TP_tutorial
    intermediate/pipelining_tutorial
