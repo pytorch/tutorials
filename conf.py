@@ -269,11 +269,10 @@ master_doc = "index"
 project = "PyTorch Tutorials"
 copyright = "2024, PyTorch"
 author = "PyTorch contributors"
-
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
-#
+
 # The short X.Y version.
 version = str(torch.__version__)
 # The full version, including alpha/beta/rc tags.
