@@ -128,6 +128,8 @@ extensions = [
     "sphinx_design",
     "sphinx_sitemap",
     "sphinxcontrib.mermaid",
+    "add-cards",
+    "pytorch_sphinx_theme2"
 ]
 
 myst_enable_extensions = [
@@ -178,20 +180,6 @@ html_theme_options = {
     "logo": {
         "text": "Home",
     },
-    "language_bindings_links": [
-        {
-            "url": "https://pytorch.org/docs/stable/cpp_index.html",
-            "name": "C++",
-        },
-        {
-            "url": "https://pytorch.org/javadoc/",
-            "name": "Javadoc",
-        },
-        {
-            "url": "https://github.com/pytorch/multipy",
-            "name": "torch.multiply",
-        },
-    ],
     "icon_links": [
         {
             "name": "X",
@@ -217,6 +205,7 @@ html_theme_options = {
     "use_edit_page_button": True,
     "logo": {
         "text": "Home",
+    "header_links_before_dropdown": 9,
     },
 }
 
@@ -420,9 +409,3 @@ html_css_files = [
 
 def setup(app):
     app.connect("source-read", handle_jinja_templates)
-    # Custom directives
-    app.add_directive("includenodoc", IncludeDirective)
-    app.add_directive("galleryitem", GalleryItemDirective)
-    app.add_directive("customgalleryitem", CustomGalleryItemDirective)
-    app.add_directive("customcarditem", CustomCardItemDirective)
-    app.add_directive("customcalloutitem", CustomCalloutItemDirective)

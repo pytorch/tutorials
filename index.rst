@@ -925,12 +925,6 @@ Additional Resources
 
    beginner/intro
 
-
-.. toctree::
-   :glob:
-   :maxdepth: 1
-   :hidden:
-
 .. toctree::
    :maxdepth: 1
    :hidden:
@@ -938,7 +932,25 @@ Additional Resources
    domains
 
 .. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   deployment
+
+.. toctree:: 1
+   :hidden:
+   :maxdepth: 2
+
+   optimization
+
+.. toctree::
    :maxdepth: 1
    :hidden:
 
-   performance
+   extension
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   distributed

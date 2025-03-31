@@ -4,9 +4,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 
 .. raw:: html
 
-        </div>
-    </div>
-
     <div id="tutorial-cards-container">
 
     <nav class="navbar navbar-expand-lg navbar-light tutorials-nav col-12">

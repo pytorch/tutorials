@@ -15,7 +15,7 @@ understand PyTorch's core functionality through step-by-step guidance.
    :includehidden:
    :caption: Learn the Basics
 
-   beginner/basics/intro
+   basics/intro
 
 
 .. toctree::
@@ -24,7 +24,7 @@ understand PyTorch's core functionality through step-by-step guidance.
    :includehidden:
    :caption: Introduction to PyTorch - YouTube Series
 
-   beginner/introyt/introyt_index
+   introyt/introyt_index
 
 .. toctree::
    :maxdepth: 1
@@ -32,9 +32,9 @@ understand PyTorch's core functionality through step-by-step guidance.
    :includehidden:
    :caption: Learning PyTorch
 
-   beginner/deep_learning_60min_blitz
-   beginner/pytorch_with_examples
-   beginner/nn_tutorial
-   intermediate/nlp_from_scratch_index
-   intermediate/tensorboard_tutorial
-   intermediate/pinmem_nonblock
+   deep_learning_60min_blitz
+   pytorch_with_examples
+   nn_tutorial
+   nlp_from_scratch_index
+   tensorboard_tutorial
+   pinmem_nonblock

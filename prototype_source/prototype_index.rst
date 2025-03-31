@@ -7,9 +7,6 @@ Prototype features are not available as part of binary distributions like PyPI o
 
 .. raw:: html
 
-        </div>
-    </div>
-
     <div id="tutorial-cards-container">
 
     <nav class="navbar navbar-expand-lg navbar-light tutorials-nav col-12">
