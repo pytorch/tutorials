@@ -14,7 +14,7 @@
 # serve to show the default.
 #
 
-# Bxcause the sphinx gallery might take a long time, you can control specific
+# Because the sphinx gallery might take a long time, you can control specific
 # files that generate the results using `GALLERY_PATTERN` environment variable,
 # For example to run only `neural_style_transfer_tutorial.py`:
 #   GALLERY_PATTERN="neural_style_transfer_tutorial.py" make html
