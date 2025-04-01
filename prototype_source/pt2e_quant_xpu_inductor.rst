@@ -177,7 +177,7 @@ Finally, we will convert the calibrated Model to a quantized Model. ``convert_pt
 
     converted_model = convert_pt2e(prepared_model)
 
-After these steps, we finished running the quantization flow and we will get the quantized model.
+After these steps, the quantization flow has been completed and the quantized model is available.
 
 
 3. Lower into Inductor
