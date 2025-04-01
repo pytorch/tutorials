@@ -171,7 +171,7 @@ After we import the backend-specific Quantizer, we will prepare the model for po
     #             model(image)
     # calibrate(prepared_model, data_loader_test)  # run calibration on sample data
 
-Finally, we will convert the calibrated Model to a quantized Model. ``convert_pt2e`` takes a calibrated model and produces a quantized model.
+Finally, convert the calibrated model to a quantized model. ``convert_pt2e`` takes a calibrated model and produces a quantized model.
 
 ::
 
