@@ -77,7 +77,7 @@ We will start by performing the necessary imports, capturing the FX Graph from t
         ).module()
 
 
-Next, we will have the FX Module to be quantized.
+Next, we will quantize the FX Module.
 
 2. Apply Quantization
 ^^^^^^^^^^^^^^^^^^^^^^^
