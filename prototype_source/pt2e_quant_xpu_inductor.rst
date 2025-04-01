@@ -183,7 +183,7 @@ After these steps, we finished running the quantization flow and we will get the
 3. Lower into Inductor
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-After we get the quantized model, we will further lower it to the inductor backend. 
+The quantized model will then be lowered into the inductor backend. 
 
 ::
 
