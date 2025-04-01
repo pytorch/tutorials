@@ -150,7 +150,7 @@ Then, we can set the quantization configuration to the quantizer.
     quantizer.set_global(get_xpu_inductor_symm_quantization_config())
 
 After the backend-specific quantizer is imported, prepare the model for post-training quantization.
-``prepare_pt2e`` folds BatchNorm operators into preceding Conv2d operators, and inserts observers in appropriate places in the model.
+``prepare_pt2e`` folds BatchNorm operators into preceding Conv2d operators, and inserts observers into appropriate places in the model.
 
 ::
 
