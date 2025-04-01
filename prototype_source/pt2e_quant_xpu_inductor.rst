@@ -35,7 +35,7 @@ The high-level architecture of this flow could look like this:
 Post Training Quantization
 ----------------------------
 
-Static quantization is the only method we support currently.
+Static quantization is the only method we currently support.
 
 The dependencies packages are recommended to be installed through Intel GPU channel as follows
 
