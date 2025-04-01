@@ -43,6 +43,16 @@ The following dependencies are recommended to be installed through the Intel GPU
 
     pip3 install torch torchvision torchaudio pytorch-triton-xpu --index-url https://download.pytorch.org/whl/xpu
 
+
+Please note that since the Inductor ``freeze`` feature does not turn on by default yet, run your example code with ``TORCHINDUCTOR_FREEZING=1``.
+
+For example:
+
+::
+
+    TORCHINDUCTOR_FREEZING=1 python xpu_inductor_quantizer_example.py
+
+
 1. Capture FX Graph
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -92,7 +102,7 @@ quantize the model.
 
 The default quantization configuration in ``XPUInductorQuantizer`` uses signed 8-bits for both activations and weights. The tensors are per-tensor quantized, whereas the weights are signed 8-bit per-channel quantized.
 
-Besides the default quant configuration (asymmetric quantized activation), we also support signed 8-bits symmetric quantized activation, which has the potential to provide better performance.
+In addition to the default quantization configuration using asymmetric quantized activation, signed 8-bits symmetric quantized activation is also supported, which has the potential to provide better performance.
 
 ::
 
@@ -218,13 +228,3 @@ script within the BFloat16 Autocast context.
 
             # Running some benchmark
             optimized_model(*example_inputs)
-
-
-Put all these codes together, we will have the toy example code.
-Please note that since the Inductor ``freeze`` feature does not turn on by default yet, run your example code with ``TORCHINDUCTOR_FREEZING=1``.
-
-For example:
-
-::
-
-    TORCHINDUCTOR_FREEZING=1 python xpu_inductor_quantizer_example.py
