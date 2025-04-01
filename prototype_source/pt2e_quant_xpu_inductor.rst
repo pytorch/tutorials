@@ -24,7 +24,7 @@ The quantization flow has three steps:
 - Step 1: Capture the FX Graph from the eager model based on the `torch export mechanism <https://pytorch.org/docs/main/export.html>`_.
 - Step 2: Apply the quantization flow based on the captured FX Graph, including defining the backend-specific quantizer, generating the prepared model with observers,
   performing the prepared model's calibration, and converting the prepared model into the quantized model.
-- Step 3: Lower the quantized model into inductor with the API ``torch.compile``, which would call triton kernels or oneDNN GEMM/Conv kernels.
+- Step 3: Lower the quantized model into inductor with the API ``torch.compile``, which would call triton kernels or oneDNN GEMM/Convolution kernels.
 
 
 The high-level architecture of this flow could look like this:
@@ -44,7 +44,7 @@ The following dependencies are recommended to be installed through the Intel GPU
     pip3 install torch torchvision torchaudio pytorch-triton-xpu --index-url https://download.pytorch.org/whl/xpu
 
 
-Please note that since the Inductor ``freeze`` feature does not turn on by default yet, run your example code with ``TORCHINDUCTOR_FREEZING=1``.
+Please note that since the inductor ``freeze`` feature does not turn on by default yet, run your example code with ``TORCHINDUCTOR_FREEZING=1``.
 
 For example:
 
