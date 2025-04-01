@@ -13,7 +13,6 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 #
-
 # Because the sphinx gallery might take a long time, you can control specific
 # files that generate the results using `GALLERY_PATTERN` environment variable,
 # For example to run only `neural_style_transfer_tutorial.py`:
