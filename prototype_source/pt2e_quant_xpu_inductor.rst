@@ -194,7 +194,7 @@ After we get the quantized model, we will further lower it to the inductor backe
         optimized_model(*example_inputs)
 
 In a more advanced scenario, int8-mixed-bf16 quantization comes into play. In this instance,
-a Convolution or GEMM operator produces BFloat16 output data type instead of Float32 in the absence
+a convolution or GEMM operator produces the output in BFloat16 instead of Float32 in the absence
 of a subsequent quantization node. Subsequently, the BFloat16 tensor seamlessly propagates through
 subsequent pointwise operators, effectively minimizing memory usage and potentially enhancing performance.
 The utilization of this feature mirrors that of regular BFloat16 Autocast, as simple as wrapping the
