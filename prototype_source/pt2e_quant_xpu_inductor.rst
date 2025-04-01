@@ -12,7 +12,7 @@ Prerequisites
 Introduction
 --------------
 
-This tutorial introduces XPUInductorQuantizer aiming for serving the quantized model inference on Intel GPUs. The tutorial will cover how it 
+This tutorial introduces XPUInductorQuantizer, which aims to serve quantized models for inference on Intel GPUs.
 utilizes PyTorch 2 Export Quantization flow and lowers the quantized model into the inductor.
 
 The pytorch 2 export quantization flow uses the torch.export to capture the model into a graph and perform quantization transformations on top of the ATen graph.
