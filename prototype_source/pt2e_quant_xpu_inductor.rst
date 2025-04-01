@@ -156,7 +156,7 @@ After we import the backend-specific Quantizer, we will prepare the model for po
 
     prepared_model = prepare_pt2e(exported_model, quantizer)
 
-Now, we will calibrate the ``prepared_model`` after the observers are inserted in the model. This step is needed for static quantization only.
+**(For static quantization only)** Calibrate the ``prepared_model`` after the observers are inserted into the model.
 
 ::
 
