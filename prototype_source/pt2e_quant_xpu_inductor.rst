@@ -37,7 +37,7 @@ Post Training Quantization
 
 Static quantization is the only method we currently support.
 
-The dependencies packages are recommended to be installed through Intel GPU channel as follows
+The following dependencies are recommended to be installed through the Intel GPU channel:
 
 ::
 
