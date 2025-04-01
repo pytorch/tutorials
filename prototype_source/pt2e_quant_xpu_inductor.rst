@@ -142,7 +142,7 @@ Besides the default quant configuration (asymmetric quantized activation), we al
         )
         return quantization_config
 
-Then, we can set the quantization configuration to the quantizer.
+Then, set the quantization configuration to the quantizer.
 
 ::
 
