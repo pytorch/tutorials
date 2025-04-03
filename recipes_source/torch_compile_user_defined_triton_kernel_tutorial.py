@@ -257,9 +257,9 @@ assert torch.allclose(y, x.sin())
 # Prefer this to using ``torch.autograd.Function`` (which has various composability footguns
 # with ``torch.compile``).
 
-def backward(ctx, grad_output):
+def backward(ctx, grad):
     x, = ctx.saved_tensors
-    return grad_input * x.cos()
+    return grad * x.cos()
 
 def setup_context(ctx, inputs, output):
     x, = inputs
@@ -293,9 +293,9 @@ def mycos(x: torch.Tensor) -> torch.Tensor:
     wrap_triton(cos_kernel)[(n_elements,)](x, out, n_elements, BLOCK_SIZE=4)
     return out
 
-def backward(ctx, grad_output):
+def backward(ctx, grad):
     x, = ctx.saved_tensors
-    return grad_input * mycos(x)
+    return grad * mycos(x)
 
 def setup_context(ctx, inputs, output):
     x, = inputs
