@@ -27,7 +27,7 @@ Install the Required Software
 -----------------------------
 
 First, let's install the required software. C++ compiler is required for TorchInductor optimization.
-We will use Microsoft Visual C++ (MSVC) for this example. 
+We will use Microsoft Visual C++ (MSVC) for this example.
 
 1. Download and install `MSVC <https://visualstudio.microsoft.com/downloads/>`_.
 
@@ -38,6 +38,7 @@ We will use Microsoft Visual C++ (MSVC) for this example.
      We recommend C++ compiler `Clang <https://github.com/llvm/llvm-project/releases>`_ and `Intel Compiler <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_.
      Please check `Alternative Compiler for better performance <#alternative-compiler-for-better-performance>`_.
 
+.. TODO: replace instructions
 3. Download and install `Miniforge3-Windows-x86_64.exe <https://github.com/conda-forge/miniforge/releases/latest/>`__.
 
 Set Up the Environment
@@ -55,10 +56,10 @@ Set Up the Environment
 
     "C:/ProgramData/miniforge3/Scripts/activate.bat"
 #. Create and activate a custom conda environment:
- 
+
    .. code-block:: sh
 
-    conda create -n inductor_cpu_windows python=3.10 -y 
+    conda create -n inductor_cpu_windows python=3.10 -y
     conda activate inductor_cpu_windows
 
 #. Install `PyTorch 2.5 <https://pytorch.org/get-started/locally/>`_ or later.
@@ -79,7 +80,7 @@ Here’s a simple example to demonstrate how to use TorchInductor:
     opt_foo1 = torch.compile(foo)
     print(opt_foo1(torch.randn(10, 10), torch.randn(10, 10)))
 
-Here is the sample output that this code might return: 
+Here is the sample output that this code might return:
 
 .. code-block:: sh
 
