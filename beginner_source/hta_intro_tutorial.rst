@@ -9,7 +9,7 @@ below.
 
 Installing HTA
 ~~~~~~~~~~~~~~
-
+.. # TODO: replace
 We recommend using a Conda environment to install HTA. To install Anaconda, see
 `the official Anaconda documentation <https://docs.anaconda.com/anaconda/install/index.html>`_.
 
@@ -130,12 +130,12 @@ on each rank.
 
 .. image:: ../_static/img/hta/idle_time_summary.png
    :scale: 100%
-   
+
 .. tip::
 
    By default, the idle time breakdown presents the percentage of each of the
    idle time categories. Setting the ``visualize_pctg`` argument to ``False``,
-   the function renders with absolute time on the y-axis. 
+   the function renders with absolute time on the y-axis.
 
 
 Kernel Breakdown
