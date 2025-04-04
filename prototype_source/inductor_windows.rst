@@ -20,22 +20,19 @@ Now, we will walk you through a step-by-step tutorial for how to use ``torch.com
 Install a Compiler
 ^^^^^^^^^^^^^^^^^^
 
-C++ compiler is required for torchinductor optimization, let's take Microsoft Visual C++ (MSVC) as an example.
+C++ compiler is required for TorchInductor optimization, let's take Microsoft Visual C++ (MSVC) as an example.
 
 Download and install `MSVC <https://visualstudio.microsoft.com/downloads/>`_.
 
 During Installation, select ``Workloads`` table then ``Desktop & Mobile`` Section, check mark on ``Desktop Development with C++`` and then install.
 
+.. image:: ../_static/img/install_msvc.png
+
+
 .. note::
 
     Windows CPU inductor also support C++ compiler `LLVM Compiler <https://github.com/llvm/llvm-project/releases>`_ and `Intel Compiler <https://www.intel.com/content/www/us/en/developer/tools/oneapi/dpc-compiler-download.html>`_ for better performance.
     Please check `Alternative Compiler for better performance on CPU <#alternative-compiler-for-better-performance>`_.
-
-Conda Installation
-^^^^^^^^^^^^^^^^^^
-
-Prepare Conda Environment by Miniforge or Anaconda.
-For example, download and install `Miniforge <https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe>`_.
 
 Set Up Environment
 ^^^^^^^^^^^^^^^^^^
@@ -44,17 +41,9 @@ Set Up Environment
 #. Activate ``MSVC`` via below command::
     
     "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Auxiliary/Build/vcvars64.bat"
-#. Activate ``conda`` via below command::
-
-    "C:/ProgramData/miniforge3/Scripts/activate.bat"
-#. Create and activate customer conda environment::
-
-    conda create -n inductor_windows python=3.10 -y 
-#. Activate customer conda environment::
-
-    conda activate inductor_windows
+#. Create and activate a virtualvirtual environment::
 #. Install `PyTorch 2.5 <https://pytorch.org/get-started/locally/>`_ or later for CPU Usage. Install PyTorch 2.7 or later refer to `Getting Started on Intel GPU <https://pytorch.org/docs/main/notes/get_start_xpu.html>`_ for XPU usage.
-#. Use torchinductor on Windows::
+#. Use TorchInductor on Windows::
 
     import torch
     device="cpu" # or "xpu" for XPU
