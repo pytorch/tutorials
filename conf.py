@@ -126,7 +126,7 @@ extensions = [
     "sphinx_design",
     "sphinx_sitemap",
     "sphinxcontrib.mermaid",
-    "pytorch_sphinx_theme2"
+    "pytorch_sphinx_theme2",
 ]
 
 myst_enable_extensions = [
@@ -200,10 +200,13 @@ html_theme_options = {
         },
     ],
     "use_edit_page_button": True,
-    "logo": {
-        "text": "Home",
+    #"logo": {
+    #    "text": "Home",
+    #},
     "header_links_before_dropdown": 9,
-    },
+    "navbar_start": ["pytorch_version"],
+    "navbar_center": "navbar-nav",
+    "display_version": True,
 }
 
 theme_variables = pytorch_sphinx_theme2.get_theme_variables()
@@ -272,7 +275,7 @@ author = "PyTorch contributors"
 # built documents.
 
 # The short X.Y version.
-version = str(torch.__version__)
+version = "v" + str(torch.__version__)
 # The full version, including alpha/beta/rc tags.
 release = str(torch.__version__)
 

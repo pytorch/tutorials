@@ -923,25 +923,31 @@ Additional Resources
    :maxdepth: 1
    :hidden:
 
-   beginner/intro
+   intro
 
 .. toctree::
    :maxdepth: 1
    :hidden:
 
-   domains
+   compilers
 
 .. toctree::
    :maxdepth: 2
    :hidden:
 
-   deployment
+   domains
 
 .. toctree:: 1
    :hidden:
    :maxdepth: 2
 
-   optimization
+   distributed
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   deep-dive
 
 .. toctree::
    :maxdepth: 1
@@ -953,4 +959,16 @@ Additional Resources
    :maxdepth: 1
    :hidden:
 
-   distributed
+   ecosystem
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   recipes/recipes_index
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   prototype/prototype_index
