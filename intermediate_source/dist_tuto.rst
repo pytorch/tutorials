@@ -523,6 +523,7 @@ for an available MPI implementation. The following steps install the MPI
 backend, by installing PyTorch `from
 source <https://github.com/pytorch/pytorch#from-source>`__.
 
+.. #TODO: replace
 1. Create and activate your Anaconda environment, install all the
    pre-requisites following `the
    guide <https://github.com/pytorch/pytorch#from-source>`__, but do
