@@ -177,14 +177,7 @@ in particular fields of deep learning.
    :maxdepth: 2
    :includehidden:
    :hidden:
-   :caption: Audio
+   :caption: Other Domains
 
    See Audio tutorials on the audio website <https://pytorch.org/audio/stable/index.html>
-
-.. toctree::
-   :maxdepth: 2
-   :includehidden:
-   :hidden:
-   :caption: ExecuTorch
-
-   See ExecuTorch tutorials on the audio website <https://pytorch.org/executorch/stable/index.html>
+   See ExecuTorch tutorials on the ExecuTorch website <https://pytorch.org/executorch/stable/index.html>
