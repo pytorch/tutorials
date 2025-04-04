@@ -127,7 +127,11 @@ extensions = [
     "sphinx_sitemap",
     "sphinxcontrib.mermaid",
     "pytorch_sphinx_theme2",
+    "sphinxext.opengraph",
 ]
+
+ogp_site_url = "http://pytorch.org/"
+ogp_image = "https://pytorch.org/assets/images/social-share.jpg"
 
 myst_enable_extensions = [
     "colon_fence",
