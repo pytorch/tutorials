@@ -99,11 +99,6 @@ The Intel® OpenMP Runtime Library can be installed using one of these commands:
 
    $ pip install intel-openmp
 
-or
-
-.. code-block:: console
-
-   $ conda install mkl
 
 Choosing an Optimized Memory Allocator
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -122,12 +117,6 @@ On CentOS, you can install it by running:
 
    $ yum install gperftools
 
-In a conda environment, it can also be installed by running:
-
-.. code-block:: console
-
-   $ conda install conda-forge::gperftools
-
 On Ubuntu ``JeMalloc`` can be installed by this command:
 
 .. code-block:: console
@@ -139,12 +128,6 @@ On CentOS it can be installed by running:
 .. code-block:: console
 
    $ yum install jemalloc
-
-In a conda environment, it can also be installed by running:
-
-.. code-block:: console
-
-   $ conda install conda-forge::jemalloc
 
 Quick Start Example Commands
 ----------------------------
@@ -214,12 +197,12 @@ The generic option settings (knobs) include the following:
      - default value
      - help
    * - ``-h``, ``--help``
-     - 
-     - 
+     -
+     -
      - To show the help message and exit.
    * - ``-m``, ``--module``
-     - 
-     - 
+     -
+     -
      - To change each process to interpret the launch script as a python module, executing with the same behavior as "python -m".
    * - ``--no-python``
      - bool
@@ -323,7 +306,7 @@ Knobs for controlling instance number and compute resource allocation are:
      - bool
      - False
      - To disable the usage of ``taskset`` command.
-	 
+
 .. note::
 
    Environment variables that will be set by this script include the following:
@@ -344,13 +327,13 @@ Knobs for controlling instance number and compute resource allocation are:
         - Value of ``ncores_per_instance``
       * - MALLOC_CONF
         - If libjemalloc.so is preloaded, MALLOC_CONF will be set to ``"oversize_threshold:1,background_thread:true,metadata_thp:auto"``.
-		
+
    Please note that the script respects environment variables set preliminarily. For example, if you have set the environment variables mentioned above before running the script, the values of the variables will not be overwritten by the script.
 
 Conclusion
 ----------
 
-In this tutorial, we explored a variety of advanced configurations and tools designed to optimize PyTorch inference performance on Intel® Xeon® Scalable Processors. 
+In this tutorial, we explored a variety of advanced configurations and tools designed to optimize PyTorch inference performance on Intel® Xeon® Scalable Processors.
 By leveraging the ``torch.backends.xeon.run_cpu`` script, we demonstrated how to fine-tune thread and memory management to achieve peak performance.
 We covered essential concepts such as NUMA access control, optimized memory allocators like ``TCMalloc`` and ``JeMalloc``, and the use of Intel® OpenMP for efficient multithreading.
 
