@@ -11,7 +11,7 @@ Deep Learning with PyTorch: A 60 Minute Blitz
 
 3. neural_networks_tutorial.py
 	Neural Networks
-	https://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html#
+	https://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html
 
 4. cifar10_tutorial.py
 	Training a Classifier
