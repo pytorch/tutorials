@@ -9,14 +9,14 @@ tables by explicitly configuring them.
 Installation
 ------------
 
-Requirements: - python >= 3.7
+Requirements: - Python >= 3.7
 
 We highly recommend CUDA when using torchRec. If using CUDA: - cuda >=
 11.0
 
 .. code:: python
     # TODO: replace these
-    # install conda to make installying pytorch with cudatoolkit 11.3 easier.
+    # install Conda to make installing PyTorch with cudatoolkit 11.3 easier.
     !sudo rm Miniconda3-py37_4.9.2-Linux-x86_64.sh Miniconda3-py37_4.9.2-Linux-x86_64.sh.*
     !sudo wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.9.2-Linux-x86_64.sh
     !sudo chmod +x Miniconda3-py37_4.9.2-Linux-x86_64.sh
@@ -24,29 +24,29 @@ We highly recommend CUDA when using torchRec. If using CUDA: - cuda >=
 
 .. code:: python
 
-    # install pytorch with cudatoolkit 11.3
+    # install PyTorch with cudatoolkit 11.3
     !sudo conda install pytorch cudatoolkit=11.3 -c pytorch-nightly -y
 
-Installing torchRec will also install
+Installing TorchRec will also install
 `FBGEMM <https://github.com/pytorch/fbgemm>`__, a collection of CUDA
-kernels and GPU enabled operations to run
+kernels and GPU enabled operations to run.
 
 .. code:: python
 
     # install torchrec
     !pip3 install torchrec-nightly
 
-Install multiprocess which works with ipython to for multi-processing
-programming within colab
+Install `multiprocess`` which works with `iPython` for multi-processing
+programming within `Colab``:
 
 .. code:: python
 
     !pip3 install multiprocess
 
 The following steps are needed for the Colab runtime to detect the added
-shared libraries. The runtime searches for shared libraries in /usr/lib,
-so we copy over the libraries which were installed in /usr/local/lib/.
-**This is a very necessary step, only in the colab runtime**.
+shared libraries. The runtime searches for shared libraries is in `/usr/lib`,
+so we copy over the libraries which were installed in `/usr/local/lib/`.
+**This is a very necessary step, only in the Colab runtime**.
 
 .. code:: python
 
@@ -54,7 +54,7 @@ so we copy over the libraries which were installed in /usr/local/lib/.
 
 **Restart your runtime at this point for the newly installed packages
 to be seen.** Run the step below immediately after restarting so that
-python knows where to look for packages. **Always run this step after
+Python knows where to look for packages. **Always run this step after
 restarting the runtime.**
 
 .. code:: python
@@ -71,7 +71,7 @@ Due to the notebook enviroment, we cannot run
 can do multiprocessing inside the notebook to mimic the setup. Users
 should be responsible for setting up their own
 `SPMD <https://en.wikipedia.org/wiki/SPMD>`_ launcher when using
-Torchrec. We setup our environment so that torch distributed based
+TorchRec. We setup our environment so that torch distributed based
 communication backend can work.
 
 .. code:: python

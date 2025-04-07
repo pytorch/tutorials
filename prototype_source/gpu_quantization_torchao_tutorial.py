@@ -27,7 +27,6 @@ quantization and measure their impact.
 #
 #
 # .. code-block:: bash
-#   TODO: replace
 #    > conda create -n myenv python=3.10
 #    > pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu121
 #    > pip install git+https://github.com/facebookresearch/segment-anything.git

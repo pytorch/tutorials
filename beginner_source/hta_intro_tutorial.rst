@@ -9,7 +9,6 @@ below.
 
 Installing HTA
 ~~~~~~~~~~~~~~
-.. # TODO: replace
 We recommend using a Conda environment to install HTA. To install Anaconda, see
 `the official Anaconda documentation <https://docs.anaconda.com/anaconda/install/index.html>`_.
 
