@@ -1,5 +1,5 @@
-Distributed and Parallel Training Tutorials
-===========================================
+Distributed
+===========
 
 Distributed training is a model training paradigm that involves
 spreading training workload across multiple worker nodes, therefore
