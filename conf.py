@@ -131,7 +131,7 @@ extensions = [
 ]
 
 ogp_site_url = "http://pytorch.org/"
-ogp_image = "https://pytorch.org/assets/images/social-share.jpg"
+ogp_image = "_static/img/social-share.jpg"
 
 myst_enable_extensions = [
     "colon_fence",
