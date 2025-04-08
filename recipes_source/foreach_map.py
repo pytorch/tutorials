@@ -1,0 +1,174 @@
+"""
+(beta) Explicit horizontal fusion with foreach_map and torch.compile
+============================================================
+
+**Author:** `Michael Lazos <https://github.com/mlazos>`_
+"""
+
+#########################################################
+#  Horizontal fusion is a key optimization in ML compilers. In eager,
+#  this is typically expressed using the torch._foreach* ops which paralellizes
+#  operations across a list of tensors. However, supporting all possible permuatations
+#  of arguments is quite difficult (e.g. mixtures of scalars and lists). Foreach_map
+#  allows conversion of any pointwise op in torch to a horiztonally fused foreach
+#  variant. In this tutorial, we will demonstrate how implement the Adam optimizer
+#  with foreach_map and generate a fully fused kernel.  
+# 
+#
+# .. note::
+#
+#    This tutorial requires PyTorch 2.6.0 or later.
+
+#####################################################################
+# Model Setup
+# ~~~~~~~~~~~~~~~~~~~~~
+# For this example, we'll use a simple sequence of linear layers.
+# We instantiate an independent copy to compare the two optimizer implementations.
+#
+
+# exit cleanly if we are on a device that doesn't support ``torch.compile``
+if torch.cuda.get_device_capability() < (7, 0):
+    print("Exiting because torch.compile is not supported on this device.")
+    import sys
+    sys.exit(0)
+
+import torch
+
+# Create simple model
+model = torch.nn.Sequential(
+    *[torch.nn.Linear(1024, 1024, False, device="cuda") for _ in range(10)]
+)
+model_copy = torch.nn.Sequential(
+    *[torch.nn.Linear(1024, 1024, False, device="cuda") for _ in range(10)]
+)
+input = torch.rand(1024, device="cuda")
+
+# run forward pass
+output = model(input)
+output_copy = model_copy(input)
+
+# run backward to populate the grads for our optimizer below
+output.sum().backward()
+output_copy.sum().backward()
+
+#####################################################################
+# Helper functions for foreach_map implementation
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# In this section, we'll begin out implementation of the Adam optimizer.
+#
+from torch._higher_order_ops.foreach_map import foreach_map
+
+# Helper function to extract optimizer states from a torch.optim.Adam instance
+def get_inputs(optim):
+    steps = []
+    params = []
+    grads = []
+    exp_avgs = []
+    exp_avg_sqs = []
+    for group in optim.param_groups:
+        for p in group["params"]:
+            params.append(p)
+            grads.append(p.grad)
+            state = optim.state[p]
+            exp_avgs.append(state["exp_avg"])
+            exp_avg_sqs.append(state["exp_avg_sq"])
+            steps.append(state["step"])
+
+    return steps, params, exp_avgs, exp_avg_sqs
+
+
+# Functions to update the different optimizer states
+def update_exp_avg_sq(exp_avg_sq, grad, beta2):
+    return exp_avg_sq.mul(beta2).addcmul(grad, grad, value=1 - beta2)
+
+def update_param(param, step, exp_avg, exp_avg_sq, beta1, beta2, lr, eps):
+    bias_correction1 = 1 - torch.pow(beta1, step)
+    bias_correction2 = (1 - torch.pow(beta2, step)).sqrt()
+    step_size = (lr / bias_correction1).neg()
+    denom = (exp_avg_sq.sqrt() / (bias_correction2 * step_size)).add(eps / step_size)
+    return torch.add(param, torch.div(exp_avg, denom))
+
+# Our full adam implementation
+def foreach_map_adam(
+    steps,
+    params,
+    exp_avgs,
+    exp_avg_sqs,
+    weight_decay=0,
+    beta1=0.9,
+    beta2=0.999,
+    lr=1e-3,
+    eps=1e-8,
+):
+    with torch.no_grad():
+        grads = [param.grad for param in params]
+        # update step
+        updated_steps = foreach_map(lambda x: x + 1, steps)
+        torch._foreach_copy_(steps, updated_steps)
+
+        if weight_decay != 0:
+            foreach_map(torch.add, (grads,), alpha=weight_decay)
+
+        # Higher-order operators (HOPs) cannot have multiple outputs at the moment
+        # need to call foreach_map once for each output
+        exp_avgs_updated = foreach_map(torch.lerp, exp_avgs, grads, 1 - beta1)
+        exp_avgs_sq_updated = foreach_map(update_exp_avg_sq, exp_avg_sqs, grads, beta2)
+        params_updated = foreach_map(
+            update_param,
+            params,
+            steps,
+            exp_avgs_updated,
+            exp_avgs_sq_updated,
+            beta1,
+            beta2,
+            lr,
+            eps,
+        )
+        # Higher-order operators (HOPs) don't support input mutation today
+        # so manually  update the states in-place
+        torch._foreach_copy_(exp_avgs, exp_avgs_updated)
+        torch._foreach_copy_(exp_avg_sqs, exp_avgs_sq_updated)
+        torch._foreach_copy_(params, params_updated)
+    return
+
+#####################################################################
+# Setting up and running the compiled kernel
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# In this section, we'll run our Adam optimizer 
+# and compare the results
+#
+# .. note::
+#
+#    ``torch.compile`` is only supported on CUDA devices that have a compute capability of 7.0 or higher.
+opt_eager = torch.optim.Adam(model.parameters(), lr=torch.tensor(0.01))
+opt_eager_copy = torch.optim.Adam(model_copy.parameters(), lr=torch.tensor(0.01))
+
+# warm up the optimizer state dict
+opt_eager.step()
+opt_eager_copy.step()
+
+inputs = get_inputs(opt_eager_copy)
+compiled_adam = torch.compile(foreach_map_adam)
+
+# optionally view the output code
+torch._logging.set_logs(output_code=True)
+
+# Warmup runs to compile the function
+for _ in range(5):
+    opt_eager.step()
+    compiled_adam(*inputs)
+
+for eager_p, compile_p in zip(opt_eager.param_groups[0]["params"], opt_eager_copy.param_groups[0]["params"]):
+    torch.allclose(eager_p, compile_p)
+
+######################################################################
+# Conclusion
+# ~~~~~~~~~~
+# In this tutorial, we implemented a custom fully fused Adam optimizer using foreach_map.
+#
+# See also:
+#
+# * `Compiled optimizer tutorial <https://pytorch.org/tutorials/recipes/compiling_optimizer.html>`__ - an intro into the compiled optimizer.
+# * `Compiling the optimizer with PT2 <https://dev-discuss.pytorch.org/t/compiling-the-optimizer-with-pt2/1669>`__ - deeper technical details on the compiled optimizer. 
