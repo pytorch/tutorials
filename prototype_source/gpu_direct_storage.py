@@ -67,7 +67,7 @@ with torch.serialization.skip_data():
 # 
 # If you are continuously saving the same state dictionary during training, you
 # would only need to obtain the offsets once and the same offsets can be re-used. Similarly if tensor is going to
-# be loaded to repeatedly one can use the ``torch.cuda.gds.gds_register_buffer`` which wraps
+# be saved or loaded to repeatedly one can use the ``torch.cuda.gds.gds_register_buffer`` which wraps
 # ``cuFileBufRegister`` to register the storages as gds buffers.
 
 
