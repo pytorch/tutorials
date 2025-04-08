@@ -93,7 +93,7 @@ Next, we will quantize the FX Module.
 2. Apply Quantization
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-After we capture the FX Module to be quantized, we will import the Backend Quantizer for Intel GPU and configure how to
+After we capture the FX Module, we will import the Backend Quantizer for Intel GPU and configure it to
 quantize the model.
 
 ::
