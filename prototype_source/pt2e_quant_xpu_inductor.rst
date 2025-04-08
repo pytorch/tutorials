@@ -234,8 +234,8 @@ script within the BFloat16 Autocast context.
 Conclusion
 ------------
  
- In this tutorial, we have learned how to utilize the ``XPUInductorQuantizer`` to perform post-training quantization on models for inference 
- on Intel GPUs, leveraging PyTorch 2's Export Quantization flow. We covered the step-by-step process of capturing an FX Graph, 
- applying quantization, and lowering the quantized model into the inductor backend using ``torch.compile``. Additionally, we explored 
- the benefits of using int8-mixed-bf16 quantization for improved memory efficiency and potential performance gains, 
- especially when using ``BFloat16`` autocast.
+In this tutorial, we have learned how to utilize the ``XPUInductorQuantizer`` to perform post-training quantization on models for inference 
+on Intel GPUs, leveraging PyTorch 2's Export Quantization flow. We covered the step-by-step process of capturing an FX Graph, 
+applying quantization, and lowering the quantized model into the inductor backend using ``torch.compile``. Additionally, we explored 
+the benefits of using int8-mixed-bf16 quantization for improved memory efficiency and potential performance gains, 
+especially when using ``BFloat16`` autocast.
