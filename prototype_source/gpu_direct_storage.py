@@ -41,6 +41,11 @@ from torch.utils.serialization import config as serialization_config
 serialization_config.save.storage_alignment = 4096
 
 ################################################################################
+# The steps involved in the process are as follows:
+#    * Write the checkpoint file without any actual data. This reserves the space on disk.
+#    * Read the offsets for the storage associated with each tensor in the checkpoint using ``FakeTensor``.
+#    * Use ``GDSFile`` to write the appropriate data at these offsets.
+# 
 # Given a state dictionary of tensors that are on the GPU, one can use the ``torch.serialization.skip_data`` context
 # manager to save a checkpoint that contains all relevant metadata except the storage bytes. For each ``torch.Storage``
 # in the state dictionary, space will be reserved within the checkpoint for the storage bytes.
@@ -59,6 +64,12 @@ with torch.serialization.skip_data():
 # information about the tensor but does not have any storage bytes. The following snippet will not materialize
 # any data but which will tag each ``FakeTensor`` with the offset within the checkpoint that
 # corresponds to the tensor.
+# 
+# If you are continuously saving the same state dictionary during training, you
+# would only need to obtain the offsets once and the same offsets can be re-used. Similarly if tensor is going to
+# be loaded to repeatedly one can use the ``torch.cuda.gds.gds_register_buffer`` which wraps
+# ``cuFileBufRegister`` to register the storages as gds buffers.
+
 
 import os
 from torch._subclasses.fake_tensor import FakeTensorMode
@@ -73,7 +84,9 @@ f = torch.cuda.gds.GdsFile("checkpoint.pt", os.O_RDWR)
 
 for k, v in sd.items():
     offset = fake_sd[k].untyped_storage()._checkpoint_offset
+    # save_storage is a wrapper around `cuFileWrite`
     f.save_storage(v.untyped_storage(), offset)
+
 
 ################################################################################
 # We verify correctness of the saved checkpoint by ``torch.load`` and comparing.
@@ -85,9 +98,7 @@ for k, v in sd_loaded.items():
 ################################################################################
 # The loading flow is the inverse, we can ``torch.load`` under the ``torch.serialization.skip_data`` context
 # manager to load everything except the storage bytes. This means that any tensors in the checkpoint will be
-# created but their storages will be empty (i.e. the tensors will be created via ``torch.empty``). If the
-# tensors to be loaded to are persistent, one can use the ``torch.cuda.gds.gds_register_buffer`` API to register
-# the storages as gds buffers.
+# created but their storages will be empty (i.e. the tensors will be created via ``torch.empty``).
 
 with torch.serialization.skip_data():
     sd_loaded = torch.load("checkpoint.pt")
@@ -99,22 +110,13 @@ with torch.serialization.skip_data():
 for k, v in sd_loaded.items():
     assert not torch.equal(v, sd[k])
     offset = fake_sd[k].untyped_storage()._checkpoint_offset
+    # load_storage is a wrapper around `cuFileRead`
     f.load_storage(v.untyped_storage(), offset)
+
+for k, v in sd_loaded.items():
     assert torch.equal(v, sd[k])
 
 del f
-
-
-################################################################################
-# Buffer Registration
-# ===================
-# We also provide ``torch.cuda.gds.gds_register_buffer`` to register the
-# tensor storages as GPUDirect Storage buffers. See `here
-# <https://docs.nvidia.com/gpudirect-storage/best-practices-guide/index.html#cufile-bufregister-fileread-filewrite>`_
-# for when one should do this.
-
-for v in sd.values():
-    torch.cuda.gds.gds_register_buffer(v.untyped_storage())
 
 # Summary
 # =======
