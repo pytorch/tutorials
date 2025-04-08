@@ -103,7 +103,7 @@ quantize the model.
 
 The default quantization configuration in ``XPUInductorQuantizer`` uses signed 8-bits for both activations and weights. The tensors are per-tensor quantized, whereas the weights are signed 8-bit per-channel quantized.
 
-In addition to the default quantization configuration using asymmetric quantized activation, signed 8-bits symmetric quantized activation is also supported, which has the potential to provide better performance.
+Optionally, in addition to the default quantization configuration using asymmetric quantized activation, signed 8-bits symmetric quantized activation is also supported, which has the potential to provide better performance.
 
 ::
 
@@ -153,10 +153,7 @@ In addition to the default quantization configuration using asymmetric quantized
         )
         return quantization_config
 
-Then, set the quantization configuration to the quantizer.
-
-::
-
+    # Then, set the quantization configuration to the quantizer. 
     quantizer = XPUInductorQuantizer()
     quantizer.set_global(get_xpu_inductor_symm_quantization_config())
 
