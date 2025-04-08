@@ -7,7 +7,7 @@ All the tutorials are now presented as sphinx style documentation at:
 
 # Asking a question
 
-If you hve a qestion about a tutorial, post in https://dev-discuss.pytorch.org/ rather than creating an issue in this repo. Your question will be answered much faster on the dev-discuss forum.
+If you have a question about a tutorial, post in https://dev-discuss.pytorch.org/ rather than creating an issue in this repo. Your question will be answered much faster on the dev-discuss forum.
 
 # Submitting an issue
 
