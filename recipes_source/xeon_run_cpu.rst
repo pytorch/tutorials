@@ -99,6 +99,11 @@ The Intel® OpenMP Runtime Library can be installed using one of these commands:
 
    $ pip install intel-openmp
 
+   or
+
+.. code-block:: console
+   $ conda install mkl
+
 
 Choosing an Optimized Memory Allocator
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -117,6 +122,12 @@ On CentOS, you can install it by running:
 
    $ yum install gperftools
 
+In a conda environment, it can also be installed by running:
+
+.. code-block:: console
+
+   $ conda install conda-forge::gperftools
+
 On Ubuntu ``JeMalloc`` can be installed by this command:
 
 .. code-block:: console
@@ -128,6 +139,12 @@ On CentOS it can be installed by running:
 .. code-block:: console
 
    $ yum install jemalloc
+
+In a conda environment, it can also be installed by running:
+
+.. code-block:: console
+
+   $ conda install conda-forge::jemalloc
 
 Quick Start Example Commands
 ----------------------------

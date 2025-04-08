@@ -50,6 +50,9 @@ Installation
     # install nightly version from pip
     pip install -i https://test.pypi.org/simple/ neural-compressor
 
+    # install stable version from from conda
+    conda install neural-compressor -c conda-forge -c intel
+
 *Supported python versions are 3.6 or 3.7 or 3.8 or 3.9*
 
 Usages
