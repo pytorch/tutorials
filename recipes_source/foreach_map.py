@@ -7,17 +7,17 @@
 
 #########################################################
 #  Horizontal fusion is a key optimization in ML compilers. In eager,
-#  this is typically expressed using the torch._foreach* ops which paralellizes
-#  operations across a list of tensors. However, supporting all possible permuatations
+#  this is typically expressed using the torch._foreach* ops which parallelizes
+#  operations across a list of tensors. However, supporting all possible permutations
 #  of arguments is quite difficult (e.g. mixtures of scalars and lists). Foreach_map
-#  allows conversion of any pointwise op in torch to a horiztonally fused foreach
-#  variant. In this tutorial, we will demonstrate how implement the Adam optimizer
+#  allows conversion of any pointwise op in ``torch`` to a horiztonally fused foreach
+#  variant. In this tutorial, we will demonstrate how to implement the Adam optimizer
 #  with ``foreach_map`` to generate a fully fused kernel.  
 # 
 #
 # .. note::
 #
-#    This tutorial requires PyTorch 2.6.0 or later.
+#    This tutorial requires PyTorch 2.7.0 or later.
 
 #####################################################################
 # Model Setup
@@ -25,14 +25,13 @@
 # For this example, we'll use a simple sequence of linear layers.
 # We instantiate an independent copy to compare the two optimizer implementations.
 #
+import torch
 
 # exit cleanly if we are on a device that doesn't support ``torch.compile``
 if torch.cuda.get_device_capability() < (7, 0):
     print("Exiting because torch.compile is not supported on this device.")
     import sys
     sys.exit(0)
-
-import torch
 
 # Create simple model
 model = torch.nn.Sequential(
@@ -55,7 +54,7 @@ output_copy.sum().backward()
 # Helper functions for foreach_map implementation
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# In this section, we'll begin out implementation of the Adam optimizer.
+# In this section, we'll begin our implementation of the Adam optimizer.
 #
 from torch._higher_order_ops.foreach_map import foreach_map
 
@@ -89,7 +88,7 @@ def update_param(param, step, exp_avg, exp_avg_sq, beta1, beta2, lr, eps):
     denom = (exp_avg_sq.sqrt() / (bias_correction2 * step_size)).add(eps / step_size)
     return torch.add(param, torch.div(exp_avg, denom))
 
-# Our full adam implementation
+# Our full Adam implementation
 def foreach_map_adam(
     steps,
     params,
@@ -166,7 +165,11 @@ for eager_p, compile_p in zip(opt_eager.param_groups[0]["params"], opt_eager_cop
 ######################################################################
 # Conclusion
 # ~~~~~~~~~~
-# In this tutorial, we implemented a custom fully fused Adam optimizer using foreach_map.
+# In this tutorial, we successfully implemented a custom fully-fused Adam optimizer using foreach_map. 
+# By leveraging the power of foreach_map and torch.compile, we were able to create an optimized version of the Adam 
+# optimizer that can be used in various machine learning applications. This tutorial provides a comprehensive guide 
+# on how to use foreach_map and torch.compile to optimize machine learning models, and serves as a 
+# valuable resource for developers looking to improve the performance of their models with horizontal fusion.
 #
 # See also:
 #
