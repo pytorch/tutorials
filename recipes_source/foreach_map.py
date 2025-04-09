@@ -12,7 +12,7 @@
 #  of arguments is quite difficult (e.g. mixtures of scalars and lists). Foreach_map
 #  allows conversion of any pointwise op in torch to a horiztonally fused foreach
 #  variant. In this tutorial, we will demonstrate how implement the Adam optimizer
-#  with foreach_map and generate a fully fused kernel.  
+#  with ``foreach_map`` to generate a fully fused kernel.  
 # 
 #
 # .. note::
