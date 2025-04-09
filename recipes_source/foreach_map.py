@@ -162,6 +162,27 @@ for _ in range(5):
 for eager_p, compile_p in zip(opt_eager.param_groups[0]["params"], opt_eager_copy.param_groups[0]["params"]):
     torch.allclose(eager_p, compile_p)
 
+# Benchmark performance
+
+ # Let's define a helpful benchmarking function:
+import torch.utils.benchmark as benchmark
+
+def benchmark_torch_function_in_microseconds(f, *args, **kwargs):
+    t0 = benchmark.Timer(
+        stmt="f(*args, **kwargs)", globals={"args": args, "kwargs": kwargs, "f": f}
+    )
+    return t0.blocked_autorange().mean * 1e6
+
+eager_runtime = benchmark_torch_function_in_microseconds(opt_eager.step)
+compiled_runtime = benchmark_torch_function_in_microseconds(lambda: compiled_adam(*inputs))
+
+assert eager_runtime > compiled_runtime
+   
+print(f"eager runtime: {eager_runtime}us")
+print(f"compiled runtime: {compiled_runtime}us")
+
+
+
 ######################################################################
 # Conclusion
 # ~~~~~~~~~~
