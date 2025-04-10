@@ -82,7 +82,7 @@ To better demonstrate the usage of this API, we start with a simple code snippet
             )
             for _ in range(3)
         ]
-        # specify the SDPABackend to use
+        # specify the SDPBackend to use
         with sdpa_kernel(backend):
             out = F.scaled_dot_product_attention(*qkv, is_causal=True)
 
@@ -148,7 +148,7 @@ shard to input and distribute the computation across ranks:
             )
             for _ in range(3)
         ]
-        # specify the SDPABackend to use
+        # specify the SDPBackend to use
         with sdpa_kernel(backend):
             out = F.scaled_dot_product_attention(*qkv, is_causal=True)
 
@@ -191,7 +191,7 @@ shard to input and distribute the computation across ranks:
 
 
 You can use the command ``torchrun --standalone --nnodes=1 --nproc-per-node=4 cp_sdpa_example.py`` to launch the above context parallel
-SDPA on 4 GPUs. We demonstrate the nemuric correctness by comparing the output of Ring Attention to that of SDPA on a single GPU.
+SDPA on 4 GPUs. We demonstrate the numeric correctness by comparing the output of Ring Attention to that of SDPA on a single GPU.
 
 
 Select Rotation Approach
