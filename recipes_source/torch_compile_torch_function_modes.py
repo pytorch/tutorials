@@ -12,7 +12,7 @@
 #
 # .. note::
 #
-#    This tutorial requires PyTorch 2.7.0 or later.
+#    This recipe requires PyTorch 2.7.0 or later.
 
 
 #####################################################################
