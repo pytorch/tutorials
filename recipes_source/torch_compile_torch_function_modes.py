@@ -74,4 +74,4 @@ assert torch.allclose(z, x * y * x)
 # the extensibility benefits of torch function modes without the runtime overhead
 # of calling torch function on every op invocation. 
 # 
-# * `Extending Torch API with Modes <https://pytorch.org/docs/stable/notes/extending.html#extending-all-torch-api-with-modes>`__ - Other examples and backgroun on Torch Function modes.
+# * See `Extending Torch API with Modes <https://pytorch.org/docs/stable/notes/extending.html#extending-all-torch-api-with-modes>`__  for other examples and background on Torch Function modes.
