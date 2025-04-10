@@ -70,7 +70,7 @@ assert torch.allclose(z, x * y * x)
 # Conclusion
 # ~~~~~~~~~~
 # In this recipe we demonstrated how to override the behavior of ``torch.*`` operators
-# using torch function modes from within torch.compile. This enables users to utilize
+# using torch function modes from within ``torch.compile``. This enables users to utilize
 # the extensibility benefits of torch function modes without the runtime overhead
 # of calling torch function on every op invocation. 
 # 
