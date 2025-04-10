@@ -17,7 +17,7 @@
 
 #####################################################################
 # Rewriting a torch op (torch.add -> torch.mul)
-# ~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # For this example, we'll use torch function modes to rewrite occurences
 # of addition with multiply instead. This type of override can be common 
 # if a certain backend has a custom implementation that should be dispatched
