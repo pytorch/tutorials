@@ -6,7 +6,7 @@
 """
 
 #########################################################
-#  This tutorial covers how to use a key torch extensibility point, 
+#  This recipe covers how to use a key torch extensibility point, 
 #  torch function modes, in tandem with torch.compile to override 
 #  the behavior of torch ops at trace time, with no runtime overhead.
 #
