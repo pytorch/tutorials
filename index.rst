@@ -354,6 +354,7 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: Profiling PyTorch
    :card_description: Learn how to profile a PyTorch application
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: beginner/profiler.html
    :tags: Profiling
 
@@ -929,7 +930,7 @@ Additional Resources
    :maxdepth: 1
    :hidden:
 
-   compilers
+   compilers_index
 
 .. toctree::
    :maxdepth: 2

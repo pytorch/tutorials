@@ -57,57 +57,57 @@ control, as well as third-party backend solutions.
 .. customcarditem::
    :header: Dynamic Compilation Control with ``torch.compiler.set_stance``
    :card_description: Learn how to use torch.compiler.set_stance
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../recipes/torch_compiler_set_stance_tutorial.html
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: recipes/torch_compiler_set_stance_tutorial.html
    :tags: Model-Optimization,torch.compile
 
 .. customcarditem::
    :header: Demonstration of torch.export flow, common challenges and the solutions to address them
    :card_description: Learn how to export models for popular usecases
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../recipes/torch_export_challenges_solutions.html
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: recipes/torch_export_challenges_solutions.html
    :tags: Model-Optimization,torch.compile
 
 .. customcarditem::
    :header: (beta) Compiling the Optimizer with torch.compile
    :card_description: Speed up the optimizer using torch.compile
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../recipes/compiling_optimizer.html
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: recipes/compiling_optimizer.html
    :tags: Model-Optimization,torch.compile
 
 .. customcarditem::
    :header: (beta) Running the compiled optimizer with an LR Scheduler
    :card_description: Speed up training with LRScheduler and torch.compiled optimizer
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../recipes/compiling_optimizer_lr_scheduler.html
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: recipes/compiling_optimizer_lr_scheduler.html
    :tags: Model-Optimization,torch.compile
 
 .. customcarditem::
    :header: Using User-Defined Triton Kernels with ``torch.compile``
    :card_description: Learn how to use user-defined kernels with ``torch.compile``
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../recipes/torch_compile_user_defined_triton_kernel_tutorial.html
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: recipes/torch_compile_user_defined_triton_kernel_tutorial.html
    :tags: Model-Optimization,torch.compile
 
 .. customcarditem::
    :header: Compile Time Caching in ``torch.compile``
    :card_description: Learn how to use compile time caching in ``torch.compile``
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../recipes/torch_compile_caching_tutorial.html
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: recipes/torch_compile_caching_tutorial.html
    :tags: Model-Optimization,torch.compile
 
 .. customcarditem::
    :header: Compile Time Caching Configurations
    :card_description: Learn how to configure compile time caching in ``torch.compile``
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../recipes/torch_compile_caching_configuration_tutorial.html
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: recipes/torch_compile_caching_configuration_tutorial.html
    :tags: Model-Optimization,torch.compile
 
 .. customcarditem::
    :header: Reducing torch.compile cold start compilation time with regional compilation
    :card_description: Learn how to use regional compilation to control cold start compile time
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../recipes/regional_compilation.html
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: recipes/regional_compilation.html
    :tags: Model-Optimization,torch.compile
 
 .. Export
@@ -115,15 +115,15 @@ control, as well as third-party backend solutions.
 .. customcarditem::
    :header: torch.export AOTInductor Tutorial for Python runtime
    :card_description: Learn an end-to-end example of how to use AOTInductor for python runtime.
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../recipes/torch_export_aoti_python.html
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: recipes/torch_export_aoti_python.html
    :tags: Basics,torch.export
 
 .. customcarditem::
    :header: Deep dive into torch.export
    :card_description: Learn how to use torch.export to export PyTorch models into standardized model representations.
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: torch_export_tutorial.html
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torch_export_tutorial.html
    :tags: Basics,torch.export
 
 .. ONNX
@@ -184,22 +184,22 @@ control, as well as third-party backend solutions.
 .. customcarditem::
    :header: Distributed Optimizer with TorchScript support
    :card_description: How to enable TorchScript support for Distributed Optimizer.
-   :image: ../_static/img/thumbnails/cropped/profiler.png
-   :link: ../recipes/distributed_optim_torchscript.html
+   :image: _static/img/thumbnails/cropped/profiler.png
+   :link: recipes/distributed_optim_torchscript.html
    :tags: Distributed-Training,TorchScript
 
 .. customcarditem::
    :header: TorchScript for Deployment
    :card_description: Learn how to export your trained model in TorchScript format and how to load your TorchScript model in C++ and do inference.
-   :image: ../_static/img/thumbnails/cropped/torchscript_overview.png
-   :link: ../recipes/torchscript_inference.html
+   :image: _static/img/thumbnails/cropped/torchscript_overview.png
+   :link: recipes/torchscript_inference.html
    :tags: TorchScript
 
 .. customcarditem::
    :header: Deploying with Flask
    :card_description: Learn how to use Flask, a lightweight web server, to quickly setup a web API from your trained PyTorch model.
-   :image: ../_static/img/thumbnails/cropped/using-flask-create-restful-api.png
-   :link: ../recipes/deployment_with_flask.html
+   :image: _static/img/thumbnails/cropped/using-flask-create-restful-api.png
+   :link: recipes/deployment_with_flask.html
    :tags: Production,TorchScript
 
 .. raw:: html
