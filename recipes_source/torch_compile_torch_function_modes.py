@@ -53,7 +53,7 @@ with AddToMultiplyMode():
 
 assert torch.allclose(z, x * y * x)
 
-# The mode can also be used within the compiled region as well like so
+# The mode can also be used within the compiled region as well like this:
 
 @torch.compile()
 def test_fn(x, y):
