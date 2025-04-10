@@ -8,7 +8,7 @@
 #########################################################
 #  This recipe covers how to use a key torch extensibility point, 
 #  torch function modes, in tandem with ``torch.compile`` to override 
-#  the behavior of torch ops at trace time, with no runtime overhead.
+#  the behavior of torch operators, also know as **ops**, at trace time, with no runtime overhead.
 #
 # .. note::
 #
