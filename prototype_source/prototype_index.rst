@@ -239,7 +239,6 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/flight_recorder_tutorial.html
    :tags: Distributed, Debugging, FlightRecorder
 
-.. Distributed
 .. customcarditem::
    :header: Context Parallel Tutorial
    :card_description: Parallelize the attention computation along sequence dimension

@@ -23,7 +23,7 @@ Introduction to Context Parallel
 Introduction
 ------------
 
-Context Parallel is an approach used in LLM to reduce peak activation size by sharding the long input sequence across multiple devices.
+Context Parallel is an approach used in large language model training to reduce peak activation size by sharding the long input sequence across multiple devices.
 It breaks the constraint on input sequence length resulting from peak memory usage on storing activations in Transformer blocks.
 
 The core of Context Parallel is Ring Attention, a novel parallel implementation of the Attention layer.
@@ -82,7 +82,7 @@ To better demonstrate the usage of this API, we start with a simple code snippet
             )
             for _ in range(3)
         ]
-
+        # specify the SDPABackend to use
         with sdpa_kernel(backend):
             out = F.scaled_dot_product_attention(*qkv, is_causal=True)
 
@@ -148,22 +148,35 @@ shard to input and distribute the computation across ranks:
             )
             for _ in range(3)
         ]
+        # specify the SDPABackend to use
+        with sdpa_kernel(backend):
+            out = F.scaled_dot_product_attention(*qkv, is_causal=True)
+
+        # make a clean copy of QKV for output comparison
         cp_qkv = [t.detach().clone() for t in qkv]
 
         with sdpa_kernel(backend):
+            # This `context_parallel()` performs two actions:
+            # 1. shard the tensor objects in `buffers` in-place along the dimension
+            #    specified in `buffer_seq_dims`, the tensors in `buffers` and their
+            #    sharding dims in `buffer_seq_dims` are organized in the same order.
+            # 2. replace the execution of `F.scaled_dot_product_attention` with a
+            #    context-paralleled-enabled Ring Attention.
             with context_parallel(
                 device_mesh, buffers=tuple(cp_qkv), buffer_seq_dims=(2, 2, 2)
             ):
                 cp_out = F.scaled_dot_product_attention(*cp_qkv, is_causal=True)
 
+            # the output `cp_out` is still sharded in the same way as QKV
+            # the `context_parallel_unshard` API allows users to easily
+            # unshard to gain the full tensor.
             (cp_out,) = context_parallel_unshard(device_mesh, [cp_out], [2])
-            out = F.scaled_dot_product_attention(*qkv, is_causal=True)
 
-            assert torch.allclose(
-                cp_out,
-                out,
-                atol=(1e-08 if dtype == torch.float32 else 1e-03 * world_size),
-            )
+        assert torch.allclose(
+            cp_out,
+            out,
+            atol=(1e-08 if dtype == torch.float32 else 1e-03 * world_size),
+        )
 
 
     if __name__ == "__main__":
