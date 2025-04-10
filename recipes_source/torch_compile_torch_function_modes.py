@@ -32,7 +32,7 @@ if torch.cuda.get_device_capability() < (7, 0):
 
 from torch.overrides import BaseTorchFunctionMode
 
-# Define our mode, Note: BaseTorchFunctionMode 
+# Define our mode, Note: ``BaseTorchFunctionMode``
 # implements the actual invocation of func(..)
 class AddToMultiplyMode(BaseTorchFunctionMode):
     def __torch_function__(self, func, types, args=(), kwargs=None):
