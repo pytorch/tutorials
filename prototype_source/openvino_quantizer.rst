@@ -25,7 +25,7 @@ The quantization flow mainly includes four steps:
 - Step 1: Capture the FX Graph from the eager Model based on the `torch export mechanism <https://pytorch.org/docs/main/export.html>`_.
 - Step 2: Apply the PyTorch 2 Export Quantization flow with OpenVINOQuantizer based on the captured FX Graph.
 - Step 3: Lower the quantized model into OpenVINO representation with the API `torch.compile <https://docs.openvino.ai/2024/openvino-workflow/torch-compile.html>`_.
-- Optional step 4: : Improve quantized model metrics via `quantize_pt2 <https://openvinotoolkit.github.io/nncf/autoapi/nncf/experimental/torch/fx/index.html#nncf.experimental.torch.fx.quantize_pt2e>`_ method.
+- Optional step 4: : Improve quantized model metrics via `quantize_pt2e <https://openvinotoolkit.github.io/nncf/autoapi/nncf/experimental/torch/fx/index.html#nncf.experimental.torch.fx.quantize_pt2e>`_ method.
 
 The high-level architecture of this flow could look like this:
 
