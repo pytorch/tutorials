@@ -125,14 +125,9 @@ import matplotlib.pyplot as plt
 #    `pytorch/examples/mnist <https://github.com/pytorch/examples/tree/master/mnist>`__.
 #    For simplicity, download the pretrained model `here <https://drive.google.com/file/d/1HJV2nUHJqclXQ8flKvcWmjZ-OU5DGatl/view?usp=drive_link>`__.
 #
-# -  ``use_cuda`` - boolean flag to use CUDA if desired and available.
-#    Note, a GPU with CUDA is not critical for this tutorial as a CPU will
-#    not take much time.
-#
 
 epsilons = [0, .05, .1, .15, .2, .25, .3]
 pretrained_model = "data/lenet_mnist_model.pth"
-use_cuda=True
 # Set random seed for reproducibility
 torch.manual_seed(42)
 
@@ -184,9 +179,10 @@ test_loader = torch.utils.data.DataLoader(
             ])),
         batch_size=1, shuffle=True)
 
-# Define what device we are using
-print("CUDA Available: ",torch.cuda.is_available())
-device = torch.device("cuda" if use_cuda and torch.cuda.is_available() else "cpu")
+# We want to be able to train our model on an `accelerator <https://pytorch.org/docs/stable/torch.html#accelerators>`__
+# such as CUDA, MPS, MTIA, or XPU. If the current accelerator is available, we will use it. Otherwise, we use the CPU.
+device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
+print(f"Using {device} device")
 
 # Initialize the network
 model = Net().to(device)

@@ -47,6 +47,7 @@ the following template.
     """run.py:"""
     #!/usr/bin/env python
     import os
+    import sys
     import torch
     import torch.distributed as dist
     import torch.multiprocessing as mp
@@ -66,7 +67,11 @@ the following template.
     if __name__ == "__main__":
         world_size = 2
         processes = []
-        mp.set_start_method("spawn")
+        if "google.colab" in sys.modules:
+            print("Running in Google Colab")
+            mp.get_context("spawn")
+        else:
+            mp.set_start_method("spawn")
         for rank in range(world_size):
             p = mp.Process(target=init_process, args=(rank, world_size, run))
             p.start()
@@ -156,7 +161,8 @@ we should not modify the sent tensor nor access the received tensor before ``req
 In other words,
 
 -  writing to ``tensor`` after ``dist.isend()`` will result in undefined behaviour.
--  reading from ``tensor`` after ``dist.irecv()`` will result in undefined behaviour.
+- reading from ``tensor`` after ``dist.irecv()`` will result in undefined
+  behaviour, until ``req.wait()`` has been executed.
 
 However, after ``req.wait()``
 has been executed we are guaranteed that the communication took place,
@@ -252,7 +258,7 @@ PyTorch. Here are a few supported collectives.
    from all processes to ``tensor_list``, on all processes.
 -  ``dist.barrier(group)``: Blocks all processes in `group` until each one has entered this function.
 -  ``dist.all_to_all(output_tensor_list, input_tensor_list, group)``: Scatters list of input tensors to all processes in
-a group and return gathered list of tensors in output list.
+   a group and return gathered list of tensors in output list.
 
 The full list of supported collectives can be found by looking at the latest documentation for PyTorch Distributed
 `(link) <https://pytorch.org/docs/stable/distributed.html>`__.
