@@ -29,6 +29,7 @@ It breaks the constraint on input sequence length resulting from peak memory usa
 The core of Context Parallel is Ring Attention, a novel parallel implementation of the Attention layer.
 Ring Attention shuffles the KV shards and calculates the partial attention scores, repeats until all KV shards have been used on each device.
 Two Ring Attention variants have been implemented: `the all-gather based pass-KV <https://arxiv.org/abs/2407.21783>`__ and `the all-to-all based pass-KV <https://openreview.net/forum?id=WsRHpHH4s0>`__:
+
 1.  The all-gather based pass-KV algorithm is used in Llama3 training, which initially performs an all-gather on the key and value tensors, followed by computing the attention output for the
     local query tensor chunk. Our modified all-gather based pass-KV algorithm concurrently all-gathers KV shards and computes attention output for the local query tensor chunk
     using local key and value tensor chunks, followed by a final computation of attention output for the local query tensor and remaining KV shards. This allows some degree of
