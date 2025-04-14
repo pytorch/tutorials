@@ -3,7 +3,7 @@ Introduction to Context Parallel
 **Authors**: `Xilun Wu <https://github.com/XilunWu>`_, `Chien-Chin Huang <https://github.com/fegin>`__
 
 .. note::
-    |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/prototype_source/context_parallel.rst>`__.
+    |edit| View and edit this tutorial in `GitHub <https://github.com/pytorch/tutorials/blob/main/prototype_source/context_parallel.rst>`__.
 
 .. grid:: 2
 
@@ -11,7 +11,7 @@ Introduction to Context Parallel
       :class-card: card-prerequisites
 
       * `Context Parallel APIs <https://pytorch.org/docs/stable/distributed.tensor.html#torch.distributed.tensor.experimental.context_parallel>`__
-      * `1M sequence training in torchtitan with Context Parallel <https://discuss.pytorch.org/t/distributed-w-torchtitan-breaking-barriers-training-long-context-llms-with-1m-sequence-length-in-pytorch-using-context-parallel/215082>`__
+      * `1M sequence training in TorchTitan with Context Parallel <https://discuss.pytorch.org/t/distributed-w-torchtitan-breaking-barriers-training-long-context-llms-with-1m-sequence-length-in-pytorch-using-context-parallel/215082>`__
 
 
    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
@@ -29,7 +29,7 @@ It breaks the constraint on input sequence length resulting from peak memory usa
 The core of Context Parallel is Ring Attention, a novel parallel implementation of the Attention layer.
 Ring Attention shuffles the KV shards and calculates the partial attention scores,
 repeats until all KV shards have been used on each device.
-We implemented two Ring Attention variants: `pass-KV <https://arxiv.org/abs/2411.01783>`__ and `all-to-all <https://openreview.net/forum?id=WsRHpHH4s0>`__.
+Two Ring Attention variants have been implemented: `pass-KV <https://arxiv.org/abs/2411.01783>`__ and `all-to-all <https://openreview.net/forum?id=WsRHpHH4s0>`__.
 The pass-KV approach all-gathers KV shards while performing the local SDPA (Scaled Dot Product Attention) then performs the rest when the communication completes.
 The all-to-all approach uses interleaved all-to-all collectives to ring shuffle KV shards to overlap the SDPA computation and the all-to-all communication
 necessary for the next SDPA.
@@ -37,8 +37,8 @@ necessary for the next SDPA.
 The Context Parallel APIs consist of two parts:
 
 1. ``context_parallel()`` allows users to create a Python context where the SDPA function (``torch.nn.functional.scaled_dot_product_attention``)
-will be automatically replaced with Ring Attention. To shard Tensors along a dimension, simply pass the Tensors and their sharding dimensions to
-argument ``buffers`` and ``buffer_seq_dims`` respectively.
+   will be automatically replaced with Ring Attention. To shard Tensors along a dimension, simply pass the Tensors and their sharding dimensions to
+   argument ``buffers`` and ``buffer_seq_dims`` respectively.
 2. ``set_rotate_method()`` allows users to choose between the pass-KV approach and the all-to-all approach.
 
 
@@ -157,17 +157,17 @@ shard to input and distribute the computation across ranks:
 
         with sdpa_kernel(backend):
             # This `context_parallel()` performs two actions:
-            # 1. shard the tensor objects in `buffers` in-place along the dimension
+            # 1. Shard the tensor objects in `buffers` in-place along the dimension
             #    specified in `buffer_seq_dims`, the tensors in `buffers` and their
             #    sharding dims in `buffer_seq_dims` are organized in the same order.
-            # 2. replace the execution of `F.scaled_dot_product_attention` with a
+            # 2. Replace the execution of `F.scaled_dot_product_attention` with a
             #    context-paralleled-enabled Ring Attention.
             with context_parallel(
                 device_mesh, buffers=tuple(cp_qkv), buffer_seq_dims=(2, 2, 2)
             ):
                 cp_out = F.scaled_dot_product_attention(*cp_qkv, is_causal=True)
 
-            # the output `cp_out` is still sharded in the same way as QKV
+            # The output `cp_out` is still sharded in the same way as QKV
             # the `context_parallel_unshard` API allows users to easily
             # unshard to gain the full tensor.
             (cp_out,) = context_parallel_unshard(device_mesh, [cp_out], [2])
@@ -216,6 +216,6 @@ You can choose the desired shards rotation approach in Ring Attention by using `
 Conclusion
 ----------
 
-In this tutorial, have learned how to parallelize the SDPA computation along the sequence dimension easily with our Context Parallel APIs. For
-design and implementation details, performance analysis, and an end-to-end training example in `torchtitan <https://github.com/pytorch/torchtitan>`__,
+In this tutorial, we have learned how to parallelize the SDPA computation along the sequence dimension easily with our Context Parallel APIs. For
+design and implementation details, performance analysis, and an end-to-end training example in `TorchTitan <https://github.com/pytorch/torchtitan>`__,
 see our post on `PyTorch native long-context training <https://discuss.pytorch.org/t/distributed-w-torchtitan-breaking-barriers-training-long-context-llms-with-1m-sequence-length-in-pytorch-using-context-parallel/215082>`__.
