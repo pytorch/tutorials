@@ -27,19 +27,21 @@ Context Parallel is an approach used in large language model training to reduce 
 It breaks the constraint on input sequence length resulting from peak memory usage on storing activations in Transformer blocks.
 
 The core of Context Parallel is Ring Attention, a novel parallel implementation of the Attention layer.
-Ring Attention shuffles the KV shards and calculates the partial attention scores,
-repeats until all KV shards have been used on each device.
-Two Ring Attention variants have been implemented: `pass-KV <https://arxiv.org/abs/2411.01783>`__ and `all-to-all <https://openreview.net/forum?id=WsRHpHH4s0>`__.
-The pass-KV approach all-gathers KV shards while performing the local SDPA (Scaled Dot Product Attention) then performs the rest when the communication completes.
-The all-to-all approach uses interleaved all-to-all collectives to ring shuffle KV shards to overlap the SDPA computation and the all-to-all communication
-necessary for the next SDPA.
+Ring Attention shuffles the KV shards and calculates the partial attention scores, repeats until all KV shards have been used on each device.
+Two Ring Attention variants have been implemented: `the all-gather based pass-KV <https://arxiv.org/abs/2407.21783>`__ and `the all-to-all based pass-KV <https://openreview.net/forum?id=WsRHpHH4s0>`__:
+1.  The all-gather based pass-KV algorithm is used in Llama3 training, which initially performs an all-gather on the key and value tensors, followed by computing the attention output for the
+    local query tensor chunk. Our modified all-gather based pass-KV algorithm concurrently all-gathers KV shards and computes attention output for the local query tensor chunk
+    using local key and value tensor chunks, followed by a final computation of attention output for the local query tensor and remaining KV shards. This allows some degree of
+    overlap between the attention computation and the all-gather collective.
+2.  The all-to-all approach uses interleaved all-to-all collectives to ring shuffle KV shards to overlap the SDPA computation and the all-to-all communication
+    necessary for the next SDPA.
 
 The Context Parallel APIs consist of two parts:
 
 1. ``context_parallel()`` allows users to create a Python context where the SDPA function (``torch.nn.functional.scaled_dot_product_attention``)
    will be automatically replaced with Ring Attention. To shard Tensors along a dimension, simply pass the Tensors and their sharding dimensions to
    argument ``buffers`` and ``buffer_seq_dims`` respectively.
-2. ``set_rotate_method()`` allows users to choose between the pass-KV approach and the all-to-all approach.
+2. ``set_rotate_method()`` allows users to choose between the all-gather based pass-KV approach and the all-to-all based pass-KV approach.
 
 
 Setup
@@ -211,6 +213,9 @@ You can choose the desired shards rotation approach in Ring Attention by using `
             device_mesh, buffers=tuple(cp_qkv), buffer_seq_dims=(2, 2, 2)
         ):
             cp_out = F.scaled_dot_product_attention(*cp_qkv, is_causal=True)
+
+
+The default rotation approach is the all-gather based pass-KV.
 
 
 Conclusion
