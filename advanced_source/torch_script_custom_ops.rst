@@ -189,6 +189,7 @@ Environment setup
 
 We need an installation of PyTorch and OpenCV.  The easiest and most platform
 independent way to get both is to via Conda::
+.. # TODO: replace these
 
   conda install -c pytorch pytorch
   conda install opencv
