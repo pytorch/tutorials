@@ -176,7 +176,7 @@ import torch._inductor
 model_path = os.path.join(os.getcwd(), "resnet18.pt2")
 
 compiled_model = torch._inductor.aoti_load_package(model_path)
-example_inputs = torch.randn(2, 3, 224, 224, device=device)
+example_inputs = (torch.randn(2, 3, 224, 224, device=device),)
 
 with torch.inference_mode():
     output = compiled_model(example_inputs)
