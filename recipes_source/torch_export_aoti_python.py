@@ -238,11 +238,11 @@ def timed(fn):
 
 torch._dynamo.reset()
 
-compiled_model = torch._inductor.aoti_load_package(model_path)
-example_inputs = torch.randn(1, 3, 224, 224, device=device)
+model = torch._inductor.aoti_load_package(model_path)
+example_inputs = (torch.randn(1, 3, 224, 224, device=device),)
 
 with torch.inference_mode():
-    _, time_taken = timed(lambda: compiled_model(example_inputs))
+    _, time_taken = timed(lambda: model(example_inputs))
     print(f"Time taken for first inference for AOTInductor is {time_taken:.2f} ms")
 
 

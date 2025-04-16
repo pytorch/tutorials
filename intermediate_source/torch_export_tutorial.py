@@ -995,7 +995,7 @@ print(res)
 #    with torch.no_grad():
 #        pt2_path = torch._inductor.aoti_compile_and_package(ep)
 #
-#    # Load and run the .pt2 file in Python.
+#    # Load and run the .so file in Python.
 #    # To load and run it in a C++ environment, see:
 #    # https://pytorch.org/docs/main/torch.compiler_aot_inductor.html
 #    aoti_compiled = torch._inductor.aoti_load_package(pt2_path)
