@@ -57,7 +57,7 @@ Next, let's configure our environment.
     opt_foo1 = torch.compile(foo)
     print(opt_foo1(torch.randn(10, 10).to(device), torch.randn(10, 10).to(device)))
 
-#. Output of the above example::
+#. Below is the output of the above example::
 
     tensor([[-3.9074e-02,  1.3994e+00,  1.3894e+00,  3.2630e-01,  8.3060e-01,
             1.1833e+00,  1.4016e+00,  7.1905e-01,  9.0637e-01, -1.3648e+00],
