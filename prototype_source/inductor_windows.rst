@@ -37,6 +37,7 @@ C++ compiler is required for TorchInductor optimization, let's take Microsoft Vi
 
 Set Up Environment
 ^^^^^^^^^^^^^^^^^^
+Next, let's configure our environment.
 
 #. Open a command line environment via cmd.exe.
 #. Activate ``MSVC`` via below command::
