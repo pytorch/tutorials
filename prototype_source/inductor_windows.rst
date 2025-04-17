@@ -86,7 +86,7 @@ Intel Compiler
 ^^^^^^^^^^^^^^
 
 #. Download and install `Intel Compiler <https://www.intel.com/content/www/us/en/developer/tools/oneapi/dpc-compiler-download.html>`_ with Windows version.
-#. Set Windows Inductor Compiler via environment variable ``set CXX=icx-cl``
+#. Set Windows Inductor Compiler via environment variable ``set CXX=icx-cl``.
 
 LLVM Compiler
 ^^^^^^^^^^^^^
