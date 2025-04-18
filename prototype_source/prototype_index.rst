@@ -96,6 +96,13 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/pt2e_quant_x86_inductor.html
    :tags: Quantization
 
+.. customcarditem::
+   :header: PyTorch 2 Export Quantization with Intel GPU Backend through Inductor
+   :card_description: Learn how to use PT2 Export Quantization with Intel GPU Backend through Inductor.
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: ../prototype/pt2e_quant_xpu_inductor.html
+   :tags: Quantization
+
 .. Sparsity
 
 .. customcarditem::
@@ -239,6 +246,13 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/flight_recorder_tutorial.html
    :tags: Distributed, Debugging, FlightRecorder
 
+.. customcarditem::
+   :header: Context Parallel Tutorial
+   :card_description: Parallelize the attention computation along sequence dimension
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/context_parallel.html
+   :tags: Distributed, Context Parallel
+
 .. Integration
 .. customcarditem::
    :header: Out-of-tree extension autoloading in Python
@@ -265,6 +279,7 @@ Prototype features are not available as part of binary distributions like PyPI o
 .. toctree::
    :hidden:
 
+   prototype/context_parallel.html
    prototype/fx_graph_mode_quant_guide.html
    prototype/fx_graph_mode_ptq_dynamic.html
    prototype/fx_graph_mode_ptq_static.html
