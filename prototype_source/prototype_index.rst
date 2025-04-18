@@ -228,7 +228,7 @@ Prototype features are not available as part of binary distributions like PyPI o
    :header: Inductor Windows CPU Tutorial
    :card_description: Speed up your models with Inductor On Windows CPU
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../prototype/inductor_windows_cpu.html
+   :link: ../prototype/inductor_windows.html
    :tags: Model-Optimization
 
 .. customcarditem::
@@ -286,7 +286,7 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/flight_recorder_tutorial.html
    prototype/graph_mode_dynamic_bert_tutorial.html
    prototype/inductor_cpp_wrapper_tutorial.html
-   prototype/inductor_windows_cpu.html
+   prototype/inductor_windows.html
    prototype/pt2e_quantizer.html
    prototype/pt2e_quant_ptq.html
    prototype/pt2e_quant_qat.html
