@@ -335,6 +335,14 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/compiling_optimizer_lr_scheduler.html
    :tags: Model-Optimization
 
+.. (beta) Explicit horizontal fusion with foreach_map and torch.compile
+.. customcarditem::
+   :header: (beta) Explicit horizontal fusion with foreach_map and torch.compile
+   :card_description: Horizontally fuse pointwise ops with torch.compile
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/foreach_map.py
+   :tags: Model-Optimization
+
 .. Using User-Defined Triton Kernels with ``torch.compile``
 
 .. customcarditem::
