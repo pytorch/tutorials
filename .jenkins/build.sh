@@ -26,7 +26,9 @@ sudo apt-get install -y pandoc
 # sudo pip3 install torch==2.6.0 torchvision --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu124
 # sudo pip uninstall -y fbgemm-gpu torchrec
 # sudo pip3 install fbgemm-gpu==1.1.0 torchrec==1.0.0 --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu124
-
+sudo pip uninstall -y torch torchvision torchaudio torchtext torchdata torchrl tensordict
+pip3 install torch==2.7.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu126
+#sudo pip uninstall -y fbgemm-gpu
 # Install two language tokenizers for Translation with TorchText tutorial
 python -m spacy download en_core_web_sm
 python -m spacy download de_core_news_sm
