@@ -63,12 +63,6 @@ as well as the specific requirements of the task at hand.
 
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 45-136
 
 This tutorial requires tensordict to be installed. If you don't have tensordict in your environment yet, install it
@@ -226,12 +220,6 @@ as the thread does not need to wait for one transfer to be completed to initiate
 
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 196-200
 
 Loading these profile traces in chrome (``chrome://tracing``) shows the following results: first, let's see
@@ -245,12 +233,6 @@ in the main stream:
 
 
     benchmark_with_profiler(streamed=False, pinned=False)
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 204-208
@@ -268,12 +250,6 @@ Using a pinned tensor doesn't change the trace much, both operations are still e
     benchmark_with_profiler(streamed=False, pinned=True)
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 212-216
 
 .. figure:: /_static/img/pinmem/trace_streamed0_pinned1.png
@@ -287,12 +263,6 @@ Sending a pageable tensor to GPU on a separate stream is also a blocking operati
 
 
     benchmark_with_profiler(streamed=True, pinned=False)
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 221-226
@@ -309,12 +279,6 @@ the main stream:
 
 
     benchmark_with_profiler(streamed=True, pinned=True)
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 231-253
@@ -407,26 +371,6 @@ Let us check the speed of pinning memory and sending tensors to CUDA:
     _ = gc.collect()
 
 
-
-
-.. image-sg:: /intermediate/images/sphx_glr_pinmem_nonblock_001.png
-   :alt: Device casting runtime (pin-memory)
-   :srcset: /intermediate/images/sphx_glr_pinmem_nonblock_001.png
-   :class: sphx-glr-single-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    pageable_tensor.to('cuda:0'):  0.3688 ms
-    pinned_tensor.to('cuda:0'):  0.3156 ms
-    pageable_tensor.pin_memory():  0.1195 ms
-    pageable_tensor.pin_memory().to('cuda:0'):  0.4372 ms
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 315-342
 
 We can observe that casting a pinned-memory tensor to GPU is indeed much faster than a pageable tensor, because under
@@ -508,24 +452,6 @@ experiment since we want to assess how fast it is to send multiple tensors to GP
 
 
 
-
-
-.. image-sg:: /intermediate/images/sphx_glr_pinmem_nonblock_002.png
-   :alt: Device casting runtime (non-blocking)
-   :srcset: /intermediate/images/sphx_glr_pinmem_nonblock_002.png
-   :class: sphx-glr-single-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    copy_to_device(*tensors):  17.7229 ms
-    copy_to_device_nonblocking(*tensors):  13.0391 ms
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 390-391
 
 To get a better sense of what is happening here, let us profile these two functions:
@@ -547,12 +473,6 @@ To get a better sense of what is happening here, let us profile these two functi
 
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 404-406
 
 Let's see the call stack with a regular ``to(device)`` first:
@@ -564,31 +484,6 @@ Let's see the call stack with a regular ``to(device)`` first:
 
 
     print("Call to `to(device)`", profile_mem("copy_to_device(*tensors)"))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    copy_to_device(*tensors)
-    -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-                         Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
-    -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-                     aten::to         4.01%     833.993us       100.00%      20.806ms      20.806us          1000  
-               aten::_to_copy        11.06%       2.300ms        95.99%      19.972ms      19.972us          1000  
-          aten::empty_strided        24.83%       5.166ms        24.83%       5.166ms       5.166us          1000  
-                  aten::copy_        18.01%       3.746ms        60.10%      12.505ms      12.505us          1000  
-              cudaMemcpyAsync        18.84%       3.920ms        18.84%       3.920ms       3.920us          1000  
-        cudaStreamSynchronize        23.26%       4.839ms        23.26%       4.839ms       4.839us          1000  
-    -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-    Self CPU time total: 20.806ms
-
-    Call to `to(device)` None
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 410-412
@@ -605,31 +500,6 @@ and now the ``non_blocking`` version:
         "Call to `to(device, non_blocking=True)`",
         profile_mem("copy_to_device_nonblocking(*tensors)"),
     )
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    copy_to_device_nonblocking(*tensors)
-    -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-                         Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
-    -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-                     aten::to         5.28%     830.828us        99.82%      15.698ms      15.698us          1000  
-               aten::_to_copy        14.33%       2.253ms        94.54%      14.867ms      14.867us          1000  
-          aten::empty_strided        33.35%       5.245ms        33.35%       5.245ms       5.245us          1000  
-                  aten::copy_        22.44%       3.529ms        46.86%       7.369ms       7.369us          1000  
-              cudaMemcpyAsync        24.42%       3.840ms        24.42%       3.840ms       3.840us          1000  
-        cudaDeviceSynchronize         0.18%      27.881us         0.18%      27.881us      27.881us             1  
-    -------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
-    Self CPU time total: 15.725ms
-
-    Call to `to(device, non_blocking=True)` None
-
 
 
 
@@ -675,12 +545,6 @@ and ``to(device)`` on each tensor:
         # We need to synchronize
         torch.cuda.synchronize()
         return result
-
-
-
-
-
-
 
 
 
@@ -741,28 +605,6 @@ somewhat large batches of large tensors:
 
 
 
-
-
-.. image-sg:: /intermediate/images/sphx_glr_pinmem_nonblock_003.png
-   :alt: Runtime (pin-mem and non-blocking)
-   :srcset: /intermediate/images/sphx_glr_pinmem_nonblock_003.png
-   :class: sphx-glr-single-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    copy_to_device(*tensors):  391.3654 ms
-    copy_to_device_nonblocking(*tensors):  312.9721 ms
-    copy_to_device(*tensors_pinned):  315.9214 ms
-    copy_to_device_nonblocking(*tensors_pinned):  299.9312 ms
-    pin_copy_to_device(*tensors):  568.9878 ms
-    pin_copy_to_device_nonblocking(*tensors):  324.6384 ms
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 508-527
 
 Other copy directions (GPU -> CPU, CPU -> MPS)
@@ -807,18 +649,6 @@ Let's first demonstrate this with a pinned-memory tensor:
         print(f"{i}th test failed with non_blocking and pinned tensor. Skipping remaining tests")
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    1th test failed with non_blocking and pinned tensor. Skipping remaining tests
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 545-547
 
 Using a pageable tensor always works:
@@ -841,18 +671,6 @@ Using a pageable tensor always works:
         cpu_tensor.zero_()
         assert (cuda_tensor == 1).all()
     print("No test failed with non_blocking and pageable tensor")
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    No test failed with non_blocking and pageable tensor
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 562-563
@@ -893,19 +711,6 @@ Now let's demonstrate that CUDA to CPU also fails to produce reliable outputs wi
         print("No test failed with synchronize")
     except AssertionError:
         print(f"One test failed with synchronize: {i}th assertion!")
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    0th test failed with non_blocking. Skipping remaining tests
-    No test failed with synchronize
-
 
 
 
@@ -1004,26 +809,6 @@ This approach can further accelerate data transfers, as demonstrated in the foll
     plt.show()
 
 
-
-
-.. image-sg:: /intermediate/images/sphx_glr_pinmem_nonblock_004.png
-   :alt: Device casting runtime
-   :srcset: /intermediate/images/sphx_glr_pinmem_nonblock_004.png
-   :class: sphx-glr-single-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    td.to('cuda:0', non_blocking=False):  395.8054 ms
-    td.to('cuda:0'):  315.8011 ms
-    td.to('cuda:0', non_blocking_pin=True, num_threads=0):  318.5265 ms
-    td.to('cuda:0', non_blocking_pin=True, num_threads=4):  301.4302 ms
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 684-770
 
 In this example, we are transferring many large tensors from the CPU to the GPU.
@@ -1116,7 +901,7 @@ what was discussed in this tutorial, check the following references:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  4.817 seconds)
+   **Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 .. _sphx_glr_download_intermediate_pinmem_nonblock.py:

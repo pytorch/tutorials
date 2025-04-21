@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Export a model with control flow to ONNX — PyTorch Tutorials 2.6.0+cu124 documentation</title>
+<title>Export a model with control flow to ONNX — PyTorch Tutorials 2.7.0+cu126 documentation</title>
 <link href="../../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> -->
 <link href="../../_static/pygments.css" rel="stylesheet" type="text/css"/>
@@ -247,7 +247,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-        2.6.0+cu124
+        2.7.0+cu126
       </div>
 <!-- Search box -->
 <div id="searchBox">
@@ -630,9 +630,19 @@ process. If the export unexpectedly succeeds, an <code class="docutils literal n
     <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Could not guard on data-dependent expression Eq(u0, 1) (unhinted: Eq(u0, 1)).  (Size-like symbols: none)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>def forward(self, arg0_1: "f32[2, 3]", arg1_1: "f32[2]", arg2_1: "f32[1, 2]", arg3_1: "f32[1]", arg4_1: "f32[3]"):
+     # File: /var/lib/ci-user/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py:125 in forward, code: return F.linear(input, self.weight, self.bias)
+    linear: "f32[2]" = torch.ops.aten.linear.default(arg4_1, arg0_1, arg1_1);  arg4_1 = arg0_1 = arg1_1 = None
+    linear_1: "f32[1]" = torch.ops.aten.linear.default(linear, arg2_1, arg3_1);  linear = arg2_1 = arg3_1 = None
 
-Caused by: (_export/non_strict_utils.py:557 in __torch_function__)
+     # File: /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:56 in forward, code: if x.sum():
+    sum_1: "f32[]" = torch.ops.aten.sum.default(linear_1);  linear_1 = None
+    ne: "b8[]" = torch.ops.aten.ne.Scalar(sum_1, 0);  sum_1 = None
+    item: "Sym(Eq(u0, 1))" = torch.ops.aten.item.default(ne);  ne = item = None
+
+Could not guard on data-dependent expression Eq(u0, 1) (unhinted: Eq(u0, 1)).  (Size-like symbols: none)
+
+Caused by: (_export/non_strict_utils.py:683 in __torch_function__)
 For more information, run with TORCH_LOGS="dynamic"
 For extended logs when we create symbols, also add TORCHDYNAMO_EXTENDED_DEBUG_CREATE_SYMBOL="u0"
 If you suspect the guard was triggered from C++, add TORCHDYNAMO_EXTENDED_DEBUG_CPP=1
@@ -665,8 +675,58 @@ the original model logic due to the limitations of tracing.</p>
 'onnxscript.values.OnnxFunction.param_schemas' is deprecated in version 0.1 and will be removed in the future. Please use '.op_signature' instead.
 
 [torch.onnx] Obtain model graph for `ModelWithControlFlowTest([...]` with `torch.export.export(..., strict=False)`...
+
+
+
+
+def forward(self, arg0_1: "f32[2, 3]", arg1_1: "f32[2]", arg2_1: "f32[1, 2]", arg3_1: "f32[1]", arg4_1: "f32[3]"):
+     # File: /var/lib/ci-user/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py:125 in forward, code: return F.linear(input, self.weight, self.bias)
+    linear: "f32[2]" = torch.ops.aten.linear.default(arg4_1, arg0_1, arg1_1);  arg4_1 = arg0_1 = arg1_1 = None
+    linear_1: "f32[1]" = torch.ops.aten.linear.default(linear, arg2_1, arg3_1);  linear = arg2_1 = arg3_1 = None
+
+     # File: /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:56 in forward, code: if x.sum():
+    sum_1: "f32[]" = torch.ops.aten.sum.default(linear_1);  linear_1 = None
+    ne: "b8[]" = torch.ops.aten.ne.Scalar(sum_1, 0);  sum_1 = None
+    item: "Sym(Eq(u0, 1))" = torch.ops.aten.item.default(ne);  ne = item = None
+
 [torch.onnx] Obtain model graph for `ModelWithControlFlowTest([...]` with `torch.export.export(..., strict=False)`... ❌
 [torch.onnx] Obtain model graph for `ModelWithControlFlowTest([...]` with `torch.export.export`...
+
+class GraphModule(torch.nn.Module):
+    def forward(self, L_x_: "f32[3][1]cpu"):
+        l_x_ = L_x_
+
+         # File: /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:71 in forward, code: out = self.mlp(x)
+        l__self___mlp_0: "f32[2][1]cpu" = self.L__self___mlp_0(l_x_);  l_x_ = None
+        l__self___mlp_1: "f32[1][1]cpu" = self.L__self___mlp_1(l__self___mlp_0);  l__self___mlp_0 = None
+
+         # File: /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:56 in forward, code: if x.sum():
+        sum_1: "f32[][]cpu" = l__self___mlp_1.sum();  l__self___mlp_1 = sum_1 = None
+
+
+class GraphModule(torch.nn.Module):
+    def forward(self, L_x_: "f32[3][1]cpu"):
+        l_x_ = L_x_
+
+         # File: /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:71 in forward, code: out = self.mlp(x)
+        l__self___mlp_0: "f32[2][1]cpu" = self.L__self___mlp_0(l_x_);  l_x_ = None
+        l__self___mlp_1: "f32[1][1]cpu" = self.L__self___mlp_1(l__self___mlp_0);  l__self___mlp_0 = None
+
+         # File: /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:56 in forward, code: if x.sum():
+        sum_1: "f32[][]cpu" = l__self___mlp_1.sum();  l__self___mlp_1 = sum_1 = None
+
+
+class GraphModule(torch.nn.Module):
+    def forward(self, L_x_: "f32[3][1]cpu"):
+        l_x_ = L_x_
+
+         # File: /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:71 in forward, code: out = self.mlp(x)
+        l__self___mlp_0: "f32[2][1]cpu" = self.L__self___mlp_0(l_x_);  l_x_ = None
+        l__self___mlp_1: "f32[1][1]cpu" = self.L__self___mlp_1(l__self___mlp_0);  l__self___mlp_0 = None
+
+         # File: /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:56 in forward, code: if x.sum():
+        sum_1: "f32[][]cpu" = l__self___mlp_1.sum();  l__self___mlp_1 = sum_1 = None
+
 [torch.onnx] Obtain model graph for `ModelWithControlFlowTest([...]` with `torch.export.export`... ❌
 [torch.onnx] Obtain model graph for `ModelWithControlFlowTest([...]` with Torch Script...
 /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:56: TracerWarning:
@@ -675,11 +735,11 @@ Converting a tensor to a Python boolean might cause the trace to be incorrect. W
 
 [torch.onnx] Obtain model graph for `ModelWithControlFlowTest([...]` with Torch Script... ✅
 [torch.onnx] Run decomposition...
-/usr/local/lib/python3.10/dist-packages/torch/export/_unlift.py:75: UserWarning:
+/var/lib/ci-user/.local/lib/python3.10/site-packages/torch/export/_unlift.py:81: UserWarning:
 
 Attempted to insert a get_attr Node with no underlying reference in the owning GraphModule! Call GraphModule.add_submodule to add the necessary submodule, GraphModule.add_parameter to add the necessary Parameter, or nn.Module.register_buffer to add the necessary buffer
 
-/usr/local/lib/python3.10/dist-packages/torch/fx/graph.py:1801: UserWarning:
+/var/lib/ci-user/.local/lib/python3.10/site-packages/torch/fx/graph.py:1772: UserWarning:
 
 Node lifted_tensor_6 target lifted_tensor_6 lifted_tensor_6 of  does not reference an nn.Module, nn.Parameter, or buffer, which is what 'get_attr' Nodes typically target
 
@@ -690,7 +750,7 @@ Node lifted_tensor_6 target lifted_tensor_6 lifted_tensor_6 of  does not referen
     ir_version=10,
     opset_imports={'pkg.onnxscript.torch_lib.common': 1, '': 18},
     producer_name='pytorch',
-    producer_version='2.6.0+cu124',
+    producer_version='2.7.0+cu126',
     domain=None,
     model_version=None,
 &gt;
@@ -704,70 +764,29 @@ graph(
     ),
     initializers=(
         %"model.mlp.0.bias"&lt;FLOAT,[2]&gt;,
-        %"model.mlp.0.weight"&lt;FLOAT,[2,3]&gt;,
-        %"model.mlp.1.bias"&lt;FLOAT,[1]&gt;,
-        %"model.mlp.1.weight"&lt;FLOAT,[1,2]&gt;
+        %"model.mlp.1.bias"&lt;FLOAT,[1]&gt;
     ),
 ) {
-    0 |  # node_Transpose_0
-         %"val_0"&lt;?,?&gt; ⬅️ ::Transpose(%"model.mlp.0.weight") {perm=[1, 0]}
+    0 |  # node_Constant_8
+         %"val_0"&lt;FLOAT,[3,2]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.44140652,  0.53036046],
+                [ 0.47920528, -0.1264995 ],
+                [-0.13525727,  0.11650391]], dtype=float32), name='val_0')}
     1 |  # node_MatMul_1
-         %"val_1"&lt;?,?&gt; ⬅️ ::MatMul(%"input_1", %"val_0")
+         %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"input_1", %"val_0")
     2 |  # node_Add_2
          %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"model.mlp.0.bias")
-    3 |  # node_Transpose_3
-         %"val_2"&lt;?,?&gt; ⬅️ ::Transpose(%"model.mlp.1.weight") {perm=[1, 0]}
+    3 |  # node_Constant_9
+         %"val_2"&lt;FLOAT,[2,1]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[2,1]&gt;(array([[ 0.62334496],
+                [-0.5187534 ]], dtype=float32), name='val_2')}
     4 |  # node_MatMul_4
-         %"val_3"&lt;?,?&gt; ⬅️ ::MatMul(%"linear", %"val_2")
+         %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2")
     5 |  # node_Add_5
          %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"model.mlp.1.bias")
-    6 |  # node_Constant_6
-         %"val_4"&lt;?,?&gt; ⬅️ ::Constant() {value=Tensor&lt;INT64,[]&gt;(array(2), name=None)}
-    7 |  # node_Cast_7
-         %"scalar_tensor_default"&lt;FLOAT,[]&gt; ⬅️ ::Cast(%"val_4") {to=FLOAT}
-    8 |  # node_Mul_8
-         %"mul"&lt;FLOAT,[1]&gt; ⬅️ ::Mul(%"linear_1", %"scalar_tensor_default")
+    6 |  # node_Constant_10
+         %"convert_element_type_default"&lt;FLOAT,[]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[]&gt;(array(2., dtype=float32), name='convert_element_type_default')}
+    7 |  # node_Mul_7
+         %"mul"&lt;FLOAT,[1]&gt; ⬅️ ::Mul(%"linear_1", %"convert_element_type_default")
     return %"mul"&lt;FLOAT,[1]&gt;
-}
-
-&lt;
-    opset_imports={'': 18},
-&gt;
-def pkg.onnxscript.torch_lib.common::Rank(
-    inputs=(
-        %"input"&lt;?,?&gt;
-    ),
-    outputs=(
-        %"return_val"&lt;?,?&gt;
-    ),
-) {
-    0 |  # n0
-         %"tmp"&lt;?,?&gt; ⬅️ ::Shape(%"input")
-    1 |  # n1
-         %"return_val"&lt;?,?&gt; ⬅️ ::Size(%"tmp")
-    return %"return_val"&lt;?,?&gt;
-}
-
-&lt;
-    opset_imports={'': 18},
-&gt;
-def pkg.onnxscript.torch_lib.common::IsScalar(
-    inputs=(
-        %"input"&lt;?,?&gt;
-    ),
-    outputs=(
-        %"return_val"&lt;?,?&gt;
-    ),
-) {
-    0 |  # n0
-         %"tmp"&lt;?,?&gt; ⬅️ ::Shape(%"input")
-    1 |  # n1
-         %"tmp_0"&lt;?,?&gt; ⬅️ ::Size(%"tmp")
-    2 |  # n2
-         %"tmp_1"&lt;?,?&gt; ⬅️ ::Constant() {value_int=0}
-    3 |  # n3
-         %"return_val"&lt;?,?&gt; ⬅️ ::Equal(%"tmp_0", %"tmp_1")
-    return %"return_val"&lt;?,?&gt;
 }
 </pre></div>
 </div>
@@ -813,15 +832,15 @@ mlp.2 &lt;class '__main__.ForwardWithControlFlowTest'&gt;
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>ExportedProgram:
     class GraphModule(torch.nn.Module):
         def forward(self, p_mlp_0_weight: "f32[2, 3]", p_mlp_0_bias: "f32[2]", p_mlp_1_weight: "f32[1, 2]", p_mlp_1_bias: "f32[1]", x: "f32[3]"):
-             # File: /usr/local/lib/python3.10/dist-packages/torch/nn/modules/linear.py:125 in forward, code: return F.linear(input, self.weight, self.bias)
+             # File: /var/lib/ci-user/.local/lib/python3.10/site-packages/torch/nn/modules/linear.py:125 in forward, code: return F.linear(input, self.weight, self.bias)
             linear: "f32[2]" = torch.ops.aten.linear.default(x, p_mlp_0_weight, p_mlp_0_bias);  x = p_mlp_0_weight = p_mlp_0_bias = None
             linear_1: "f32[1]" = torch.ops.aten.linear.default(linear, p_mlp_1_weight, p_mlp_1_bias);  linear = p_mlp_1_weight = p_mlp_1_bias = None
 
-             # File: /usr/local/lib/python3.10/dist-packages/torch/nn/modules/container.py:250 in forward, code: input = module(input)
+             # File: /var/lib/ci-user/.local/lib/python3.10/site-packages/torch/nn/modules/container.py:240 in forward, code: input = module(input)
             sum_1: "f32[]" = torch.ops.aten.sum.default(linear_1)
             gt: "b8[]" = torch.ops.aten.gt.Scalar(sum_1, 0);  sum_1 = None
 
-             # File: &lt;eval_with_key&gt;.24:9 in forward, code: cond = torch.ops.higher_order.cond(l_args_0_, cond_true_0, cond_false_0, [l_args_3_0_]);  l_args_0_ = cond_true_0 = cond_false_0 = l_args_3_0_ = None
+             # File: &lt;eval_with_key&gt;.30:9 in forward, code: cond = torch.ops.higher_order.cond(l_args_0_, cond_true_0, cond_false_0, [l_args_3_0_]);  l_args_0_ = cond_true_0 = cond_false_0 = l_args_3_0_ = None
             true_graph_0 = self.true_graph_0
             false_graph_0 = self.false_graph_0
             cond = torch.ops.higher_order.cond(gt, true_graph_0, false_graph_0, [linear_1]);  gt = true_graph_0 = false_graph_0 = linear_1 = None
@@ -830,13 +849,13 @@ mlp.2 &lt;class '__main__.ForwardWithControlFlowTest'&gt;
 
         class true_graph_0(torch.nn.Module):
             def forward(self, linear_1: "f32[1]"):
-                 # File: &lt;eval_with_key&gt;.21:6 in forward, code: mul = l_args_3_0__1.mul(2);  l_args_3_0__1 = None
+                 # File: &lt;eval_with_key&gt;.25:6 in forward, code: mul = l_args_3_0__1.mul(2);  l_args_3_0__1 = None
                 mul: "f32[1]" = torch.ops.aten.mul.Tensor(linear_1, 2);  linear_1 = None
                 return (mul,)
 
         class false_graph_0(torch.nn.Module):
             def forward(self, linear_1: "f32[1]"):
-                 # File: &lt;eval_with_key&gt;.22:6 in forward, code: neg = l_args_3_0__1.neg();  l_args_3_0__1 = None
+                 # File: &lt;eval_with_key&gt;.26:6 in forward, code: neg = l_args_3_0__1.neg();  l_args_3_0__1 = None
                 neg: "f32[1]" = torch.ops.aten.neg.default(linear_1);  linear_1 = None
                 return (neg,)
 
@@ -859,7 +878,7 @@ Range constraints: {}
     ir_version=10,
     opset_imports={'pkg.onnxscript.torch_lib.common': 1, '': 18, 'pkg.torch.__subgraph__': 1},
     producer_name='pytorch',
-    producer_version='2.6.0+cu124',
+    producer_version='2.7.0+cu126',
     domain=None,
     model_version=None,
 &gt;
@@ -872,33 +891,32 @@ graph(
         %"getitem"&lt;FLOAT,[1]&gt;
     ),
     initializers=(
-        %"mlp.0.weight"&lt;FLOAT,[2,3]&gt;,
         %"mlp.0.bias"&lt;FLOAT,[2]&gt;,
-        %"mlp.1.weight"&lt;FLOAT,[1,2]&gt;,
         %"mlp.1.bias"&lt;FLOAT,[1]&gt;
     ),
 ) {
-     0 |  # node_Transpose_0
-          %"val_0"&lt;?,?&gt; ⬅️ ::Transpose(%"mlp.0.weight") {perm=[1, 0]}
+     0 |  # node_Constant_11
+          %"val_0"&lt;FLOAT,[3,2]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.44140652,  0.53036046],
+                 [ 0.47920528, -0.1264995 ],
+                 [-0.13525727,  0.11650391]], dtype=float32), name='val_0')}
      1 |  # node_MatMul_1
-          %"val_1"&lt;?,?&gt; ⬅️ ::MatMul(%"x", %"val_0")
+          %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"x", %"val_0")
      2 |  # node_Add_2
           %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"mlp.0.bias")
-     3 |  # node_Transpose_3
-          %"val_2"&lt;?,?&gt; ⬅️ ::Transpose(%"mlp.1.weight") {perm=[1, 0]}
+     3 |  # node_Constant_12
+          %"val_2"&lt;FLOAT,[2,1]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[2,1]&gt;(array([[ 0.62334496],
+                 [-0.5187534 ]], dtype=float32), name='val_2')}
      4 |  # node_MatMul_4
-          %"val_3"&lt;?,?&gt; ⬅️ ::MatMul(%"linear", %"val_2")
+          %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2")
      5 |  # node_Add_5
           %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"mlp.1.bias")
      6 |  # node_ReduceSum_6
           %"sum_1"&lt;FLOAT,[]&gt; ⬅️ ::ReduceSum(%"linear_1") {keepdims=False, noop_with_empty_axes=0}
-     7 |  # node_Constant_7
-          %"val_4"&lt;?,?&gt; ⬅️ ::Constant() {value=Tensor&lt;INT64,[]&gt;(array(0), name=None)}
-     8 |  # node_Cast_8
-          %"scalar_tensor_default"&lt;FLOAT,[]&gt; ⬅️ ::Cast(%"val_4") {to=FLOAT}
-     9 |  # node_Greater_9
+     7 |  # node_Constant_13
+          %"scalar_tensor_default"&lt;FLOAT,[]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[]&gt;(array(0., dtype=float32), name='scalar_tensor_default')}
+     8 |  # node_Greater_9
           %"gt"&lt;BOOL,[]&gt; ⬅️ ::Greater(%"sum_1", %"scalar_tensor_default")
-    10 |  # node_If_10
+     9 |  # node_If_10
           %"getitem"&lt;FLOAT,[1]&gt; ⬅️ ::If(%"gt") {then_branch=
               graph(
                   name=true_graph_0,
@@ -906,12 +924,14 @@ graph(
 
                   ),
                   outputs=(
-                      %"mul_true_graph_0"&lt;?,?&gt;
+                      %"mul_true_graph_0"&lt;FLOAT,[1]&gt;
                   ),
               ) {
-                  0 |  # node_true_graph_0_0
-                       %"mul_true_graph_0"&lt;?,?&gt; ⬅️ pkg.torch.__subgraph__::true_graph_0(%"linear_1")
-                  return %"mul_true_graph_0"&lt;?,?&gt;
+                  0 |  # node_Constant_1
+                       %"scalar_tensor_default_2"&lt;FLOAT,[]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[]&gt;(array(2., dtype=float32), name='scalar_tensor_default_2')}
+                  1 |  # node_Mul_2
+                       %"mul_true_graph_0"&lt;FLOAT,[1]&gt; ⬅️ ::Mul(%"linear_1", %"scalar_tensor_default_2")
+                  return %"mul_true_graph_0"&lt;FLOAT,[1]&gt;
               }, else_branch=
               graph(
                   name=false_graph_0,
@@ -919,90 +939,14 @@ graph(
 
                   ),
                   outputs=(
-                      %"neg_false_graph_0"&lt;?,?&gt;
+                      %"neg_false_graph_0"&lt;FLOAT,[1]&gt;
                   ),
               ) {
-                  0 |  # node_false_graph_0_0
-                       %"neg_false_graph_0"&lt;?,?&gt; ⬅️ pkg.torch.__subgraph__::false_graph_0(%"linear_1")
-                  return %"neg_false_graph_0"&lt;?,?&gt;
+                  0 |  # node_Neg_0
+                       %"neg_false_graph_0"&lt;FLOAT,[1]&gt; ⬅️ ::Neg(%"linear_1")
+                  return %"neg_false_graph_0"&lt;FLOAT,[1]&gt;
               }}
     return %"getitem"&lt;FLOAT,[1]&gt;
-}
-
-&lt;
-    opset_imports={'': 18},
-&gt;
-def pkg.torch.__subgraph__::false_graph_0(
-    inputs=(
-        %"linear_1"&lt;FLOAT,[1]&gt;
-    ),
-    outputs=(
-        %"neg"&lt;FLOAT,[1]&gt;
-    ),
-) {
-    0 |  # node_Neg_0
-         %"neg"&lt;FLOAT,[1]&gt; ⬅️ ::Neg(%"linear_1")
-    return %"neg"&lt;FLOAT,[1]&gt;
-}
-
-&lt;
-    opset_imports={'': 18},
-&gt;
-def pkg.torch.__subgraph__::true_graph_0(
-    inputs=(
-        %"linear_1"&lt;FLOAT,[1]&gt;
-    ),
-    outputs=(
-        %"mul"&lt;FLOAT,[1]&gt;
-    ),
-) {
-    0 |  # node_Constant_0
-         %"val_0"&lt;?,?&gt; ⬅️ ::Constant() {value=Tensor&lt;INT64,[]&gt;(array(2), name=None)}
-    1 |  # node_Cast_1
-         %"scalar_tensor_default"&lt;FLOAT,[]&gt; ⬅️ ::Cast(%"val_0") {to=FLOAT}
-    2 |  # node_Mul_2
-         %"mul"&lt;FLOAT,[1]&gt; ⬅️ ::Mul(%"linear_1", %"scalar_tensor_default")
-    return %"mul"&lt;FLOAT,[1]&gt;
-}
-
-&lt;
-    opset_imports={'': 18},
-&gt;
-def pkg.onnxscript.torch_lib.common::Rank(
-    inputs=(
-        %"input"&lt;?,?&gt;
-    ),
-    outputs=(
-        %"return_val"&lt;?,?&gt;
-    ),
-) {
-    0 |  # n0
-         %"tmp"&lt;?,?&gt; ⬅️ ::Shape(%"input")
-    1 |  # n1
-         %"return_val"&lt;?,?&gt; ⬅️ ::Size(%"tmp")
-    return %"return_val"&lt;?,?&gt;
-}
-
-&lt;
-    opset_imports={'': 18},
-&gt;
-def pkg.onnxscript.torch_lib.common::IsScalar(
-    inputs=(
-        %"input"&lt;?,?&gt;
-    ),
-    outputs=(
-        %"return_val"&lt;?,?&gt;
-    ),
-) {
-    0 |  # n0
-         %"tmp"&lt;?,?&gt; ⬅️ ::Shape(%"input")
-    1 |  # n1
-         %"tmp_0"&lt;?,?&gt; ⬅️ ::Size(%"tmp")
-    2 |  # n2
-         %"tmp_1"&lt;?,?&gt; ⬅️ ::Constant() {value_int=0}
-    3 |  # n3
-         %"return_val"&lt;?,?&gt; ⬅️ ::Equal(%"tmp_0", %"tmp_1")
-    return %"return_val"&lt;?,?&gt;
 }
 </pre></div>
 </div>
@@ -1015,7 +959,7 @@ def pkg.onnxscript.torch_lib.common::IsScalar(
     ir_version=10,
     opset_imports={'pkg.onnxscript.torch_lib.common': 1, '': 18, 'pkg.torch.__subgraph__': 1},
     producer_name='pytorch',
-    producer_version='2.6.0+cu124',
+    producer_version='2.7.0+cu126',
     domain=None,
     model_version=None,
 &gt;
@@ -1110,7 +1054,7 @@ sit tight and have fun going through all of them to learn all there is about the
 </div>
 <div class="toctree-wrapper compound">
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  2.067 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  2.245 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-onnx-export-control-flow-model-to-onnx-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/7c1717301d5ef4e2f2b6c974660ec4a9/export_control_flow_model_to_onnx_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">export_control_flow_model_to_onnx_tutorial.py</span></code></a></p>

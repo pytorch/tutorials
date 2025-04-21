@@ -137,12 +137,6 @@ works with TorchRec.
 
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 119-134
 
 Embeddings in PyTorch
@@ -210,58 +204,6 @@ embedding lookups by passing in indices into the table.
 
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Weights: tensor([[0.8823, 0.9150, 0.3829, 0.9593],
-            [0.3904, 0.6009, 0.2566, 0.7936],
-            [0.9408, 0.1332, 0.9346, 0.5936],
-            [0.8694, 0.5677, 0.7411, 0.4294],
-            [0.8854, 0.5739, 0.2666, 0.6274],
-            [0.2696, 0.4414, 0.2969, 0.8317],
-            [0.1053, 0.2695, 0.3588, 0.1994],
-            [0.5472, 0.0062, 0.9516, 0.0753],
-            [0.8860, 0.5832, 0.3376, 0.8090],
-            [0.5779, 0.9040, 0.5547, 0.3423]])
-    Embedding Collection Table:  Parameter containing:
-    tensor([[0.8823, 0.9150, 0.3829, 0.9593],
-            [0.3904, 0.6009, 0.2566, 0.7936],
-            [0.9408, 0.1332, 0.9346, 0.5936],
-            [0.8694, 0.5677, 0.7411, 0.4294],
-            [0.8854, 0.5739, 0.2666, 0.6274],
-            [0.2696, 0.4414, 0.2969, 0.8317],
-            [0.1053, 0.2695, 0.3588, 0.1994],
-            [0.5472, 0.0062, 0.9516, 0.0753],
-            [0.8860, 0.5832, 0.3376, 0.8090],
-            [0.5779, 0.9040, 0.5547, 0.3423]], requires_grad=True)
-    Embedding Bag Collection Table:  Parameter containing:
-    tensor([[0.8823, 0.9150, 0.3829, 0.9593],
-            [0.3904, 0.6009, 0.2566, 0.7936],
-            [0.9408, 0.1332, 0.9346, 0.5936],
-            [0.8694, 0.5677, 0.7411, 0.4294],
-            [0.8854, 0.5739, 0.2666, 0.6274],
-            [0.2696, 0.4414, 0.2969, 0.8317],
-            [0.1053, 0.2695, 0.3588, 0.1994],
-            [0.5472, 0.0062, 0.9516, 0.0753],
-            [0.8860, 0.5832, 0.3376, 0.8090],
-            [0.5779, 0.9040, 0.5547, 0.3423]], requires_grad=True)
-    Input row IDS:  tensor([[1, 3]])
-    Embedding Collection Results: 
-    tensor([[[0.3904, 0.6009, 0.2566, 0.7936],
-             [0.8694, 0.5677, 0.7411, 0.4294]]], grad_fn=<EmbeddingBackward0>)
-    Shape:  torch.Size([1, 2, 4])
-    Embedding Bag Collection Results: 
-    tensor([[0.6299, 0.5843, 0.4988, 0.6115]], grad_fn=<EmbeddingBagBackward0>)
-    Shape:  torch.Size([1, 4])
-    Mean:  tensor([[0.6299, 0.5843, 0.4988, 0.6115]], grad_fn=<MeanBackward1>)
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 179-185
 
 Congratulations! Now you have a basic understanding of how to use
@@ -312,12 +254,6 @@ Let's begin with importing TorchRec:
 
 
     import torchrec
-
-
-
-
-
-
 
 
 
@@ -374,21 +310,6 @@ embedding of size 4096.
 
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    ModuleDict(
-      (product_table): EmbeddingBag(4096, 64, mode='sum')
-      (user_table): EmbeddingBag(4096, 64, mode='sum')
-    )
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 271-274
 
 Let’s inspect the forward method for ``EmbeddingBagCollection`` and the
@@ -405,54 +326,6 @@ module’s inputs and outputs:
     # Let's look at the ``EmbeddingBagCollection`` forward method
     # What is a ``KeyedJaggedTensor`` and ``KeyedTensor``?
     print(inspect.getsource(ebc.forward))
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-        def forward(self, features: KeyedJaggedTensor) -> KeyedTensor:
-            """
-            Run the EmbeddingBagCollection forward pass. This method takes in a `KeyedJaggedTensor`
-            and returns a `KeyedTensor`, which is the result of pooling the embeddings for each feature.
-
-            Args:
-                features (KeyedJaggedTensor): Input KJT
-            Returns:
-                KeyedTensor
-            """
-            flat_feature_names: List[str] = []
-            for names in self._feature_names:
-                flat_feature_names.extend(names)
-            inverse_indices = reorder_inverse_indices(
-                inverse_indices=features.inverse_indices_or_none(),
-                feature_names=flat_feature_names,
-            )
-            pooled_embeddings: List[torch.Tensor] = []
-            feature_dict = features.to_dict()
-            for i, embedding_bag in enumerate(self.embedding_bags.values()):
-                for feature_name in self._feature_names[i]:
-                    f = feature_dict[feature_name]
-                    res = embedding_bag(
-                        input=f.values(),
-                        offsets=f.offsets(),
-                        per_sample_weights=f.weights() if self._is_weighted else None,
-                    ).float()
-                    pooled_embeddings.append(res)
-            return KeyedTensor(
-                keys=self._embedding_names,
-                values=process_pooled_embeddings(
-                    pooled_embeddings=pooled_embeddings,
-                    inverse_indices=inverse_indices,
-                ),
-                length_per_key=self._lengths_per_embedding,
-            )
-
-
 
 
 
@@ -494,12 +367,6 @@ tensor denoting how many indices are in an example for a batch and a
 
     # Values (IDs) tensor: ID 5 is in example 1, ID 7, 1 is in example 2
     id_list_feature_values = torch.tensor([5, 7, 1])
-
-
-
-
-
-
 
 
 
@@ -587,39 +454,6 @@ Next, let's look at the offsets as well as what is contained in each batch
 
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Offsets:  tensor([1, 3])
-    First Batch:  tensor([5])
-    Second Batch:  tensor([7, 1])
-    Offsets:  tensor([0, 1, 3])
-    List of Values:  [tensor([5]), tensor([7, 1])]
-    JaggedTensor({
-        [[5], [7, 1]]
-    })
-
-    Keys:  ['product', 'user']
-    Lengths:  tensor([3, 1, 2, 2])
-    Values:  tensor([1, 2, 1, 5, 2, 3, 4, 1])
-    to_dict:  {'product': <torchrec.sparse.jagged_tensor.JaggedTensor object at 0x7f26a6697c40>, 'user': <torchrec.sparse.jagged_tensor.JaggedTensor object at 0x7f26a6694f10>}
-    KeyedJaggedTensor({
-        "product": [[1, 2, 1], [5]],
-        "user": [[2, 3], [4, 1]]
-    })
-
-    ['product', 'user']
-    torch.Size([2, 128])
-    product torch.Size([2, 64])
-    user torch.Size([2, 64])
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 394-398
 
 Congrats! You now understand TorchRec modules and data types.
@@ -681,18 +515,6 @@ In the example code below, we set up our PyTorch distributed environment.
     dist.init_process_group(backend="gloo")
 
     print(f"Distributed environment initialized: {dist}")
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Distributed environment initialized: <module 'torch.distributed' from '/usr/local/lib/python3.10/dist-packages/torch/distributed/__init__.py'>
-
 
 
 
@@ -788,18 +610,6 @@ Refresher of our ``EmbeddingBagCollection`` module
 
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Process Group: <torch.distributed.distributed_c10d.ProcessGroup object at 0x7f26e5606e70>
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 536-577
 
 Planner
@@ -864,28 +674,6 @@ tutorial <https://pytorch.org/tutorials/advanced/sharding.html>`__.
 
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Sharding Plan generated: module: 
-
-        param     | sharding type | compute kernel | ranks
-    ------------- | ------------- | -------------- | -----
-    product_table | table_wise    | fused          | [0]  
-    user_table    | table_wise    | fused          | [0]  
-
-        param     | shard offsets | shard sizes |   placement  
-    ------------- | ------------- | ----------- | -------------
-    product_table | [0, 0]        | [4096, 64]  | rank:0/cuda:0
-    user_table    | [0, 0]        | [4096, 64]  | rank:0/cuda:0
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 593-605
 
 Planner Result
@@ -915,33 +703,6 @@ sharding plan to finally generate our ``ShardedEmbeddingBagCollection``.
     sharded_ebc = sharder.shard(ebc, plan.plan[""], env, torch.device("cuda"))
 
     print(f"Sharded EBC Module: {sharded_ebc}")
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Sharded EBC Module: ShardedEmbeddingBagCollection(
-      (lookups): 
-       GroupedPooledEmbeddingsLookup(
-          (_emb_modules): ModuleList(
-            (0): BatchedFusedEmbeddingBag(
-              (_emb_module): SplitTableBatchedEmbeddingBagsCodegen()
-            )
-          )
-        )
-       (_output_dists): 
-       TwPooledEmbeddingDist()
-      (embedding_bags): ModuleDict(
-        (product_table): Module()
-        (user_table): Module()
-      )
-    )
-
 
 
 
@@ -1004,23 +765,6 @@ result as long as possible, and it does it by acting like an async type.
 
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    <torchrec.distributed.embeddingbag.EmbeddingBagCollectionAwaitable object at 0x7f26a67b9e10>
-    <class 'torchrec.sparse.jagged_tensor.KeyedTensor'>
-    ['product', 'user']
-    torch.Size([2, 128])
-    product torch.Size([2, 64])
-    user torch.Size([2, 64])
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 670-700
 
 Anatomy of Sharded TorchRec modules
@@ -1069,20 +813,6 @@ table-wise fashion, these APIs are modules that are constructed by
 
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-
-    [TwPooledEmbeddingDist(
-      (_dist): PooledEmbeddingsAllToAll()
-    )]
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 711-734
 
 Optimizing Embedding Lookups
@@ -1115,24 +845,6 @@ lookups.
 
 
     sharded_ebc._lookups
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-
-    [GroupedPooledEmbeddingsLookup(
-      (_emb_modules): ModuleList(
-        (0): BatchedFusedEmbeddingBag(
-          (_emb_module): SplitTableBatchedEmbeddingBagsCodegen()
-        )
-      )
-    )]
 
 
 
@@ -1176,41 +888,6 @@ on the single GPU.
     out.wait()
 
     model
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-
-    DistributedModelParallel(
-      (_dmp_wrapped_module): ShardedEmbeddingBagCollection(
-        (lookups): 
-         GroupedPooledEmbeddingsLookup(
-            (_emb_modules): ModuleList(
-              (0): BatchedFusedEmbeddingBag(
-                (_emb_module): SplitTableBatchedEmbeddingBagsCodegen()
-              )
-            )
-          )
-         (_input_dists): 
-         TwSparseFeaturesDist(
-            (_dist): KJTAllToAll()
-          )
-         (_output_dists): 
-         TwPooledEmbeddingDist(
-            (_dist): PooledEmbeddingsAllToAll()
-          )
-        (embedding_bags): ModuleDict(
-          (product_table): Module()
-          (user_table): Module()
-        )
-      )
-    )
 
 
 
@@ -1365,37 +1042,6 @@ depending on your preferences:
 
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Original Sharded EBC fused optimizer: : EmbeddingFusedOptimizer (
-    Parameter Group 0
-        lr: 0.01
-    )
-    Sharded EBC with fused parameters fused optimizer: : EmbeddingFusedOptimizer (
-    Parameter Group 0
-        lr: 0.02
-    )
-    Type of optimizer: <class 'torchrec.optim.keyed.CombinedOptimizer'>
-    name='embedding_bags.product_table.weight'
-    name='embedding_bags.user_table.weight'
-    : EmbeddingFusedOptimizer (
-    Parameter Group 0
-        lr: 0.5
-    )
-    <class 'torchrec.optim.keyed.CombinedOptimizer'>
-    Non Fused Model Parameters:
-    dict_keys([])
-    First Iteration Loss: 255.66006469726562
-    Second Iteration Loss: 245.43795776367188
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 919-956
 
 Inference
@@ -1456,19 +1102,6 @@ In this section, we will go over this entire workflow of:
         # Here, the parameters should still be FP32, as we are using a standard EBC
         # FP32 is default, regularly used for training
         print(name, param.shape, param.dtype)
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    ebc_.embedding_bags.product_table.weight torch.Size([4096, 64]) torch.float32
-    ebc_.embedding_bags.user_table.weight torch.Size([4096, 64]) torch.float32
-
 
 
 
@@ -1540,28 +1173,6 @@ inference library to quantize the embedding weights of the model to INT8
 
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Quantized EBC: InferenceModule(
-      (ebc_): QuantizedEmbeddingBagCollection(
-        (_kjt_to_jt_dict): ComputeKJTToJTDict()
-        (embedding_bags): ModuleDict(
-          (product_table): Module()
-          (user_table): Module()
-        )
-      )
-    )
-    ebc_.embedding_bags.product_table.weight torch.Size([4096, 80]) torch.uint8
-    ebc_.embedding_bags.user_table.weight torch.Size([4096, 80]) torch.uint8
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 1036-1043
 
 Shard
@@ -1594,30 +1205,6 @@ are using one device to be consistent with training (1 TBE).
     print(f"Sharded Quantized EBC: {sharded_qebc}")
 
     sharded_qebc(kjt)
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Sharded Quantized EBC: InferenceModule(
-      (ebc_): ShardedQuantEmbeddingBagCollection(
-        (lookups): 
-         InferGroupedPooledEmbeddingsLookup()
-        (_output_dists): ModuleList()
-        (embedding_bags): ModuleDict(
-          (product_table): Module()
-          (user_table): Module()
-        )
-        (_input_dist_module): ShardedQuantEbcInputDist()
-      )
-    )
-
-    <torchrec.sparse.jagged_tensor.KeyedTensor object at 0x7f26a6c27490>
 
 
 
@@ -1660,103 +1247,6 @@ TorchScript, where TorchScript is C++ compatible.
 
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Graph Module Created!
-
-    torch.fx._symbolic_trace.wrap("torchrec_distributed_quant_embeddingbag_flatten_feature_lengths")
-    torch.fx._symbolic_trace.wrap("torchrec_fx_utils__fx_marker")
-    torch.fx._symbolic_trace.wrap("torchrec_distributed_quant_embedding_kernel__unwrap_kjt")
-    torch.fx._symbolic_trace.wrap("fbgemm_gpu_split_table_batched_embeddings_ops_inference_inputs_to_device")
-    torch.fx._symbolic_trace.wrap("torchrec_distributed_embedding_lookup_embeddings_cat_empty_rank_handle_inference")
-
-    def forward(self, kjt : torchrec_sparse_jagged_tensor_KeyedJaggedTensor):
-        flatten_feature_lengths = torchrec_distributed_quant_embeddingbag_flatten_feature_lengths(kjt);  kjt = None
-        _fx_marker = torchrec_fx_utils__fx_marker('KJT_ONE_TO_ALL_FORWARD_BEGIN', flatten_feature_lengths);  _fx_marker = None
-        split = flatten_feature_lengths.split([2])
-        getitem = split[0];  split = None
-        to = getitem.to(device(type='cuda', index=0), non_blocking = True);  getitem = None
-        _fx_marker_1 = torchrec_fx_utils__fx_marker('KJT_ONE_TO_ALL_FORWARD_END', flatten_feature_lengths);  flatten_feature_lengths = _fx_marker_1 = None
-        _unwrap_kjt = torchrec_distributed_quant_embedding_kernel__unwrap_kjt(to);  to = None
-        getitem_1 = _unwrap_kjt[0]
-        getitem_2 = _unwrap_kjt[1]
-        getitem_3 = _unwrap_kjt[2];  _unwrap_kjt = getitem_3 = None
-        inputs_to_device = fbgemm_gpu_split_table_batched_embeddings_ops_inference_inputs_to_device(getitem_1, getitem_2, None, device(type='cuda', index=0));  getitem_1 = getitem_2 = None
-        getitem_4 = inputs_to_device[0]
-        getitem_5 = inputs_to_device[1]
-        getitem_6 = inputs_to_device[2];  inputs_to_device = None
-        _tensor_constant0 = self._tensor_constant0
-        _tensor_constant1 = self._tensor_constant1
-        bounds_check_indices = torch.ops.fbgemm.bounds_check_indices(_tensor_constant0, getitem_4, getitem_5, 1, _tensor_constant1, getitem_6);  _tensor_constant0 = _tensor_constant1 = bounds_check_indices = None
-        _tensor_constant2 = self._tensor_constant2
-        _tensor_constant3 = self._tensor_constant3
-        _tensor_constant4 = self._tensor_constant4
-        _tensor_constant5 = self._tensor_constant5
-        _tensor_constant6 = self._tensor_constant6
-        _tensor_constant7 = self._tensor_constant7
-        _tensor_constant8 = self._tensor_constant8
-        _tensor_constant9 = self._tensor_constant9
-        int_nbit_split_embedding_codegen_lookup_function = torch.ops.fbgemm.int_nbit_split_embedding_codegen_lookup_function(dev_weights = _tensor_constant2, uvm_weights = _tensor_constant3, weights_placements = _tensor_constant4, weights_offsets = _tensor_constant5, weights_tys = _tensor_constant6, D_offsets = _tensor_constant7, total_D = 128, max_int2_D = 0, max_int4_D = 0, max_int8_D = 64, max_float16_D = 0, max_float32_D = 0, indices = getitem_4, offsets = getitem_5, pooling_mode = 0, indice_weights = getitem_6, output_dtype = 0, lxu_cache_weights = _tensor_constant8, lxu_cache_locations = _tensor_constant9, row_alignment = 16, max_float8_D = 0, fp8_exponent_bits = -1, fp8_exponent_bias = -1);  _tensor_constant2 = _tensor_constant3 = _tensor_constant4 = _tensor_constant5 = _tensor_constant6 = _tensor_constant7 = getitem_4 = getitem_5 = getitem_6 = _tensor_constant8 = _tensor_constant9 = None
-        embeddings_cat_empty_rank_handle_inference = torchrec_distributed_embedding_lookup_embeddings_cat_empty_rank_handle_inference([int_nbit_split_embedding_codegen_lookup_function], dim = 1, device = 'cuda:0', dtype = torch.float32);  int_nbit_split_embedding_codegen_lookup_function = None
-        to_1 = embeddings_cat_empty_rank_handle_inference.to(device(type='cpu'));  embeddings_cat_empty_rank_handle_inference = None
-        keyed_tensor = torchrec_sparse_jagged_tensor_KeyedTensor(keys = ['product', 'user'], length_per_key = [64, 64], values = to_1, key_dim = 1);  to_1 = None
-        return keyed_tensor
-    
-    /usr/local/lib/python3.10/dist-packages/torch/jit/_check.py:178: UserWarning:
-
-    The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
-
-    Scripted Graph Module Created!
-    def forward(self,
-        kjt: __torch__.torchrec.sparse.jagged_tensor.KeyedJaggedTensor) -> __torch__.torchrec.sparse.jagged_tensor.KeyedTensor:
-      _0 = __torch__.torchrec.distributed.quant_embeddingbag.flatten_feature_lengths
-      _1 = __torch__.torchrec.fx.utils._fx_marker
-      _2 = __torch__.torchrec.distributed.quant_embedding_kernel._unwrap_kjt
-      _3 = __torch__.fbgemm_gpu.split_table_batched_embeddings_ops_inference.inputs_to_device
-      _4 = __torch__.torchrec.distributed.embedding_lookup.embeddings_cat_empty_rank_handle_inference
-      flatten_feature_lengths = _0(kjt, )
-      _fx_marker = _1("KJT_ONE_TO_ALL_FORWARD_BEGIN", flatten_feature_lengths, )
-      split = (flatten_feature_lengths).split([2], )
-      getitem = split[0]
-      to = (getitem).to(torch.device("cuda", 0), True, None, )
-      _fx_marker_1 = _1("KJT_ONE_TO_ALL_FORWARD_END", flatten_feature_lengths, )
-      _unwrap_kjt = _2(to, )
-      getitem_1 = (_unwrap_kjt)[0]
-      getitem_2 = (_unwrap_kjt)[1]
-      inputs_to_device = _3(getitem_1, getitem_2, None, torch.device("cuda", 0), )
-      getitem_4 = (inputs_to_device)[0]
-      getitem_5 = (inputs_to_device)[1]
-      getitem_6 = (inputs_to_device)[2]
-      _tensor_constant0 = self._tensor_constant0
-      _tensor_constant1 = self._tensor_constant1
-      ops.fbgemm.bounds_check_indices(_tensor_constant0, getitem_4, getitem_5, 1, _tensor_constant1, getitem_6)
-      _tensor_constant2 = self._tensor_constant2
-      _tensor_constant3 = self._tensor_constant3
-      _tensor_constant4 = self._tensor_constant4
-      _tensor_constant5 = self._tensor_constant5
-      _tensor_constant6 = self._tensor_constant6
-      _tensor_constant7 = self._tensor_constant7
-      _tensor_constant8 = self._tensor_constant8
-      _tensor_constant9 = self._tensor_constant9
-      int_nbit_split_embedding_codegen_lookup_function = ops.fbgemm.int_nbit_split_embedding_codegen_lookup_function(_tensor_constant2, _tensor_constant3, _tensor_constant4, _tensor_constant5, _tensor_constant6, _tensor_constant7, 128, 0, 0, 64, 0, 0, getitem_4, getitem_5, 0, getitem_6, 0, _tensor_constant8, _tensor_constant9, 16)
-      _5 = [int_nbit_split_embedding_codegen_lookup_function]
-      embeddings_cat_empty_rank_handle_inference = _4(_5, 1, "cuda:0", 6, )
-      to_1 = torch.to(embeddings_cat_empty_rank_handle_inference, torch.device("cpu"))
-      _6 = ["product", "user"]
-      _7 = [64, 64]
-      keyed_tensor = __torch__.torchrec.sparse.jagged_tensor.KeyedTensor.__new__(__torch__.torchrec.sparse.jagged_tensor.KeyedTensor)
-      _8 = (keyed_tensor).__init__(_6, _7, to_1, 1, None, None, )
-      return keyed_tensor
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 1096-1105
 
 Conclusion
@@ -1784,7 +1274,7 @@ for Personalization and Recommendation Systems <https://arxiv.org/abs/1906.00091
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.821 seconds)
+   **Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 .. _sphx_glr_download_intermediate_torchrec_intro_tutorial.py:
