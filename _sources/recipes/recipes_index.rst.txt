@@ -317,6 +317,15 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/amx.html
    :tags: Model-Optimization
 
+.. (beta) Utilizing Torch Function modes with torch.compile
+
+.. customcarditem::
+   :header: (beta) Utilizing Torch Function modes with torch.compile
+   :card_description: Override torch operators with Torch Function modes and torch.compile
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torch_compile_torch_function_modes.html
+   :tags: Model-Optimization
+
 .. (beta) Compiling the Optimizer with torch.compile
 
 .. customcarditem::
