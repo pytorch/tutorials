@@ -22,7 +22,7 @@ Explicit horizontal fusion with foreach_map and torch.compile
 # Prerequisites
 # -------------
 #
-# * PyTorch v2.7.0 or later.
+# * PyTorch v2.7.0 or later
 #
 
 #####################################################################
