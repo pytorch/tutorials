@@ -1,5 +1,5 @@
 """
-(beta) Explicit horizontal fusion with foreach_map and torch.compile
+Explicit horizontal fusion with foreach_map and torch.compile
 ============================================================
 
 **Author:** `Michael Lazos <https://github.com/mlazos>`_
@@ -13,11 +13,17 @@
 #  allows conversion of any pointwise op in ``torch`` to a horiztonally fused foreach
 #  variant. In this tutorial, we will demonstrate how to implement the Adam optimizer
 #  with ``foreach_map`` to generate a fully fused kernel.  
-# 
 #
 # .. note::
 #
-#    This tutorial requires PyTorch 2.7.0 or later.
+#    This recipe describes a prototype feature. Prototype features are typically
+#    at an early stage for feedback and testing and are subject to change.
+#
+# Prerequisites
+# -------------
+#
+# * PyTorch v2.7.0 or later.
+#
 
 #####################################################################
 # Model Setup
