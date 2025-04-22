@@ -47,7 +47,7 @@ Next, let's configure our environment.
 
 #. Install `PyTorch 2.5 <https://pytorch.org/get-started/locally/>`_ or later for CPU Usage. Install PyTorch 2.7 or later refer to `Getting Started on Intel GPU <https://pytorch.org/docs/main/notes/get_start_xpu.html>`_ for XPU usage.
 
-#. Here is an example of how to use TorchInductor on Windows ::
+#. Here is an example of how to use TorchInductor on Windows:
 
     .. code-block:: python
 
