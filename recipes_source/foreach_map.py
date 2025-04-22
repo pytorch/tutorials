@@ -1,6 +1,6 @@
 """
 Explicit horizontal fusion with foreach_map and torch.compile
-============================================================
+===============================================================
 
 **Author:** `Michael Lazos <https://github.com/mlazos>`_
 """
