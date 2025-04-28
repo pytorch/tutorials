@@ -22,10 +22,9 @@ Install a Compiler
 
 C++ compiler is required for TorchInductor optimization, let's take Microsoft Visual C++ (MSVC) as an example.
 
-1. Download and install `MSVC <https://visualstudio.microsoft.com/downloads/>`_.
+#. Download and install `MSVC <https://visualstudio.microsoft.com/downloads/>`_.
 
-1. During Installation, select **Workloads** and then **Desktop & Mobile**.
-1. Select a checkmark on **Desktop Development with C++** and install.
+#. During Installation, select **Workloads** and then **Desktop & Mobile**. Select a checkmark on **Desktop Development with C++** and install.
 
 .. image:: ../_static/img/install_msvc.png
 

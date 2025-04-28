@@ -182,7 +182,7 @@ print('Finished Training')
 # ``optimizer.zero_grad()`` as long as all your model parameters are in
 # that optimizer. Use your best judgment to decide which one to use.
 #
-# Congratulations! You have successfully zeroed out gradients PyTorch.
+# Congratulations! You have successfully zeroed out gradients in PyTorch.
 #
 # Learn More
 # ----------

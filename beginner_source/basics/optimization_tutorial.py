@@ -76,7 +76,7 @@ model = NeuralNetwork()
 # (`read more <https://pytorch.org/tutorials/beginner/hyperparameter_tuning_tutorial.html>`__ about hyperparameter tuning)
 #
 # We define the following hyperparameters for training:
-#  - **Number of Epochs** - the number times to iterate over the dataset
+#  - **Number of Epochs** - the number of times to iterate over the dataset
 #  - **Batch Size** - the number of data samples propagated through the network before the parameters are updated
 #  - **Learning Rate** - how much to update models parameters at each batch/epoch. Smaller values yield slow learning speed, while large values may result in unpredictable behavior during training.
 #
