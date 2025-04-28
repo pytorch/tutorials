@@ -201,10 +201,10 @@ except Exception as e:
 # functions and modules, start by compiling the leaf functions or modules first.
 # For more information see `TorchDynamo APIs for fine-grained tracing <https://pytorch.org/docs/stable/torch.compiler_fine_grain_apis.html>`__.
 #
-# 5. **Prefer `mod.compile()` over `torch.compile(mod)`:** Avoids `_orig_` prefix issues in `state_dict`.
+# 5. **Prefer ``mod.compile()`` over ``torch.compile(mod)``:** Avoids ``_orig_`` prefix issues in ``state_dict``.
 #
-# 6. **Use `fullgraph=True` to catch graph breaks:** Helps ensure end-to-end compilation, maximizing speedup
-# and compatibility with `torch.export`.
+# 6. **Use ``fullgraph=True`` to catch graph breaks:** Helps ensure end-to-end compilation, maximizing speedup
+# and compatibility with ``torch.export``.
 
 
 ######################################################################
