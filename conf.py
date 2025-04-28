@@ -86,12 +86,6 @@ extensions = [
     'sphinx_sitemap'
 ]
 
-katex_prerender = False
-
-# Add this KaTeX configuration
-katex_options = {
-    "throwOnError": False,
-}
 
 intersphinx_mapping = {
     "torch": ("https://pytorch.org/docs/stable/", None),
