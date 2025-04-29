@@ -129,9 +129,19 @@ def reset_seeds(gallery_conf, fname):
 
     if hasattr(torch, "_dynamo"):
         torch._dynamo.reset()
+        if hasattr(torch._dynamo, "optimizations"):
+            torch._dynamo.optimizations.clear()
+        if hasattr(torch._dynamo, "config"):
+            torch._dynamo.config.clear_cache()
 
-    if hasattr(torch, "_inductor") and hasattr(torch._inductor, "utils"):
-        torch._inductor.utils.fresh_inductor_cache()
+    if hasattr(torch, "_inductor"):
+        if hasattr(torch._inductor, "utils"):
+            torch._inductor.utils.fresh_inductor_cache()
+        if hasattr(torch._inductor, "metrics"):
+            torch._inductor.metrics.reset()
+
+    if hasattr(torch, "_logging"):
+        torch._logging.set_logs()
 
     import __main__
 
