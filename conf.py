@@ -114,9 +114,14 @@ def reset_seeds(gallery_conf, fname):
     torch.backends.cudnn.benchmark = False
     torch._dynamo.reset()
     torch.manual_seed(42)
+    torch.cuda.manual_seed_all(42)
     torch.set_default_device(None)
     random.seed(10)
     numpy.random.seed(10)
+    torch.set_grad_enabled(True)
+    torch.set_default_dtype(torch.float32)
+    torch.set_default_tensor_type(torch.FloatTensor)
+    logging.getLogger().setLevel(logging.WARNING)
     gc.collect()
 
 
