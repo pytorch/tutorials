@@ -121,6 +121,8 @@ def reset_seeds(gallery_conf, fname):
     torch.set_grad_enabled(True)
     torch.set_default_dtype(torch.float32)
     torch.set_default_tensor_type(torch.FloatTensor)
+    import logging
+
     logging.getLogger().setLevel(logging.WARNING)
     gc.collect()
 
