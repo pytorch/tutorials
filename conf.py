@@ -121,9 +121,10 @@ def reset_seeds(gallery_conf, fname):
     import torch._inductor
 
     torch._inductor.metrics.reset()
-    from torch._inductor.codecache import PyCodeCache
+    from torch._inductor.codecache import CppCodeCache, PyCodeCache
 
     PyCodeCache.cache_clear(purge=True)
+    CppCodeCache.cache_clear()
 
 
 sphinx_gallery_conf = {
