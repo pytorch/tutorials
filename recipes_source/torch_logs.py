@@ -30,8 +30,8 @@ import logging
 #   change logging settings at the command line. The equivalent environment
 #   variable setting is shown for each example.
 
-torch._dynamo.reset()
 import torch
+torch._dynamo.reset()
 
 # exit cleanly if we are on a device that doesn't support torch.compile
 if torch.cuda.get_device_capability() < (7, 0):
