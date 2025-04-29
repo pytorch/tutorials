@@ -115,36 +115,23 @@ def reset_seeds(gallery_conf, fname):
     import importlib
     import sys
 
-    modules_to_reload = []
-    for module_name in list(sys.modules.keys()):
-        if module_name.startswith("torch") or module_name in ["numpy", "random"]:
-            if module_name in sys.modules:
-                modules_to_reload.append(module_name)
+    random.seed(10)
+    numpy.random.seed(10)
+    torch.manual_seed(42)
+
+    torch.cuda.empty_cache()
+    torch.cuda.ipc_collect()
+    torch.set_default_device(None)
+
+    # Reset torch settings
+    torch.backends.cudnn.deterministic = False
+    torch.backends.cudnn.benchmark = True
 
     if hasattr(torch, "_dynamo"):
         torch._dynamo.reset()
 
-    if hasattr(torch, "_inductor"):
-        torch._inductor.aot_compile = False
-        torch._inductor.config.triton.cudagraphs = False
-        torch._inductor.config.debug = False
-        torch._inductor.config.max_autotune = True
-        torch._inductor.config.triton.unique_kernel_names = True
-        torch._inductor.config.max_autotune_gemm_backends = "TRITON"
-        torch._inductor.config.search_autotune_cache = True
-        torch._inductor.config.compile_threads = 1
-
-    torch.backends.cudnn.deterministic = False
-    torch.backends.cudnn.benchmark = True
     if hasattr(torch, "_inductor") and hasattr(torch._inductor, "utils"):
         torch._inductor.utils.fresh_inductor_cache()
-    torch.cuda.empty_cache()
-    torch.cuda.ipc_collect()
-    torch.manual_seed(42)
-    torch.set_default_device(None)
-    random.seed(10)
-    numpy.random.seed(10)
-    gc.collect()
 
     import __main__
 
@@ -152,12 +139,7 @@ def reset_seeds(gallery_conf, fname):
         if not var.startswith("_"):
             delattr(__main__, var)
 
-    for module_name in modules_to_reload:
-        if module_name in sys.modules:
-            try:
-                importlib.reload(sys.modules[module_name])
-            except:
-                pass
+    gc.collect()
 
 
 def kill_procs(gallery_conf, fname):
