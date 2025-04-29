@@ -123,7 +123,6 @@ def reset_seeds(gallery_conf, fname):
     import torch._inductor
     from torch._inductor.codecache import CppCodeCache, PyCodeCache
 
-    torch._inductor.clear_inductor_caches()
     PyCodeCache.cache_clear(purge=True)
     CppCodeCache.cache_clear()
 
