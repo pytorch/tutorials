@@ -117,7 +117,9 @@ def reset_seeds(gallery_conf, fname):
     numpy.random.seed(10)
     gc.collect()
     torch._dynamo.reset()
-    torch._inductor.clear_compile_cache()
+    from torch._inductor.utils import clear_inductor_caches
+
+    clear_inductor_caches()
 
 
 sphinx_gallery_conf = {
