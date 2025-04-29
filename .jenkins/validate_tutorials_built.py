@@ -51,7 +51,7 @@ NOT_RUN = [
     "intermediate_source/text_to_speech_with_torchaudio",
     "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
     "advanced_source/semi_structured_sparse", # reenable after 3303 is fixed.
-    "recipes_source/recipes/reasoning_about_shapes" # reenable after 3326 is fixed
+    "recipes_source/recipes/reasoning_about_shapes", # reenable after 3326 is fixed
     "intermediate_source/torchrec_intro_tutorial" # reenable after torchrec releases 1.2.0
 ]
 
