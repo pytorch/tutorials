@@ -114,6 +114,7 @@ def reset_seeds(gallery_conf, fname):
     torch._dynamo.reset()
     torch._inductor.utils.fresh_inductor_cache()
     torch.cuda.empty_cache()
+    torch.cuda.ipc_collect()
     torch.manual_seed(42)
     torch.set_default_device(None)
     random.seed(10)
