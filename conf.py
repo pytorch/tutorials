@@ -29,34 +29,44 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('./.jenkins'))
-import pytorch_sphinx_theme
-import torch
-import numpy
+
+sys.path.insert(0, os.path.abspath("."))
+sys.path.insert(0, os.path.abspath("./.jenkins"))
+import distutils.file_util
 import gc
 import glob
 import random
-import shutil
-from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective, CustomCalloutItemDirective, CustomCardItemDirective
-import distutils.file_util
 import re
-from get_sphinx_filenames import SPHINX_SHOULD_RUN
-import pandocfilters
-import pypandoc
-import plotly.io as pio
+import shutil
 from pathlib import Path
-pio.renderers.default = 'sphinx_gallery'
+
+import numpy
+import pandocfilters
+import plotly.io as pio
+import pypandoc
+import pytorch_sphinx_theme
+import torch
+from custom_directives import (
+    CustomCalloutItemDirective,
+    CustomCardItemDirective,
+    CustomGalleryItemDirective,
+    GalleryItemDirective,
+    IncludeDirective,
+)
+from get_sphinx_filenames import SPHINX_SHOULD_RUN
+
+pio.renderers.default = "sphinx_gallery"
 
 
 try:
     import torchvision
 except ImportError:
     import warnings
+
     warnings.warn('unable to load "torchvision" package')
 import pytorch_sphinx_theme
 
-rst_epilog ="""
+rst_epilog = """
 .. |edit| image:: /_static/pencil-16.png
            :width: 16px
            :height: 16px
@@ -69,21 +79,21 @@ rst_epilog ="""
 # needs_sphinx = '1.0'
 
 html_meta = {
-    'description': 'Master PyTorch with our step-by-step tutorials for all skill levels. Start your journey to becoming a PyTorch expert today!',
-    'keywords': 'PyTorch, tutorials, Getting Started, deep learning, AI',
-    'author': 'PyTorch Contributors'
+    "description": "Master PyTorch with our step-by-step tutorials for all skill levels. Start your journey to becoming a PyTorch expert today!",
+    "keywords": "PyTorch, tutorials, Getting Started, deep learning, AI",
+    "author": "PyTorch Contributors",
 }
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinxcontrib.katex',
-    'sphinx.ext.intersphinx',
-    'sphinx_copybutton',
-    'sphinx_gallery.gen_gallery',
-    'sphinx_design',
-    'sphinx_sitemap'
+    "sphinxcontrib.katex",
+    "sphinx.ext.intersphinx",
+    "sphinx_copybutton",
+    "sphinx_gallery.gen_gallery",
+    "sphinx_design",
+    "sphinx_sitemap",
 ]
 
 intersphinx_mapping = {
@@ -97,32 +107,45 @@ intersphinx_mapping = {
 
 # -- Sphinx-gallery configuration --------------------------------------------
 
+
 def reset_seeds(gallery_conf, fname):
     torch.cuda.empty_cache()
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch._dynamo.reset()
     torch.manual_seed(42)
     torch.set_default_device(None)
     random.seed(10)
     numpy.random.seed(10)
     gc.collect()
 
+
 sphinx_gallery_conf = {
-    'examples_dirs': ['beginner_source', 'intermediate_source',
-                      'advanced_source', 'recipes_source', 'prototype_source'],
-    'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
-    'filename_pattern': re.compile(SPHINX_SHOULD_RUN),
-    'promote_jupyter_magic': True,
-    'backreferences_dir': None,
-    'first_notebook_cell': ("# For tips on running notebooks in Google Colab, see\n"
-                            "# https://pytorch.org/tutorials/beginner/colab\n"
-                            "%matplotlib inline"),
-    'reset_modules': (reset_seeds),
-    'ignore_pattern': r'_torch_export_nightly_tutorial.py',
-    'pypandoc': {'extra_args': ['--mathjax', '--toc'],
-                 'filters': ['.jenkins/custom_pandoc_filter.py'],
+    "examples_dirs": [
+        "beginner_source",
+        "intermediate_source",
+        "advanced_source",
+        "recipes_source",
+        "prototype_source",
+    ],
+    "gallery_dirs": ["beginner", "intermediate", "advanced", "recipes", "prototype"],
+    "filename_pattern": re.compile(SPHINX_SHOULD_RUN),
+    "promote_jupyter_magic": True,
+    "backreferences_dir": None,
+    "first_notebook_cell": (
+        "# For tips on running notebooks in Google Colab, see\n"
+        "# https://pytorch.org/tutorials/beginner/colab\n"
+        "%matplotlib inline"
+    ),
+    "reset_modules": (reset_seeds),
+    "ignore_pattern": r"_torch_export_nightly_tutorial.py",
+    "pypandoc": {
+        "extra_args": ["--mathjax", "--toc"],
+        "filters": [".jenkins/custom_pandoc_filter.py"],
     },
 }
 
-html_baseurl = 'https://pytorch.org/tutorials/' # needed for sphinx-sitemap
+html_baseurl = "https://pytorch.org/tutorials/"  # needed for sphinx-sitemap
 sitemap_locales = [None]
 sitemap_excludes = [
     "search.html",
@@ -130,7 +153,7 @@ sitemap_excludes = [
 ]
 sitemap_url_scheme = "{link}"
 
-if os.getenv('GALLERY_PATTERN'):
+if os.getenv("GALLERY_PATTERN"):
     # GALLERY_PATTERN is to be used when you want to work on a single
     # tutorial.  Previously this was fed into filename_pattern, but
     # if you do that, you still end up parsing all of the other Python
@@ -138,9 +161,11 @@ if os.getenv('GALLERY_PATTERN'):
     # ignore_pattern also skips parsing.
     # See https://github.com/sphinx-gallery/sphinx-gallery/issues/721
     # for a more detailed description of the issue.
-    sphinx_gallery_conf['ignore_pattern'] = r'/(?!' + re.escape(os.getenv('GALLERY_PATTERN')) + r')[^/]+$'
+    sphinx_gallery_conf["ignore_pattern"] = (
+        r"/(?!" + re.escape(os.getenv("GALLERY_PATTERN")) + r")[^/]+$"
+    )
 
-for i in range(len(sphinx_gallery_conf['examples_dirs'])):
+for i in range(len(sphinx_gallery_conf["examples_dirs"])):
     gallery_dir = Path(sphinx_gallery_conf["gallery_dirs"][i])
     source_dir = Path(sphinx_gallery_conf["examples_dirs"][i])
 
@@ -152,21 +177,21 @@ for i in range(len(sphinx_gallery_conf['examples_dirs'])):
         distutils.file_util.copy_file(f, gallery_subdir_path, update=True)
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = 'PyTorch Tutorials'
-copyright = '2024, PyTorch'
-author = 'PyTorch contributors'
+project = "PyTorch Tutorials"
+copyright = "2024, PyTorch"
+author = "PyTorch contributors"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -182,17 +207,22 @@ release = str(torch.__version__)
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = 'en'
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'src/pytorch-sphinx-theme/docs*']
-exclude_patterns += sphinx_gallery_conf['examples_dirs']
-exclude_patterns += ['*/index.rst']
+exclude_patterns = [
+    "_build",
+    "Thumbs.db",
+    ".DS_Store",
+    "src/pytorch-sphinx-theme/docs*",
+]
+exclude_patterns += sphinx_gallery_conf["examples_dirs"]
+exclude_patterns += ["*/index.rst"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
@@ -220,7 +250,7 @@ todo_include_todos = False
 # # Add any paths that contain custom static files (such as style sheets) here,
 # # relative to this directory. They are copied after the builtin static files,
 # # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # # Custom sidebar templates, maps document names to template names.
 # html_sidebars = {
@@ -229,23 +259,23 @@ html_static_path = ['_static']
 # }
 
 
-html_theme = 'pytorch_sphinx_theme'
+html_theme = "pytorch_sphinx_theme"
 html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
-html_logo = '_static/img/pytorch-logo-dark.svg'
+html_logo = "_static/img/pytorch-logo-dark.svg"
 html_theme_options = {
-    'pytorch_project': 'tutorials',
-    'collapse_navigation': False,
-    'display_version': True,
-    'navigation_with_keys': True,
-    'logo_only': False,
-    'analytics_id': 'GTM-T8XT4PS',
+    "pytorch_project": "tutorials",
+    "collapse_navigation": False,
+    "display_version": True,
+    "navigation_with_keys": True,
+    "logo_only": False,
+    "analytics_id": "GTM-T8XT4PS",
 }
 
 
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'PyTorchTutorialsdoc'
+htmlhelp_basename = "PyTorchTutorialsdoc"
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -254,15 +284,12 @@ latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     #
     # 'preamble': '',
-
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
@@ -272,8 +299,13 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'PyTorchTutorials.tex', 'PyTorch Tutorials',
-     'Sasank, PyTorch contributors', 'manual'),
+    (
+        master_doc,
+        "PyTorchTutorials.tex",
+        "PyTorch Tutorials",
+        "Sasank, PyTorch contributors",
+        "manual",
+    ),
 ]
 
 
@@ -281,10 +313,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'pytorchtutorials', 'PyTorch Tutorials',
-     [author], 1)
-]
+man_pages = [(master_doc, "pytorchtutorials", "PyTorch Tutorials", [author], 1)]
 
 
 # -- Options for Texinfo output -------------------------------------------
@@ -293,40 +322,47 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'PyTorchTutorials', 'PyTorch Tutorials',
-     author, 'PyTorchTutorials', 'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        "PyTorchTutorials",
+        "PyTorch Tutorials",
+        author,
+        "PyTorchTutorials",
+        "One line description of project.",
+        "Miscellaneous",
+    ),
 ]
 
 html_css_files = [
-        'https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css',
-        'css/custom.css',
-        'css/custom2.css'
-    ]
+    "https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css",
+    "css/custom.css",
+    "css/custom2.css",
+]
 
 html_js_files = [
     "js/custom.js",
 ]
 
+
 def setup(app):
     # NOTE: in Sphinx 1.8+ `html_css_files` is an official configuration value
     # and can be moved outside of this function (and the setup(app) function
     # can be deleted).
-    #html_css_files = [
+    # html_css_files = [
     #    'https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css',
     #    'css/custom.css'
-    #]
+    # ]
     # In Sphinx 1.8 it was renamed to `add_css_file`, 1.7 and prior it is
     # `add_stylesheet` (deprecated in 1.8).
-    #add_css = getattr(app, 'add_css_file', app.add_stylesheet)
-    #for css_file in html_css_files:
+    # add_css = getattr(app, 'add_css_file', app.add_stylesheet)
+    # for css_file in html_css_files:
     #    add_css(css_file)
     # Custom CSS
-    #app.add_stylesheet('css/pytorch_theme.css')
+    # app.add_stylesheet('css/pytorch_theme.css')
     # app.add_stylesheet('https://fonts.googleapis.com/css?family=Lato')
     # Custom directives
-    app.add_directive('includenodoc', IncludeDirective)
-    app.add_directive('galleryitem', GalleryItemDirective)
-    app.add_directive('customgalleryitem', CustomGalleryItemDirective)
-    app.add_directive('customcarditem', CustomCardItemDirective)
-    app.add_directive('customcalloutitem', CustomCalloutItemDirective)
+    app.add_directive("includenodoc", IncludeDirective)
+    app.add_directive("galleryitem", GalleryItemDirective)
+    app.add_directive("customgalleryitem", CustomGalleryItemDirective)
+    app.add_directive("customcarditem", CustomCardItemDirective)
+    app.add_directive("customcalloutitem", CustomCalloutItemDirective)
