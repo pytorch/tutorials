@@ -112,7 +112,6 @@ intersphinx_mapping = {
 def reset_seeds(gallery_conf, fname):
     global torch
     torch._dynamo.reset()
-    torch.dynamo.reset()
     torch.cuda.empty_cache()    
     torch.manual_seed(42)
     torch.set_default_device(None)
