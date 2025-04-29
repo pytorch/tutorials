@@ -111,8 +111,38 @@ intersphinx_mapping = {
 
 def reset_seeds(gallery_conf, fname):
     global torch
-    torch._dynamo.reset()
-    torch._inductor.utils.fresh_inductor_cache()
+
+    import importlib
+    import sys
+
+    modules_to_reload = []
+    for module_name in list(sys.modules.keys()):
+        if module_name.startswith("torch") or module_name in ["numpy", "random"]:
+            if module_name in sys.modules:
+                modules_to_reload.append(module_name)
+
+    if hasattr(torch, "_dynamo"):
+        torch._dynamo.reset()
+
+    if hasattr(torch, "_inductor"):
+        torch._inductor.aot_compile = False
+        torch._inductor.config.triton.cudagraphs = False
+        torch._inductor.config.debug = False
+        torch._inductor.config.max_autotune = True
+        torch._inductor.config.triton.unique_kernel_names = True
+        torch._inductor.config.max_autotune_gemm_backends = "TRITON"
+        torch._inductor.config.search_autotune_cache = True
+        torch._inductor.config.compile_threads = 1
+
+    if hasattr(torch, "onnx"):
+        torch.onnx._operator_importers.triton._reset()
+        torch.onnx._internal.exporter._reset()
+        torch.onnx._internal.fx._reset()
+
+    torch.backends.cudnn.deterministic = False
+    torch.backends.cudnn.benchmark = True
+    if hasattr(torch, "_inductor") and hasattr(torch._inductor, "utils"):
+        torch._inductor.utils.fresh_inductor_cache()
     torch.cuda.empty_cache()
     torch.cuda.ipc_collect()
     torch.manual_seed(42)
@@ -120,6 +150,19 @@ def reset_seeds(gallery_conf, fname):
     random.seed(10)
     numpy.random.seed(10)
     gc.collect()
+
+    import __main__
+
+    for var in dir(__main__):
+        if not var.startswith("_"):
+            delattr(__main__, var)
+
+    for module_name in modules_to_reload:
+        if module_name in sys.modules:
+            try:
+                importlib.reload(sys.modules[module_name])
+            except:
+                pass
 
 
 sphinx_gallery_conf = {
