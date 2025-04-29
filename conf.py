@@ -134,11 +134,6 @@ def reset_seeds(gallery_conf, fname):
         torch._inductor.config.search_autotune_cache = True
         torch._inductor.config.compile_threads = 1
 
-    if hasattr(torch, "onnx"):
-        torch.onnx._operator_importers.triton._reset()
-        torch.onnx._internal.exporter._reset()
-        torch.onnx._internal.fx._reset()
-
     torch.backends.cudnn.deterministic = False
     torch.backends.cudnn.benchmark = True
     if hasattr(torch, "_inductor") and hasattr(torch._inductor, "utils"):
