@@ -112,17 +112,13 @@ intersphinx_mapping = {
 def reset_seeds(gallery_conf, fname):
     global torch
     torch._dynamo.reset()
-    torch.cuda.empty_cache()
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-        torch.cuda.reset_peak_memory_stats()
+    torch.dynamo.reset()
+    torch.cuda.empty_cache()    
     torch.manual_seed(42)
     torch.set_default_device(None)
     random.seed(10)
     numpy.random.seed(10)
     gc.collect()
-    import torch._inductor.utils
-    torch._inductor.utils.clear_inductor_caches()
 
 
 sphinx_gallery_conf = {
