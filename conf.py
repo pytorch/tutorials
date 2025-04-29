@@ -165,6 +165,20 @@ def reset_seeds(gallery_conf, fname):
                 pass
 
 
+def kill_procs(gallery_conf, fname):
+    import os
+
+    import psutil
+
+    # Get the current process
+    current_proc = psutil.Process(os.getpid())
+    # Iterate over all child processes
+    for child in current_proc.children(recursive=True):
+        # Kill the child process
+        child.terminate()
+        print(f"Killed child process with PID {child.pid}")
+
+
 sphinx_gallery_conf = {
     "examples_dirs": [
         "beginner_source",
@@ -182,7 +196,7 @@ sphinx_gallery_conf = {
         "# https://pytorch.org/tutorials/beginner/colab\n"
         "%matplotlib inline"
     ),
-    "reset_modules": (reset_seeds),
+    "reset_modules": (reset_seeds, kill_procs),
     "ignore_pattern": r"_torch_export_nightly_tutorial.py",
     "pypandoc": {
         "extra_args": ["--mathjax", "--toc"],
