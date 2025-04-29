@@ -32,6 +32,12 @@ import logging
 
 import torch
 
+# Reset torch dynamo and empty CUDA cache before starting
+torch._dynamo.reset()
+if torch.cuda.is_available():
+    torch.cuda.empty_cache()
+
+
 # exit cleanly if we are on a device that doesn't support torch.compile
 if torch.cuda.get_device_capability() < (7, 0):
     print("Skipping because torch.compile is not supported on this device.")
