@@ -122,11 +122,10 @@ def reset_seeds(gallery_conf, fname):
     torch.set_default_dtype(torch.float32)
     torch.set_default_tensor_type(torch.FloatTensor)
     
-    # Reset torch modules that might have been modified by tutorials
-    import importlib
-    importlib.reload(torch)
-    if 'torchvision' in sys.modules:
-        importlib.reload(torchvision)
+    # Clean up any global state without reloading
+    if hasattr(torch, "_C"):
+        if hasattr(torch._C, "_jit_clear_class_registry"):
+            torch._C._jit_clear_class_registry()
 
     gc.collect()
 
