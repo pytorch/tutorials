@@ -385,10 +385,12 @@ if torch.cuda.is_available():
 
 gc.collect()
 
-if hasattr(torch, "_check_wrapper_patched"):
-    delattr(torch, "_check_wrapper_patched")
-
-old_attrs.clear()
+# Clear any references to the wrapper functions
+del old_attrs
+del contains_cl
+del print_inputs
+del check_wrapper
+del attribute
 
 ######################################################################
 # Work to do
