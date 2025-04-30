@@ -121,9 +121,13 @@ def reset_seeds(gallery_conf, fname):
     torch.set_grad_enabled(True)
     torch.set_default_dtype(torch.float32)
     torch.set_default_tensor_type(torch.FloatTensor)
-    import logging
+    
+    # Reset torch modules that might have been modified by tutorials
+    import importlib
+    importlib.reload(torch)
+    if 'torchvision' in sys.modules:
+        importlib.reload(torchvision)
 
-    logging.getLogger().setLevel(logging.WARNING)
     gc.collect()
 
 
