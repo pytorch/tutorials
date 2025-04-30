@@ -107,13 +107,6 @@ def reset_seeds(gallery_conf, fname):
     random.seed(10)
     numpy.random.seed(10)
     torch.set_grad_enabled(True)
-    
-    # Reset any patching from memory_format_tutorial
-    if hasattr(torch, "old_attrs"):
-        for (m, attrs) in torch.old_attrs.items():
-            for (k, v) in attrs.items():
-                setattr(m, k, v)
-        delattr(torch, "old_attrs")
 
 
     gc.collect()

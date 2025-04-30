@@ -376,6 +376,20 @@ for (m, attrs) in old_attrs.items():
     for (k, v) in attrs.items():
         setattr(m, k, v)
 
+# Recover Tensor
+torch.Tensor = old_attrs[torch.Tensor]["Tensor"]
+# Recover nn.functional
+torch.nn.functional = old_attrs[torch.nn.functional]["nn.functional"]
+# Recover torch
+torch.is_cuda = old_attrs[torch]["is_cuda"]
+torch.has_names = old_attrs[torch]["has_names"]
+torch.numel = old_attrs[torch]["numel"]
+torch.stride = old_attrs[torch]["stride"]
+torch.is_contiguous = old_attrs[torch]["is_contiguous"]
+torch.__class__ = old_attrs[torch]["__class__"]
+del old_attrs
+
+
 ######################################################################
 # Work to do
 # ----------
