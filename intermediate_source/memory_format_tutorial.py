@@ -376,19 +376,23 @@ for (m, attrs) in old_attrs.items():
     for (k, v) in attrs.items():
         setattr(m, k, v)
 
-# Recover Tensor
-torch.Tensor = old_attrs[torch.Tensor]["Tensor"]
-# Recover nn.functional
-torch.nn.functional = old_attrs[torch.nn.functional]["nn.functional"]
-# Recover torch
-torch.is_cuda = old_attrs[torch]["is_cuda"]
-torch.has_names = old_attrs[torch]["has_names"]
-torch.numel = old_attrs[torch]["numel"]
-torch.stride = old_attrs[torch]["stride"]
-torch.is_contiguous = old_attrs[torch]["is_contiguous"]
-torch.__class__ = old_attrs[torch]["__class__"]
-del old_attrs
+import gc
+import sys
 
+torch.Tensor = old_attrs[torch.Tensor]["Tensor"]
+torch.nn.functional = old_attrs[torch.nn.functional]
+for attr_name in ["is_cuda", "has_names", "numel", "stride", "is_contiguous", "__class__"]:
+    if attr_name in old_attrs[torch]:
+        setattr(torch, attr_name, old_attrs[torch][attr_name])
+
+# Force garbage collection
+del old_attrs
+gc.collect()
+
+# Reset torch modules
+torch._dynamo.reset()
+if torch.cuda.is_available():
+    torch.cuda.empty_cache()
 
 ######################################################################
 # Work to do
