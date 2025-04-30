@@ -379,13 +379,16 @@ for (m, attrs) in old_attrs.items():
 import gc
 import sys
 
-if torch.nn.functional in old_attrs:
-    for k, v in old_attrs[torch.nn.functional].items():
-        setattr(torch.nn.functional, k, v)
-
 torch._dynamo.reset()
 if torch.cuda.is_available():
     torch.cuda.empty_cache()
+
+gc.collect()
+
+if hasattr(torch, "_check_wrapper_patched"):
+    delattr(torch, "_check_wrapper_patched")
+
+old_attrs.clear()
 
 ######################################################################
 # Work to do
