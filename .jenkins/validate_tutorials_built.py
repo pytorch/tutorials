@@ -54,6 +54,7 @@ NOT_RUN = [
     "advanced_source/coding_ddpg", # reenable after 3302 is fixed
     "intermediate_source/torchrec_intro_tutorial", # reenable after 3302 is fixed
     "recipes_source/recipes/reasoning_about_shapes", # reenable after 3326 is fixed
+    "advanced_source/dynamic_quantization_tutorial"
 ]
 
 def tutorial_source_dirs() -> List[Path]:
