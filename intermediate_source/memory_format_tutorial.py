@@ -376,22 +376,6 @@ for (m, attrs) in old_attrs.items():
     for (k, v) in attrs.items():
         setattr(m, k, v)
 
-import gc
-import sys
-
-torch._dynamo.reset()
-if torch.cuda.is_available():
-    torch.cuda.empty_cache()
-
-gc.collect()
-
-# Clear any references to the wrapper functions
-del old_attrs
-del contains_cl
-del print_inputs
-del check_wrapper
-del attribute
-
 ######################################################################
 # Work to do
 # ----------
