@@ -358,10 +358,14 @@ def attribute(m):
                 print(e)
 
 
-attribute(torch.Tensor)
-attribute(torch.nn.functional)
-attribute(torch)
-
+#############################
+#
+# The following code  will wrap PyTorch functions to check if channels last
+# format is preserved through operations.
+#
+# attribute(torch.Tensor)
+# attribute(torch.nn.functional)
+# attribute(torch)
 
 ######################################################################
 # If you found an operator that doesn't support channels last tensors
@@ -371,10 +375,10 @@ attribute(torch)
 
 ######################################################################
 # Code below is to recover the attributes of torch.
-
-for (m, attrs) in old_attrs.items():
-    for (k, v) in attrs.items():
-        setattr(m, k, v)
+#
+#for (m, attrs) in old_attrs.items():
+#    for (k, v) in attrs.items():
+#        setattr(m, k, v)
 
 ######################################################################
 # Work to do
