@@ -14,9 +14,10 @@ Requirements: - python >= 3.7
 We highly recommend CUDA when using torchRec. If using CUDA: - cuda >=
 11.0
 
+.. Should these be updated?
 .. code:: python
 
-    # install conda to make installying pytorch with cudatoolkit 11.3 easier. 
+    # install conda to make installying pytorch with cudatoolkit 11.3 easier.
     !sudo rm Miniconda3-py37_4.9.2-Linux-x86_64.sh Miniconda3-py37_4.9.2-Linux-x86_64.sh.*
     !sudo wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.9.2-Linux-x86_64.sh
     !sudo chmod +x Miniconda3-py37_4.9.2-Linux-x86_64.sh
@@ -213,7 +214,7 @@ embedding table placement using planner and generate sharded model using
         )
         sharders = [cast(ModuleSharder[torch.nn.Module], EmbeddingBagCollectionSharder())]
         plan: ShardingPlan = planner.collective_plan(module, sharders, pg)
-    
+
         sharded_model = DistributedModelParallel(
             module,
             env=ShardingEnv.from_process_group(pg),
@@ -234,7 +235,7 @@ ranks.
 .. code:: python
 
     import multiprocess
-       
+
     def spmd_sharing_simulation(
         sharding_type: ShardingType = ShardingType.TABLE_WISE,
         world_size = 2,
@@ -254,7 +255,7 @@ ranks.
           )
           p.start()
           processes.append(p)
-    
+
       for p in processes:
           p.join()
           assert 0 == p.exitcode
@@ -333,4 +334,3 @@ With data parallel, we will repeat the tables for all devices.
 
     rank:0,sharding plan: {'': {'large_table_0': ParameterSharding(sharding_type='data_parallel', compute_kernel='batched_dense', ranks=[0, 1], sharding_spec=None), 'large_table_1': ParameterSharding(sharding_type='data_parallel', compute_kernel='batched_dense', ranks=[0, 1], sharding_spec=None), 'small_table_0': ParameterSharding(sharding_type='data_parallel', compute_kernel='batched_dense', ranks=[0, 1], sharding_spec=None), 'small_table_1': ParameterSharding(sharding_type='data_parallel', compute_kernel='batched_dense', ranks=[0, 1], sharding_spec=None)}}
     rank:1,sharding plan: {'': {'large_table_0': ParameterSharding(sharding_type='data_parallel', compute_kernel='batched_dense', ranks=[0, 1], sharding_spec=None), 'large_table_1': ParameterSharding(sharding_type='data_parallel', compute_kernel='batched_dense', ranks=[0, 1], sharding_spec=None), 'small_table_0': ParameterSharding(sharding_type='data_parallel', compute_kernel='batched_dense', ranks=[0, 1], sharding_spec=None), 'small_table_1': ParameterSharding(sharding_type='data_parallel', compute_kernel='batched_dense', ranks=[0, 1], sharding_spec=None)}}
-
