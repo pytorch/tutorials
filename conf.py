@@ -99,10 +99,16 @@ intersphinx_mapping = {
 
 def reset_seeds(gallery_conf, fname):
     torch.cuda.empty_cache()
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch._dynamo.reset()
+    torch._inductor.config.force_disable_caches = True
     torch.manual_seed(42)
     torch.set_default_device(None)
     random.seed(10)
     numpy.random.seed(10)
+    torch.set_grad_enabled(True)
+
     gc.collect()
 
 sphinx_gallery_conf = {
