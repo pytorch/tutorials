@@ -39,9 +39,64 @@ Setup
 ^^^^^^
 We’ll start by doing the necessary imports:
 
+.. GENERATED FROM PYTHON SOURCE LINES 26-42
+
+.. code-block:: default
+
+
+    import numpy as np
+    import torch
+    import torch.nn as nn
+    import torchvision
+    from torchvision import models, datasets
+    import torchvision.transforms as transforms
+    import os
+    import torch.quantization
+    import torch.quantization._numeric_suite as ns
+    from torch.quantization import (
+        default_eval_fn,
+        default_qconfig,
+        quantize,
+    )
+
+
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 43-44
 
 Then we load the pretrained float ResNet18 model, and quantize it into qmodel. We cannot compare two arbitrary models, only a float model and the quantized model derived from it can be compared.
+
+.. GENERATED FROM PYTHON SOURCE LINES 44-54
+
+.. code-block:: default
+
+
+
+    float_model = torchvision.models.quantization.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1, quantize=False)
+    float_model.to('cpu')
+    float_model.eval()
+    float_model.fuse_model()
+    float_model.qconfig = torch.quantization.default_qconfig
+    img_data = [(torch.rand(2, 3, 10, 10, dtype=torch.float), torch.randint(0, 1, (2,), dtype=torch.long)) for _ in range(2)]
+    qmodel = quantize(float_model, default_eval_fn, [img_data], inplace=False)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Downloading: "https://download.pytorch.org/models/resnet18-f37072fd.pth" to /var/lib/ci-user/.cache/torch/hub/checkpoints/resnet18-f37072fd.pth
+      0%|          | 0.00/44.7M [00:00<?, ?B/s]     94%|#########4| 42.0M/44.7M [00:00<00:00, 440MB/s]    100%|##########| 44.7M/44.7M [00:00<00:00, 439MB/s]
+
+
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 55-61
 
@@ -52,6 +107,41 @@ We can call ``compare_weights()`` from PyTorch Numeric Suite to get a dictionary
 ``compare_weights()`` takes in floating point and quantized state dict and returns a dict, with keys corresponding to the
 floating point weights and values being a dictionary of floating point and quantized weights
 
+.. GENERATED FROM PYTHON SOURCE LINES 61-73
+
+.. code-block:: default
+
+
+    wt_compare_dict = ns.compare_weights(float_model.state_dict(), qmodel.state_dict())
+
+    print('keys of wt_compare_dict:')
+    print(wt_compare_dict.keys())
+
+    print("\nkeys of wt_compare_dict entry for conv1's weight:")
+    print(wt_compare_dict['conv1.weight'].keys())
+    print(wt_compare_dict['conv1.weight']['float'].shape)
+    print(wt_compare_dict['conv1.weight']['quantized'].shape)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    keys of wt_compare_dict:
+    dict_keys(['conv1.weight', 'layer1.0.conv1.weight', 'layer1.0.conv2.weight', 'layer1.1.conv1.weight', 'layer1.1.conv2.weight', 'layer2.0.conv1.weight', 'layer2.0.conv2.weight', 'layer2.0.downsample.0.weight', 'layer2.1.conv1.weight', 'layer2.1.conv2.weight', 'layer3.0.conv1.weight', 'layer3.0.conv2.weight', 'layer3.0.downsample.0.weight', 'layer3.1.conv1.weight', 'layer3.1.conv2.weight', 'layer4.0.conv1.weight', 'layer4.0.conv2.weight', 'layer4.0.downsample.0.weight', 'layer4.1.conv1.weight', 'layer4.1.conv2.weight', 'fc._packed_params._packed_params'])
+
+    keys of wt_compare_dict entry for conv1's weight:
+    dict_keys(['float', 'quantized'])
+    torch.Size([64, 3, 7, 7])
+    torch.Size([64, 3, 7, 7])
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 74-78
 
 Once get ``wt_compare_dict``, users can process this dictionary in whatever way they want. Here as an example we compute the quantization error of the weights of float and quantized models as following.
@@ -59,9 +149,86 @@ Compute the Signal-to-Quantization-Noise Ratio (SQNR) of the quantized tensor ``
 relationship between the maximum nominal signal strength and the quantization error introduced in the
 quantization. Higher SQNR corresponds to lower quantization error.
 
+.. GENERATED FROM PYTHON SOURCE LINES 78-87
+
+.. code-block:: default
+
+
+    def compute_error(x, y):
+        Ps = torch.norm(x)
+        Pn = torch.norm(x-y)
+        return 20*torch.log10(Ps/Pn)
+
+    for key in wt_compare_dict:
+        print(key, compute_error(wt_compare_dict[key]['float'], wt_compare_dict[key]['quantized'].dequantize()))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    conv1.weight tensor(31.6638)
+    layer1.0.conv1.weight tensor(30.6450)
+    layer1.0.conv2.weight tensor(31.1528)
+    layer1.1.conv1.weight tensor(32.1438)
+    layer1.1.conv2.weight tensor(31.2477)
+    layer2.0.conv1.weight tensor(30.9890)
+    layer2.0.conv2.weight tensor(28.8233)
+    layer2.0.downsample.0.weight tensor(31.5558)
+    layer2.1.conv1.weight tensor(30.7668)
+    layer2.1.conv2.weight tensor(28.4516)
+    layer3.0.conv1.weight tensor(30.9247)
+    layer3.0.conv2.weight tensor(26.6841)
+    layer3.0.downsample.0.weight tensor(28.7825)
+    layer3.1.conv1.weight tensor(28.9707)
+    layer3.1.conv2.weight tensor(25.6784)
+    layer4.0.conv1.weight tensor(26.8495)
+    layer4.0.conv2.weight tensor(25.8394)
+    layer4.0.downsample.0.weight tensor(28.6355)
+    layer4.1.conv1.weight tensor(26.8758)
+    layer4.1.conv2.weight tensor(28.4319)
+    fc._packed_params._packed_params tensor(32.6505)
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 88-89
 
 As another example ``wt_compare_dict`` can also be used to plot the histogram of the weights of floating point and quantized models.
+
+.. GENERATED FROM PYTHON SOURCE LINES 89-104
+
+.. code-block:: default
+
+
+    import matplotlib.pyplot as plt
+
+    f = wt_compare_dict['conv1.weight']['float'].flatten()
+    plt.hist(f, bins = 100)
+    plt.title("Floating point model weights of conv1")
+    plt.show()
+
+    q = wt_compare_dict['conv1.weight']['quantized'].flatten().dequantize()
+    plt.hist(q, bins = 100)
+    plt.title("Quantized model weights of conv1")
+    plt.show()
+
+
+
+
+
+
+.. image-sg:: /prototype/images/sphx_glr_numeric_suite_tutorial_001.png
+   :alt: Quantized model weights of conv1
+   :srcset: /prototype/images/sphx_glr_numeric_suite_tutorial_001.png
+   :class: sphx-glr-single-img
+
+
+
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 105-113
 
@@ -78,24 +245,36 @@ We call ``compare_model_outputs()`` from PyTorch Numeric Suite to get the activa
 
 .. code-block:: default
 
-
+    data = img_data[0][0]
 
     # Take in floating point and quantized model as well as input data, and returns a dict, with keys
     # corresponding to the quantized module names and each entry being a dictionary with two keys 'float' and
     # 'quantized', containing the activations of floating point and quantized model at matching locations.
+    act_compare_dict = ns.compare_model_outputs(float_model, qmodel, data)
+
+    print('keys of act_compare_dict:')
+    print(act_compare_dict.keys())
+
+    print("\nkeys of act_compare_dict entry for conv1's output:")
+    print(act_compare_dict['conv1.stats'].keys())
+    print(act_compare_dict['conv1.stats']['float'][0].shape)
+    print(act_compare_dict['conv1.stats']['quantized'][0].shape)
 
 
 
 
 
+.. rst-class:: sphx-glr-script-out
 
+ .. code-block:: none
 
+    keys of act_compare_dict:
+    dict_keys(['conv1.stats', 'layer1.0.conv1.stats', 'layer1.0.conv2.stats', 'layer1.0.add_relu.stats', 'layer1.1.conv1.stats', 'layer1.1.conv2.stats', 'layer1.1.add_relu.stats', 'layer2.0.conv1.stats', 'layer2.0.conv2.stats', 'layer2.0.downsample.0.stats', 'layer2.0.add_relu.stats', 'layer2.1.conv1.stats', 'layer2.1.conv2.stats', 'layer2.1.add_relu.stats', 'layer3.0.conv1.stats', 'layer3.0.conv2.stats', 'layer3.0.downsample.0.stats', 'layer3.0.add_relu.stats', 'layer3.1.conv1.stats', 'layer3.1.conv2.stats', 'layer3.1.add_relu.stats', 'layer4.0.conv1.stats', 'layer4.0.conv2.stats', 'layer4.0.downsample.0.stats', 'layer4.0.add_relu.stats', 'layer4.1.conv1.stats', 'layer4.1.conv2.stats', 'layer4.1.add_relu.stats', 'fc.stats', 'quant.stats'])
 
-
-
-
-
-
+    keys of act_compare_dict entry for conv1's output:
+    dict_keys(['float', 'quantized'])
+    torch.Size([2, 64, 5, 5])
+    torch.Size([2, 64, 5, 5])
 
 
 
@@ -103,6 +282,55 @@ We call ``compare_model_outputs()`` from PyTorch Numeric Suite to get the activa
 .. GENERATED FROM PYTHON SOURCE LINES 130-131
 
 This dict can be used to compare and compute the quantization error of the activations of float and quantized models as following.
+
+.. GENERATED FROM PYTHON SOURCE LINES 131-134
+
+.. code-block:: default
+
+    for key in act_compare_dict:
+        print(key, compute_error(act_compare_dict[key]['float'][0], act_compare_dict[key]['quantized'][0].dequantize()))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    conv1.stats tensor(37.1388, grad_fn=<MulBackward0>)
+    layer1.0.conv1.stats tensor(30.1562, grad_fn=<MulBackward0>)
+    layer1.0.conv2.stats tensor(29.0511, grad_fn=<MulBackward0>)
+    layer1.0.add_relu.stats tensor(32.7605, grad_fn=<MulBackward0>)
+    layer1.1.conv1.stats tensor(30.1330, grad_fn=<MulBackward0>)
+    layer1.1.conv2.stats tensor(26.3872, grad_fn=<MulBackward0>)
+    layer1.1.add_relu.stats tensor(30.0649, grad_fn=<MulBackward0>)
+    layer2.0.conv1.stats tensor(26.9528, grad_fn=<MulBackward0>)
+    layer2.0.conv2.stats tensor(26.7812, grad_fn=<MulBackward0>)
+    layer2.0.downsample.0.stats tensor(23.2544, grad_fn=<MulBackward0>)
+    layer2.0.add_relu.stats tensor(26.2048, grad_fn=<MulBackward0>)
+    layer2.1.conv1.stats tensor(25.6735, grad_fn=<MulBackward0>)
+    layer2.1.conv2.stats tensor(24.6564, grad_fn=<MulBackward0>)
+    layer2.1.add_relu.stats tensor(26.0816, grad_fn=<MulBackward0>)
+    layer3.0.conv1.stats tensor(26.9846, grad_fn=<MulBackward0>)
+    layer3.0.conv2.stats tensor(26.8694, grad_fn=<MulBackward0>)
+    layer3.0.downsample.0.stats tensor(25.1453, grad_fn=<MulBackward0>)
+    layer3.0.add_relu.stats tensor(24.8748, grad_fn=<MulBackward0>)
+    layer3.1.conv1.stats tensor(31.0022, grad_fn=<MulBackward0>)
+    layer3.1.conv2.stats tensor(26.1478, grad_fn=<MulBackward0>)
+    layer3.1.add_relu.stats tensor(25.5775, grad_fn=<MulBackward0>)
+    layer4.0.conv1.stats tensor(27.4940, grad_fn=<MulBackward0>)
+    layer4.0.conv2.stats tensor(27.2149, grad_fn=<MulBackward0>)
+    layer4.0.downsample.0.stats tensor(22.5105, grad_fn=<MulBackward0>)
+    layer4.0.add_relu.stats tensor(21.2105, grad_fn=<MulBackward0>)
+    layer4.1.conv1.stats tensor(26.5055, grad_fn=<MulBackward0>)
+    layer4.1.conv2.stats tensor(18.5702, grad_fn=<MulBackward0>)
+    layer4.1.add_relu.stats tensor(18.5091, grad_fn=<MulBackward0>)
+    fc.stats tensor(20.7117, grad_fn=<MulBackward0>)
+    quant.stats tensor(47.9043)
+
+
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 135-139
 
@@ -115,16 +343,16 @@ is ``DEFAULT_NUMERIC_SUITE_COMPARE_MODEL_OUTPUT_WHITE_LIST``
 
 .. code-block:: default
 
+    ns.prepare_model_outputs(float_model, qmodel)
 
-
-
-
-
+    for data in img_data:
+        float_model(data[0])
+        qmodel(data[0])
 
     # Find the matching activation between floating point and quantized modules, and return a dict with key
     # corresponding to quantized module names and each entry being a dictionary with two keys 'float'
     # and 'quantized', containing the matching floating point and quantized activations logged by the logger
-
+    act_compare_dict = ns.get_matching_activations(float_model, qmodel)
 
 
 
@@ -138,13 +366,72 @@ is ``DEFAULT_NUMERIC_SUITE_COMPARE_MODEL_OUTPUT_WHITE_LIST``
 
 The default logger used in above APIs is ``OutputLogger``, which is used to log the outputs of the modules. We can inherit from base ``Logger`` class and create our own logger to perform different functionalities. For example we can make a new ``MyOutputLogger`` class as below.
 
+.. GENERATED FROM PYTHON SOURCE LINES 153-166
+
+.. code-block:: default
+
+
+    class MyOutputLogger(ns.Logger):
+        r"""Customized logger class
+        """
+
+        def __init__(self):
+            super(MyOutputLogger, self).__init__()
+
+        def forward(self, x):
+            # Custom functionalities
+            # ...
+            return x
+
+
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 167-168
 
 And then we can pass this logger into above APIs such as:
 
+.. GENERATED FROM PYTHON SOURCE LINES 168-172
+
+.. code-block:: default
+
+
+    data = img_data[0][0]
+    act_compare_dict = ns.compare_model_outputs(float_model, qmodel, data, logger_cls=MyOutputLogger)
+
+
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 173-174
 
 or:
+
+.. GENERATED FROM PYTHON SOURCE LINES 174-183
+
+.. code-block:: default
+
+
+    ns.prepare_model_outputs(float_model, qmodel, MyOutputLogger)
+    for data in img_data:
+        float_model(data[0])
+        qmodel(data[0])
+    act_compare_dict = ns.get_matching_activations(float_model, qmodel)
+
+
+
+
+
+
+
+
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 184-200
 
@@ -165,6 +452,26 @@ The logger can be customizable, default logger is ``ShadowLogger`` and it will s
 
 Notice before each call of ``compare_model_outputs()`` and ``compare_model_stub()`` we need to have clean float and quantized model. This is because ``compare_model_outputs()`` and ``compare_model_stub()`` modify float and quantized model inplace, and it will cause unexpected results if call one right after another.
 
+.. GENERATED FROM PYTHON SOURCE LINES 201-210
+
+.. code-block:: default
+
+
+    float_model = torchvision.models.quantization.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1, quantize=False)
+    float_model.to('cpu')
+    float_model.eval()
+    float_model.fuse_model()
+    float_model.qconfig = torch.quantization.default_qconfig
+    img_data = [(torch.rand(2, 3, 10, 10, dtype=torch.float), torch.randint(0, 1, (2,), dtype=torch.long)) for _ in range(2)]
+    qmodel = quantize(float_model, default_eval_fn, [img_data], inplace=False)
+
+
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 211-212
 
 In the following example we call ``compare_model_stub()`` from PyTorch Numeric Suite to compare ``QuantizableBasicBlock`` module with its float point equivalent. This API returns a dict with key corresponding to module names and each entry being a dictionary with two keys 'float' and 'quantized', containing the output tensors of quantized and its matching float shadow module.
@@ -174,25 +481,37 @@ In the following example we call ``compare_model_stub()`` from PyTorch Numeric S
 .. code-block:: default
 
 
-
-
+    data = img_data[0][0]
+    module_swap_list = [torchvision.models.quantization.resnet.QuantizableBasicBlock]
 
     # Takes in floating point and quantized model as well as input data, and returns a dict with key
     # corresponding to module names and each entry being a dictionary with two keys 'float' and
     # 'quantized', containing the output tensors of quantized module and its matching floating point shadow module.
+    ob_dict = ns.compare_model_stub(float_model, qmodel, module_swap_list, data)
+
+    print('keys of ob_dict:')
+    print(ob_dict.keys())
+
+    print("\nkeys of ob_dict entry for layer1.0's output:")
+    print(ob_dict['layer1.0.stats'].keys())
+    print(ob_dict['layer1.0.stats']['float'][0].shape)
+    print(ob_dict['layer1.0.stats']['quantized'][0].shape)
 
 
 
 
 
+.. rst-class:: sphx-glr-script-out
 
+ .. code-block:: none
 
+    keys of ob_dict:
+    dict_keys(['layer1.0.stats', 'layer1.1.stats', 'layer2.0.stats', 'layer2.1.stats', 'layer3.0.stats', 'layer3.1.stats', 'layer4.0.stats', 'layer4.1.stats'])
 
-
-
-
-
-
+    keys of ob_dict entry for layer1.0's output:
+    dict_keys(['float', 'quantized'])
+    torch.Size([64, 3, 3])
+    torch.Size([64, 3, 3])
 
 
 
@@ -201,21 +520,122 @@ In the following example we call ``compare_model_stub()`` from PyTorch Numeric S
 
 This dict can be then used to compare and compute the module level quantization error.
 
+.. GENERATED FROM PYTHON SOURCE LINES 231-235
+
+.. code-block:: default
+
+
+    for key in ob_dict:
+        print(key, compute_error(ob_dict[key]['float'][0], ob_dict[key]['quantized'][0].dequantize()))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    layer1.0.stats tensor(32.7203)
+    layer1.1.stats tensor(34.8070)
+    layer2.0.stats tensor(29.3657)
+    layer2.1.stats tensor(31.0864)
+    layer3.0.stats tensor(28.5980)
+    layer3.1.stats tensor(31.3857)
+    layer4.0.stats tensor(25.3010)
+    layer4.1.stats tensor(22.9801)
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 236-237
 
 If we want to do the comparison for more than one input data, we can do the following.
+
+.. GENERATED FROM PYTHON SOURCE LINES 237-243
+
+.. code-block:: default
+
+
+    ns.prepare_model_with_stubs(float_model, qmodel, module_swap_list, ns.ShadowLogger)
+    for data in img_data:
+        qmodel(data[0])
+    ob_dict = ns.get_logger_dict(qmodel)
+
+
+
+
+
+
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 244-245
 
 The default logger used in above APIs is ``ShadowLogger``, which is used to log the outputs of the quantized module and its matching float shadow module. We can inherit from base ``Logger`` class and create our own logger to perform different functionalities. For example we can make a new ``MyShadowLogger`` class as below.
 
+.. GENERATED FROM PYTHON SOURCE LINES 245-258
+
+.. code-block:: default
+
+
+    class MyShadowLogger(ns.Logger):
+        r"""Customized logger class
+        """
+
+        def __init__(self):
+            super(MyShadowLogger, self).__init__()
+
+        def forward(self, x, y):
+            # Custom functionalities
+            # ...
+            return x
+
+
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 259-260
 
 And then we can pass this logger into above APIs such as:
 
+.. GENERATED FROM PYTHON SOURCE LINES 260-264
+
+.. code-block:: default
+
+
+    data = img_data[0][0]
+    ob_dict = ns.compare_model_stub(float_model, qmodel, module_swap_list, data, logger_cls=MyShadowLogger)
+
+
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 265-266
 
 or:
+
+.. GENERATED FROM PYTHON SOURCE LINES 266-272
+
+.. code-block:: default
+
+
+    ns.prepare_model_with_stubs(float_model, qmodel, module_swap_list, MyShadowLogger)
+    for data in img_data:
+        qmodel(data[0])
+    ob_dict = ns.get_logger_dict(qmodel)
+
+
+
+
+
+
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 273-278
 
@@ -231,9 +651,79 @@ Setup
 ^^^^^^
 First we define the model as below. Notice that within this model only ``nn.LSTM`` and ``nn.Linear`` modules will be quantized dynamically and ``nn.Embedding`` will remain as floating point module after quantization.
 
+.. GENERATED FROM PYTHON SOURCE LINES 283-315
+
+.. code-block:: default
+
+
+    class LSTMModel(nn.Module):
+        """Container module with an encoder, a recurrent module, and a decoder."""
+
+        def __init__(self, ntoken, ninp, nhid, nlayers, dropout=0.5):
+            super(LSTMModel, self).__init__()
+            self.encoder = nn.Embedding(ntoken, ninp)
+            self.rnn = nn.LSTM(ninp, nhid, nlayers, dropout=dropout)
+            self.decoder = nn.Linear(nhid, ntoken)
+
+            self.init_weights()
+
+            self.nhid = nhid
+            self.nlayers = nlayers
+
+        def init_weights(self):
+            initrange = 0.1
+            self.encoder.weight.data.uniform_(-initrange, initrange)
+            self.decoder.bias.data.zero_()
+            self.decoder.weight.data.uniform_(-initrange, initrange)
+
+        def forward(self, input, hidden):
+            emb = self.encoder(input)
+            output, hidden = self.rnn(emb, hidden)
+            decoded = self.decoder(output)
+            return decoded, hidden
+
+        def init_hidden(self, bsz):
+            weight = next(self.parameters())
+            return (weight.new_zeros(self.nlayers, bsz, self.nhid),
+                    weight.new_zeros(self.nlayers, bsz, self.nhid))
+
+
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 316-317
 
 Then we create the ``float_model`` and quantize it into qmodel.
+
+.. GENERATED FROM PYTHON SOURCE LINES 317-333
+
+.. code-block:: default
+
+
+    ntokens = 10
+
+    float_model = LSTMModel(
+        ntoken = ntokens,
+        ninp = 512,
+        nhid = 256,
+        nlayers = 5,
+    )
+
+    float_model.eval()
+
+    qmodel = torch.quantization.quantize_dynamic(
+        float_model, {nn.LSTM, nn.Linear}, dtype=torch.qint8
+    )
+
+
+
+
+
+
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 334-338
 
@@ -242,9 +732,53 @@ Then we create the ``float_model`` and quantize it into qmodel.
 
 We first call ``compare_weights()`` from PyTorch Numeric Suite to get a dictionary ``wt_compare_dict`` with key corresponding to module names and each entry is a dictionary with two keys 'float' and 'quantized', containing the float and quantized weights.
 
+.. GENERATED FROM PYTHON SOURCE LINES 339-342
+
+.. code-block:: default
+
+
+    wt_compare_dict = ns.compare_weights(float_model.state_dict(), qmodel.state_dict())
+
+
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 343-344
 
 Once we get ``wt_compare_dict``, it can be used to compare and compute the quantization error of the weights of float and quantized models as following.
+
+.. GENERATED FROM PYTHON SOURCE LINES 344-351
+
+.. code-block:: default
+
+
+    for key in wt_compare_dict:
+        if wt_compare_dict[key]['quantized'].is_quantized:
+            print(key, compute_error(wt_compare_dict[key]['float'], wt_compare_dict[key]['quantized'].dequantize()))
+        else:
+            print(key, compute_error(wt_compare_dict[key]['float'], wt_compare_dict[key]['quantized']))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    encoder.weight tensor(inf)
+    rnn._all_weight_values.0.param tensor(48.1323)
+    rnn._all_weight_values.1.param tensor(48.1355)
+    rnn._all_weight_values.2.param tensor(48.1213)
+    rnn._all_weight_values.3.param tensor(48.1506)
+    rnn._all_weight_values.4.param tensor(48.1348)
+    decoder._packed_params._packed_params tensor(48.0233)
+
+
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 352-358
 
@@ -255,9 +789,58 @@ The Inf value in ``encoder.weight`` entry above is because encoder module is not
 
 Then we call ``compare_model_outputs()`` from PyTorch Numeric Suite to get the activations in float model and quantized model at corresponding locations for the given input data. This API returns a dict with module names being keys. Each entry is itself a dict with two keys 'float' and 'quantized' containing the activations. Notice that this sequence model has two inputs, and we can pass both inputs into ``compare_model_outputs()`` and ``compare_model_stub()``.
 
+.. GENERATED FROM PYTHON SOURCE LINES 359-367
+
+.. code-block:: default
+
+
+
+    input_ = torch.randint(ntokens, (1, 1), dtype=torch.long)
+    hidden = float_model.init_hidden(1)
+
+    act_compare_dict = ns.compare_model_outputs(float_model, qmodel, input_, hidden)
+    print(act_compare_dict.keys())
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    dict_keys(['encoder.stats', 'rnn.stats', 'decoder.stats'])
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 368-369
 
 This dict can be used to compare and compute the quantization error of the activations of float and quantized models as following. The LSTM module in this model has two outputs, in this example we compute the error of the first output.
+
+.. GENERATED FROM PYTHON SOURCE LINES 369-374
+
+.. code-block:: default
+
+
+
+    for key in act_compare_dict:
+        print(key, compute_error(act_compare_dict[key]['float'][0][0], act_compare_dict[key]['quantized'][0][0]))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    encoder.stats tensor(inf, grad_fn=<MulBackward0>)
+    rnn.stats tensor(54.7745, grad_fn=<MulBackward0>)
+    decoder.stats tensor(37.2281, grad_fn=<MulBackward0>)
+
+
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 375-381
 
@@ -268,13 +851,82 @@ Next we call ``compare_model_stub()`` from PyTorch Numeric Suite to compare LSTM
 
 We reset the model first.
 
+.. GENERATED FROM PYTHON SOURCE LINES 382-396
+
+.. code-block:: default
+
+
+
+    float_model = LSTMModel(
+        ntoken = ntokens,
+        ninp = 512,
+        nhid = 256,
+        nlayers = 5,
+    )
+    float_model.eval()
+
+    qmodel = torch.quantization.quantize_dynamic(
+        float_model, {nn.LSTM, nn.Linear}, dtype=torch.qint8
+    )
+
+
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 397-398
 
 Next we call ``compare_model_stub()`` from PyTorch Numeric Suite to compare LSTM and Linear module with its float point equivalent. This API returns a dict with key corresponding to module names and each entry being a dictionary with two keys 'float' and 'quantized', containing the output tensors of quantized and its matching float shadow module.
 
+.. GENERATED FROM PYTHON SOURCE LINES 398-403
+
+.. code-block:: default
+
+
+    module_swap_list = [nn.Linear, nn.LSTM]
+    ob_dict = ns.compare_model_stub(float_model, qmodel, module_swap_list, input_, hidden)
+    print(ob_dict.keys())
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    dict_keys(['rnn.stats', 'decoder.stats'])
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 404-405
 
 This dict can be then used to compare and compute the module level quantization error.
+
+.. GENERATED FROM PYTHON SOURCE LINES 405-409
+
+.. code-block:: default
+
+
+    for key in ob_dict:
+        print(key, compute_error(ob_dict[key]['float'][0], ob_dict[key]['quantized'][0]))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    rnn.stats tensor(54.6112)
+    decoder.stats tensor(40.2375)
+
+
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 410-421
 
@@ -290,22 +942,10 @@ References
 ----------
 [1] `DYNAMIC QUANTIZATION ON AN LSTM WORD LANGUAGE MODEL <https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html>`_.
 
-.. GENERATED FROM PYTHON SOURCE LINES 421-422
-
-.. code-block:: default
-
-
-    # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
-
-
-
-
-
-
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.001 seconds)
+   **Total running time of the script:** ( 0 minutes  1.380 seconds)
 
 
 .. _sphx_glr_download_prototype_numeric_suite_tutorial.py:
