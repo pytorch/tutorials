@@ -3,13 +3,11 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
-* `Dynamic Compilation Control with torch.compiler.set_stance <https://pytorch.org/tutorials/recipes/torch_compiler_set_stance_tutorial.html>`__
-* `Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile() <https://pytorch.org/tutorials/intermediate/transformer_building_blocks.html>`__
-* `Understanding the torch.export Flow and Solutions to Common Challenges <https://pytorch.org/tutorials/recipes/torch_export_challenges_solutions.html>`__
-* Updated `torch.export Tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html#constraints-dynamic-shapes>`__ with automatic dynamic shapes ``Dim.AUTO``
-* Updated `torch.export AOTInductor Tutorial for Python runtime <https://pytorch.org/tutorials/recipes/torch_export_aoti_python.html>`__
-* Updated `Using User-Defined Triton Kernels with torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_user_defined_triton_kernel_tutorial.html#composability>`__ with new ``torch.library.triton_op``
-* Updated `Compile Time Caching in torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_caching_tutorial.html>`__ with new ``Mega-Cache``
+* `Utilizing Torch Function modes with torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_torch_function_modes.html>`__
+* `Context Parallel Tutorial <https://pytorch.org/tutorials/prototype/context_parallel.html>`__
+* `PyTorch 2 Export Quantization with Intel GPU Backend through Inductor <https://pytorch.org/tutorials/prototype/pt2e_quant_xpu_inductor.html>`__
+* `(beta) Explicit horizontal fusion with foreach_map and torch.compile <https://pytorch.org/tutorials/recipes/foreach_map.html>`__
+* Updated `Inductor Windows CPU Tutorial <https://pytorch.org/tutorials/prototype/inductor_windows.html>`__
 
 .. raw:: html
 

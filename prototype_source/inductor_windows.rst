@@ -22,10 +22,9 @@ Install a Compiler
 
 C++ compiler is required for TorchInductor optimization, let's take Microsoft Visual C++ (MSVC) as an example.
 
-1. Download and install `MSVC <https://visualstudio.microsoft.com/downloads/>`_.
+#. Download and install `MSVC <https://visualstudio.microsoft.com/downloads/>`_.
 
-1. During Installation, select **Workloads** and then **Desktop & Mobile**.
-1. Select a checkmark on **Desktop Development with C++** and install.
+#. During Installation, select **Workloads** and then **Desktop & Mobile**. Select a checkmark on **Desktop Development with C++** and install.
 
 .. image:: ../_static/img/install_msvc.png
 
@@ -44,18 +43,21 @@ Next, let's configure our environment.
     
     "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Auxiliary/Build/vcvars64.bat"
 #. Create and activate a virtual environment: ::
-#. Install `PyTorch 2.5 <https://pytorch.org/get-started/locally/>`_ or later for CPU Usage. Install PyTorch 2.7 or later refer to `Getting Started on Intel GPU <https://pytorch.org/docs/main/notes/get_start_xpu.html>`_ for XPU usage.
-#. Here is an example of how to use TorchInductor on Windows:
-.. code-block:: python
 
-    import torch
-    device="cpu" # or "xpu" for XPU
-    def foo(x, y):
-        a = torch.sin(x)
-        b = torch.cos(x)
-        return a + b
-    opt_foo1 = torch.compile(foo)
-    print(opt_foo1(torch.randn(10, 10).to(device), torch.randn(10, 10).to(device)))
+#. Install `PyTorch 2.5 <https://pytorch.org/get-started/locally/>`_ or later for CPU Usage. Install PyTorch 2.7 or later refer to `Getting Started on Intel GPU <https://pytorch.org/docs/main/notes/get_start_xpu.html>`_ for XPU usage.
+
+#. Here is an example of how to use TorchInductor on Windows:
+
+    .. code-block:: python
+
+        import torch
+        device="cpu" # or "xpu" for XPU
+        def foo(x, y):
+            a = torch.sin(x)
+            b = torch.cos(x)
+            return a + b
+        opt_foo1 = torch.compile(foo)
+        print(opt_foo1(torch.randn(10, 10).to(device), torch.randn(10, 10).to(device)))
 
 #. Below is the output of the above example::
 
