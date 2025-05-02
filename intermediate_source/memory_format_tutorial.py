@@ -359,13 +359,15 @@ def attribute(m):
 
 
 #############################
-# To debug which operators don't support channels last format, you could uncomment 
-# the following code. This will wrap PyTorch functions to check if channels last
-# format is preserved through operations.
+# To debug which operators don't support channels last format, execute
+# the following lines:
 #
-# attribute(torch.Tensor)
-# attribute(torch.nn.functional)
-# attribute(torch)
+# .. code-block:: python
+#
+#    attribute(torch.Tensor)
+#    attribute(torch.nn.functional)
+#    attribute(torch)
+#
 
 ######################################################################
 # If you found an operator that doesn't support channels last tensors
