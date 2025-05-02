@@ -280,7 +280,7 @@ Wrapping Triton kernels with ``triton_op``
 Use ``torch.library.triton_op`` to wrap a function that may invoke one or more Triton kernels.
 Use ``torch.library.wrap_triton`` to wrap the calls to the Triton kernel.
 
-.. GENERATED FROM PYTHON SOURCE LINES 205-236
+.. GENERATED FROM PYTHON SOURCE LINES 205-230
 
 .. code-block:: default
 
@@ -309,11 +309,6 @@ Use ``torch.library.wrap_triton`` to wrap the calls to the Triton kernel.
         output = tl.sin(x)
         tl.store(out_ptr + offsets, output, mask=mask)
 
-    def sin_triton(x):
-        out = torch.empty_like(x)
-        n_elements = x.numel()
-        sin_kernel[(n_elements,)](x, out, n_elements, BLOCK_SIZE=4)
-        return out
 
 
 
@@ -321,12 +316,11 @@ Use ``torch.library.wrap_triton`` to wrap the calls to the Triton kernel.
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 237-238
+.. GENERATED FROM PYTHON SOURCE LINES 231-232
 
 You can invoke the ``triton_op`` in one of the following two ways.
 
-.. GENERATED FROM PYTHON SOURCE LINES 238-246
+.. GENERATED FROM PYTHON SOURCE LINES 232-240
 
 .. code-block:: default
 
@@ -345,11 +339,11 @@ You can invoke the ``triton_op`` in one of the following two ways.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 247-248
+.. GENERATED FROM PYTHON SOURCE LINES 241-242
 
 The resulting ``triton_op`` works with ``torch.compile`` and ``AOTInductor``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 248-252
+.. GENERATED FROM PYTHON SOURCE LINES 242-246
 
 .. code-block:: default
 
@@ -364,7 +358,7 @@ The resulting ``triton_op`` works with ``torch.compile`` and ``AOTInductor``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 253-259
+.. GENERATED FROM PYTHON SOURCE LINES 247-253
 
 Adding training support
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -373,7 +367,7 @@ Use ``register_autograd`` to add an autograd formula for the ``triton_op``.
 Prefer this to using ``torch.autograd.Function`` (which has various composability footguns
 with ``torch.compile``).
 
-.. GENERATED FROM PYTHON SOURCE LINES 259-270
+.. GENERATED FROM PYTHON SOURCE LINES 253-264
 
 .. code-block:: default
 
@@ -395,12 +389,12 @@ with ``torch.compile``).
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 271-273
+.. GENERATED FROM PYTHON SOURCE LINES 265-267
 
 Note that the backward must be a composition of PyTorch-understood operators.
 If you want the backward to call Triton kernels, then those must be wrapped in ``triton_op`` as well:
 
-.. GENERATED FROM PYTHON SOURCE LINES 273-306
+.. GENERATED FROM PYTHON SOURCE LINES 267-300
 
 .. code-block:: default
 
@@ -444,13 +438,13 @@ If you want the backward to call Triton kernels, then those must be wrapped in `
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 307-310
+.. GENERATED FROM PYTHON SOURCE LINES 301-304
 
 Adding a CPU Fallback
 ^^^^^^^^^^^^^^^^^^^^^
 Triton kernels don’t run on CPU. Use  ``register_kernel`` to add a CPU (or any other device) fallback for the ``triton_op``:
 
-.. GENERATED FROM PYTHON SOURCE LINES 310-319
+.. GENERATED FROM PYTHON SOURCE LINES 304-313
 
 .. code-block:: default
 
@@ -470,11 +464,11 @@ Triton kernels don’t run on CPU. Use  ``register_kernel`` to add a CPU (or any
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 320-321
+.. GENERATED FROM PYTHON SOURCE LINES 314-315
 
 The fallback must be composed of PyTorch operators.
 
-.. GENERATED FROM PYTHON SOURCE LINES 323-328
+.. GENERATED FROM PYTHON SOURCE LINES 317-322
 
 Adding a FlopCounter Formula
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -482,7 +476,7 @@ Adding a FlopCounter Formula
 To specify how many flops the triton kernel reports under PyTorch's flop counter,
 use ``register_flop_formula``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 328-340
+.. GENERATED FROM PYTHON SOURCE LINES 322-334
 
 .. code-block:: default
 
@@ -505,7 +499,7 @@ use ``register_flop_formula``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 341-347
+.. GENERATED FROM PYTHON SOURCE LINES 335-341
 
 ``FlopCounterMode`` requires `tabulate <https://pypi.org/project/tabulate/>`__.
 Before running the code below, make sure you have ``tabulate`` installed or install by
@@ -514,7 +508,7 @@ running ``pip install tabulate``.
 >>> with FlopCounterMode() as flop_counter:
 >>>     y = mysin(x)
 
-.. GENERATED FROM PYTHON SOURCE LINES 349-379
+.. GENERATED FROM PYTHON SOURCE LINES 343-373
 
 Limitations
 --------------------------------------------------------------------
@@ -550,7 +544,7 @@ See Also
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  1.734 seconds)
+   **Total running time of the script:** ( 0 minutes  1.747 seconds)
 
 
 .. _sphx_glr_download_recipes_torch_compile_user_defined_triton_kernel_tutorial.py:
