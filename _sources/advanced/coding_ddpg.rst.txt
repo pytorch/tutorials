@@ -92,6 +92,12 @@ Imports and setup
 
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 88-89
 
 We will execute the policy on CUDA if available
@@ -107,6 +113,12 @@ We will execute the policy on CUDA if available
         else torch.device("cpu")
     )
     collector_device = torch.device("cpu")  # Change the device to ``cuda`` to use CUDA
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 98-184
@@ -235,6 +247,12 @@ Later, we will see how the target parameters should be updated in TorchRL.
 
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 217-233
 
 The value estimator loss method
@@ -262,6 +280,12 @@ on how this can be changed.
     from torchrl.objectives.utils import ValueEstimators
 
     default_value_estimator = ValueEstimators.TD0
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 239-242
@@ -298,6 +322,12 @@ we will build the corresponding module to be used at train time:
         else:
             raise NotImplementedError(f"Unknown value type {value_type}")
         self._value_estimator.set_keys(value=value_key)
+
+
+
+
+
+
 
 
 
@@ -338,6 +368,12 @@ can be used.
         with self.value_network_params.detach().to_module(self.value_network):
             td_copy = self.value_network(td_copy)
         return -td_copy.get("state_action_value")
+
+
+
+
+
+
 
 
 
@@ -389,6 +425,12 @@ To do this, we will rely on the value estimator of our class:
         td_error = (pred_val - target_value).pow(2)
 
         return loss_value, td_error, pred_val, target_value
+
+
+
+
+
+
 
 
 
@@ -447,6 +489,12 @@ delivered to the user.
         forward = _forward
         loss_value = _loss_value
         loss_actor = _loss_actor
+
+
+
+
+
+
 
 
 
@@ -528,6 +576,12 @@ with either one of the two backends considered above (``dm-control`` or ``gym``)
         }
         env = env_library(*env_args, **env_kwargs)
         return env
+
+
+
+
+
+
 
 
 
@@ -618,6 +672,12 @@ base environment in a specialized :class:`torchr.envs.TransformedEnv` class.
 
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 551-575
 
 Parallel execution
@@ -685,6 +745,12 @@ the first method:
     backend = "gym"
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 611-626
 
 .. note::
@@ -710,6 +776,12 @@ efficient learning.
     reward_scaling = 5.0
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 629-631
 
 We also define when a trajectory will be truncated. A thousand steps (500 if
@@ -721,6 +793,12 @@ frame-skip = 2) is a good number to use for the cheetah task:
 
 
     max_frames_per_traj = 500
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 635-645
@@ -753,6 +831,12 @@ number of steps and compute its summary statistics.
 
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 658-661
 
 Normalization stats
@@ -769,6 +853,12 @@ Number of random steps used as for stats computation using ``ObservationNorm``
     transform_state_dict = get_env_stats()
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 667-668
 
 Number of environments in each data collector
@@ -778,6 +868,12 @@ Number of environments in each data collector
 .. code-block:: default
 
     env_per_collector = 4
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 671-673
@@ -797,6 +893,12 @@ environment:
 
 
     from torchrl.data import CompositeSpec
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 683-714
@@ -898,6 +1000,12 @@ environment specs.
     )
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 775-781
 
 Exploration
@@ -922,6 +1030,12 @@ Let's define the number of frames before OU noise reaches its minimum value
     )
     if device == torch.device("cpu"):
         actor_model_explore.share_memory()
+
+
+
+
+
+
 
 
 
@@ -979,6 +1093,12 @@ The total frames we will use during training should be around 1M.
     total_frames = 10_000  # 1_000_000
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 842-850
 
 The number of frames returned by the collector at each iteration of the outer
@@ -1013,6 +1133,12 @@ In other words, we expect batches from the collector to have a shape
         device=collector_device,
         exploration_type=ExplorationType.RANDOM,
     )
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 871-881
@@ -1054,6 +1180,12 @@ The following helper function builds this object:
 
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 903-904
 
 We will be recording the performance every 10 batch collected
@@ -1074,6 +1206,12 @@ We will be recording the performance every 10 batch collected
         RandomSampler,
         TensorDictReplayBuffer,
     )
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 918-931
@@ -1124,6 +1262,12 @@ hyperparameters:
 
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 959-960
 
 We'll store the replay buffer in a temporary directory on disk
@@ -1137,6 +1281,12 @@ We'll store the replay buffer in a temporary directory on disk
 
     tmpdir = tempfile.TemporaryDirectory()
     buffer_scratch_dir = tmpdir.name
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 967-988
@@ -1177,6 +1327,12 @@ Let's start with the number of frames stored in the buffer
     buffer_size = ceil_div(buffer_size, traj_len)
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 998-999
 
 Prioritized replay buffer is disabled by default
@@ -1186,6 +1342,12 @@ Prioritized replay buffer is disabled by default
 .. code-block:: default
 
     prb = False
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 1002-1004
@@ -1200,6 +1362,12 @@ collected. This is known as the update-to-data or ``UTD`` ratio:
     update_to_data = 64
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 1007-1008
 
 We'll be feeding the loss with trajectories of length 25:
@@ -1209,6 +1377,12 @@ We'll be feeding the loss with trajectories of length 25:
 .. code-block:: default
 
     random_crop_len = 25
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 1011-1015
@@ -1234,6 +1408,12 @@ adapt our batch-size to achieve the same number of update-per-frame ratio:
     )
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 1027-1034
 
 Loss module construction
@@ -1256,6 +1436,12 @@ updater.
     loss_module = DDPGLoss(actor, qnet)
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 1042-1043
 
 let's use the TD(lambda) estimator!
@@ -1265,6 +1451,12 @@ let's use the TD(lambda) estimator!
 .. code-block:: default
 
     loss_module.make_value_estimator(ValueEstimators.TDLambda, gamma=gamma, lmbda=lmbda, device=device)
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 1046-1064
@@ -1298,6 +1490,12 @@ training loop.
     target_net_updater = SoftUpdate(loss_module, eps=1 - tau)
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 1070-1074
 
 Optimizer
@@ -1319,6 +1517,12 @@ Finally, we will use the Adam optimizer for the policy and value network:
         loss_module.value_network_params.values(True, True), lr=1e-3, weight_decay=1e-2
     )
     total_collection_steps = total_frames // frames_per_batch
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 1086-1092
@@ -1421,6 +1625,38 @@ modules we need.
     del collector
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+      0%|          | 0/10000 [00:00<?, ?it/s]
+      8%|8         | 800/10000 [00:00<00:06, 1411.66it/s]
+     16%|#6        | 1600/10000 [00:03<00:21, 390.84it/s]
+     24%|##4       | 2400/10000 [00:04<00:13, 572.31it/s]
+     32%|###2      | 3200/10000 [00:04<00:09, 745.86it/s]
+     40%|####      | 4000/10000 [00:05<00:06, 891.67it/s]
+     48%|####8     | 4800/10000 [00:05<00:05, 1028.97it/s]
+     56%|#####6    | 5600/10000 [00:06<00:03, 1121.87it/s]
+    reward: -2.69 (r0 = -3.29), reward eval: reward:  0.00, reward normalized=-2.42/6.36, grad norm= 38.57, loss_value= 372.53, loss_actor= 14.70, target value: -16.04:  56%|#####6    | 5600/10000 [00:07<00:03, 1121.87it/s]
+    reward: -2.69 (r0 = -3.29), reward eval: reward:  0.00, reward normalized=-2.42/6.36, grad norm= 38.57, loss_value= 372.53, loss_actor= 14.70, target value: -16.04:  64%|######4   | 6400/10000 [00:08<00:04, 799.81it/s] 
+    reward: -0.16 (r0 = -3.29), reward eval: reward:  0.00, reward normalized=-2.42/5.83, grad norm= 94.35, loss_value= 263.56, loss_actor= 15.79, target value: -14.56:  64%|######4   | 6400/10000 [00:08<00:04, 799.81it/s]
+    reward: -0.16 (r0 = -3.29), reward eval: reward:  0.00, reward normalized=-2.42/5.83, grad norm= 94.35, loss_value= 263.56, loss_actor= 15.79, target value: -14.56:  72%|#######2  | 7200/10000 [00:09<00:04, 675.46it/s]
+    reward: -1.69 (r0 = -3.29), reward eval: reward:  0.00, reward normalized=-1.81/5.99, grad norm= 76.88, loss_value= 283.86, loss_actor= 10.39, target value: -11.92:  72%|#######2  | 7200/10000 [00:10<00:04, 675.46it/s]
+    reward: -1.69 (r0 = -3.29), reward eval: reward:  0.00, reward normalized=-1.81/5.99, grad norm= 76.88, loss_value= 283.86, loss_actor= 10.39, target value: -11.92:  80%|########  | 8000/10000 [00:11<00:03, 613.35it/s]
+    reward: -3.67 (r0 = -3.29), reward eval: reward:  0.00, reward normalized=-2.57/4.94, grad norm= 114.19, loss_value= 189.63, loss_actor= 14.45, target value: -17.01:  80%|########  | 8000/10000 [00:12<00:03, 613.35it/s]
+    reward: -3.67 (r0 = -3.29), reward eval: reward:  0.00, reward normalized=-2.57/4.94, grad norm= 114.19, loss_value= 189.63, loss_actor= 14.45, target value: -17.01:  88%|########8 | 8800/10000 [00:12<00:02, 575.40it/s]
+    reward: -5.02 (r0 = -3.29), reward eval: reward: -5.78, reward normalized=-2.93/5.22, grad norm= 85.79, loss_value= 249.44, loss_actor= 19.73, target value: -20.08:  88%|########8 | 8800/10000 [00:16<00:02, 575.40it/s] 
+    reward: -5.02 (r0 = -3.29), reward eval: reward: -5.78, reward normalized=-2.93/5.22, grad norm= 85.79, loss_value= 249.44, loss_actor= 19.73, target value: -20.08:  96%|#########6| 9600/10000 [00:16<00:01, 368.44it/s]
+    reward: -4.77 (r0 = -3.29), reward eval: reward: -5.78, reward normalized=-3.19/5.15, grad norm= 168.50, loss_value= 251.58, loss_actor= 17.92, target value: -22.98:  96%|#########6| 9600/10000 [00:17<00:01, 368.44it/s]
+    reward: -4.77 (r0 = -3.29), reward eval: reward: -5.78, reward normalized=-3.19/5.15, grad norm= 168.50, loss_value= 251.58, loss_actor= 17.92, target value: -22.98: : 10400it [00:19, 339.50it/s]                        
+    reward: -5.09 (r0 = -3.29), reward eval: reward: -5.78, reward normalized=-3.53/4.19, grad norm= 88.80, loss_value= 159.75, loss_actor= 19.98, target value: -24.32: : 10400it [00:20, 339.50it/s] 
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 1179-1188
 
 Experiment results
@@ -1447,6 +1683,17 @@ that our policy learned quite well to solve the task.
     plt.xlabel("iter")
     plt.ylabel("reward")
     plt.tight_layout()
+
+
+
+
+.. image-sg:: /advanced/images/sphx_glr_coding_ddpg_001.png
+   :alt: coding ddpg
+   :srcset: /advanced/images/sphx_glr_coding_ddpg_001.png
+   :class: sphx-glr-single-img
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 1200-1221
@@ -1476,7 +1723,7 @@ To iterate further on this loss module we might consider:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  32.106 seconds)
 
 
 .. _sphx_glr_download_advanced_coding_ddpg.py:

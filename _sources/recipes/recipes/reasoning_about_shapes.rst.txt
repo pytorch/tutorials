@@ -52,6 +52,19 @@ of a layer without materializing any data.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    tensor(..., device='meta', size=(2, 5, 9, 9), grad_fn=<ConvolutionBackward0>)
+    Time taken: 0.00013125199984642677
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 32-34
 
 Observe that since data is not materialized, passing arbitrarily large
@@ -69,6 +82,20 @@ inputs will not significantly alter the time taken for shape computation.
 
     print(out)
     print(f"Time taken: {end-start}")
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    tensor(..., device='meta', size=(1024, 5, 65535, 65535),
+           grad_fn=<ConvolutionBackward0>)
+    Time taken: 8.894200072973035e-05
+
 
 
 
@@ -106,6 +133,12 @@ Consider an arbitrary network such as the following:
 
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 72-74
 
 We can view the intermediate shapes within an entire network by registering a
@@ -132,9 +165,35 @@ forward hook to each layer that prints the shape of the output.
     out = net(inp)
 
 
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Shape of output to Conv2d(3, 6, kernel_size=(5, 5), stride=(1, 1)) is torch.Size([1024, 6, 28, 28]).
+    Shape of output to MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False) is torch.Size([1024, 6, 14, 14]).
+    Shape of output to Conv2d(6, 16, kernel_size=(5, 5), stride=(1, 1)) is torch.Size([1024, 16, 10, 10]).
+    Shape of output to MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False) is torch.Size([1024, 16, 5, 5]).
+    Shape of output to Linear(in_features=400, out_features=120, bias=True) is torch.Size([1024, 120]).
+    Shape of output to Linear(in_features=120, out_features=84, bias=True) is torch.Size([1024, 84]).
+    Shape of output to Linear(in_features=84, out_features=10, bias=True) is torch.Size([1024, 10]).
+    Shape of output to Net(
+      (conv1): Conv2d(3, 6, kernel_size=(5, 5), stride=(1, 1))
+      (pool): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+      (conv2): Conv2d(6, 16, kernel_size=(5, 5), stride=(1, 1))
+      (fc1): Linear(in_features=400, out_features=120, bias=True)
+      (fc2): Linear(in_features=120, out_features=84, bias=True)
+      (fc3): Linear(in_features=84, out_features=10, bias=True)
+    ) is torch.Size([1024, 10]).
+
+
+
+
+
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  0.010 seconds)
 
 
 .. _sphx_glr_download_recipes_recipes_reasoning_about_shapes.py:
