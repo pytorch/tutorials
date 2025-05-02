@@ -359,8 +359,8 @@ def attribute(m):
 
 
 #############################
-#
-# The following code  will wrap PyTorch functions to check if channels last
+# To debug which operators don't support channels last format, you could uncomment 
+# the following code. This will wrap PyTorch functions to check if channels last
 # format is preserved through operations.
 #
 # attribute(torch.Tensor)
@@ -369,14 +369,14 @@ def attribute(m):
 
 ######################################################################
 # If you found an operator that doesn't support channels last tensors
-# and you want to contribute, feel free to use following developers
-# guide https://github.com/pytorch/pytorch/wiki/Writing-memory-format-aware-operators.
+# and you want to contribute, see following developers
+# `Writing Memory Format Aware Operators <https://github.com/pytorch/pytorch/wiki/Writing-memory-format-aware-operators>`__.
 #
 
 ######################################################################
-# Code below is to recover the attributes of torch.
+# The code below is to recover the attributes of torch.
 #
-#for (m, attrs) in old_attrs.items():
+# for (m, attrs) in old_attrs.items():
 #    for (k, v) in attrs.items():
 #        setattr(m, k, v)
 
