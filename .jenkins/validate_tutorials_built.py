@@ -31,6 +31,7 @@ NOT_RUN = [
     "prototype_source/vmap_recipe",
     "prototype_source/torchscript_freezing",
     "prototype_source/nestedtensor",
+    "prototype_source/gpu_direct_storage", # requires specific filesystem + GPUDirect Storage to be set up
     "recipes_source/recipes/saving_and_loading_models_for_inference",
     "recipes_source/recipes/saving_multiple_models_in_one_file",
     "recipes_source/recipes/tensorboard_with_pytorch",
