@@ -30,6 +30,10 @@ Introduction to ``torch.compile``
 # - ``numpy``
 # - ``scipy``
 # - ``tabulate``
+#
+# **System Requirements**
+# - A C++ compiler, such as ``g++``
+# - Python development package (``python-devel``/``python-dev``)
 
 ######################################################################
 # NOTE: a modern NVIDIA GPU (H100, A100, or V100) is recommended for this tutorial in
@@ -97,8 +101,11 @@ class MyModule(torch.nn.Module):
         return torch.nn.functional.relu(self.lin(x))
 
 mod = MyModule()
-opt_mod = torch.compile(mod)
-print(opt_mod(t))
+mod.compile()
+print(mod(t))
+## or:
+# opt_mod = torch.compile(mod)
+# print(opt_mod(t))
 
 ######################################################################
 # torch.compile and Nested Calls
@@ -131,8 +138,8 @@ class OuterModule(torch.nn.Module):
         return torch.nn.functional.relu(self.outer_lin(x))
 
 outer_mod = OuterModule()
-opt_outer_mod = torch.compile(outer_mod)
-print(opt_outer_mod(t))
+outer_mod.compile()
+print(outer_mod(t))
 
 ######################################################################
 # We can also disable some functions from being compiled by using
@@ -193,6 +200,12 @@ except Exception as e:
 # 4. **Compile Leaf Functions First:** In complex models with multiple nested
 # functions and modules, start by compiling the leaf functions or modules first.
 # For more information see `TorchDynamo APIs for fine-grained tracing <https://pytorch.org/docs/stable/torch.compiler_fine_grain_apis.html>`__.
+#
+# 5. **Prefer ``mod.compile()`` over ``torch.compile(mod)``:** Avoids ``_orig_`` prefix issues in ``state_dict``.
+#
+# 6. **Use ``fullgraph=True`` to catch graph breaks:** Helps ensure end-to-end compilation, maximizing speedup
+# and compatibility with ``torch.export``.
+
 
 ######################################################################
 # Demonstrating Speedups
