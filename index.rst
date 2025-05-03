@@ -803,24 +803,24 @@ Welcome to PyTorch Tutorials
    :tags: Edge
 
 .. customcarditem::
-   :header: Using the ExecuTorch SDK to Profile a Model
+   :header: Using the ExecuTorch Developer Tools to Profile a Model
    :card_description: Explore how to use the ExecuTorch SDK to profile, debug, and visualize ExecuTorch models
    :image: _static/img/ExecuTorch-Logo-cropped.svg
-   :link: https://pytorch.org/executorch/stable/tutorials/sdk-integration-tutorial.html
+   :link: https://pytorch.org/executorch/stable/tutorials/devtools-integration-tutorial.html
    :tags: Edge
 
 .. customcarditem::
-   :header: Building an ExecuTorch iOS Demo App
-   :card_description: Explore how to set up the ExecuTorch iOS Demo App, which uses the MobileNet v3 model to process live camera images leveraging three different backends: XNNPACK, Core ML, and Metal Performance Shaders (MPS).
+   :header: Using ExecuTorch on iOS
+   :card_description: Learn how to use ExecuTorch on iOS and macOS with Objective-C, Swift, and C++.
    :image: _static/img/ExecuTorch-Logo-cropped.svg
-   :link: https://pytorch.org/executorch/stable/demo-apps-ios.html
+   :link: https://pytorch.org/executorch/stable/using-executorch-ios.html
    :tags: Edge
 
 .. customcarditem::
-   :header: Building an ExecuTorch Android Demo App
-   :card_description: Learn how to set up the ExecuTorch Android Demo App for image segmentation tasks using the DeepLab v3 model and XNNPACK FP32 backend.
+   :header: Using ExecuTorch on Android
+   :card_description: Learn how use ExecuTorch on Android with Java and Kotlin API bindings.
    :image: _static/img/ExecuTorch-Logo-cropped.svg
-   :link: https://pytorch.org/executorch/stable/demo-apps-android.html
+   :link: https://pytorch.org/executorch/stable/using-executorch-android.html
    :tags: Edge
 
 .. customcarditem::
