@@ -98,6 +98,8 @@ intersphinx_mapping = {
 # -- Sphinx-gallery configuration --------------------------------------------
 
 def reset_seeds(gallery_conf, fname):
+    import importlib
+    importlib.reload(torch)
     torch.cuda.empty_cache()
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
