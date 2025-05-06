@@ -22,10 +22,6 @@ We highly recommend CUDA when using torchRec. If using CUDA: - cuda >=
     !sudo chmod +x Miniconda3-py37_4.9.2-Linux-x86_64.sh
     !sudo bash ./Miniconda3-py37_4.9.2-Linux-x86_64.sh -b -f -p /usr/local
 
-.. code:: python
-
-    # install pytorch with cudatoolkit 11.3
-    !sudo conda install pytorch cudatoolkit=11.3 -c pytorch-nightly -y
 
 Installing torchRec will also install
 `FBGEMM <https://github.com/pytorch/fbgemm>`__, a collection of CUDA

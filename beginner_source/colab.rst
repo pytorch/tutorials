@@ -11,7 +11,7 @@ PyTorch Version in Google Colab
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Wen you are running a tutorial that requires a version of PyTorch that has
-just been released, that version might not be yet available in Google Colab.
+jst been released, that version might not be yet available in Google Colab.
 To check that you have the required ``torch`` and compatible domain libraries
 installed, run ``!pip list``.
 
@@ -27,7 +27,7 @@ Using Tutorial Data from Google Drive in Colab
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We've added a new feature to tutorials that allows users to open the
-notebook associated with a tutorial in Google Colab. You may need to
+ntebook associated with a tutorial in Google Colab. You may need to
 copy data to your Google drive account to get the more complex tutorials
 to work.
 

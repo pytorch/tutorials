@@ -106,14 +106,7 @@ Before you get started, you need to have a Python environment with:
 -  Matplotlib version 3.3.4, since Captum currently uses a Matplotlib
    function whose arguments have been renamed in later versions
 
-To install Captum in an Anaconda or pip virtual environment, use the
-appropriate command for your environment below:
-
-With ``conda``:
-
-.. code-block:: sh
-
-    conda install pytorch torchvision captum flask-compress matplotlib=3.3.4 -c pytorch
+To install Captum, use the appropriate command for your environment below:
 
 With ``pip``:
 
@@ -127,51 +120,56 @@ go!
 
 A First Example
 ---------------
- 
+
 To start, let’s take a simple, visual example. We’ll start with a ResNet
 model pretrained on the ImageNet dataset. We’ll get a test input, and
 use different **Feature Attribution** algorithms to examine how the
 input images affect the output, and see a helpful visualization of this
 input attribution map for some test images.
- 
-First, some imports: 
+
+First, some imports:
 
 """
 
-import torch
-import torch.nn.functional as F
-import torchvision.transforms as transforms
-import torchvision.models as models
-
-import captum
-from captum.attr import IntegratedGradients, Occlusion, LayerGradCam, LayerAttribution
-from captum.attr import visualization as viz
-
-import os, sys
 import json
 
-import numpy as np
-from PIL import Image
+import os, sys
+
+import captum
 import matplotlib.pyplot as plt
+
+import numpy as np
+import torch
+import torch.nn.functional as F
+import torchvision.models as models
+import torchvision.transforms as transforms
+from captum.attr import (
+    IntegratedGradients,
+    LayerAttribution,
+    LayerGradCam,
+    Occlusion,
+    visualization as viz,
+)
 from matplotlib.colors import LinearSegmentedColormap
+from PIL import Image
 
 
 #########################################################################
 # Now we’ll use the TorchVision model library to download a pretrained
 # ResNet. Since we’re not training, we’ll place it in evaluation mode for
 # now.
-# 
+#
 
-model = models.resnet18(weights='IMAGENET1K_V1')
+model = models.resnet18(weights="IMAGENET1K_V1")
 model = model.eval()
 
 
 #######################################################################
 # The place where you got this interactive notebook should also have an
 # ``img`` folder with a file ``cat.jpg`` in it.
-# 
+#
 
-test_img = Image.open('img/cat.jpg')
+test_img = Image.open("img/cat.jpg")
 test_img_data = np.asarray(test_img)
 plt.imshow(test_img_data)
 plt.show()
