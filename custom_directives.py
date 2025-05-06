@@ -89,7 +89,7 @@ class GalleryItemDirective(Directive):
                 intro = self.options['intro'][:195] + '...'
             else:
                 _, blocks = sphinx_gallery.py_source_parser.split_code_and_text_blocks(abs_fname)
-                intro, _ = sphinx_gallery.get_rst.extract_intro_and_title(abs_fname, blocks[0][1])
+                intro, _ = sphinx_gallery.gen_rst.extract_intro_and_title(abs_fname, blocks[0][1])
 
             thumbnail_rst = ''
             #sphinx_gallery.backreferences._thumbnail_div(
