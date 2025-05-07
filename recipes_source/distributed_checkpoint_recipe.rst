@@ -352,7 +352,7 @@ Alternatively, methods are also provided for users who may wish to convert check
     dcp_to_torch_save(CHECKPOINT_DIR, TORCH_SAVE_CHECKPOINT_DIR)
 
     # converts the torch.save model back to DCP
-    dcp_to_torch_save(TORCH_SAVE_CHECKPOINT_DIR, f"{CHECKPOINT_DIR}_new")
+    torch_save_to_dcp(TORCH_SAVE_CHECKPOINT_DIR, f"{CHECKPOINT_DIR}_new")
 
 
 
