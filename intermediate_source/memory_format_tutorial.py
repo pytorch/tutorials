@@ -341,17 +341,18 @@ def check_wrapper(fn):
     return check_cl
 
 
-old_attrs = []
+old_attrs = dict()
 
 
 def attribute(m):
+    old_attrs[m] = dict()
     for i in dir(m):
         e = getattr(m, i)
         exclude_functions = ["is_cuda", "has_names", "numel", "stride", "Tensor", "is_contiguous", "__class__"]
         if i not in exclude_functions and not i.startswith("_") and "__call__" in dir(e):
             try:
+                old_attrs[m][i] = e
                 setattr(m, i, check_wrapper(e))
-                old_attrs.append((m, i, e))
             except Exception as e:
                 print(i)
                 print(e)
@@ -371,8 +372,9 @@ attribute(torch)
 ######################################################################
 # Code below is to recover the attributes of torch.
 
-for m, i, e in reversed(old_attrs):
-    setattr(m, i, e)
+for (m, attrs) in old_attrs.items():
+    for (k, v) in attrs.items():
+        setattr(m, k, v)
 
 ######################################################################
 # Work to do
