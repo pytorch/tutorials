@@ -48,18 +48,6 @@ import plotly.io as pio
 from pathlib import Path
 pio.renderers.default = 'sphinx_gallery'
 
-import multiprocessing as mp
-
-import sphinx_gallery.gen_rst
-original_generate_file_rst = sphinx_gallery.gen_rst.generate_file_rst
-def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
-    pool = mp.Pool(1)
-    p = pool.apply_async(original_generate_file_rst, (fname, target_dir, src_dir, gallery_conf))
-    pool.close()
-    pool.join()
-    return p.get()
-sphinx_gallery.gen_rst.generate_file_rst = generate_file_rst
-
 try:
     import torchvision
 except ImportError:
@@ -126,7 +114,7 @@ sphinx_gallery_conf = {
     'pypandoc': {'extra_args': ['--mathjax', '--toc'],
                  'filters': ['.jenkins/custom_pandoc_filter.py'],
     },
-    # 'parallel': True,
+    'parallel': True,
 }
 
 html_baseurl = 'https://pytorch.org/tutorials/' # needed for sphinx-sitemap
