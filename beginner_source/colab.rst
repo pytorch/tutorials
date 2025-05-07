@@ -10,7 +10,7 @@ run PyTorch tutorials in Google Colab.
 PyTorch Version in Google Colab
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When you are running a tutorial that requires a version of PyTorch that has
+Wen you are running a tutorial that requires a version of PyTorch that has
 just been released, that version might not be yet available in Google Colab.
 To check that you have the required ``torch`` and compatible domain libraries
 installed, run ``!pip list``.

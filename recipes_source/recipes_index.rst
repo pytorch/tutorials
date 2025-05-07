@@ -317,6 +317,15 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/amx.html
    :tags: Model-Optimization
 
+.. (beta) Utilizing Torch Function modes with torch.compile
+
+.. customcarditem::
+   :header: (beta) Utilizing Torch Function modes with torch.compile
+   :card_description: Override torch operators with Torch Function modes and torch.compile
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torch_compile_torch_function_modes.html
+   :tags: Model-Optimization
+
 .. (beta) Compiling the Optimizer with torch.compile
 
 .. customcarditem::
@@ -335,6 +344,14 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/compiling_optimizer_lr_scheduler.html
    :tags: Model-Optimization
 
+.. (beta) Explicit horizontal fusion with foreach_map and torch.compile
+.. customcarditem::
+   :header: (beta) Explicit horizontal fusion with foreach_map and torch.compile
+   :card_description: Horizontally fuse pointwise ops with torch.compile
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/foreach_map.py
+   :tags: Model-Optimization
+
 .. Using User-Defined Triton Kernels with ``torch.compile``
 
 .. customcarditem::
@@ -348,9 +365,18 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 
 .. customcarditem::
    :header: Compile Time Caching in ``torch.compile``
-   :card_description: Learn how to configure compile time caching in ``torch.compile``
+   :card_description: Learn how to use compile time caching in ``torch.compile``
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: ../recipes/torch_compile_caching_tutorial.html
+   :tags: Model-Optimization
+
+.. Compile Time Caching Configurations
+
+.. customcarditem::
+   :header: Compile Time Caching Configurations
+   :card_description: Learn how to configure compile time caching in ``torch.compile``
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../recipes/torch_compile_caching_configuration_tutorial.html
    :tags: Model-Optimization
 
 .. Reducing Cold Start Compilation Time with Regional Compilation

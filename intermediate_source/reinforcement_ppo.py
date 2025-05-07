@@ -551,7 +551,7 @@ replay_buffer = ReplayBuffer(
 #
 
 advantage_module = GAE(
-    gamma=gamma, lmbda=lmbda, value_network=value_module, average_gae=True
+    gamma=gamma, lmbda=lmbda, value_network=value_module, average_gae=True, device=device,
 )
 
 loss_module = ClipPPOLoss(
