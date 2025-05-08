@@ -49,6 +49,37 @@ from pathlib import Path
 pio.renderers.default = 'sphinx_gallery'
 
 
+import sphinx_gallery.gen_rst
+import multiprocessing
+
+# Monkey patching sphinx gallery to run each example in an isolated process so
+# that we don't need to worry about examples changing global state
+def call_fn(func, args, kwargs, result_queue):
+    try:
+        result = func(*args, **kwargs)
+        result_queue.put((True, result))
+    except Exception as e:
+        result_queue.put((False, str(e)))
+
+def call_in_subprocess(func):
+    def wrapper(*args, **kwargs):
+        result_queue = multiprocessing.Queue()
+        p = multiprocessing.Process(
+            target=call_fn,
+            args=(func, args, kwargs, result_queue)
+        )
+        p.start()
+        p.join()
+        success, result = result_queue.get()
+        if success:
+            return result
+        else:
+            raise RuntimeError(f"Error in subprocess: {result}")
+    return wrapper
+
+# Monkey-patch
+sphinx_gallery.gen_rst.generate_file_rst = call_in_subprocess(sphinx_gallery.gen_rst.generate_file_rst)
+
 try:
     import torchvision
 except ImportError:
@@ -98,18 +129,19 @@ intersphinx_mapping = {
 # -- Sphinx-gallery configuration --------------------------------------------
 
 def reset_seeds(gallery_conf, fname):
-    torch.cuda.empty_cache()
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-    torch._dynamo.reset()
-    torch._inductor.config.force_disable_caches = True
-    torch.manual_seed(42)
-    torch.set_default_device(None)
-    random.seed(10)
-    numpy.random.seed(10)
-    torch.set_grad_enabled(True)
+    pass
+    # torch.cuda.empty_cache()
+    # torch.backends.cudnn.deterministic = True
+    # torch.backends.cudnn.benchmark = False
+    # torch._dynamo.reset()
+    # torch._inductor.config.force_disable_caches = True
+    # torch.manual_seed(42)
+    # torch.set_default_device(None)
+    # random.seed(10)
+    # numpy.random.seed(10)
+    # torch.set_grad_enabled(True)
 
-    gc.collect()
+    # gc.collect()
 
 sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
