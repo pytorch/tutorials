@@ -63,11 +63,18 @@ def call_fn(func, args, kwargs, result_queue):
 
 def call_in_subprocess(func):
     def wrapper(*args, **kwargs):
-        pool = multiprocessing.Pool(processes=1)
-        p = pool.apply_async(func, args, kwargs)
-        pool.close()
-        pool.join()
-        return p.get()
+        result_queue = multiprocessing.Queue()
+        p = multiprocessing.Process(
+            target=call_fn,
+            args=(func, args, kwargs, result_queue)
+        )
+        p.start()
+        p.join()
+        success, result = result_queue.get()
+        if success:
+            return result
+        else:
+            raise RuntimeError(f"Error in subprocess: {result}")
     return wrapper
 
 # Monkey-patch
