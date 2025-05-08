@@ -77,7 +77,7 @@ def make_isolated_version(func):
     return wrapper
 
 # Monkey-patch
-sphinx_gallery.gen_rst.generate_file_rst = make_isolated_version(sphinx_gallery.gen_rst.generate_file_rst
+sphinx_gallery.gen_rst.generate_file_rst = make_isolated_version(sphinx_gallery.gen_rst.generate_file_rst)
 
 try:
     import torchvision
