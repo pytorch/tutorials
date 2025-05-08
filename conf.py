@@ -54,7 +54,8 @@ import multiprocessing
 
 # Monkey patching sphinx gallery to run each example in an isolated process so
 # that we don't need to worry about examples changing global state
-def call_fn(func, args, kwargs, result_queue):
+def call_fn(func, args, kwargs):
+    return func(*args, **kwargs)
     try:
         result = func(*args, **kwargs)
         result_queue.put((True, result))
@@ -63,6 +64,11 @@ def call_fn(func, args, kwargs, result_queue):
 
 def call_in_subprocess(func):
     def wrapper(*args, **kwargs):
+        pool = multiprocessing.Pool(processes=1)
+        p = pool.apply_async(call_fn,(func, args, kwargs))
+        pool.close()
+        pool.join()
+        return p.get()
         result_queue = multiprocessing.Queue()
         p = multiprocessing.Process(
             target=call_fn,
