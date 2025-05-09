@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 from remove_runnable_code import remove_runnable_code
+from validate_tutorials_built import NOT_RUN
 
 
 # Calculate repo base dir
