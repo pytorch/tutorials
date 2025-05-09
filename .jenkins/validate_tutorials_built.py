@@ -54,6 +54,7 @@ NOT_RUN = [
     "advanced_source/semi_structured_sparse", # reenable after 3303 is fixed.
     "intermediate_source/torchrec_intro_tutorial", # reenable after 3302 is fixe
     "intermediate_source/memory_format_tutorial", # causes other tutorials like torch_logs fail. "state" issue, reseting dynamo didn't help
+    "intermediate_source/ax_multiobjective_nas_tutorial"
 ]
 
 def tutorial_source_dirs() -> List[Path]:
