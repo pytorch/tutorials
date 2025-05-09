@@ -58,7 +58,10 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
 
   # Step 3: Run `make docs` to generate HTML files and static files for these tutorialis
   pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
-  make docs
+  make download
+	make download-last-reviewed-json
+  python .jenkins/sphinx_files.py
+  make postprocess
 
   # Step 3.1: Run the post-processing script:
   python .jenkins/post_process_notebooks.py

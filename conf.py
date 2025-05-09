@@ -48,35 +48,6 @@ import plotly.io as pio
 from pathlib import Path
 pio.renderers.default = 'sphinx_gallery'
 
-import sphinx_gallery.gen_rst
-import multiprocessing
-
-# Save the original function
-def isolated_call(func, args, kwargs, result_queue):
-    try:
-        result = func(*args, **kwargs)
-        result_queue.put((True, result))
-    except Exception as e:
-        result_queue.put((False, str(e)))
-
-def make_isolated_version(func):
-    def wrapper(*args, **kwargs):
-        result_queue = multiprocessing.Queue()
-        p = multiprocessing.Process(
-            target=isolated_call,
-            args=(func, args, kwargs, result_queue)
-        )
-        p.start()
-        p.join()
-        success, result = result_queue.get()
-        if success:
-            return result
-        else:
-            raise RuntimeError(f"Error in isolated process: {result}")
-    return wrapper
-
-# Monkey-patch
-sphinx_gallery.gen_rst.generate_file_rst = make_isolated_version(sphinx_gallery.gen_rst.generate_file_rst)
 
 try:
     import torchvision
@@ -133,7 +104,7 @@ sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
                       'advanced_source', 'recipes_source', 'prototype_source'],
     'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
-    'filename_pattern': re.compile(SPHINX_SHOULD_RUN),
+    'filename_pattern': os.getenv("RUNTHIS"),
     'promote_jupyter_magic': True,
     'backreferences_dir': None,
     'first_notebook_cell': ("# For tips on running notebooks in Google Colab, see\n"
