@@ -166,7 +166,7 @@ sphinx_gallery_conf = {
     },
 }
 
-html_baseurl = "https://pytorch.org/tutorials/"  # needed for sphinx-sitemap
+html_baseurl = "https://docs.pytorch.org/tutorials/"  # needed for sphinx-sitemap
 sitemap_locales = [None]
 sitemap_excludes = [
     "search.html",
