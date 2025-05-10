@@ -98,24 +98,13 @@ intersphinx_mapping = {
 # -- Sphinx-gallery configuration --------------------------------------------
 
 def reset_seeds(gallery_conf, fname):
-    torch.cuda.empty_cache()
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-    torch._dynamo.reset()
-    torch._inductor.config.force_disable_caches = True
-    torch.manual_seed(42)
-    torch.set_default_device(None)
-    random.seed(10)
-    numpy.random.seed(10)
-    torch.set_grad_enabled(True)
-
-    gc.collect()
+    pass
 
 sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
                       'advanced_source', 'recipes_source', 'prototype_source'],
     'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
-    'filename_pattern': re.compile(SPHINX_SHOULD_RUN),
+    'filename_pattern': os.getenv("RUNTHIS"),
     'promote_jupyter_magic': True,
     'backreferences_dir': None,
     'first_notebook_cell': ("# For tips on running notebooks in Google Colab, see\n"
