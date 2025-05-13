@@ -358,23 +358,29 @@ def attribute(m):
                 print(e)
 
 
-attribute(torch.Tensor)
-attribute(torch.nn.functional)
-attribute(torch)
-
-
-######################################################################
-# If you found an operator that doesn't support channels last tensors
-# and you want to contribute, feel free to use following developers
-# guide https://github.com/pytorch/pytorch/wiki/Writing-memory-format-aware-operators.
+#############################
+# To debug which operators don't support channels last format, execute
+# the following lines:
+#
+# .. code-block:: python
+#
+#    attribute(torch.Tensor)
+#    attribute(torch.nn.functional)
+#    attribute(torch)
 #
 
 ######################################################################
-# Code below is to recover the attributes of torch.
+# If you found an operator that doesn't support channels last tensors
+# and you want to contribute, see following developers
+# `Writing Memory Format Aware Operators <https://github.com/pytorch/pytorch/wiki/Writing-memory-format-aware-operators>`__.
+#
 
-for (m, attrs) in old_attrs.items():
-    for (k, v) in attrs.items():
-        setattr(m, k, v)
+######################################################################
+# The code below is to recover the attributes of torch.
+#
+# for (m, attrs) in old_attrs.items():
+#    for (k, v) in attrs.items():
+#        setattr(m, k, v)
 
 ######################################################################
 # Work to do
