@@ -1,10 +1,10 @@
-Getting Started with Fully Sharded Data Parallel(FSDP)
+Getting Started with Fully Sharded Data Parallel (FSDP2)
 ======================================================
 
 **Author**: `Wei Feng <https://github.com/weifengpy>`__, `Will Constable <https://github.com/wconstab>`__, `Yifan Mao <https://github.com/mori360>`__
 
 .. note::
-   |edit| Check out the code in this tutorial from `pytorch/examples <https://github.com/pytorch/examples/tree/main/distributed/FSDP2>`__.
+   |edit| Check out the code in this tutorial from `pytorch/examples <https://github.com/pytorch/examples/tree/main/distributed/FSDP2>`_. FSDP1 will be deprecated. The old tutorial can be found `here <https://docs.pytorch.org/tutorials/intermediate/FSDP1_tutorial.html>`_.
 
 How FSDP2 works
 --------------
@@ -166,7 +166,7 @@ Explicit prefetching works well in following situation:
 Enabling Mixed Precision
 ~~~~~~~~~~~~~~~
 
-FSDP2 offers a flexible `mixed precision policy <https://docs.pytorch.org/docs/main/distributed.fsdp.fully_shard.html#torch.distributed.fsdp.MixedPrecisionPolicy>`_ to speed up training. One typical use case are
+FSDP2 offers a flexible `mixed precision policy <https://docs.pytorch.org/docs/main/distributed.fsdp.fully_shard.html#torch.distributed.fsdp.MixedPrecisionPolicy>`_ to speed up training. One typical use case is
 
 * Casting float32 parameters to bfloat16 for forward/backward computation, see ``param_dtype=torch.bfloat16``
 * Upcasting gradients to float32 for reduce-scatter to preserve accuracy, see ``reduce_dtype=torch.float32``
@@ -399,8 +399,8 @@ sync_module_states=True/False: Moved to DCP. User can broadcast state dicts from
 
 forward_prefetch: Manual control over prefetching is possible with
 
-* Manually call ``fsdp_module.unshard()``
-* Use these APIs to control automatic prefetching, ``set_modules_to_forward_prefetch`` and ``set_modules_to_backward_prefetch``
+* Manually call `fsdp_module.unshard() <https://docs.pytorch.org/docs/main/distributed.fsdp.fully_shard.html#torch.distributed.fsdp.FSDPModule.unshard>`_
+* Use these APIs to control automatic prefetching, `set_modules_to_forward_prefetch <https://docs.pytorch.org/docs/main/distributed.fsdp.fully_shard.html#torch.distributed.fsdp.FSDPModule.set_modules_to_forward_prefetch>`_ and `set_modules_to_backward_prefetch <https://docs.pytorch.org/docs/main/distributed.fsdp.fully_shard.html#torch.distributed.fsdp.FSDPModule.set_modules_to_backward_prefetch>`_
 
 limit_all_gathers: No longer needed, because ``fully_shard`` removed cpu synchronization
 
@@ -408,4 +408,4 @@ use_orig_params: Original params are always used (no more flat parameter)
 
 no_sync(): `set_requires_gradient_sync <https://docs.pytorch.org/docs/main/distributed.fsdp.fully_shard.html#torch.distributed.fsdp.FSDPModule.set_requires_gradient_sync>`_
 
-ignored_params and ignored_states: ignored_params
+ignored_params and ignored_states: `ignored_params <https://docs.pytorch.org/docs/main/distributed.fsdp.fully_shard.html#torch.distributed.fsdp.fully_shard>`_
