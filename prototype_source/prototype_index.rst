@@ -290,7 +290,7 @@ Prototype features are not available as part of binary distributions like PyPI o
 .. Page TOC
 .. -----------------------------------------
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :hidden:
 
    prototype/context_parallel.html
