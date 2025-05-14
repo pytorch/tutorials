@@ -369,3 +369,8 @@ print(f"Nested speedup: {compiled_time_padded / compiled_time_nested:.3f}")
 # how implement multi-head attention for transformers in a way that avoids computation on padding.
 # For more information, check out the docs for the
 # `torch.nested <https://pytorch.org/docs/stable/nested.html>`__ namespace.
+#
+# See Also
+# --------
+#
+# * `Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile() <https://docs.pytorch.org/tutorials/intermediate/transformer_building_blocks.html`__
