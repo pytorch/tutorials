@@ -90,15 +90,18 @@ download-last-reviewed-json:
 	@echo "Downloading tutorials-review-data.json..."
 	curl -o tutorials-review-data.json https://raw.githubusercontent.com/pytorch/tutorials/refs/heads/last-reviewed-data-json/tutorials-review-data.json
 	@echo "Finished downloading tutorials-review-data.json."
-docs:
-	make download
-	make download-last-reviewed-json
-	make html
+
+postprocess:
 	@python .jenkins/insert_last_verified.py $(BUILDDIR)/html
 	rm -rf docs
 	cp -r $(BUILDDIR)/html docs
 	touch docs/.nojekyll
-	rm -rf tutorials-review-data.json
+
+docs:
+	make download
+	make download-last-reviewed-json
+	make html
+	make postprocess
 
 html-noplot:
 	$(SPHINXBUILD) -D plot_gallery=0 -b html $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
