@@ -53,14 +53,14 @@ import multiprocessing
 # Monkey patch sphinx gallery to run each example in an isolated process so that
 # we don't need to worry about examples changing global state.
 #
-# Other option 1: Parallelism was added to sphinx gallery (a later version that
-# we are not using yet) using joblib, but it seems to result in errors for us,
-# and it has no effect if you set parallel = 1 (it will not put each file run
-# into its own process and run singly) so you need parallel >= 2, and there may
-# be tutorials that cannot be run in parallel.
+# Alt option 1: Parallelism was added to sphinx gallery (a later version that we
+# are not using yet) using joblib, but it seems to result in errors for us, and
+# it has no effect if you set parallel = 1 (it will not put each file run into
+# its own process and run singly) so you need parallel >= 2, and there may be
+# tutorials that cannot be run in parallel.
 #
-# Other option 2: Run sphinx gallery once per file (similar to how we shard in
-# CI but with shard sizes of 1), but running sphinx gallery for each file has a
+# Alt option 2: Run sphinx gallery once per file (similar to how we shard in CI
+# but with shard sizes of 1), but running sphinx gallery for each file has a
 # ~5min overhead, resulting in the entire suite taking ~2x time
 def call_fn(func, args, kwargs, result_queue):
     try:
