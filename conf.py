@@ -145,7 +145,6 @@ sphinx_gallery_conf = {
     'first_notebook_cell': ("# For tips on running notebooks in Google Colab, see\n"
                             "# https://pytorch.org/tutorials/beginner/colab\n"
                             "%matplotlib inline"),
-    'reset_modules': (reset_seeds),
     'ignore_pattern': r'_torch_export_nightly_tutorial.py',
     'pypandoc': {'extra_args': ['--mathjax', '--toc'],
                  'filters': ['.jenkins/custom_pandoc_filter.py'],
