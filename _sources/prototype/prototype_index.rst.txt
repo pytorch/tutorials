@@ -273,7 +273,7 @@ Prototype features are not available as part of binary distributions like PyPI o
    :header: (prototype) Using GPUDirect Storage
    :card_description: Learn how to use GPUDirect Storage in PyTorch.
    :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../prototype/gpudirect_storage.html
+   :link: ../prototype/gpu_direct_storage.html
    :tags: GPUDirect-Storage
 
 .. End of tutorial card section

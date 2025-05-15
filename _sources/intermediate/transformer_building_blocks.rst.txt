@@ -18,6 +18,9 @@
 .. _sphx_glr_intermediate_transformer_building_blocks.py:
 
 
+.. meta::
+  :description: Learn how to optimize transformer models by replacing nn.Transformer with Nested Tensors and torch.compile() for significant performance gains in PyTorch.
+
 Accelerating PyTorch Transformers by replacing ``nn.Transformer`` with Nested Tensors and ``torch.compile()``
 =============================================================================================================
 **Author:** `Mikayla Gawarecki <https://github.com/mikaylagawarecki>`_
@@ -79,7 +82,7 @@ If you are only interested in performant attention score modifications, please
 check out the `FlexAttention blog <https://pytorch.org/blog/flexattention/>`_ that
 contains a `gym of masks <https://github.com/pytorch-labs/attention-gym>`_.
 
-.. GENERATED FROM PYTHON SOURCE LINES 67-125
+.. GENERATED FROM PYTHON SOURCE LINES 70-128
 
 Introducing the Building Blocks
 ===============================
@@ -140,7 +143,7 @@ that it functions correctly but is slow. To address this, you might develop a
 custom fused kernel for the specific series of operations. In a compiler environment,
 you can simply perform the initial step and then compile and benefit from improved performance.
 
-.. GENERATED FROM PYTHON SOURCE LINES 128-159
+.. GENERATED FROM PYTHON SOURCE LINES 131-162
 
 MultiheadAttention
 ------------------
@@ -174,7 +177,7 @@ We'll demonstrate the above by building upon the ``MultiheadAttention`` layer in
 `Nested Tensor tutorial <https://pytorch.org/tutorials/prototype/nestedtensor.html>`_
 and comparing it to the ``nn.MultiheadAttention`` layer.
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-284
+.. GENERATED FROM PYTHON SOURCE LINES 162-287
 
 .. code-block:: default
 
@@ -310,7 +313,7 @@ and comparing it to the ``nn.MultiheadAttention`` layer.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 285-290
+.. GENERATED FROM PYTHON SOURCE LINES 288-293
 
 Utilities
 ~~~~~~~~~
@@ -318,7 +321,7 @@ In this section, we include a utility to generate semi-realistic data using
 ``Zipf`` distribution for sentence lengths. This is used to generate the nested
 query, key, and value tensors. We also include a benchmark utility.
 
-.. GENERATED FROM PYTHON SOURCE LINES 290-364
+.. GENERATED FROM PYTHON SOURCE LINES 293-367
 
 .. code-block:: default
 
@@ -403,13 +406,13 @@ query, key, and value tensors. We also include a benchmark utility.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 365-368
+.. GENERATED FROM PYTHON SOURCE LINES 368-371
 
 We will now demonstrate the performance improvements of using nested tensors
 in the ``MultiheadAttention`` layer + compile for self attention. We compare this against
 the traditional ``nn.MultiheadAttention`` + compile with padding and masking.
 
-.. GENERATED FROM PYTHON SOURCE LINES 368-460
+.. GENERATED FROM PYTHON SOURCE LINES 371-463
 
 .. code-block:: default
 
@@ -518,16 +521,16 @@ the traditional ``nn.MultiheadAttention`` + compile with padding and masking.
 
     dynamo_pgo force disabled by torch._inductor.config.force_disable_caches
 
-    padded_time=0.01604, padded_peak_memory=3.87 GB
-    nested_time=0.00245, nested_peak_memory=0.92 GB
+    padded_time=0.01610, padded_peak_memory=3.87 GB
+    nested_time=0.00269, nested_peak_memory=0.92 GB
     Max difference between vanilla and nested result 0.0
-    Nested speedup: 6.54
+    Nested speedup: 6.00
     Nested peak memory reduction 2.96 GB
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 461-472
+.. GENERATED FROM PYTHON SOURCE LINES 464-475
 
 For reference, here are some sample outputs on A100:
 
@@ -541,7 +544,7 @@ For reference, here are some sample outputs on A100:
 
 We can also see the same for backward pass
 
-.. GENERATED FROM PYTHON SOURCE LINES 472-520
+.. GENERATED FROM PYTHON SOURCE LINES 475-523
 
 .. code-block:: default
 
@@ -601,9 +604,9 @@ We can also see the same for backward pass
 
  .. code-block:: none
 
-    padded_bw_time=2.21119, padded_bw_peak_mem=4.68 GB
+    padded_bw_time=2.22754, padded_bw_peak_mem=4.68 GB
     nested_bw_time=0.06618, nested_bw_peak_mem=3.04 GB
-    Nested backward speedup: 33.41
+    Nested backward speedup: 33.66
     Nested backward peak memory reduction 1.64 GB
     Difference in out_proj.weight.grad 0.000396728515625
     Difference in packed_proj.weight.grad 0.00146484375
@@ -613,7 +616,7 @@ We can also see the same for backward pass
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 521-534
+.. GENERATED FROM PYTHON SOURCE LINES 524-537
 
 Sample outputs on A100:
 
@@ -629,7 +632,7 @@ Sample outputs on A100:
     Difference in packed_proj.bias.grad 0.001953125
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 536-547
+.. GENERATED FROM PYTHON SOURCE LINES 539-550
 
 GPT-style layer
 ---------------
@@ -643,7 +646,7 @@ We  demonstrate examples of implementing the rest of the ``nn`` layers
 `here <https://github.com/mikaylagawarecki/transformer_tutorial_accompaniment>`_
 but omit that from this tutorial for brevity.
 
-.. GENERATED FROM PYTHON SOURCE LINES 550-566
+.. GENERATED FROM PYTHON SOURCE LINES 553-569
 
 Going one step further
 ----------------------
@@ -662,7 +665,7 @@ aforementioned building blocks, including the following:
 * Modifying attention score: ALiBi with FlexAttention and NJT
 * Packed Projection
 
-.. GENERATED FROM PYTHON SOURCE LINES 568-578
+.. GENERATED FROM PYTHON SOURCE LINES 571-581
 
 Cross Attention
 ---------------
@@ -675,7 +678,7 @@ from the decoder and the key/value come from the encoder.
 The above MultiheadAttention layer nicely generalizes to this case with nested
 tensors for both query and key/value.
 
-.. GENERATED FROM PYTHON SOURCE LINES 578-590
+.. GENERATED FROM PYTHON SOURCE LINES 581-593
 
 .. code-block:: default
 
@@ -705,11 +708,11 @@ tensors for both query and key/value.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 591-592
+.. GENERATED FROM PYTHON SOURCE LINES 594-595
 
 As above, we can compare this against the vanilla compiled ``nn.MultiheadAttention``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 592-639
+.. GENERATED FROM PYTHON SOURCE LINES 595-642
 
 .. code-block:: default
 
@@ -769,13 +772,13 @@ As above, we can compare this against the vanilla compiled ``nn.MultiheadAttenti
  .. code-block:: none
 
     Max difference between vanilla and nested result 0.0
-    Nested speedup: 4.97
+    Nested speedup: 4.94
     Nested peak memory reduction 1.20 GB
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 640-648
+.. GENERATED FROM PYTHON SOURCE LINES 643-651
 
 Sample outputs on A100:
 
@@ -786,7 +789,7 @@ Sample outputs on A100:
     Nested peak memory reduction 1.40 GB
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 650-666
+.. GENERATED FROM PYTHON SOURCE LINES 653-669
 
 Fully masked rows no longer cause NaNs
 --------------------------------------
@@ -805,7 +808,7 @@ Using a custom MHA layer with NJTs is strongly recommended over the
 existing "fast-path" in ``nn.MultiheadAttention`` as NJT's ability to model raggedness
 appropriately makes it possible to properly express empty sequences.
 
-.. GENERATED FROM PYTHON SOURCE LINES 669-677
+.. GENERATED FROM PYTHON SOURCE LINES 672-680
 
 FlexAttention + NJT
 ---------------------------------------------------------------------
@@ -816,7 +819,7 @@ that implements `ALiBi <https://arxiv.org/abs/2108.12409>`_ from
 `attention gym <https://github.com/pytorch-labs/attention-gym>`_ and uses it
 with nested input tensors.
 
-.. GENERATED FROM PYTHON SOURCE LINES 677-705
+.. GENERATED FROM PYTHON SOURCE LINES 680-708
 
 .. code-block:: default
 
@@ -855,7 +858,7 @@ with nested input tensors.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 706-713
+.. GENERATED FROM PYTHON SOURCE LINES 709-716
 
 In addition, one can also use the ``block_mask`` utility of ``FlexAttention``
 with NJTs via the ``create_nested_block_mask`` function. This is useful for
@@ -865,7 +868,7 @@ the variable length sequences in the NJT combined into one, while properly maski
 inter-sequence attention. In the following example, we show how to create a
 causal block mask using this utility.
 
-.. GENERATED FROM PYTHON SOURCE LINES 713-728
+.. GENERATED FROM PYTHON SOURCE LINES 716-731
 
 .. code-block:: default
 
@@ -891,7 +894,7 @@ causal block mask using this utility.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 729-749
+.. GENERATED FROM PYTHON SOURCE LINES 732-752
 
 Packed Projection
 -----------------
@@ -914,7 +917,7 @@ which is what we do in the MultiheadAttention layer above.
 
 Let us compare the performance of the packed projection against the usual method:
 
-.. GENERATED FROM PYTHON SOURCE LINES 749-795
+.. GENERATED FROM PYTHON SOURCE LINES 752-798
 
 .. code-block:: default
 
@@ -972,19 +975,19 @@ Let us compare the performance of the packed projection against the usual method
 
  .. code-block:: none
 
-    InputProjection: 0.034015 s, PackedInputProjection: 0.032716 s, speedup: 1.04x
+    InputProjection: 0.034021 s, PackedInputProjection: 0.032719 s, speedup: 1.04x
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 796-800
+.. GENERATED FROM PYTHON SOURCE LINES 799-803
 
 SwiGLU feed forward network of Transformer Layer
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Swish-Gated Linear Unit (SwiGLU) is a non-linear activation function that is increasingly popular in the feed-forward
 network of the transformer layer (e.g. Llama). A feed-forward network with SwiGLU activation is defined as:
 
-.. GENERATED FROM PYTHON SOURCE LINES 800-828
+.. GENERATED FROM PYTHON SOURCE LINES 803-831
 
 .. code-block:: default
 
@@ -1023,11 +1026,11 @@ network of the transformer layer (e.g. Llama). A feed-forward network with SwiGL
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 829-830
+.. GENERATED FROM PYTHON SOURCE LINES 832-833
 
 An alternative way of implementing this that uses packed projection is
 
-.. GENERATED FROM PYTHON SOURCE LINES 830-858
+.. GENERATED FROM PYTHON SOURCE LINES 833-861
 
 .. code-block:: default
 
@@ -1066,13 +1069,13 @@ An alternative way of implementing this that uses packed projection is
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 859-862
+.. GENERATED FROM PYTHON SOURCE LINES 862-865
 
 We can compare the performance of the two implementations as follows
 Depending on your hardware, you might see different results. On an A100 I see
 1.12x speedup for D=128.
 
-.. GENERATED FROM PYTHON SOURCE LINES 862-883
+.. GENERATED FROM PYTHON SOURCE LINES 865-886
 
 .. code-block:: default
 
@@ -1105,12 +1108,12 @@ Depending on your hardware, you might see different results. On an A100 I see
 
  .. code-block:: none
 
-    SwiGLUFFN: 0.0010527919985179324 s, PackedSwiGLUFFN: 0.0009554900007060496 s, speedup: 1.10x
+    SwiGLUFFN: 0.0010427600000184611 s, PackedSwiGLUFFN: 0.0009361880001961254 s, speedup: 1.11x
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 884-896
+.. GENERATED FROM PYTHON SOURCE LINES 887-899
 
 Extended examples
 -----------------
@@ -1125,7 +1128,7 @@ implement various transformer architectures. Some examples include
 * `lucidrains implementation of NaViT with nested tensors <https://github.com/lucidrains/vit-pytorch/blob/73199ab486e0fad9eced2e3350a11681db08b61b/vit_pytorch/na_vit_nested_tensor.py>`_
 * `torchtune's implementation of VisionTransformer <https://github.com/pytorch/torchtune/blob/a8a64ec6a99a6ea2be4fdaf0cd5797b03a2567cf/torchtune/modules/vision_transformer.py#L16>`_
 
-.. GENERATED FROM PYTHON SOURCE LINES 898-905
+.. GENERATED FROM PYTHON SOURCE LINES 901-908
 
 Conclusion
 ----------
@@ -1138,7 +1141,7 @@ which flexible and performant transformer layers can be implemented by users of 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  6.389 seconds)
+   **Total running time of the script:** ( 1 minutes  6.837 seconds)
 
 
 .. _sphx_glr_download_intermediate_transformer_building_blocks.py:
