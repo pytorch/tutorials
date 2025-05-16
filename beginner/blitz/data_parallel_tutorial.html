@@ -461,7 +461,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel (FSDP2)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_advanced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/TCPStore_libuv_backend.html">Introduction to Libuv TCPStore Backend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/TP_tutorial.html">Large Scale Transformer model training with Tensor Parallel (TP)</a></li>
@@ -568,7 +568,7 @@ a new tensor and use that tensor on the GPU.</p>
 However, Pytorch will only use one GPU by default. You can easily run your
 operations on multiple GPUs by making your model run parallelly using
 <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel" title="torch.nn.DataParallel"><span class="n">model</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel" title="torch.nn.DataParallel"><span class="n">nn</span><span class="o">.</span><span class="n">DataParallel</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel" title="torch.nn.DataParallel"><span class="n">model</span></a><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel" title="torch.nn.DataParallel"><span class="n">nn</span><span class="o">.</span><span class="n">DataParallel</span></a><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>That’s the core behind this tutorial. We will explore it in more detail below.</p>
@@ -643,21 +643,17 @@ Please pay attention to what is printed at batch rank 0.</p>
 and check if we have multiple GPUs. If we have multiple GPUs, we can wrap
 our model using <code class="docutils literal notranslate"><span class="pre">nn.DataParallel</span></code>. Then we can put our model on GPUs by
 <code class="docutils literal notranslate"><span class="pre">model.to(device)</span></code></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel" title="torch.nn.DataParallel"><span class="n">model</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Model</span></a><span class="p">(</span><span class="n">input_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Model</span></a><span class="p">(</span><span class="n">input_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">)</span>
 <span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.device_count.html#torch.cuda.device_count" title="torch.cuda.device_count"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span></a><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
   <span class="nb">print</span><span class="p">(</span><span class="s2">"Let's use"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.device_count.html#torch.cuda.device_count" title="torch.cuda.device_count"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span></a><span class="p">(),</span> <span class="s2">"GPUs!"</span><span class="p">)</span>
   <span class="c1"># dim = 0 [30, xxx] -&gt; [10, ...], [10, ...], [10, ...] on 3 GPUs</span>
-  <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel" title="torch.nn.DataParallel"><span class="n">model</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel" title="torch.nn.DataParallel"><span class="n">nn</span><span class="o">.</span><span class="n">DataParallel</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel" title="torch.nn.DataParallel"><span class="n">model</span></a><span class="p">)</span>
+  <span class="n">model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel" title="torch.nn.DataParallel"><span class="n">nn</span><span class="o">.</span><span class="n">DataParallel</span></a><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
 <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.to" title="torch.nn.Module.to"><span class="n">model</span><span class="o">.</span><span class="n">to</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Let's use 4 GPUs!
-
-DataParallel(
-  (module): Model(
-    (fc): Linear(in_features=5, out_features=2, bias=True)
-  )
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Model(
+  (fc): Linear(in_features=5, out_features=2, bias=True)
 )
 </pre></div>
 </div>
@@ -667,34 +663,18 @@ DataParallel(
 <p>Now we can see the sizes of input and output tensors.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">data</span></a> <span class="ow">in</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">rand_loader</span></a><span class="p">:</span>
     <span class="nb">input</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">data</span></a><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
-    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel" title="torch.nn.DataParallel"><span class="n">model</span></a><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"Outside: input size"</span><span class="p">,</span> <span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span>
           <span class="s2">"output_size"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a><span class="o">.</span><span class="n">size</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>        In Model: input size torch.Size([6, 5]) output size torch.Size([6, 2])
-/usr/local/lib/python3.10/dist-packages/torch/nn/modules/linear.py:125: UserWarning:
-
-Attempting to run cuBLAS, but there was no current CUDA context! Attempting to set the primary context... (Triggered internally at /pytorch/aten/src/ATen/cuda/CublasHandlePool.cpp:181.)
-
-        In Model: input size torch.Size([8, 5]) output size torch.Size([8, 2])
-        In Model: input size torch.Size([8, 5]) output size torch.Size([8, 2])
-        In Model: input size torch.Size([8, 5]) output size torch.Size([8, 2])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>        In Model: input size torch.Size([30, 5]) output size torch.Size([30, 2])
 Outside: input size torch.Size([30, 5]) output_size torch.Size([30, 2])
-        In Model: input size torch.Size([8, 5]) output size torch.Size([8, 2])
-        In Model: input size torch.Size([8, 5]) output size torch.Size([8, 2])
-        In Model: input size torch.Size([6, 5]) output size torch.Size([6, 2])
-        In Model: input size torch.Size([8, 5]) output size torch.Size([8, 2])
+        In Model: input size torch.Size([30, 5]) output size torch.Size([30, 2])
 Outside: input size torch.Size([30, 5]) output_size torch.Size([30, 2])
-        In Model: input size torch.Size([8, 5]) output size torch.Size([8, 2])
-        In Model: input size torch.Size([8, 5]) output size torch.Size([8, 2])
-        In Model: input size torch.Size([8, 5]) output size torch.Size([8, 2])
-        In Model: input size torch.Size([6, 5]) output size torch.Size([6, 2])
+        In Model: input size torch.Size([30, 5]) output size torch.Size([30, 2])
 Outside: input size torch.Size([30, 5]) output_size torch.Size([30, 2])
-        In Model: input size torch.Size([3, 5]) output size torch.Size([3, 2])
-        In Model: input size torch.Size([3, 5]) output size torch.Size([3, 2])
-        In Model: input size torch.Size([3, 5]) output size torch.Size([3, 2])
-        In Model: input size torch.Size([1, 5]) output size torch.Size([1, 2])
+        In Model: input size torch.Size([10, 5]) output size torch.Size([10, 2])
 Outside: input size torch.Size([10, 5]) output_size torch.Size([10, 2])
 </pre></div>
 </div>
@@ -794,7 +774,7 @@ models on several GPUs. After each model finishes their job, DataParallel
 collects and merges the results before returning it to you.</p>
 <p>For more information, please check out
 <a class="reference external" href="https://pytorch.org/tutorials/beginner/former_torchies/parallelism_tutorial.html">https://pytorch.org/tutorials/beginner/former_torchies/parallelism_tutorial.html</a>.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.895 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.015 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-blitz-data-parallel-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/e85264945029fe236addcb864bf5f13f/data_parallel_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">data_parallel_tutorial.py</span></code></a></p>

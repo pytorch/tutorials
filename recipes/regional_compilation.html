@@ -461,7 +461,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel (FSDP2)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/FSDP_advanced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/TCPStore_libuv_backend.html">Introduction to Libuv TCPStore Backend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/TP_tutorial.html">Large Scale Transformer model training with Tensor Parallel (TP)</a></li>
@@ -646,6 +646,22 @@ with <code class="docutils literal notranslate"><span class="pre">TORCH_LOGS=gra
 <span class="n">full_compiled_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </pre></div>
 </div>
+<div class="sphx-glr-script-out highlight-pytb notranslate"><div class="highlight"><pre><span></span><span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">"/var/lib/workspace/recipes_source/regional_compilation.py"</span>, line <span class="m">112</span>, in <span class="n">&lt;module&gt;</span>
+<span class="w">    </span><span class="n">model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Model</span></a><span class="p">(</span><span class="n">apply_regional_compilation</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py"</span>, line <span class="m">1065</span>, in <span class="n">cuda</span>
+<span class="w">    </span><span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">device</span><span class="p">))</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py"</span>, line <span class="m">915</span>, in <span class="n">_apply</span>
+<span class="w">    </span><span class="n">module</span><span class="o">.</span><span class="n">_apply</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py"</span>, line <span class="m">942</span>, in <span class="n">_apply</span>
+<span class="w">    </span><span class="n">param_applied</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py"</span>, line <span class="m">1065</span>, in <span class="n">&lt;lambda&gt;</span>
+<span class="w">    </span><span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">device</span><span class="p">))</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/torch/cuda/__init__.py"</span>, line <span class="m">372</span>, in <span class="n">_lazy_init</span>
+<span class="w">    </span><span class="n">torch</span><span class="o">.</span><span class="n">_C</span><span class="o">.</span><span class="n">_cuda_init</span><span class="p">()</span>
+<span class="gr">RuntimeError</span>: <span class="n">Found no NVIDIA driver on your system. Please check that you have an NVIDIA GPU and installed a driver from http://www.nvidia.com/Download/index.aspx</span>
+</pre></div>
+</div>
 <p>The regional compilation, on the other hand, compiles a region of the model.
 By strategically choosing to compile a repeated region of the model, we can compile a
 much smaller graph and then reuse the compiled graph for all the regions.
@@ -690,14 +706,6 @@ compilation.</p>
 <span class="k">assert</span> <span class="n">regional_compilation_latency</span> <span class="o">&lt;</span> <span class="n">full_model_compilation_latency</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.10/dist-packages/torch/_inductor/compile_fx.py:236: UserWarning:
-
-TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
-
-Full model compilation time = 26.15 seconds
-Regional compilation time = 1.31 seconds
-</pre></div>
-</div>
 </div>
 <div class="section" id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
@@ -705,7 +713,7 @@ Regional compilation time = 1.31 seconds
 has repeated regions. This approach requires user modifications to apply <cite>torch.compile</cite> to
 the repeated regions instead of more commonly used full model compilation. We
 are continually working on reducing cold start compilation time.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  28.770 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.017 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-regional-compilation-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/1ac8a049de0513cb49a0e834e4c27a20/regional_compilation.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">regional_compilation.py</span></code></a></p>

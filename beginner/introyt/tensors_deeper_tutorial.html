@@ -463,7 +463,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel (FSDP2)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/FSDP_advanced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/TCPStore_libuv_backend.html">Introduction to Libuv TCPStore Backend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/TP_tutorial.html">Large Scale Transformer model training with Tensor Parallel (TP)</a></li>
@@ -581,9 +581,9 @@ Python’s math module to facilitate some of the examples.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;class 'torch.Tensor'&gt;
-tensor([[2.2995e-10, 4.5886e-41, 2.2964e-10, 4.5886e-41],
-        [1.8930e-10, 4.5886e-41, 1.8926e-10, 4.5886e-41],
-        [2.2994e-10, 4.5886e-41, 1.8930e-10, 4.5886e-41]])
+tensor([[1.8891e+31, 1.6790e+08, 1.9435e-19, 7.1315e+28],
+        [7.1441e+31, 2.0196e-19, 2.0192e-19, 1.8936e+23],
+        [1.7595e+22, 1.1479e-32, 4.6153e+19, 7.5563e+31]])
 </pre></div>
 </div>
 <p>Let’s upack what we just did:</p>
@@ -704,17 +704,17 @@ have the <code class="docutils literal notranslate"><span class="pre">torch.*_li
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>torch.Size([2, 2, 3])
-tensor([[[-1.7732e+33,  3.0831e-41,  1.7944e+01],
-         [ 4.5887e-41,  8.9683e-44,  0.0000e+00]],
+tensor([[[ 2.2591e+16,  3.0932e-41,  2.0000e+00],
+         [ 1.7023e+00, -0.0000e+00,  1.5912e+00]],
 
-        [[ 1.1210e-43,  0.0000e+00, -6.1039e-14],
-         [ 3.0838e-41,  0.0000e+00,  1.4013e-45]]])
+        [[ 3.6893e+19,  1.8732e+00, -2.0000e+00],
+         [ 1.7064e+00,  1.0842e-19,  1.7735e+00]]])
 torch.Size([2, 2, 3])
-tensor([[[ 1.7944e+01,  4.5887e-41, -2.1993e+33],
-         [ 3.0831e-41,  4.4842e-44,  0.0000e+00]],
+tensor([[[6.4479e-12, 4.5765e-41, 1.5704e-04],
+         [3.0939e-41, 0.0000e+00, 4.5764e-41]],
 
-        [[ 1.5695e-43,  0.0000e+00, -6.0464e-14],
-         [ 3.0838e-41,  0.0000e+00,  1.4013e-45]]])
+        [[9.1084e-44, 0.0000e+00, 2.0859e-04],
+         [3.0939e-41, 1.5678e-04, 3.0939e-41]]])
 torch.Size([2, 2, 3])
 tensor([[[0., 0., 0.],
          [0., 0., 0.]],
@@ -1354,7 +1354,7 @@ accelerator-related code.</p>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'Sorry, CPU only.'</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>We have an accelerator!
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Sorry, CPU only.
 </pre></div>
 </div>
 <p>Once we’ve determined that one or more accelerators is available, we need to put
@@ -1367,14 +1367,13 @@ GPU” is shorted to, “moving the data to the GPU”.)</p>
 <p>There are multiple ways to get your data onto your target device. You
 may do it at creation time:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <a class="sphx-glr-backref-module-torch-accelerator sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.accelerator.is_available.html#torch.accelerator.is_available" title="torch.accelerator.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">():</span>
-    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">gpu_rand</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.rand.html#torch.rand" title="torch.rand"><span class="n">torch</span><span class="o">.</span><span class="n">rand</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><a class="sphx-glr-backref-module-torch-accelerator sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.accelerator.current_accelerator.html#torch.accelerator.current_accelerator" title="torch.accelerator.current_accelerator"><span class="n">torch</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">current_accelerator</span></a><span class="p">())</span>
-    <span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">gpu_rand</span></a><span class="p">)</span>
+    <span class="n">gpu_rand</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.rand.html#torch.rand" title="torch.rand"><span class="n">torch</span><span class="o">.</span><span class="n">rand</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><a class="sphx-glr-backref-module-torch-accelerator sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.accelerator.current_accelerator.html#torch.accelerator.current_accelerator" title="torch.accelerator.current_accelerator"><span class="n">torch</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">current_accelerator</span></a><span class="p">())</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">gpu_rand</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'Sorry, CPU only.'</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[0.3344, 0.2640],
-        [0.2119, 0.0582]], device='cuda:0')
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Sorry, CPU only.
 </pre></div>
 </div>
 <p>By default, new tensors are created on the CPU, so we have to specify
@@ -1396,9 +1395,9 @@ string:</p>
 <span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Device: cuda
-tensor([[0.0024, 0.6778],
-        [0.2441, 0.6812]], device='cuda:0')
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Device: cpu
+tensor([[0.6923, 0.7545],
+        [0.7746, 0.2330]])
 </pre></div>
 </div>
 <p>If you have an existing tensor living on one device, you can move it to
@@ -1454,7 +1453,7 @@ the number of elements in the tensor.</p>
 <span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">c</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[[[0.2347]]]]])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[[[0.1506]]]]])
 </pre></div>
 </div>
 <p>Continuing the example above, let’s say the model’s output is a
@@ -1480,13 +1479,13 @@ something that’s just expecting a 20-element vector?</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>torch.Size([1, 20])
-tensor([[0.1899, 0.4067, 0.1519, 0.1506, 0.9585, 0.7756, 0.8973, 0.4929, 0.2367,
-         0.8194, 0.4509, 0.2690, 0.8381, 0.8207, 0.6818, 0.5057, 0.9335, 0.9769,
-         0.2792, 0.3277]])
+tensor([[0.9585, 0.7756, 0.8973, 0.4929, 0.2367, 0.8194, 0.4509, 0.2690, 0.8381,
+         0.8207, 0.6818, 0.5057, 0.9335, 0.9769, 0.2792, 0.3277, 0.5210, 0.7349,
+         0.7823, 0.8637]])
 torch.Size([20])
-tensor([0.1899, 0.4067, 0.1519, 0.1506, 0.9585, 0.7756, 0.8973, 0.4929, 0.2367,
-        0.8194, 0.4509, 0.2690, 0.8381, 0.8207, 0.6818, 0.5057, 0.9335, 0.9769,
-        0.2792, 0.3277])
+tensor([0.9585, 0.7756, 0.8973, 0.4929, 0.2367, 0.8194, 0.4509, 0.2690, 0.8381,
+        0.8207, 0.6818, 0.5057, 0.9335, 0.9769, 0.2792, 0.3277, 0.5210, 0.7349,
+        0.7823, 0.8637])
 torch.Size([2, 2])
 torch.Size([2, 2])
 </pre></div>
@@ -1523,21 +1522,21 @@ the rescue:</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>torch.Size([3, 1])
-tensor([[[0.1891, 0.1891],
-         [0.3952, 0.3952],
-         [0.9176, 0.9176]],
+tensor([[[0.4887, 0.4887],
+         [0.8625, 0.8625],
+         [0.6191, 0.6191]],
 
-        [[0.1891, 0.1891],
-         [0.3952, 0.3952],
-         [0.9176, 0.9176]],
+        [[0.4887, 0.4887],
+         [0.8625, 0.8625],
+         [0.6191, 0.6191]],
 
-        [[0.1891, 0.1891],
-         [0.3952, 0.3952],
-         [0.9176, 0.9176]],
+        [[0.4887, 0.4887],
+         [0.8625, 0.8625],
+         [0.6191, 0.6191]],
 
-        [[0.1891, 0.1891],
-         [0.3952, 0.3952],
-         [0.9176, 0.9176]]])
+        [[0.4887, 0.4887],
+         [0.8625, 0.8625],
+         [0.6191, 0.6191]]])
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">squeeze()</span></code> and <code class="docutils literal notranslate"><span class="pre">unsqueeze()</span></code> methods also have in-place
@@ -1632,10 +1631,10 @@ data type.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">numpy_rand</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[0.8716, 0.2459, 0.3499],
-        [0.2853, 0.9091, 0.5695]])
-[[0.87163675 0.2458961  0.34993553]
- [0.2853077  0.90905803 0.5695162 ]]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[0.9091, 0.5695, 0.7206],
+        [0.4155, 0.0982, 0.4637]])
+[[0.90905803 0.5695162  0.7206341 ]
+ [0.41554475 0.09820974 0.46368068]]
 </pre></div>
 </div>
 <p>It is important to know that these converted objects are using <em>the same
@@ -1650,11 +1649,11 @@ are reflected in the other:</p>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[ 1.,  1.,  1.],
         [ 1., 23.,  1.]], dtype=torch.float64)
-[[ 0.87163675  0.2458961   0.34993553]
- [ 0.2853077  17.          0.5695162 ]]
+[[ 0.90905803  0.5695162   0.7206341 ]
+ [ 0.41554475 17.          0.46368068]]
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.415 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.062 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-introyt-tensors-deeper-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/be017e7b39198fdf668c138fd8d57abe/tensors_deeper_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tensors_deeper_tutorial.py</span></code></a></p>

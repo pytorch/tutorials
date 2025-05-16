@@ -89,9 +89,9 @@ to copy the upper-triangular part of the matrix into its lower-triangular part
 
  .. code-block:: none
 
-    tensor([[0.4747, 0.1424, 0.1247],
-            [0.1424, 0.0628, 0.6999],
-            [0.1247, 0.6999, 0.0685]])
+    tensor([[0.1486, 0.3906, 0.2539],
+            [0.3906, 0.1767, 0.6524],
+            [0.2539, 0.6524, 0.9229]])
 
 
 
@@ -227,9 +227,9 @@ Now, the matrix of the linear layer is symmetric
 
  .. code-block:: none
 
-    tensor([[-0.1511,  0.1593,  0.2902],
-            [ 0.1593, -0.2284,  0.3202],
-            [ 0.2902,  0.3202, -0.3111]], grad_fn=<AddBackward0>)
+    tensor([[ 0.3784, -0.1165, -0.1834],
+            [-0.1165, -0.2752, -0.2642],
+            [-0.1834, -0.2642, -0.5370]], grad_fn=<AddBackward0>)
 
 
 
@@ -265,12 +265,12 @@ reversed into the lower-triangular part
 
  .. code-block:: none
 
-    tensor([[ 0.0000, -0.1464, -0.0979],
-            [ 0.1464,  0.0000,  0.0683],
-            [ 0.0979, -0.0683,  0.0000]], grad_fn=<SelectBackward0>)
-    tensor([[ 0.0000,  0.0136,  0.0050],
-            [-0.0136,  0.0000,  0.1114],
-            [-0.0050, -0.1114,  0.0000]], grad_fn=<SelectBackward0>)
+    tensor([[ 0.0000,  0.0662,  0.0300],
+            [-0.0662,  0.0000, -0.1245],
+            [-0.0300,  0.1245,  0.0000]], grad_fn=<SelectBackward0>)
+    tensor([[ 0.0000,  0.0040,  0.0742],
+            [-0.0040,  0.0000,  0.1327],
+            [-0.0742, -0.1327,  0.0000]], grad_fn=<SelectBackward0>)
 
 
 
@@ -406,10 +406,10 @@ parameter ``weight`` has been moved
  .. code-block:: none
 
     {'bias': Parameter containing:
-    tensor([-0.5365, -0.3641,  0.1641], requires_grad=True), 'parametrizations.weight.original': Parameter containing:
-    tensor([[ 0.0474, -0.1080,  0.2417],
-            [-0.5390, -0.3976,  0.1782],
-            [ 0.0579, -0.0016,  0.0503]], requires_grad=True)}
+    tensor([ 0.5630, -0.0839, -0.3287], requires_grad=True), 'parametrizations.weight.original': Parameter containing:
+    tensor([[ 0.0575, -0.2448, -0.3339],
+            [-0.4917,  0.2306, -0.2474],
+            [-0.1615, -0.3092,  0.5255]], requires_grad=True)}
 
 
 
@@ -433,9 +433,9 @@ It now sits under ``layer.parametrizations.weight.original``
  .. code-block:: none
 
     Parameter containing:
-    tensor([[ 0.0474, -0.1080,  0.2417],
-            [-0.5390, -0.3976,  0.1782],
-            [ 0.0579, -0.0016,  0.0503]], requires_grad=True)
+    tensor([[ 0.0575, -0.2448, -0.3339],
+            [-0.4917,  0.2306, -0.2474],
+            [-0.1615, -0.3092,  0.5255]], requires_grad=True)
 
 
 
@@ -560,7 +560,7 @@ orthogonal weights
 
  .. code-block:: none
 
-    tensor(2.3085e-07, grad_fn=<DistBackward0>)
+    tensor(1.9804e-07, grad_fn=<DistBackward0>)
 
 
 
@@ -601,8 +601,8 @@ Using these two facts, we may reuse the parametrizations before to our advantage
 
  .. code-block:: none
 
-    tensor(1.4136e-07, grad_fn=<DistBackward0>)
-    tensor(0., grad_fn=<DistBackward0>)
+    tensor(2.2401e-07, grad_fn=<DistBackward0>)
+    tensor(1.0537e-08, grad_fn=<DistBackward0>)
     tensor(True)
 
 
@@ -717,7 +717,7 @@ To see this, let's upgrade the Cayley parametrization to also support being init
 
  .. code-block:: none
 
-    tensor(0.8774, grad_fn=<DistBackward0>)
+    tensor(1.5364, grad_fn=<DistBackward0>)
 
 
 
@@ -734,7 +734,22 @@ This initialization step can be written more succinctly as
 
 
 
+.. rst-class:: sphx-glr-script-out
 
+.. code-block:: pytb
+
+    Traceback (most recent call last):
+      File "/var/lib/workspace/intermediate_source/parametrizations.py", line 325, in <module>
+        layer_orthogonal.weight = nn.init.orthogonal_(layer_orthogonal.weight)
+      File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 2041, in __setattr__
+        super().__setattr__(name, value)
+      File "/usr/local/lib/python3.10/dist-packages/torch/nn/utils/parametrize.py", line 411, in set_original
+        self.parametrizations[tensor_name].right_inverse(value)
+      File "/usr/local/lib/python3.10/dist-packages/torch/nn/utils/parametrize.py", line 249, in right_inverse
+        value = module.right_inverse(value)  # type: ignore[operator]
+      File "/var/lib/workspace/intermediate_source/parametrizations.py", line 310, in right_inverse
+        return torch.linalg.solve(A + self.Id, self.Id - A)
+    torch._C._LinAlgError: torch.linalg.solve: The solver failed because the input matrix is singular.
 
 
 
@@ -766,12 +781,6 @@ of a randomized pruning method:
             return A
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 348-352
 
 In this case, it is not true that for every matrix A ``forward(right_inverse(A)) == A``.
@@ -789,28 +798,6 @@ that tensor will be, in fact, pruned
     parametrize.register_parametrization(layer, "weight", PruningParametrization(layer.weight))
     layer.weight = X
     print(f"\nInitialized weight:\n{layer.weight}")
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Initialization matrix:
-    tensor([[0.6242, 0.1887, 0.7568],
-            [0.0427, 0.8589, 0.8286],
-            [0.2616, 0.8981, 0.2231],
-            [0.9065, 0.0729, 0.4548]])
-
-    Initialized weight:
-    tensor([[0.0000, 0.1887, 0.7568],
-            [0.0427, 0.8589, 0.8286],
-            [0.0000, 0.0000, 0.2231],
-            [0.9065, 0.0729, 0.4548]], grad_fn=<MulBackward0>)
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 360-365
@@ -839,43 +826,6 @@ by using ``parametrize.remove_parametrizations()``
     print(layer.weight)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Before:
-    Linear(in_features=3, out_features=3, bias=True)
-    Parameter containing:
-    tensor([[-0.0521, -0.0373,  0.1546],
-            [ 0.1919,  0.5223,  0.4518],
-            [-0.0951, -0.1628, -0.5204]], requires_grad=True)
-
-    Parametrized:
-    ParametrizedLinear(
-      in_features=3, out_features=3, bias=True
-      (parametrizations): ModuleDict(
-        (weight): ParametrizationList(
-          (0): Skew()
-        )
-      )
-    )
-    tensor([[ 0.0000, -0.0373,  0.1546],
-            [ 0.0373,  0.0000,  0.4518],
-            [-0.1546, -0.4518,  0.0000]], grad_fn=<SubBackward0>)
-
-    After. Weight has skew-symmetric values but it is unconstrained:
-    Linear(in_features=3, out_features=3, bias=True)
-    Parameter containing:
-    tensor([[ 0.0000, -0.0373,  0.1546],
-            [ 0.0373,  0.0000,  0.4518],
-            [-0.1546, -0.4518,  0.0000]], requires_grad=True)
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 379-382
 
 When removing a parametrization, we may choose to leave the original parameter (i.e. that in
@@ -900,46 +850,9 @@ the flag ``leave_parametrized=False``
     print(layer.weight)
 
 
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Before:
-    Linear(in_features=3, out_features=3, bias=True)
-    Parameter containing:
-    tensor([[-0.0699,  0.1855, -0.3200],
-            [-0.2411, -0.1355,  0.3754],
-            [-0.0149, -0.0913,  0.1781]], requires_grad=True)
-
-    Parametrized:
-    ParametrizedLinear(
-      in_features=3, out_features=3, bias=True
-      (parametrizations): ModuleDict(
-        (weight): ParametrizationList(
-          (0): Skew()
-        )
-      )
-    )
-    tensor([[ 0.0000,  0.1855, -0.3200],
-            [-0.1855,  0.0000,  0.3754],
-            [ 0.3200, -0.3754,  0.0000]], grad_fn=<SubBackward0>)
-
-    After. Same as Before:
-    Linear(in_features=3, out_features=3, bias=True)
-    Parameter containing:
-    tensor([[ 0.0000,  0.1855, -0.3200],
-            [ 0.0000,  0.0000,  0.3754],
-            [ 0.0000,  0.0000,  0.0000]], requires_grad=True)
-
-
-
-
-
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.055 seconds)
+   **Total running time of the script:** ( 0 minutes  0.047 seconds)
 
 
 .. _sphx_glr_download_intermediate_parametrizations.py:

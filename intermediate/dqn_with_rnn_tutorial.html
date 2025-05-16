@@ -461,7 +461,7 @@
 <li class="toctree-l1"><a class="reference internal" href="model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
-<li class="toctree-l1"><a class="reference internal" href="FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel (FSDP2)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="FSDP_advanced_tutorial.html">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="TCPStore_libuv_backend.html">Introduction to Libuv TCPStore Backend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="TP_tutorial.html">Large Scale Transformer model training with Tensor Parallel (TP)</a></li>
@@ -619,33 +619,67 @@ is implemented in practice.</p>
 <h2>Setup<a class="headerlink" href="#setup" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tqdm</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">tensordict.nn</span><span class="w"> </span><span class="kn">import</span> <span class="n">TensorDictModule</span> <span class="k">as</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Mod</span></a><span class="p">,</span> <span class="n">TensorDictSequential</span> <span class="k">as</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Seq</span></a>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tensordict.nn</span><span class="w"> </span><span class="kn">import</span> <span class="n">TensorDictModule</span> <span class="k">as</span> <span class="n">Mod</span><span class="p">,</span> <span class="n">TensorDictSequential</span> <span class="k">as</span> <span class="n">Seq</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">nn</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">torchrl.collectors</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.IterableDataset" title="torch.utils.data.IterableDataset"><span class="n">SyncDataCollector</span></a>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchrl.collectors</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncDataCollector</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torchrl.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">LazyMemmapStorage</span><span class="p">,</span> <span class="n">TensorDictReplayBuffer</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torchrl.envs</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Compose</span></a><span class="p">,</span>
+    <span class="n">Compose</span><span class="p">,</span>
     <span class="n">ExplorationType</span><span class="p">,</span>
-    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">GrayScale</span></a><span class="p">,</span>
-    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">InitTracker</span></a><span class="p">,</span>
-    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">ObservationNorm</span></a><span class="p">,</span>
-    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Resize</span></a><span class="p">,</span>
-    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">RewardScaling</span></a><span class="p">,</span>
+    <span class="n">GrayScale</span><span class="p">,</span>
+    <span class="n">InitTracker</span><span class="p">,</span>
+    <span class="n">ObservationNorm</span><span class="p">,</span>
+    <span class="n">Resize</span><span class="p">,</span>
+    <span class="n">RewardScaling</span><span class="p">,</span>
     <span class="n">set_exploration_type</span><span class="p">,</span>
-    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">StepCounter</span></a><span class="p">,</span>
-    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">ToTensorImage</span></a><span class="p">,</span>
-    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">TransformedEnv</span></a><span class="p">,</span>
+    <span class="n">StepCounter</span><span class="p">,</span>
+    <span class="n">ToTensorImage</span><span class="p">,</span>
+    <span class="n">TransformedEnv</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">torchrl.envs.libs.gym</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">GymEnv</span></a>
-<span class="kn">from</span><span class="w"> </span><span class="nn">torchrl.modules</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential" title="torch.nn.Sequential"><span class="n">ConvNet</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">EGreedyModule</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">LSTMModule</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential" title="torch.nn.Sequential"><span class="n">MLP</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">QValueModule</span></a>
-<span class="kn">from</span><span class="w"> </span><span class="nn">torchrl.objectives</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">DQNLoss</span></a><span class="p">,</span> <span class="n">SoftUpdate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchrl.envs.libs.gym</span><span class="w"> </span><span class="kn">import</span> <span class="n">GymEnv</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchrl.modules</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConvNet</span><span class="p">,</span> <span class="n">EGreedyModule</span><span class="p">,</span> <span class="n">LSTMModule</span><span class="p">,</span> <span class="n">MLP</span><span class="p">,</span> <span class="n">QValueModule</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchrl.objectives</span><span class="w"> </span><span class="kn">import</span> <span class="n">DQNLoss</span><span class="p">,</span> <span class="n">SoftUpdate</span>
 
 <span class="n">is_fork</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">get_start_method</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"fork"</span>
-<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a> <span class="o">=</span> <span class="p">(</span>
+<span class="n">device</span> <span class="o">=</span> <span class="p">(</span>
     <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_fork</span>
     <span class="k">else</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
 <span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-pytb notranslate"><div class="highlight"><pre><span></span><span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">"/var/lib/workspace/intermediate_source/dqn_with_rnn_tutorial.py"</span>, line <span class="m">91</span>, in <span class="n">&lt;module&gt;</span>
+<span class="w">    </span><span class="kn">from</span><span class="w"> </span><span class="nn">tensordict.nn</span><span class="w"> </span><span class="kn">import</span> <span class="n">TensorDictModule</span> <span class="k">as</span> <span class="n">Mod</span><span class="p">,</span> <span class="n">TensorDictSequential</span> <span class="k">as</span> <span class="n">Seq</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/tensordict/__init__.py"</span>, line <span class="m">6</span>, in <span class="n">&lt;module&gt;</span>
+<span class="w">    </span><span class="kn">import</span><span class="w"> </span><span class="nn">tensordict._reductions</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/tensordict/_reductions.py"</span>, line <span class="m">11</span>, in <span class="n">&lt;module&gt;</span>
+<span class="w">    </span><span class="kn">from</span><span class="w"> </span><span class="nn">tensordict._lazy</span><span class="w"> </span><span class="kn">import</span> <span class="n">LazyStackedTensorDict</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/tensordict/_lazy.py"</span>, line <span class="m">36</span>, in <span class="n">&lt;module&gt;</span>
+<span class="w">    </span><span class="kn">from</span><span class="w"> </span><span class="nn">tensordict.memmap</span><span class="w"> </span><span class="kn">import</span> <span class="n">MemoryMappedTensor</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/tensordict/memmap.py"</span>, line <span class="m">22</span>, in <span class="n">&lt;module&gt;</span>
+<span class="w">    </span><span class="kn">from</span><span class="w"> </span><span class="nn">tensordict.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">_shape</span><span class="p">,</span> <span class="n">implement_for</span><span class="p">,</span> <span class="n">IndexType</span><span class="p">,</span> <span class="n">NESTED_TENSOR_ERR</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/tensordict/utils.py"</span>, line <span class="m">106</span>, in <span class="n">&lt;module&gt;</span>
+<span class="w">    </span><span class="kn">from</span><span class="w"> </span><span class="nn">torchrec</span><span class="w"> </span><span class="kn">import</span> <span class="n">KeyedJaggedTensor</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/torchrec/__init__.py"</span>, line <span class="m">10</span>, in <span class="n">&lt;module&gt;</span>
+<span class="w">    </span><span class="kn">import</span><span class="w"> </span><span class="nn">torchrec.distributed</span>  <span class="c1"># noqa</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/torchrec/distributed/__init__.py"</span>, line <span class="m">37</span>, in <span class="n">&lt;module&gt;</span>
+<span class="w">    </span><span class="kn">from</span><span class="w"> </span><span class="nn">torchrec.distributed.comm</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_local_rank</span><span class="p">,</span> <span class="n">get_local_size</span>  <span class="c1"># noqa</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/torchrec/distributed/comm.py"</span>, line <span class="m">16</span>, in <span class="n">&lt;module&gt;</span>
+<span class="w">    </span><span class="kn">from</span><span class="w"> </span><span class="nn">torchrec.distributed.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ShardingEnv2D</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/torchrec/distributed/types.py"</span>, line <span class="m">29</span>, in <span class="n">&lt;module&gt;</span>
+<span class="w">    </span><span class="kn">from</span><span class="w"> </span><span class="nn">fbgemm_gpu.runtime_monitor</span><span class="w"> </span><span class="kn">import</span> <span class="n">TBEStatsReporterConfig</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/fbgemm_gpu/__init__.py"</span>, line <span class="m">88</span>, in <span class="n">&lt;module&gt;</span>
+<span class="w">    </span><span class="n">_load_library</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">library</span><span class="si">}</span><span class="s2">.so"</span><span class="p">,</span> <span class="n">__variant__</span> <span class="o">==</span> <span class="s2">"docs"</span><span class="p">)</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/fbgemm_gpu/__init__.py"</span>, line <span class="m">22</span>, in <span class="n">_load_library</span>
+<span class="w">    </span><span class="k">raise</span> <span class="n">error</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/fbgemm_gpu/__init__.py"</span>, line <span class="m">17</span>, in <span class="n">_load_library</span>
+<span class="w">    </span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="n">filename</span><span class="p">))</span>
+  File <span class="nb">"/usr/local/lib/python3.10/dist-packages/torch/_ops.py"</span>, line <span class="m">1392</span>, in <span class="n">load_library</span>
+<span class="w">    </span><span class="n">ctypes</span><span class="o">.</span><span class="n">CDLL</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+  File <span class="nb">"/usr/lib/python3.10/ctypes/__init__.py"</span>, line <span class="m">374</span>, in <span class="n">__init__</span>
+<span class="w">    </span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span> <span class="o">=</span> <span class="n">_dlopen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+<span class="gr">OSError</span>: <span class="n">libnvidia-ml.so.1: cannot open shared object file: No such file or directory</span>
 </pre></div>
 </div>
 </div>
@@ -685,16 +719,16 @@ Fortunately, the <code class="xref py py-class docutils literal notranslate"><sp
 equipped with a helper method to build just that transform for us, so
 we can wait until we build it!</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">env</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">TransformedEnv</span></a><span class="p">(</span>
-    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">GymEnv</span></a><span class="p">(</span><span class="s2">"CartPole-v1"</span><span class="p">,</span> <span class="n">from_pixels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">),</span>
-    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Compose</span></a><span class="p">(</span>
-        <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">ToTensorImage</span></a><span class="p">(),</span>
-        <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">GrayScale</span></a><span class="p">(),</span>
-        <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Resize</span></a><span class="p">(</span><span class="mi">84</span><span class="p">,</span> <span class="mi">84</span><span class="p">),</span>
-        <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">StepCounter</span></a><span class="p">(),</span>
-        <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">InitTracker</span></a><span class="p">(),</span>
-        <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">RewardScaling</span></a><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
-        <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">ObservationNorm</span></a><span class="p">(</span><span class="n">standard_normal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">in_keys</span><span class="o">=</span><span class="p">[</span><span class="s2">"pixels"</span><span class="p">]),</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">env</span> <span class="o">=</span> <span class="n">TransformedEnv</span><span class="p">(</span>
+    <span class="n">GymEnv</span><span class="p">(</span><span class="s2">"CartPole-v1"</span><span class="p">,</span> <span class="n">from_pixels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
+    <span class="n">Compose</span><span class="p">(</span>
+        <span class="n">ToTensorImage</span><span class="p">(),</span>
+        <span class="n">GrayScale</span><span class="p">(),</span>
+        <span class="n">Resize</span><span class="p">(</span><span class="mi">84</span><span class="p">,</span> <span class="mi">84</span><span class="p">),</span>
+        <span class="n">StepCounter</span><span class="p">(),</span>
+        <span class="n">InitTracker</span><span class="p">(),</span>
+        <span class="n">RewardScaling</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+        <span class="n">ObservationNorm</span><span class="p">(</span><span class="n">standard_normal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">in_keys</span><span class="o">=</span><span class="p">[</span><span class="s2">"pixels"</span><span class="p">]),</span>
     <span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
@@ -716,13 +750,13 @@ action values.</p>
 <p>We build a convolutional network flanked with a <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool2d.html#torch.nn.AdaptiveAvgPool2d" title="(in PyTorch v2.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.AdaptiveAvgPool2d</span></code></a>
 that will squash the output in a vector of size 64. The <code class="xref py py-class docutils literal notranslate"><span class="pre">ConvNet</span></code>
 can assist us with this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">feature</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Mod</span></a><span class="p">(</span>
-    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential" title="torch.nn.Sequential"><span class="n">ConvNet</span></a><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">feature</span> <span class="o">=</span> <span class="n">Mod</span><span class="p">(</span>
+    <span class="n">ConvNet</span><span class="p">(</span>
         <span class="n">num_cells</span><span class="o">=</span><span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">],</span>
         <span class="n">squeeze_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">aggregator_class</span><span class="o">=</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool2d.html#torch.nn.AdaptiveAvgPool2d" title="torch.nn.AdaptiveAvgPool2d"><span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveAvgPool2d</span></a><span class="p">,</span>
+        <span class="n">aggregator_class</span><span class="o">=</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool2d.html#torch.nn.AdaptiveAvgPool2d" title="torch.nn.AdaptiveAvgPool2d"><span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveAvgPool2d</span></a><span class="p">,</span>
         <span class="n">aggregator_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">"output_size"</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)},</span>
-        <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">,</span>
+        <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
     <span class="p">),</span>
     <span class="n">in_keys</span><span class="o">=</span><span class="p">[</span><span class="s2">"pixels"</span><span class="p">],</span>
     <span class="n">out_keys</span><span class="o">=</span><span class="p">[</span><span class="s2">"embed"</span><span class="p">],</span>
@@ -755,10 +789,10 @@ behavior, so we’re good with a native call.</p>
 this wouldn’t be usable in online settings. In this case, the default value
 is the correct one.</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lstm</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">LSTMModule</span></a><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lstm</span> <span class="o">=</span> <span class="n">LSTMModule</span><span class="p">(</span>
     <span class="n">input_size</span><span class="o">=</span><span class="n">n_cells</span><span class="p">,</span>
     <span class="n">hidden_size</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
-    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
     <span class="n">in_key</span><span class="o">=</span><span class="s2">"embed"</span><span class="p">,</span>
     <span class="n">out_key</span><span class="o">=</span><span class="s2">"embed"</span><span class="p">,</span>
 <span class="p">)</span>
@@ -767,10 +801,6 @@ is the correct one.</p>
 <p>Let us look at the LSTM Module class, specifically its in and out_keys:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"in_keys"</span><span class="p">,</span> <span class="n">lstm</span><span class="o">.</span><span class="n">in_keys</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"out_keys"</span><span class="p">,</span> <span class="n">lstm</span><span class="o">.</span><span class="n">out_keys</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>in_keys ['embed', 'recurrent_state_h', 'recurrent_state_c', 'is_init']
-out_keys ['embed', ('next', 'recurrent_state_h'), ('next', 'recurrent_state_c')]
 </pre></div>
 </div>
 <p>We can see that these values contain the key we indicated as the in_key (and out_key)
@@ -787,71 +817,9 @@ exactly that:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">env</span><span class="o">.</span><span class="n">append_transform</span><span class="p">(</span><span class="n">lstm</span><span class="o">.</span><span class="n">make_tensordict_primer</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>TransformedEnv(
-    env=GymEnv(env=CartPole-v1, batch_size=torch.Size([]), device=cpu),
-    transform=Compose(
-            ToTensorImage(keys=['pixels']),
-            GrayScale(keys=['pixels']),
-            Resize(w=84, h=84, interpolation=InterpolationMode.BILINEAR, keys=['pixels']),
-            StepCounter(keys=[]),
-            InitTracker(keys=[]),
-            RewardScaling(loc=0.0000, scale=0.1000, keys=['reward']),
-            ObservationNorm(keys=['pixels']),
-            TensorDictPrimer(primers=Composite(
-                recurrent_state_h: UnboundedContinuous(
-                    shape=torch.Size([1, 128]),
-                    space=ContinuousBox(
-                        low=Tensor(shape=torch.Size([1, 128]), device=cpu, dtype=torch.float32, contiguous=True),
-                        high=Tensor(shape=torch.Size([1, 128]), device=cpu, dtype=torch.float32, contiguous=True)),
-                    device=cpu,
-                    dtype=torch.float32,
-                    domain=continuous),
-                recurrent_state_c: UnboundedContinuous(
-                    shape=torch.Size([1, 128]),
-                    space=ContinuousBox(
-                        low=Tensor(shape=torch.Size([1, 128]), device=cpu, dtype=torch.float32, contiguous=True),
-                        high=Tensor(shape=torch.Size([1, 128]), device=cpu, dtype=torch.float32, contiguous=True)),
-                    device=cpu,
-                    dtype=torch.float32,
-                    domain=continuous),
-                device=cpu,
-                shape=torch.Size([])), default_value={'recurrent_state_h': 0.0, 'recurrent_state_c': 0.0}, random=None)))
-</pre></div>
-</div>
 <p>and that’s it! We can print the environment to check that everything looks good now
 that we have added the primer:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>TransformedEnv(
-    env=GymEnv(env=CartPole-v1, batch_size=torch.Size([]), device=cpu),
-    transform=Compose(
-            ToTensorImage(keys=['pixels']),
-            GrayScale(keys=['pixels']),
-            Resize(w=84, h=84, interpolation=InterpolationMode.BILINEAR, keys=['pixels']),
-            StepCounter(keys=[]),
-            InitTracker(keys=[]),
-            RewardScaling(loc=0.0000, scale=0.1000, keys=['reward']),
-            ObservationNorm(keys=['pixels']),
-            TensorDictPrimer(primers=Composite(
-                recurrent_state_h: UnboundedContinuous(
-                    shape=torch.Size([1, 128]),
-                    space=ContinuousBox(
-                        low=Tensor(shape=torch.Size([1, 128]), device=cpu, dtype=torch.float32, contiguous=True),
-                        high=Tensor(shape=torch.Size([1, 128]), device=cpu, dtype=torch.float32, contiguous=True)),
-                    device=cpu,
-                    dtype=torch.float32,
-                    domain=continuous),
-                recurrent_state_c: UnboundedContinuous(
-                    shape=torch.Size([1, 128]),
-                    space=ContinuousBox(
-                        low=Tensor(shape=torch.Size([1, 128]), device=cpu, dtype=torch.float32, contiguous=True),
-                        high=Tensor(shape=torch.Size([1, 128]), device=cpu, dtype=torch.float32, contiguous=True)),
-                    device=cpu,
-                    dtype=torch.float32,
-                    domain=continuous),
-                device=cpu,
-                shape=torch.Size([])), default_value={'recurrent_state_h': 0.0, 'recurrent_state_c': 0.0}, random=None)))
 </pre></div>
 </div>
 </div>
@@ -859,18 +827,18 @@ that we have added the primer:</p>
 <h3>MLP<a class="headerlink" href="#mlp" title="Permalink to this heading">¶</a></h3>
 <p>We use a single-layer MLP to represent the action values we’ll be using for
 our policy.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mlp</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential" title="torch.nn.Sequential"><span class="n">MLP</span></a><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">(</span>
     <span class="n">out_features</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="n">num_cells</span><span class="o">=</span><span class="p">[</span>
         <span class="mi">64</span><span class="p">,</span>
     <span class="p">],</span>
-    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>and fill the bias with zeros:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mlp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-<span class="n">mlp</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Mod</span></a><span class="p">(</span><span class="n">mlp</span><span class="p">,</span> <span class="n">in_keys</span><span class="o">=</span><span class="p">[</span><span class="s2">"embed"</span><span class="p">],</span> <span class="n">out_keys</span><span class="o">=</span><span class="p">[</span><span class="s2">"action_value"</span><span class="p">])</span>
+<span class="n">mlp</span> <span class="o">=</span> <span class="n">Mod</span><span class="p">(</span><span class="n">mlp</span><span class="p">,</span> <span class="n">in_keys</span><span class="o">=</span><span class="p">[</span><span class="s2">"embed"</span><span class="p">],</span> <span class="n">out_keys</span><span class="o">=</span><span class="p">[</span><span class="s2">"action_value"</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -883,7 +851,7 @@ from it, gather the action that has the maximum value.
 The only thing we need to do is to specify the action space, which can be done
 either by passing a string or an action-spec. This allows us to use
 Categorical (sometimes called “sparse”) encoding or the one-hot version of it.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">qval</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">QValueModule</span></a><span class="p">(</span><span class="n">spec</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">qval</span> <span class="o">=</span> <span class="n">QValueModule</span><span class="p">(</span><span class="n">spec</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -895,7 +863,7 @@ and the process is less transparent, but the end results will be similar to
 what we do here.</p>
 </div>
 <p>We can now put things together in a <code class="xref py py-class docutils literal notranslate"><span class="pre">TensorDictSequential</span></code></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">stoch_policy</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Seq</span></a><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">lstm</span><span class="p">,</span> <span class="n">mlp</span><span class="p">,</span> <span class="n">qval</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">stoch_policy</span> <span class="o">=</span> <span class="n">Seq</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">lstm</span><span class="p">,</span> <span class="n">mlp</span><span class="p">,</span> <span class="n">qval</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>DQN being a deterministic algorithm, exploration is a crucial part of it.
@@ -903,10 +871,10 @@ We’ll be using an <span class="math">\(\epsilon\)</span>-greedy policy with an
 progressively to 0.
 This decay is achieved via a call to <code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code>
 (see training loop below).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exploration_module</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">EGreedyModule</span></a><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exploration_module</span> <span class="o">=</span> <span class="n">EGreedyModule</span><span class="p">(</span>
     <span class="n">annealing_num_steps</span><span class="o">=</span><span class="mi">1_000_000</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="p">,</span> <span class="n">eps_init</span><span class="o">=</span><span class="mf">0.2</span>
 <span class="p">)</span>
-<span class="n">stoch_policy</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Seq</span></a><span class="p">(</span>
+<span class="n">stoch_policy</span> <span class="o">=</span> <span class="n">Seq</span><span class="p">(</span>
     <span class="n">stoch_policy</span><span class="p">,</span>
     <span class="n">exploration_module</span><span class="p">,</span>
 <span class="p">)</span>
@@ -925,43 +893,12 @@ As we’ll usually want to have two copies of the LSTM module, we do this by
 calling a <code class="xref py py-meth docutils literal notranslate"><span class="pre">set_recurrent_mode()</span></code> method that
 will return a new instance of the LSTM (with shared weights) that will
 assume that the input data is sequential in nature.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">policy</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Seq</span></a><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">lstm</span><span class="o">.</span><span class="n">set_recurrent_mode</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span> <span class="n">mlp</span><span class="p">,</span> <span class="n">qval</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.10/dist-packages/torchrl/modules/tensordict_module/rnn.py:710: DeprecationWarning:
-
-The lstm.set_recurrent_mode() API is deprecated and will be removed in v0.8. To set the recurent mode, use the :class:`~torchrl.modules.set_recurrent_mode` context manager or the `default_recurrent_mode` keyword argument in the constructor.
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">policy</span> <span class="o">=</span> <span class="n">Seq</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">lstm</span><span class="o">.</span><span class="n">set_recurrent_mode</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span> <span class="n">mlp</span><span class="p">,</span> <span class="n">qval</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Because we still have a couple of uninitialized parameters we should
 initialize them before creating an optimizer and such.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">policy</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">())</span>
-</pre></div>
-</div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>TensorDict(
-    fields={
-        action: Tensor(shape=torch.Size([2]), device=cpu, dtype=torch.int64, is_shared=False),
-        action_value: Tensor(shape=torch.Size([2]), device=cpu, dtype=torch.float32, is_shared=False),
-        chosen_action_value: Tensor(shape=torch.Size([1]), device=cpu, dtype=torch.float32, is_shared=False),
-        done: Tensor(shape=torch.Size([1]), device=cpu, dtype=torch.bool, is_shared=False),
-        embed: Tensor(shape=torch.Size([128]), device=cpu, dtype=torch.float32, is_shared=False),
-        is_init: Tensor(shape=torch.Size([1]), device=cpu, dtype=torch.bool, is_shared=False),
-        next: TensorDict(
-            fields={
-                recurrent_state_c: Tensor(shape=torch.Size([1, 128]), device=cpu, dtype=torch.float32, is_shared=False),
-                recurrent_state_h: Tensor(shape=torch.Size([1, 128]), device=cpu, dtype=torch.float32, is_shared=False)},
-            batch_size=torch.Size([]),
-            device=cpu,
-            is_shared=False),
-        pixels: Tensor(shape=torch.Size([1, 84, 84]), device=cpu, dtype=torch.float32, is_shared=False),
-        recurrent_state_c: Tensor(shape=torch.Size([1, 128]), device=cpu, dtype=torch.float32, is_shared=False),
-        recurrent_state_h: Tensor(shape=torch.Size([1, 128]), device=cpu, dtype=torch.float32, is_shared=False),
-        step_count: Tensor(shape=torch.Size([1]), device=cpu, dtype=torch.int64, is_shared=False),
-        terminated: Tensor(shape=torch.Size([1]), device=cpu, dtype=torch.bool, is_shared=False),
-        truncated: Tensor(shape=torch.Size([1]), device=cpu, dtype=torch.bool, is_shared=False)},
-    batch_size=torch.Size([]),
-    device=cpu,
-    is_shared=False)
 </pre></div>
 </div>
 </div>
@@ -975,7 +912,7 @@ classes are compatible, but aren’t strongly dependent on each other.</p>
 <p>To use the Double-DQN, we ask for a <code class="docutils literal notranslate"><span class="pre">delay_value</span></code> argument that will
 create a non-differentiable copy of the network parameters to be used
 as a target network.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">loss_fn</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">DQNLoss</span></a><span class="p">(</span><span class="n">policy</span><span class="p">,</span> <span class="n">action_space</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="p">,</span> <span class="n">delay_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">loss_fn</span> <span class="o">=</span> <span class="n">DQNLoss</span><span class="p">(</span><span class="n">policy</span><span class="p">,</span> <span class="n">action_space</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">action_spec</span><span class="p">,</span> <span class="n">delay_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Since we are using a double DQN, we need to update the target parameters.
@@ -983,7 +920,7 @@ We’ll use a  <code class="xref py py-class docutils literal notranslate"><span
 this work.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">updater</span> <span class="o">=</span> <span class="n">SoftUpdate</span><span class="p">(</span><span class="n">loss_fn</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">0.95</span><span class="p">)</span>
 
-<a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="torch.optim.Adam"><span class="n">optim</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="torch.optim.Adam"><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.parameters" title="torch.nn.Module.parameters"><span class="n">policy</span><span class="o">.</span><span class="n">parameters</span></a><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">)</span>
+<span class="n">optim</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="torch.optim.Adam"><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span></a><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1001,7 +938,7 @@ on disk.</p>
 <p>For the sake of efficiency, we’re only running a few thousands iterations
 here. In a real setting, the total number of frames should be set to 1M.</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">collector</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.IterableDataset" title="torch.utils.data.IterableDataset"><span class="n">SyncDataCollector</span></a><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">stoch_policy</span><span class="p">,</span> <span class="n">frames_per_batch</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">total_frames</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">collector</span> <span class="o">=</span> <span class="n">SyncDataCollector</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">stoch_policy</span><span class="p">,</span> <span class="n">frames_per_batch</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">total_frames</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
 <span class="n">rb</span> <span class="o">=</span> <span class="n">TensorDictReplayBuffer</span><span class="p">(</span>
     <span class="n">storage</span><span class="o">=</span><span class="n">LazyMemmapStorage</span><span class="p">(</span><span class="mi">20_000</span><span class="p">),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">prefetch</span><span class="o">=</span><span class="mi">10</span>
 <span class="p">)</span>
@@ -1031,11 +968,11 @@ every 50 data collection, and plot the results after training.</p>
     <span class="c1"># it is important to pass data that is not flattened</span>
     <span class="n">rb</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to_tensordict</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">utd</span><span class="p">):</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="n">rb</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">,</span> <span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">rb</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">loss_vals</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
         <span class="n">loss_vals</span><span class="p">[</span><span class="s2">"loss"</span><span class="p">]</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-        <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam.step" title="torch.optim.Adam.step"><span class="n">optim</span><span class="o">.</span><span class="n">step</span></a><span class="p">()</span>
-        <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam.zero_grad" title="torch.optim.Adam.zero_grad"><span class="n">optim</span><span class="o">.</span><span class="n">zero_grad</span></a><span class="p">()</span>
+        <span class="n">optim</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="n">optim</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
     <span class="n">longest</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">longest</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s2">"step_count"</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
     <span class="n">pbar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span>
         <span class="sa">f</span><span class="s2">"steps: </span><span class="si">{</span><span class="n">longest</span><span class="si">}</span><span class="s2">, loss_val: </span><span class="si">{</span><span class="n">loss_vals</span><span class="p">[</span><span class="s1">'loss'</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2"> 4.4f</span><span class="si">}</span><span class="s2">, action_spread: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">'action'</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
@@ -1048,57 +985,6 @@ every 50 data collection, and plot the results after training.</p>
         <span class="n">traj_lens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rollout</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="s2">"next"</span><span class="p">,</span> <span class="s2">"step_count"</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>  0%|          | 0/1000000 [00:00&lt;?, ?it/s]Let us print the first batch of data.
-Pay attention to the key names which will reflect what can be found in this data structure, in particular: the output of the QValueModule (action_values, action and chosen_action_value),the 'is_init' key that will tell us if a step is initial or not, and the recurrent_state keys.
- TensorDict(
-    fields={
-        action: Tensor(shape=torch.Size([50, 2]), device=cpu, dtype=torch.int64, is_shared=False),
-        action_value: Tensor(shape=torch.Size([50, 2]), device=cpu, dtype=torch.float32, is_shared=False),
-        chosen_action_value: Tensor(shape=torch.Size([50, 1]), device=cpu, dtype=torch.float32, is_shared=False),
-        collector: TensorDict(
-            fields={
-                traj_ids: Tensor(shape=torch.Size([50]), device=cpu, dtype=torch.int64, is_shared=False)},
-            batch_size=torch.Size([50]),
-            device=cpu,
-            is_shared=False),
-        done: Tensor(shape=torch.Size([50, 1]), device=cpu, dtype=torch.bool, is_shared=False),
-        embed: Tensor(shape=torch.Size([50, 128]), device=cpu, dtype=torch.float32, is_shared=False),
-        is_init: Tensor(shape=torch.Size([50, 1]), device=cpu, dtype=torch.bool, is_shared=False),
-        next: TensorDict(
-            fields={
-                done: Tensor(shape=torch.Size([50, 1]), device=cpu, dtype=torch.bool, is_shared=False),
-                is_init: Tensor(shape=torch.Size([50, 1]), device=cpu, dtype=torch.bool, is_shared=False),
-                pixels: Tensor(shape=torch.Size([50, 1, 84, 84]), device=cpu, dtype=torch.float32, is_shared=False),
-                recurrent_state_c: Tensor(shape=torch.Size([50, 1, 128]), device=cpu, dtype=torch.float32, is_shared=False),
-                recurrent_state_h: Tensor(shape=torch.Size([50, 1, 128]), device=cpu, dtype=torch.float32, is_shared=False),
-                reward: Tensor(shape=torch.Size([50, 1]), device=cpu, dtype=torch.float32, is_shared=False),
-                step_count: Tensor(shape=torch.Size([50, 1]), device=cpu, dtype=torch.int64, is_shared=False),
-                terminated: Tensor(shape=torch.Size([50, 1]), device=cpu, dtype=torch.bool, is_shared=False),
-                truncated: Tensor(shape=torch.Size([50, 1]), device=cpu, dtype=torch.bool, is_shared=False)},
-            batch_size=torch.Size([50]),
-            device=cpu,
-            is_shared=False),
-        pixels: Tensor(shape=torch.Size([50, 1, 84, 84]), device=cpu, dtype=torch.float32, is_shared=False),
-        recurrent_state_c: Tensor(shape=torch.Size([50, 1, 128]), device=cpu, dtype=torch.float32, is_shared=False),
-        recurrent_state_h: Tensor(shape=torch.Size([50, 1, 128]), device=cpu, dtype=torch.float32, is_shared=False),
-        step_count: Tensor(shape=torch.Size([50, 1]), device=cpu, dtype=torch.int64, is_shared=False),
-        terminated: Tensor(shape=torch.Size([50, 1]), device=cpu, dtype=torch.bool, is_shared=False),
-        truncated: Tensor(shape=torch.Size([50, 1]), device=cpu, dtype=torch.bool, is_shared=False)},
-    batch_size=torch.Size([50]),
-    device=cpu,
-    is_shared=False)
-
-  0%|          | 50/1000000 [00:00&lt;3:04:57, 90.11it/s]
-  0%|          | 50/1000000 [00:19&lt;3:04:57, 90.11it/s]
-steps: 17, loss_val:  0.0006, action_spread: tensor([44,  6]):   0%|          | 50/1000000 [00:31&lt;3:04:57, 90.11it/s]
-steps: 17, loss_val:  0.0006, action_spread: tensor([44,  6]):   0%|          | 100/1000000 [00:32&lt;104:52:03,  2.65it/s]
-steps: 17, loss_val:  0.0010, action_spread: tensor([48,  2]):   0%|          | 100/1000000 [01:02&lt;104:52:03,  2.65it/s]
-steps: 17, loss_val:  0.0010, action_spread: tensor([48,  2]):   0%|          | 150/1000000 [01:03&lt;135:47:50,  2.05it/s]
-steps: 17, loss_val:  0.0008, action_spread: tensor([10, 40]):   0%|          | 150/1000000 [01:34&lt;135:47:50,  2.05it/s]
-steps: 17, loss_val:  0.0008, action_spread: tensor([10, 40]):   0%|          | 200/1000000 [01:35&lt;151:42:42,  1.83it/s]
-steps: 17, loss_val:  0.0007, action_spread: tensor([26, 24]):   0%|          | 200/1000000 [02:05&lt;151:42:42,  1.83it/s]
-</pre></div>
-</div>
 <p>Let’s plot our results:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">traj_lens</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
@@ -1108,7 +994,7 @@ steps: 17, loss_val:  0.0007, action_spread: tensor([26, 24]):   0%|          | 
     <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Test trajectory lengths"</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="Test trajectory lengths" class="sphx-glr-single-img" src="../_images/sphx_glr_dqn_with_rnn_tutorial_001.png" srcset="../_images/sphx_glr_dqn_with_rnn_tutorial_001.png"/></div>
+</div>
 <div class="section" id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
 <p>We have seen how an RNN can be incorporated in a policy in TorchRL.
@@ -1128,7 +1014,7 @@ the data</p></li>
 <ul class="simple">
 <li><p>The TorchRL documentation can be found <a class="reference external" href="https://pytorch.org/rl/">here</a>.</p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  10.897 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.090 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-dqn-with-rnn-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/14b68b9764c79afe8ef88b11fc27bff7/dqn_with_rnn_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">dqn_with_rnn_tutorial.py</span></code></a></p>
