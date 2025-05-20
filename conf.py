@@ -33,8 +33,6 @@ sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('./.jenkins'))
 import pytorch_sphinx_theme
 import torch
-import numpy
-import gc
 import glob
 import random
 import shutil
@@ -48,6 +46,46 @@ import plotly.io as pio
 from pathlib import Path
 pio.renderers.default = 'sphinx_gallery'
 
+
+import sphinx_gallery.gen_rst
+import multiprocessing
+
+# Monkey patch sphinx gallery to run each example in an isolated process so that
+# we don't need to worry about examples changing global state.
+#
+# Alt option 1: Parallelism was added to sphinx gallery (a later version that we
+# are not using yet) using joblib, but it seems to result in errors for us, and
+# it has no effect if you set parallel = 1 (it will not put each file run into
+# its own process and run singly) so you need parallel >= 2, and there may be
+# tutorials that cannot be run in parallel.
+#
+# Alt option 2: Run sphinx gallery once per file (similar to how we shard in CI
+# but with shard sizes of 1), but running sphinx gallery for each file has a
+# ~5min overhead, resulting in the entire suite taking ~2x time
+def call_fn(func, args, kwargs, result_queue):
+    try:
+        result = func(*args, **kwargs)
+        result_queue.put((True, result))
+    except Exception as e:
+        result_queue.put((False, str(e)))
+
+def call_in_subprocess(func):
+    def wrapper(*args, **kwargs):
+        result_queue = multiprocessing.Queue()
+        p = multiprocessing.Process(
+            target=call_fn,
+            args=(func, args, kwargs, result_queue)
+        )
+        p.start()
+        p.join()
+        success, result = result_queue.get()
+        if success:
+            return result
+        else:
+            raise RuntimeError(f"Error in subprocess: {result}")
+    return wrapper
+
+sphinx_gallery.gen_rst.generate_file_rst = call_in_subprocess(sphinx_gallery.gen_rst.generate_file_rst)
 
 try:
     import torchvision
@@ -97,20 +135,6 @@ intersphinx_mapping = {
 
 # -- Sphinx-gallery configuration --------------------------------------------
 
-def reset_seeds(gallery_conf, fname):
-    torch.cuda.empty_cache()
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-    torch._dynamo.reset()
-    torch._inductor.config.force_disable_caches = True
-    torch.manual_seed(42)
-    torch.set_default_device(None)
-    random.seed(10)
-    numpy.random.seed(10)
-    torch.set_grad_enabled(True)
-
-    gc.collect()
-
 sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
                       'advanced_source', 'recipes_source', 'prototype_source'],
@@ -121,7 +145,6 @@ sphinx_gallery_conf = {
     'first_notebook_cell': ("# For tips on running notebooks in Google Colab, see\n"
                             "# https://pytorch.org/tutorials/beginner/colab\n"
                             "%matplotlib inline"),
-    'reset_modules': (reset_seeds),
     'ignore_pattern': r'_torch_export_nightly_tutorial.py',
     'pypandoc': {'extra_args': ['--mathjax', '--toc'],
                  'filters': ['.jenkins/custom_pandoc_filter.py'],
