@@ -95,16 +95,7 @@ from 10 different models.
 
 
 
-.. rst-class:: sphx-glr-script-out
 
-.. code-block:: pytb
-
-    Traceback (most recent call last):
-      File "/var/lib/workspace/intermediate_source/ensembling.py", line 56, in <module>
-        data = torch.randn(100, 64, 1, 28, 28, device=device)
-      File "/usr/local/lib/python3.10/dist-packages/torch/cuda/__init__.py", line 372, in _lazy_init
-        torch._C._cuda_init()
-    RuntimeError: Found no NVIDIA driver on your system. Please check that you have an NVIDIA GPU and installed a driver from http://www.nvidia.com/Download/index.aspx
 
 
 
@@ -129,6 +120,12 @@ Option 1: different minibatch for each model
     predictions_diff_minibatch_loop = [model(minibatch) for model, minibatch in zip(models, minibatches)]
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 74-75
 
 Option 2: Same minibatch
@@ -140,6 +137,12 @@ Option 2: Same minibatch
 
     minibatch = data[0]
     predictions2 = [model(minibatch) for model in models]
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 80-93
@@ -167,6 +170,12 @@ this.
     params, buffers = stack_module_state(models)
 
 
+
+
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 98-102
 
 Next, we need to define a function to ``vmap`` over. The function should,
@@ -189,6 +198,12 @@ to help out:
 
     def fmodel(params, buffers, x):
         return functional_call(base_model, (params, buffers), (x,))
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 115-121
@@ -217,6 +232,18 @@ the front, and minibatches has a dimension of size 'num_models'.
     assert torch.allclose(predictions1_vmap, torch.stack(predictions_diff_minibatch_loop), atol=1e-3, rtol=1e-5)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    [10, 10, 10, 10, 10, 10]
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 134-139
 
 Option 2: get predictions using the same minibatch of data.
@@ -233,6 +260,12 @@ the 10 models.
     predictions2_vmap = vmap(fmodel, in_dims=(0, 0, None))(params, buffers, minibatch)
 
     assert torch.allclose(predictions2_vmap, torch.stack(predictions2), atol=1e-3, rtol=1e-5)
+
+
+
+
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 145-151
@@ -266,6 +299,25 @@ Curious about performance numbers? Here's how the numbers look.
     print(f'Predictions with vmap {with_vmap.timeit(100)}')
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Predictions without vmap <torch.utils.benchmark.utils.common.Measurement object at 0x7f7ab08a8f70>
+    [model(minibatch) for model, minibatch in zip(models, minibatches)]
+      1.35 ms
+      1 measurement, 100 runs , 1 thread
+    Predictions with vmap <torch.utils.benchmark.utils.common.Measurement object at 0x7f7ab08a9330>
+    vmap(fmodel)(params, buffers, minibatches)
+      490.32 us
+      1 measurement, 100 runs , 1 thread
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 168-176
 
 There's a large speedup using ``vmap``!
@@ -280,7 +332,7 @@ on GitHub.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.006 seconds)
+   **Total running time of the script:** ( 0 minutes  1.028 seconds)
 
 
 .. _sphx_glr_download_intermediate_ensembling.py:
