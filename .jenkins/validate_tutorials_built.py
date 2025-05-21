@@ -31,6 +31,7 @@ NOT_RUN = [
     "prototype_source/vmap_recipe",
     "prototype_source/torchscript_freezing",
     "prototype_source/nestedtensor",
+    "prototype_source/gpu_direct_storage", # requires specific filesystem + GPUDirect Storage to be set up
     "recipes_source/recipes/saving_and_loading_models_for_inference",
     "recipes_source/recipes/saving_multiple_models_in_one_file",
     "recipes_source/recipes/tensorboard_with_pytorch",
@@ -50,7 +51,8 @@ NOT_RUN = [
     "intermediate_source/flask_rest_api_tutorial",
     "intermediate_source/text_to_speech_with_torchaudio",
     "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
-    "advanced_source/semi_structured_sparse" # reenable after 3303 is fixed.
+    "advanced_source/semi_structured_sparse", # reenable after 3303 is fixed.
+    "intermediate_source/torchrec_intro_tutorial", # reenable after 3302 is fixe
 ]
 
 def tutorial_source_dirs() -> List[Path]:
