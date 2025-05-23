@@ -25,6 +25,8 @@ Introduction to ``torch.compile``
 # our previous PyTorch compiler solution,
 # `TorchScript <https://pytorch.org/docs/stable/jit.html>`__.
 #
+# For an end-to-end example on a real model, check out our `end-to-end ``torch.compile`` tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_full_example.html>`__.
+#
 # **Contents**
 #
 # .. contents::
@@ -167,10 +169,6 @@ print("eager:", timed(lambda: foo3(inp))[1])
 # turn off logging for now to prevent spam
 torch._logging.set_logs(graph_code=False)
 
-# from torch._inductor.runtime.benchmarking import benchmarker
-# eager_latency = benchmarker.benchmark_gpu(lambda: mod1(torch.randn)) * 1e3
-# compiled_latency = benchmarker.benchmark_gpu(lambda: compiled_f(x)) * 1e3
-
 eager_times = []
 for i in range(10):
     _, eager_time = timed(lambda: foo3(inp))
@@ -203,6 +201,8 @@ print("~" * 10)
 # architecture and batch size. For example, if a model's architecture is simple
 # and the amount of data is large, then the bottleneck would be
 # GPU compute and the observed speedup may be less significant.
+#
+# To see speedups on a real model, check out our `end-to-end ``torch.compile`` tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_full_example.html>`__.
 
 ######################################################################
 # Benefits over TorchScript
@@ -424,9 +424,9 @@ bar_fixed(inp1, -inp2)
 # ---------------
 # Is ``torch.compile`` failing to speed up your model? Is compile time unreasonably long?
 # Is your code recompiling excessively? Are you having difficulties dealing with graph breaks?
-# Or maybe you want to simply learn more about the inner workings of ``torch.compile``?
+# Or maybe you simply want to learn more about the inner workings of ``torch.compile``?
 #
-# Check out `the ``torch.compile`` troubleshooting guide <https://pytorch.org/docs/stable/torch.compiler_troubleshooting.html>`_!
+# Check out `the ``torch.compile`` troubleshooting guide <https://pytorch.org/docs/stable/torch.compiler_troubleshooting.html>`__!
 
 ######################################################################
 # Conclusion
@@ -435,4 +435,7 @@ bar_fixed(inp1, -inp2)
 # In this tutorial, we introduced ``torch.compile`` by covering
 # basic usage, demonstrating speedups over eager mode, comparing to TorchScript,
 # and briefly describing graph breaks.
+#
+# For an end-to-end example on a real model, check out our `end-to-end ``torch.compile`` tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_full_example.html>`__.
+#
 # We hope that you will give ``torch.compile`` a try!
