@@ -373,4 +373,4 @@ print(f"Nested speedup: {compiled_time_padded / compiled_time_nested:.3f}")
 # See Also
 # --------
 #
-# * `Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile() <https://docs.pytorch.org/tutorials/intermediate/transformer_building_blocks.html`__
+# * `Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile <https://docs.pytorch.org/tutorials/intermediate/transformer_building_blocks.html>`__
