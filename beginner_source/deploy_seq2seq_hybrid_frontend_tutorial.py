@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Deploying a Seq2Seq Model with TorchScript
 ==================================================
