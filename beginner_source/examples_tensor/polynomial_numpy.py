@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Warm-up: numpy
 --------------

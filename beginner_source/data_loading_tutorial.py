@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Writing Custom Datasets, DataLoaders and Transforms
 ===================================================

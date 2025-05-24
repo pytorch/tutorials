@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Learning Hybrid Frontend Syntax Through Example
 ===============================================

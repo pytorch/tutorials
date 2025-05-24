@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Saving and Loading Models
 =========================
