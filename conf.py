@@ -37,21 +37,22 @@ html_theme_path = [pytorch_sphinx_theme2.get_html_theme_path()]
 import torch
 import glob
 import random
-import re
 import shutil
 from pathlib import Path
-
-import numpy
-import pandocfilters
-import plotly.io as pio
-import pypandoc
-
+import shutil
+import distutils.file_util
+import re
 from get_sphinx_filenames import SPHINX_SHOULD_RUN
-
+import pandocfilters
+import pypandoc
+import plotly.io as pio
+from pathlib import Path
 pio.renderers.default = "sphinx_gallery"
 
-import sphinx_gallery.gen_rst
 import multiprocessing
+
+import sphinx_gallery.gen_rst
+
 
 # Monkey patch sphinx gallery to run each example in an isolated process so that
 # we don't need to worry about examples changing global state.
@@ -72,12 +73,12 @@ def call_fn(func, args, kwargs, result_queue):
     except Exception as e:
         result_queue.put((False, str(e)))
 
+
 def call_in_subprocess(func):
     def wrapper(*args, **kwargs):
         result_queue = multiprocessing.Queue()
         p = multiprocessing.Process(
-            target=call_fn,
-            args=(func, args, kwargs, result_queue)
+            target=call_fn, args=(func, args, kwargs, result_queue)
         )
         p.start()
         p.join()
@@ -86,9 +87,13 @@ def call_in_subprocess(func):
             return result
         else:
             raise RuntimeError(f"Error in subprocess: {result}")
+
     return wrapper
 
-sphinx_gallery.gen_rst.generate_file_rst = call_in_subprocess(sphinx_gallery.gen_rst.generate_file_rst)
+
+sphinx_gallery.gen_rst.generate_file_rst = call_in_subprocess(
+    sphinx_gallery.gen_rst.generate_file_rst
+)
 
 try:
     import torchvision
@@ -147,18 +152,26 @@ intersphinx_mapping = {
 # -- Sphinx-gallery configuration --------------------------------------------
 
 sphinx_gallery_conf = {
-    'examples_dirs': ['beginner_source', 'intermediate_source',
-                      'advanced_source', 'recipes_source', 'prototype_source'],
-    'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
-    'filename_pattern': re.compile(SPHINX_SHOULD_RUN),
-    'promote_jupyter_magic': True,
-    'backreferences_dir': None,
-    'first_notebook_cell': ("# For tips on running notebooks in Google Colab, see\n"
-                            "# https://pytorch.org/tutorials/beginner/colab\n"
-                            "%matplotlib inline"),
-    'ignore_pattern': r'_torch_export_nightly_tutorial.py',
-    'pypandoc': {'extra_args': ['--mathjax', '--toc'],
-                 'filters': ['.jenkins/custom_pandoc_filter.py'],
+    "examples_dirs": [
+        "beginner_source",
+        "intermediate_source",
+        "advanced_source",
+        "recipes_source",
+        "prototype_source",
+    ],
+    "gallery_dirs": ["beginner", "intermediate", "advanced", "recipes", "prototype"],
+    "filename_pattern": re.compile(SPHINX_SHOULD_RUN),
+    "promote_jupyter_magic": True,
+    "backreferences_dir": None,
+    "first_notebook_cell": (
+        "# For tips on running notebooks in Google Colab, see\n"
+        "# https://pytorch.org/tutorials/beginner/colab\n"
+        "%matplotlib inline"
+    ),
+    "ignore_pattern": r"_torch_export_nightly_tutorial.py",
+    "pypandoc": {
+        "extra_args": ["--mathjax", "--toc"],
+        "filters": [".jenkins/custom_pandoc_filter.py"],
     },
 }
 
@@ -200,9 +213,9 @@ html_theme_options = {
         },
     ],
     "use_edit_page_button": True,
-    #"logo": {
+    # "logo": {
     #    "text": "Home",
-    #},
+    # },
     "header_links_before_dropdown": 9,
     "navbar_start": ["pytorch_version"],
     "navbar_center": "navbar-nav",
@@ -256,6 +269,41 @@ templates_path = [
     "_templates",
     os.path.join(os.path.dirname(pytorch_sphinx_theme2.__file__), "templates"),
 ]
+
+
+def fix_gallery_edit_links(app, pagename, templatename, context, doctree):
+    if pagename.startswith(
+        ("beginner/", "intermediate/", "advanced/", "recipes/", "prototype/")
+    ):
+        parts = pagename.split("/")
+        gallery_dir = parts[0]
+        example_name = parts[-1]
+
+        source_dirs = {
+            "beginner": "beginner_source",
+            "intermediate": "intermediate_source",
+            "advanced": "advanced_source",
+            "recipes": "recipes_source",
+            "prototype": "prototype_source",
+        }
+
+        if gallery_dir in source_dirs:
+            source_dir = source_dirs[gallery_dir]
+            # Check if .py file exists
+            py_path = f"{source_dir}/{example_name}.py"
+            rst_path = f"{source_dir}/{example_name}.rst"
+
+            # Default to .py file, fallback to .rst if needed
+            file_path = py_path
+            if not os.path.exists(
+                os.path.join(os.path.dirname(__file__), py_path)
+            ) and os.path.exists(os.path.join(os.path.dirname(__file__), rst_path)):
+                file_path = rst_path
+
+            context["edit_url"] = (
+                f"{html_context['github_url']}/{html_context['github_user']}/{html_context['github_repo']}/edit/{html_context['github_version']}/{file_path}"
+            )
+
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -337,7 +385,7 @@ todo_include_todos = False
 # # relative to this directory. They are copied after the builtin static files,
 # # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
-html_js_files = ['searchindex.js']
+html_js_files = ["searchindex.js"]
 # # Custom sidebar templates, maps document names to template names.
 # html_sidebars = {
 #     'index': ['sidebarlogo.html', 'globaltoc.html', 'searchbox.html', 'sourcelink.html'],
@@ -408,3 +456,4 @@ html_css_files = [
 
 def setup(app):
     app.connect("source-read", handle_jinja_templates)
+    app.connect("html-page-context", fix_gallery_edit_links)
