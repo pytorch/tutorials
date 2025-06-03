@@ -34,7 +34,7 @@ class LegendrePolynomial3(torch.autograd.Function):
         In the forward pass we receive a Tensor containing the input and return
         a Tensor containing the output. ctx is a context object that can be used
         to stash information for backward computation. You can cache tensors for
-        use in the backward pass using the ctx.save_for_backward method. Other
+        use in the backward pass using the ``ctx.save_for_backward`` method. Other
         objects can be stored directly as attributes on the ctx object, such as 
         ctx.my_object = my_object.
         """
