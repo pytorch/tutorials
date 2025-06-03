@@ -145,7 +145,7 @@ corpus = Corpus(model_data_filepath + 'wikitext-2')
 #
 # **Note:** Before running this tutorial, download the required pretrained model:
 #
-# .. code::
+# .. code-block:: bash
 #
 #     wget https://s3.amazonaws.com/pytorch-tutorial-assets/word_language_model_quantize.pth
 #
