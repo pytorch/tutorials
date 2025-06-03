@@ -198,7 +198,7 @@ html_theme_options = {
         },
         {
             "name": "GitHub",
-            "url": "https://github.com/pytorch/pytorch",
+            "url": "https://github.com/pytorch/tutorials",
             "icon": "fa-brands fa-github",
         },
         {
@@ -229,7 +229,7 @@ html_context = {
     "display_github": True,
     "github_url": "https://github.com",
     "github_user": "pytorch",
-    "github_repo": "pytorch",
+    "github_repo": "tutorials",
     "feedback_url": "https://github.com/pytorch/tutorials",
     "github_version": "main",
     "doc_path": "docs/source",
