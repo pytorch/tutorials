@@ -277,21 +277,39 @@ def fix_gallery_edit_links(app, pagename, templatename, context, doctree):
     ):
         parts = pagename.split("/")
         gallery_dir = parts[0]
+        # Handle nested directories by joining all parts except the first
+        example_path = "/".join(parts[1:])
         example_name = parts[-1]
 
-        source_dirs = {
-            "beginner": "beginner_source",
-            "intermediate": "intermediate_source",
-            "advanced": "advanced_source",
-            "recipes": "recipes_source",
-            "prototype": "prototype_source",
-        }
+        source_dirs = {}
+        for i in range(len(sphinx_gallery_conf["examples_dirs"])):
+            gallery_dir = sphinx_gallery_conf["gallery_dirs"][i]
+            source_dir = sphinx_gallery_conf["examples_dirs"][i]
+            # Extract the base name without "_source" suffix
+            gallery_base = gallery_dir
+            source_dirs[gallery_base] = source_dir
 
         if gallery_dir in source_dirs:
             source_dir = source_dirs[gallery_dir]
+
+            # Reconstruct the path preserving subdirectories
+            subdir = "/".join(parts[1:-1]) if len(parts) > 2 else ""
+
             # Check if .py file exists
-            py_path = f"{source_dir}/{example_name}.py"
-            rst_path = f"{source_dir}/{example_name}.rst"
+            py_path = (
+                f"{source_dir}/{subdir}/{example_name}.py"
+                if subdir
+                else f"{source_dir}/{example_name}.py"
+            )
+            rst_path = (
+                f"{source_dir}/{subdir}/{example_name}.rst"
+                if subdir
+                else f"{source_dir}/{example_name}.rst"
+            )
+
+            # Clean up any double slashes
+            py_path = py_path.replace("//", "/")
+            rst_path = rst_path.replace("//", "/")
 
             # Default to .py file, fallback to .rst if needed
             file_path = py_path
@@ -342,7 +360,7 @@ exclude_patterns = [
     "Thumbs.db",
     ".DS_Store",
     "src/pytorch-sphinx-theme/docs*",
-    #    "**/huggingface_hub/templates/**",
+    #    "**/huggindef fix_gallery_edit_linksgface_hub/templates/**",
 ]
 exclude_patterns += sphinx_gallery_conf["examples_dirs"]
 exclude_patterns += ["*/index.rst"]
