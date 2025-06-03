@@ -133,11 +133,23 @@ corpus = Corpus(model_data_filepath + 'wikitext-2')
 # 3. Load the pretrained model
 # -----------------------------
 #
+######################################################################
+# 3. Load the pretrained model
+# -----------------------------
+#
 # This is a tutorial on dynamic quantization, a quantization technique
-# that is applied after a model has been trained. Therefore, we'll simply load some
-# pretrained weights into this model architecture; these weights were obtained
-# by training for five epochs using the default settings in the word language model
-# example.
+# that is applied after a model has been trained. Therefore, we'll simply
+# load some pretrained weights into this model architecture; these
+# weights were obtained by training for five epochs using the default
+# settings in the word language model example.
+#
+# **Note:** Before running this tutorial, download the required pretrained model:
+#
+# .. code::
+#
+#     wget https://s3.amazonaws.com/pytorch-tutorial-assets/word_language_model_quantize.pth
+#
+# Place the downloaded file in the data directory or update the model_data_filepath accordingly.
 
 ntokens = len(corpus.dictionary)
 
