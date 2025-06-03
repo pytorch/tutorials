@@ -813,7 +813,7 @@ Welcome to PyTorch Tutorials
    :header: Building an ExecuTorch iOS Demo App
    :card_description: Explore how to set up the ExecuTorch iOS Demo App, which uses the MobileNet v3 model to process live camera images leveraging three different backends: XNNPACK, Core ML, and Metal Performance Shaders (MPS).
    :image: _static/img/ExecuTorch-Logo-cropped.svg
-   :link: https://github.com/pytorch-labs/executorch-examples/tree/main/mv3/apple/executorchdemo
+   :link: https://github.com/pytorch-labs/executorch-examples/tree/main/mv3/apple/ExecuTorchDemo
    :tags: Edge
 
 .. customcarditem::
@@ -1124,7 +1124,7 @@ Additional Resources
    Exporting to ExecuTorch Tutorial <https://pytorch.org/executorch/stable/tutorials/export-to-executorch-tutorial.html>
    Running an ExecuTorch Model in C++ Tutorial < https://pytorch.org/executorch/stable/running-a-model-cpp-tutorial.html>
    Using the ExecuTorch SDK to Profile a Model <https://docs.pytorch.org/executorch/main/tutorials/devtools-integration-tutorial.html>
-   Building an ExecuTorch iOS Demo App <https://github.com/pytorch-labs/executorch-examples/tree/main/mv3/apple/executorchdemo>
+   Building an ExecuTorch iOS Demo App <https://github.com/pytorch-labs/executorch-examples/tree/main/mv3/apple/ExecuTorchDemo>
    Building an ExecuTorch Android Demo App <https://github.com/pytorch-labs/executorch-examples/tree/main/dl3/android/DeepLabV3Demo#executorch-android-demo-app>
    Lowering a Model as a Delegate <https://pytorch.org/executorch/stable/examples-end-to-end-to-lower-model-to-delegate.html>
 
