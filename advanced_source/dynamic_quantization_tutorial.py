@@ -133,10 +133,6 @@ corpus = Corpus(model_data_filepath + 'wikitext-2')
 # 3. Load the pretrained model
 # -----------------------------
 #
-######################################################################
-# 3. Load the pretrained model
-# -----------------------------
-#
 # This is a tutorial on dynamic quantization, a quantization technique
 # that is applied after a model has been trained. Therefore, we'll simply
 # load some pretrained weights into this model architecture; these
