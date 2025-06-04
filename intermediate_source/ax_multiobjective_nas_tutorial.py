@@ -351,7 +351,7 @@ experiment = Experiment(
 #
 
 
-total_trials = 48  # total evaluation budget
+total_trials = 24  # total evaluation budget
 
 from ax.modelbridge.dispatch_utils import choose_generation_strategy
 
