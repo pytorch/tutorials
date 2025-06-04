@@ -139,7 +139,7 @@ corpus = Corpus(model_data_filepath + 'wikitext-2')
 # weights were obtained by training for five epochs using the default
 # settings in the word language model example.
 #
-# **Note:** Before running this tutorial, download the required pretrained model:
+# Before running this tutorial, download the required pre-trained model:
 #
 # .. code-block:: bash
 #
