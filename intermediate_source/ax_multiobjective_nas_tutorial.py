@@ -245,7 +245,7 @@ class MyTensorboardMetric(TensorboardMetric):
         mul = event_multiplexer.EventMultiplexer(max_reload_threads=20)
         mul.AddRunsFromDirectory(Path(log_dir).joinpath(str(trial.index)).as_posix(), None)
         mul.Reload()
-    
+
         return mul
 
     # This indicates whether the metric is queryable while the trial is
@@ -394,7 +394,7 @@ scheduler = Scheduler(
     experiment=experiment,
     generation_strategy=gs,
     options=SchedulerOptions(
-        total_trials=total_trials, max_pending_trials=4
+        total_trials=total_trials, max_pending_trials=8
     ),
 )
 
