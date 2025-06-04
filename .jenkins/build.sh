@@ -16,6 +16,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 sudo apt-get update
 sudo apt-get install -y pandoc
 
+# export CUBLAS_WORKSPACE_CONFIG=:4096:8
+
 # NS: Path to python runtime should already be part of docker container
 # export PATH=/opt/conda/bin:$PATH
 
