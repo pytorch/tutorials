@@ -36,7 +36,7 @@ class LegendrePolynomial3(torch.autograd.Function):
         to stash information for backward computation. You can cache tensors for
         use in the backward pass using the ``ctx.save_for_backward`` method. Other
         objects can be stored directly as attributes on the ctx object, such as
-        ctx.my_object = my_object. Check out `Extending torch.autograd <https://docs.pytorch.org/docs/stable/notes/extending.html#extending-torch-autograd>`_
+        ``ctx.my_object = my_object``. Check out `Extending torch.autograd <https://docs.pytorch.org/docs/stable/notes/extending.html#extending-torch-autograd>`_
         for further details.
         """
         ctx.save_for_backward(input)
