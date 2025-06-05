@@ -266,11 +266,12 @@ class DQN(nn.Module):
 
 BATCH_SIZE = 128
 GAMMA = 0.99
-EPS_START = 1
+EPS_START = 0.9
 EPS_END = 0.01
 EPS_DECAY = 2500
 TAU = 0.005
-LR = 5e-4
+LR = 3e-4
+
 
 # Get number of actions from gym action space
 n_actions = env.action_space.n
