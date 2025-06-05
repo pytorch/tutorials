@@ -83,19 +83,19 @@ implementations:
  .. code-block:: none
 
 
-    tensor([[[ 0.6409, -0.9630, -0.9508,  0.4690, -0.4197, -1.2229,  0.1778,
-               0.4675],
-             [-0.0657, -0.0890, -1.0658,  0.1735, -0.1383, -0.4579,  0.5332,
-               0.9844],
-             [ 1.0319, -1.1107, -1.2618,  0.6391, -0.6585, -1.4944,  0.3638,
-               0.3702]],
+    tensor([[[-0.3189,  0.7161, -0.1649, -1.0855,  0.8988, -1.0584,  0.2833,
+               0.0232],
+             [-2.0494,  0.0578, -0.9871, -0.9538, -0.7396, -1.4541, -1.0330,
+               0.7979],
+             [-0.0605,  0.8378, -0.1265, -1.0841,  1.2200, -1.0611,  0.4681,
+              -0.0061]],
 
-            [[-0.7521, -0.6316, -0.3103,  0.0997,  0.6887, -0.6687, -0.0611,
-               0.4446],
-             [-0.9999, -0.4466, -0.1822,  0.1829,  0.5787, -0.7125,  0.0062,
-               0.2216],
-             [-0.2560,  0.0068,  0.3071, -0.7197,  0.5982, -0.9028, -1.2518,
-               0.7075]]], device='cuda:0')
+            [[ 0.4675, -0.9815,  0.1843, -0.1603, -1.4645,  0.6931, -0.1931,
+              -0.0404],
+             [ 0.1529, -0.8693,  0.0806, -0.1547, -1.5827,  0.9420, -0.0090,
+              -0.0067],
+             [ 0.3804,  0.0927,  0.9659, -1.1873, -1.1140,  2.2782, -0.7709,
+               0.6733]]], device='cuda:0')
 
 
 
@@ -171,10 +171,10 @@ measuring performance.
 
  .. code-block:: none
 
-    The default implementation runs in 2278.150 microseconds
-    The math implementation runs in 87309.204 microseconds
-    The flash attention implementation runs in 2288.263 microseconds
-    The memory efficient implementation runs in 4351.836 microseconds
+    The default implementation runs in 2277.416 microseconds
+    The math implementation runs in 87375.824 microseconds
+    The flash attention implementation runs in 2284.592 microseconds
+    The memory efficient implementation runs in 4381.201 microseconds
 
 
 
@@ -354,8 +354,8 @@ without needing to pad each sequence to the maximum length in the batch. For mor
 
     The PyTorch API of nested tensors is in prototype stage and will change in the near future. We recommend specifying layout=torch.jagged when constructing a nested tensor, as this layout receives active development, has better operator coverage, and works with torch.compile. (Triggered internally at /pytorch/aten/src/ATen/NestedTensorImpl.cpp:178.)
 
-    Random NT runs in 594.270 microseconds
-    Random Dense runs in 953.458 microseconds
+    Random NT runs in 604.792 microseconds
+    Random Dense runs in 953.273 microseconds
 
 
 
@@ -401,8 +401,8 @@ To demonstrate this, let's compile the ``CausalSelfAttention`` module using
 
  .. code-block:: none
 
-    The non compiled module runs in  424.711 microseconds
-    The compiled module runs in  520.250 microseconds
+    The non compiled module runs in  424.212 microseconds
+    The compiled module runs in  521.727 microseconds
 
 
 
@@ -460,36 +460,36 @@ inspect the performance characteristics of your code.
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
                                                        Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg    # of Calls  
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
-                             Non-Compilied Causal Attention        16.75%       2.115ms        72.60%       9.169ms       9.169ms       0.000us         0.00%      10.848ms      10.848ms             1  
-                             Non-Compilied Causal Attention         0.00%       0.000us         0.00%       0.000us       0.000us      10.704ms       100.75%      10.704ms      10.704ms             1  
-                                               aten::linear         0.92%     115.982us        33.28%       4.203ms      84.057us       0.000us         0.00%       8.033ms     160.666us            50  
-                                               aten::matmul         1.84%     231.837us        30.03%       3.792ms      75.846us       0.000us         0.00%       8.033ms     160.666us            50  
-                                                   aten::mm         9.05%       1.143ms        26.25%       3.315ms      66.293us       7.810ms        73.51%       8.033ms     160.666us            50  
-             ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn         0.00%       0.000us         0.00%       0.000us       0.000us       5.584ms        52.56%       5.584ms     223.363us            25  
-                         aten::scaled_dot_product_attention         1.56%     196.680us        15.20%       1.920ms      76.800us       0.000us         0.00%       2.814ms     112.579us            25  
-                  aten::_scaled_dot_product_flash_attention         2.41%     304.028us        13.65%       1.723ms      68.933us       0.000us         0.00%       2.814ms     112.579us            25  
-                             aten::_flash_attention_forward         2.44%     308.512us         9.74%       1.230ms      49.218us       2.814ms        26.49%       2.814ms     112.579us            25  
-    void pytorch_flash::flash_fwd_kernel<Flash_fwd_kerne...         0.00%       0.000us         0.00%       0.000us       0.000us       2.814ms        26.49%       2.814ms     112.579us            25  
+                             Non-Compilied Causal Attention        16.95%       2.146ms        74.20%       9.391ms       9.391ms       0.000us         0.00%      10.835ms      10.835ms             1  
+                             Non-Compilied Causal Attention         0.00%       0.000us         0.00%       0.000us       0.000us      10.706ms       100.88%      10.706ms      10.706ms             1  
+                                               aten::linear         0.92%     117.005us        33.99%       4.302ms      86.037us       0.000us         0.00%       8.027ms     160.550us            50  
+                                               aten::matmul         1.88%     238.324us        30.64%       3.878ms      77.569us       0.000us         0.00%       8.027ms     160.550us            50  
+                                                   aten::mm         9.46%       1.197ms        26.81%       3.393ms      67.870us       7.805ms        73.55%       8.027ms     160.550us            50  
+             ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn         0.00%       0.000us         0.00%       0.000us       0.000us       5.585ms        52.63%       5.585ms     223.419us            25  
+                         aten::scaled_dot_product_attention         1.72%     217.413us        15.52%       1.964ms      78.569us       0.000us         0.00%       2.807ms     112.295us            25  
+                  aten::_scaled_dot_product_flash_attention         2.72%     344.070us        13.80%       1.747ms      69.873us       0.000us         0.00%       2.807ms     112.295us            25  
+                             aten::_flash_attention_forward         2.55%     322.256us         9.82%       1.242ms      49.699us       2.807ms        26.45%       2.807ms     112.295us            25  
+    void pytorch_flash::flash_fwd_kernel<Flash_fwd_kerne...         0.00%       0.000us         0.00%       0.000us       0.000us       2.807ms        26.45%       2.807ms     112.295us            25  
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
-    Self CPU time total: 12.628ms
-    Self CUDA time total: 10.624ms
+    Self CPU time total: 12.657ms
+    Self CUDA time total: 10.612ms
 
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
                                                        Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg    # of Calls  
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
-                                  Compiled Causal Attention         0.00%       0.000us         0.00%       0.000us       0.000us      10.678ms       100.55%      10.678ms      10.678ms             1  
-                                  Compiled Causal Attention         6.50%     830.603us        71.05%       9.074ms       9.074ms       0.000us         0.00%      10.619ms      10.619ms             1  
-                                 Torch-Compiled Region: 0/0         6.02%     768.669us        61.14%       7.808ms     312.310us       0.000us         0.00%      10.619ms     424.766us            25  
-                                           CompiledFunction        19.21%       2.454ms        55.12%       7.039ms     281.563us       0.000us         0.00%      10.619ms     424.766us            25  
-                                                   aten::mm         6.36%     812.150us        10.15%       1.297ms      25.936us       7.806ms        73.51%       7.806ms     156.122us            50  
-             ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn         0.00%       0.000us         0.00%       0.000us       0.000us       5.582ms        52.56%       5.582ms     223.263us            25  
-                  aten::_scaled_dot_product_flash_attention         1.67%     213.553us        12.06%       1.541ms      61.626us       0.000us         0.00%       2.813ms     112.521us            25  
-                             aten::_flash_attention_forward         2.38%     304.182us         8.97%       1.145ms      45.807us       2.813ms        26.49%       2.813ms     112.521us            25  
-    void pytorch_flash::flash_fwd_kernel<Flash_fwd_kerne...         0.00%       0.000us         0.00%       0.000us       0.000us       2.813ms        26.49%       2.813ms     112.521us            25  
-    ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_stages_3...         0.00%       0.000us         0.00%       0.000us       0.000us       2.225ms        20.95%       2.225ms      88.981us            25  
+                                  Compiled Causal Attention         0.00%       0.000us         0.00%       0.000us       0.000us      10.720ms       101.05%      10.720ms      10.720ms             1  
+                                  Compiled Causal Attention         6.87%     885.840us        75.84%       9.784ms       9.784ms       0.000us         0.00%      10.609ms      10.609ms             1  
+                                 Torch-Compiled Region: 0/0         6.36%     820.069us        65.30%       8.424ms     336.948us       0.000us         0.00%      10.609ms     424.348us            25  
+                                           CompiledFunction        21.01%       2.710ms        58.94%       7.604ms     304.145us       0.000us         0.00%      10.609ms     424.348us            25  
+                                                   aten::mm         7.05%     909.270us        11.08%       1.429ms      28.590us       7.800ms        73.52%       7.800ms     155.993us            50  
+             ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn         0.00%       0.000us         0.00%       0.000us       0.000us       5.582ms        52.62%       5.582ms     223.289us            25  
+                  aten::_scaled_dot_product_flash_attention         2.01%     258.824us        12.89%       1.664ms      66.541us       0.000us         0.00%       2.809ms     112.363us            25  
+                             aten::_flash_attention_forward         2.57%     331.687us         9.32%       1.202ms      48.094us       2.809ms        26.48%       2.809ms     112.363us            25  
+    void pytorch_flash::flash_fwd_kernel<Flash_fwd_kerne...         0.00%       0.000us         0.00%       0.000us       0.000us       2.809ms        26.48%       2.809ms     112.363us            25  
+    ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_stages_3...         0.00%       0.000us         0.00%       0.000us       0.000us       2.217ms        20.90%       2.217ms      88.697us            25  
     -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
-    Self CPU time total: 12.771ms
-    Self CUDA time total: 10.619ms
+    Self CPU time total: 12.901ms
+    Self CUDA time total: 10.609ms
 
 
 
@@ -624,7 +624,7 @@ module.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  8.520 seconds)
+   **Total running time of the script:** ( 0 minutes  8.666 seconds)
 
 
 .. _sphx_glr_download_intermediate_scaled_dot_product_attention_tutorial.py:
