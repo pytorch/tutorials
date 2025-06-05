@@ -96,7 +96,16 @@ The dummy images are 28 by 28 and we use a minibatch of size 64.
 
 
 
+.. rst-class:: sphx-glr-script-out
 
+.. code-block:: pytb
+
+    Traceback (most recent call last):
+      File "/var/lib/workspace/intermediate_source/per_sample_grads.py", line 59, in <module>
+        data = torch.randn(batch_size, 1, 28, 28, device=device)
+      File "/usr/local/lib/python3.10/dist-packages/torch/cuda/__init__.py", line 372, in _lazy_init
+        torch._C._cuda_init()
+    RuntimeError: No CUDA GPUs are available
 
 
 
@@ -117,12 +126,6 @@ and then call .backward() to compute gradients.  This would generate an
 
     loss = loss_fn(predictions, targets)
     loss.backward()  # back propagate the 'average' gradient of this mini-batch
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 75-80
@@ -158,12 +161,6 @@ equivalent to:
     per_sample_grads = compute_sample_grads(data, targets)
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 101-104
 
 ``sample_grads[0]`` is the per-sample-grad for model.conv1.weight.
@@ -176,18 +173,6 @@ gradient, per sample, in the batch for a total of 64.
 
 
     print(per_sample_grads[0].shape)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    torch.Size([64, 32, 1, 3, 3])
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 108-122
@@ -218,12 +203,6 @@ regular PyTorch autograd (e.g. Tensor.backward(), torch.autograd.grad).
     buffers = {k: v.detach() for k, v in model.named_buffers()}
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 129-136
 
 Next, let's define a function to compute the loss of the model given a
@@ -248,12 +227,6 @@ use ``torch.unsqueeze`` to add a batch dimension.
         return loss
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 146-149
 
 Now, let’s use the ``grad`` transform to create a new function that computes
@@ -266,12 +239,6 @@ the gradient with respect to the first argument of ``compute_loss``
 
 
     ft_compute_grad = grad(compute_loss)
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 153-159
@@ -291,12 +258,6 @@ buffers for each.
     ft_compute_sample_grad = vmap(ft_compute_grad, in_dims=(None, None, 0, 0))
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 163-164
 
 Finally, let's used our transformed function to compute per-sample-gradients:
@@ -307,12 +268,6 @@ Finally, let's used our transformed function to compute per-sample-gradients:
 
 
     ft_per_sample_grads = ft_compute_sample_grad(params, buffers, data, targets)
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 168-170
@@ -327,12 +282,6 @@ results of hand processing each one individually:
 
     for per_sample_grad, ft_per_sample_grad in zip(per_sample_grads, ft_per_sample_grads.values()):
         assert torch.allclose(per_sample_grad, ft_per_sample_grad, atol=3e-3, rtol=1e-5)
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 175-190
@@ -382,26 +331,6 @@ some results on our build machines:
     get_perf(with_vmap_timing, "vmap", no_vmap_timing, "no vmap")
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Per-sample-grads without vmap <torch.utils.benchmark.utils.common.Measurement object at 0x7f478b117040>
-    compute_sample_grads(data, targets)
-      61.08 ms
-      1 measurement, 100 runs , 1 thread
-    Per-sample-grads with vmap <torch.utils.benchmark.utils.common.Measurement object at 0x7f476cb58f40>
-    ft_compute_sample_grad(params, buffers, data, targets)
-      3.40 ms
-      1 measurement, 100 runs , 1 thread
-    Performance delta: 1697.2886 percent improvement with vmap 
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 215-226
 
 There are other optimized solutions (like in https://github.com/pytorch/opacus)
@@ -419,7 +348,7 @@ at on GitHub.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  7.766 seconds)
+   **Total running time of the script:** ( 0 minutes  0.010 seconds)
 
 
 .. _sphx_glr_download_intermediate_per_sample_grads.py:
