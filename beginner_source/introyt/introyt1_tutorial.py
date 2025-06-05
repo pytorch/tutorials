@@ -303,9 +303,8 @@ transform = transforms.Compose(
 #    The values passed to the transform are the means (first tuple) and the
 #    standard deviations (second tuple) of the rgb values of the images in
 #    the dataset. You can calculate these values yourself by running these
-#    few lines of code:
+#    few lines of code::
 #
-#    ::
 #        from torch.utils.data import ConcatDataset
 #        transform = transforms.Compose([transforms.ToTensor()])
 #        trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
