@@ -311,6 +311,7 @@ Let's still use the Toymodel example and create a file named ``elastic_ddp.py``.
 
 .. code:: python
 
+    import os
     import torch
     import torch.distributed as dist
     import torch.nn as nn
