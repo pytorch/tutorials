@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 r"""
 Word Embeddings: Encoding Lexical Semantics
 ===========================================

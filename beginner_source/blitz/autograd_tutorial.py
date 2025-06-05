@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 A Gentle Introduction to ``torch.autograd``
 ===========================================
