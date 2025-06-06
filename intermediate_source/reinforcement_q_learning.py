@@ -91,6 +91,14 @@ device = torch.device(
     "cpu"
 )
 
+# set the seeds for reproducibility
+seed = 42
+random.seed(seed)
+torch.manual_seed(seed)
+
+if torch.cuda.is_available(): 
+    torch.cuda.manual_seed(seed)
+
 
 ######################################################################
 # Replay Memory
@@ -255,16 +263,17 @@ class DQN(nn.Module):
 # LR is the learning rate of the ``AdamW`` optimizer
 BATCH_SIZE = 128
 GAMMA = 0.99
-EPS_START = 0.9
+EPS_START = 1
 EPS_END = 0.05
-EPS_DECAY = 1000
-TAU = 0.005
-LR = 1e-4
+EPS_DECAY = 1500
+LR = 5e-4
+TAU = 5e-3
+
 
 # Get number of actions from gym action space
 n_actions = env.action_space.n
 # Get the number of state observations
-state, info = env.reset()
+state, info = env.reset(seed=seed)
 n_observations = len(state)
 
 policy_net = DQN(n_observations, n_actions).to(device)
@@ -410,7 +419,7 @@ else:
 
 for i_episode in range(num_episodes):
     # Initialize the environment and get its state
-    state, info = env.reset()
+    state, info = env.reset(seed=seed)
     state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
     for t in count():
         action = select_action(state)
