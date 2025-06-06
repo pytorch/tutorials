@@ -92,6 +92,24 @@ device = torch.device(
 )
 
 
+# To ensure reproducibility during training, you can fix the random seeds
+# by uncommenting the lines below. This makes the results consistent across
+# runs, which is helpful for debugging or comparing different approaches.
+#
+# That said, allowing randomness can be beneficial in practice, as it lets
+# the model explore different training trajectories.
+
+
+# seed = 42
+# random.seed(seed)
+# torch.manual_seed(seed)
+# env.reset(seed=seed)
+# env.action_space.seed(seed)
+# env.observation_space.seed(seed)
+# if torch.cuda.is_available(): 
+#     torch.cuda.manual_seed(seed)
+
+
 ######################################################################
 # Replay Memory
 # -------------
@@ -253,13 +271,15 @@ class DQN(nn.Module):
 # EPS_DECAY controls the rate of exponential decay of epsilon, higher means a slower decay
 # TAU is the update rate of the target network
 # LR is the learning rate of the ``AdamW`` optimizer
+
 BATCH_SIZE = 128
 GAMMA = 0.99
 EPS_START = 0.9
-EPS_END = 0.05
-EPS_DECAY = 1000
+EPS_END = 0.01
+EPS_DECAY = 2500
 TAU = 0.005
-LR = 1e-4
+LR = 3e-4
+
 
 # Get number of actions from gym action space
 n_actions = env.action_space.n
