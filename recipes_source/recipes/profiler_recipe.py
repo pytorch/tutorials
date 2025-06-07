@@ -461,4 +461,5 @@ with profile(
 #
 # - `PyTorch Benchmark <https://pytorch.org/tutorials/recipes/recipes/benchmark.html>`_
 # - `Visualizing models, data, and training with TensorBoard <https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html>`_ tutorial
+# - `Understanding GPU Memory 1: Visualizing All Allocations over Time <https://pytorch.org/blog/understanding-gpu-memory-1/>`
 #
