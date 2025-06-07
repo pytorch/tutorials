@@ -35,6 +35,7 @@ To install ``torch`` and ``torchvision`` use the following command:
 # 5. Using tracing functionality
 # 6. Examining stack traces
 # 7. Using profiler to analyze long-running jobs
+# 8. Memory Timeline Visualization
 #
 # 1. Import all necessary libraries
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -454,6 +455,16 @@ with profile(
         p.step()
 
 ######################################################################
+# Memory Timeline Visualization
+with profile(activities=[ProfilerActivity.CPU],
+        profile_memory=True, record_shapes=True, with_stack=True) as prof:
+    model(inputs)
+
+# Add the memory timeline export right after:
+prof.export_memory_timeline("memory_timeline.html")
+
+
+######################################################################
 # Learn More
 # ----------
 #
@@ -461,4 +472,5 @@ with profile(
 #
 # - `PyTorch Benchmark <https://pytorch.org/tutorials/recipes/recipes/benchmark.html>`_
 # - `Visualizing models, data, and training with TensorBoard <https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html>`_ tutorial
+# - `Understanding GPU Memory 1: Visualizing All Allocations over Time <https://pytorch.org/blog/understanding-gpu-memory-1/>`
 #
