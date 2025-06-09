@@ -74,7 +74,7 @@ Specifically:
 
         def state_dict(self):
             # this line automatically manages FSDP FQN's, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT
-            model_state_dict, optimizer_state_dict = get_state_dict(model, optimizer)
+            model_state_dict, optimizer_state_dict = get_state_dict(self.model, self.optimizer)
             return {
                 "model": model_state_dict,
                 "optim": optimizer_state_dict
