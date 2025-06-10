@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 PyTorch: Defining New autograd Functions
 ----------------------------------------
@@ -34,8 +33,11 @@ class LegendrePolynomial3(torch.autograd.Function):
         """
         In the forward pass we receive a Tensor containing the input and return
         a Tensor containing the output. ctx is a context object that can be used
-        to stash information for backward computation. You can cache arbitrary
-        objects for use in the backward pass using the ctx.save_for_backward method.
+        to stash information for backward computation. You can cache tensors for
+        use in the backward pass using the ``ctx.save_for_backward`` method. Other
+        objects can be stored directly as attributes on the ctx object, such as
+        ``ctx.my_object = my_object``. Check out `Extending torch.autograd <https://docs.pytorch.org/docs/stable/notes/extending.html#extending-torch-autograd>`_
+        for further details.
         """
         ctx.save_for_backward(input)
         return 0.5 * (5 * input ** 3 - 3 * input)

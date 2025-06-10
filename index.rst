@@ -3,13 +3,11 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
-* `Dynamic Compilation Control with torch.compiler.set_stance <https://pytorch.org/tutorials/recipes/torch_compiler_set_stance_tutorial.html>`__
-* `Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile() <https://pytorch.org/tutorials/intermediate/transformer_building_blocks.html>`__
-* `Understanding the torch.export Flow and Solutions to Common Challenges <https://pytorch.org/tutorials/recipes/torch_export_challenges_solutions.html>`__
-* Updated `torch.export Tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html#constraints-dynamic-shapes>`__ with automatic dynamic shapes ``Dim.AUTO``
-* Updated `torch.export AOTInductor Tutorial for Python runtime <https://pytorch.org/tutorials/recipes/torch_export_aoti_python.html>`__
-* Updated `Using User-Defined Triton Kernels with torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_user_defined_triton_kernel_tutorial.html#composability>`__ with new ``torch.library.triton_op``
-* Updated `Compile Time Caching in torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_caching_tutorial.html>`__ with new ``Mega-Cache``
+* `Utilizing Torch Function modes with torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_torch_function_modes.html>`__
+* `Context Parallel Tutorial <https://pytorch.org/tutorials/prototype/context_parallel.html>`__
+* `PyTorch 2 Export Quantization with Intel GPU Backend through Inductor <https://pytorch.org/tutorials/prototype/pt2e_quant_xpu_inductor.html>`__
+* `(beta) Explicit horizontal fusion with foreach_map and torch.compile <https://pytorch.org/tutorials/recipes/foreach_map.html>`__
+* Updated `Inductor Windows CPU Tutorial <https://pytorch.org/tutorials/prototype/inductor_windows.html>`__
 
 .. raw:: html
 
@@ -768,14 +766,14 @@ Welcome to PyTorch Tutorials
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
-   :header: Getting Started with Fully Sharded Data Parallel(FSDP)
-   :card_description: Learn how to train models with Fully Sharded Data Parallel package.
+   :header: Getting Started with Fully Sharded Data Parallel (FSDP2)
+   :card_description: Learn how to train models with Fully Sharded Data Parallel (fully_shard) package.
    :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
    :link: intermediate/FSDP_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
-   :header: Advanced Model Training with Fully Sharded Data Parallel (FSDP)
+   :header: Advanced Model Training with Fully Sharded Data Parallel (FSDP1)
    :card_description: Explore advanced model training with Fully Sharded Data Parallel package.
    :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
    :link: intermediate/FSDP_advanced_tutorial.html
@@ -808,21 +806,21 @@ Welcome to PyTorch Tutorials
    :header: Using the ExecuTorch SDK to Profile a Model
    :card_description: Explore how to use the ExecuTorch SDK to profile, debug, and visualize ExecuTorch models
    :image: _static/img/ExecuTorch-Logo-cropped.svg
-   :link: https://pytorch.org/executorch/stable/tutorials/sdk-integration-tutorial.html
+   :link: https://docs.pytorch.org/executorch/main/tutorials/devtools-integration-tutorial.html
    :tags: Edge
 
 .. customcarditem::
    :header: Building an ExecuTorch iOS Demo App
    :card_description: Explore how to set up the ExecuTorch iOS Demo App, which uses the MobileNet v3 model to process live camera images leveraging three different backends: XNNPACK, Core ML, and Metal Performance Shaders (MPS).
    :image: _static/img/ExecuTorch-Logo-cropped.svg
-   :link: https://pytorch.org/executorch/stable/demo-apps-ios.html
+   :link: https://github.com/pytorch-labs/executorch-examples/tree/main/mv3/apple/ExecuTorchDemo
    :tags: Edge
 
 .. customcarditem::
    :header: Building an ExecuTorch Android Demo App
    :card_description: Learn how to set up the ExecuTorch Android Demo App for image segmentation tasks using the DeepLab v3 model and XNNPACK FP32 backend.
    :image: _static/img/ExecuTorch-Logo-cropped.svg
-   :link: https://pytorch.org/executorch/stable/demo-apps-android.html
+   :link: https://github.com/pytorch-labs/executorch-examples/tree/main/dl3/android/DeepLabV3Demo#executorch-android-demo-app
    :tags: Edge
 
 .. customcarditem::
@@ -1125,9 +1123,9 @@ Additional Resources
 
    Exporting to ExecuTorch Tutorial <https://pytorch.org/executorch/stable/tutorials/export-to-executorch-tutorial.html>
    Running an ExecuTorch Model in C++ Tutorial < https://pytorch.org/executorch/stable/running-a-model-cpp-tutorial.html>
-   Using the ExecuTorch SDK to Profile a Model <https://pytorch.org/executorch/stable/tutorials/sdk-integration-tutorial.html>
-   Building an ExecuTorch iOS Demo App <https://pytorch.org/executorch/stable/demo-apps-ios.html>
-   Building an ExecuTorch Android Demo App <https://pytorch.org/executorch/stable/demo-apps-android.html>
+   Using the ExecuTorch SDK to Profile a Model <https://docs.pytorch.org/executorch/main/tutorials/devtools-integration-tutorial.html>
+   Building an ExecuTorch iOS Demo App <https://github.com/pytorch-labs/executorch-examples/tree/main/mv3/apple/ExecuTorchDemo>
+   Building an ExecuTorch Android Demo App <https://github.com/pytorch-labs/executorch-examples/tree/main/dl3/android/DeepLabV3Demo#executorch-android-demo-app>
    Lowering a Model as a Delegate <https://pytorch.org/executorch/stable/examples-end-to-end-to-lower-model-to-delegate.html>
 
 .. toctree::
