@@ -1,7 +1,7 @@
 .. _custom-ops-landing-page:
 
 PyTorch Custom Operators
-===========================
+========================
 
 PyTorch offers a large library of operators that work on Tensors (e.g. ``torch.add``,
 ``torch.sum``, etc). However, you may wish to bring a new custom operation to PyTorch
@@ -21,18 +21,18 @@ You may wish to author a custom operator from Python (as opposed to C++) if:
 
 - you have a Python function you want PyTorch to treat as an opaque callable, especially with
   respect to ``torch.compile`` and ``torch.export``.
-- you have some Python bindings to C++/CUDA kernels and want those to compose with PyTorch
+- you have some Python bindings to C++/CUDA/SYCL kernels and want those to compose with PyTorch
   subsystems (like ``torch.compile`` or ``torch.autograd``)
 - you are using Python (and not a C++-only environment like AOTInductor).
 
-Integrating custom C++ and/or CUDA code with PyTorch
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Integrating custom C++ and/or CUDA/SYCL code with PyTorch
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Please see :ref:`cpp-custom-ops-tutorial`.
 
 You may wish to author a custom operator from C++ (as opposed to Python) if:
 
-- you have custom C++ and/or CUDA code.
+- you have custom C++ and/or CUDA/SYCL code.
 - you plan to use this code with ``AOTInductor`` to do Python-less inference.
 
 The Custom Operators Manual
@@ -50,12 +50,12 @@ If your operation is expressible as a composition of built-in PyTorch operators
 then please write it as a Python function and call it instead of creating a
 custom operator. Use the operator registration APIs to create a custom operator if you
 are calling into some library that PyTorch doesn't understand (e.g. custom C/C++ code,
-a custom CUDA kernel, or Python bindings to C/C++/CUDA extensions).
+a custom CUDA kernel, a custom SYCL kernel, or Python bindings to C/C++/CUDA/SYCL extensions).
 
 Why should I create a Custom Operator?
 --------------------------------------
 
-It is possible to use a C/C++/CUDA kernel by grabbing a Tensor's data pointer
+It is possible to use a C/C++/CUDA/SYCL kernel by grabbing a Tensor's data pointer
 and passing it to a pybind'ed kernel. However, this approach doesn't compose with
 PyTorch subsystems like autograd, torch.compile, vmap, and more. In order
 for an operation to compose with PyTorch subsystems, it must be registered
