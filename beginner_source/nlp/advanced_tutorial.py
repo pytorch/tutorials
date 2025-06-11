@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 r"""
 Advanced: Making Dynamic Decisions and the Bi-LSTM CRF
 ======================================================

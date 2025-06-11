@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Hyperparameter tuning with Ray Tune
 ===================================

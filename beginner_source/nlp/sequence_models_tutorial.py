@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 r"""
 Sequence Models and Long Short-Term Memory Networks
 ===================================================
