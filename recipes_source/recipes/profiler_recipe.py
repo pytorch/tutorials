@@ -209,8 +209,6 @@ print(prof.key_averages().table(sort_by=sort_by_keyword, row_limit=10))
 #    Self CPU time total: 23.015ms
 #    Self CUDA time total: 11.666ms
 #
-######################################################################
-
 
 ######################################################################
 # (Note: the first use of XPU profiling may bring an extra overhead.)
@@ -220,25 +218,23 @@ print(prof.key_averages().table(sort_by=sort_by_keyword, row_limit=10))
 #
 # .. code-block:: sh
 #
-#-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------
-#                                                   Name    Self XPU    Self XPU %     XPU total  XPU time avg    # of Calls
-#  -------------------------------------------------------   ------------  ------------  ------------  ------------  ------------
-#                                        model_inference      0.000us         0.00%       2.567ms       2.567ms             1
-#                                           aten::conv2d      0.000us         0.00%       1.871ms      93.560us            20
-#                                      aten::convolution      0.000us         0.00%       1.871ms      93.560us            20
-#                                     aten::_convolution      0.000us         0.00%       1.871ms      93.560us            20
-#                         aten::convolution_overrideable      1.871ms        72.89%       1.871ms      93.560us            20
-#                                               gen_conv      1.484ms        57.82%       1.484ms      74.216us            20
-#                                       aten::batch_norm      0.000us         0.00%     432.640us      21.632us            20
-#                           aten::_batch_norm_impl_index      0.000us         0.00%     432.640us      21.632us            20
-#                                aten::native_batch_norm      432.640us      16.85%     432.640us      21.632us            20
-#                                           conv_reorder      386.880us      15.07%     386.880us       6.448us            60
-#  -------------------------------------------------------   ------------  ------------  ------------  ------------  ------------
-#  Self CPU time total: 712.486ms
-#  Self XPU time total: 2.567ms
-
+# -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------
+#                                                    Name      Self XPU    Self XPU %     XPU total  XPU time avg    # of Calls
+# -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------
+#                                         model_inference       0.000us         0.00%       2.567ms       2.567ms             1
+#                                            aten::conv2d       0.000us         0.00%       1.871ms      93.560us            20
+#                                       aten::convolution       0.000us         0.00%       1.871ms      93.560us            20
+#                                      aten::_convolution       0.000us         0.00%       1.871ms      93.560us            20
+#                          aten::convolution_overrideable       1.871ms        72.89%       1.871ms      93.560us            20
+#                                                gen_conv       1.484ms        57.82%       1.484ms      74.216us            20
+#                                        aten::batch_norm       0.000us         0.00%     432.640us      21.632us            20
+#                            aten::_batch_norm_impl_index       0.000us         0.00%     432.640us      21.632us            20
+#                                 aten::native_batch_norm     432.640us        16.85%     432.640us      21.632us            20
+#                                            conv_reorder     386.880us        15.07%     386.880us       6.448us            60
+# -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------
+# Self CPU time total: 712.486ms
+# Self XPU time total: 2.567ms
 #
-
 
 ######################################################################
 # Note the occurrence of on-device kernels in the output (e.g. ``sgemm_32x32x32_NN``).
