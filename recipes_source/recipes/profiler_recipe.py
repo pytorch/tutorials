@@ -161,7 +161,7 @@ print(prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total
 # Note the occurrence of ``aten::convolution`` twice with different input shapes.
 
 ######################################################################
-# Profiler can also be used to analyze performance of models executed on GPUs and XPUs:
+# Profiler can also be used to analyze performance of models executed on GPUs:
 # Users could switch between cpu, cuda and xpu
 if torch.cuda.is_available():
     device = 'cuda'
