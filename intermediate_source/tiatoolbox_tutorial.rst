@@ -348,7 +348,7 @@ The PatchPredictor class runs a CNN-based classifier written in PyTorch.
 -  Alternatively, you can pass ``pretrained_model`` as a string
    argument. This specifies the CNN model that performs the prediction,
    and it must be one of the models listed
-   `here <https://tia-toolbox.readthedocs.io/en/latest/usage.html?highlight=pretrained%20models#tiatoolbox.models.architecture.get_pretrained_model>`__.
+   `here <https://tia-toolbox.readthedocs.io/en/stable/_autosummary/tiatoolbox.models.architecture.get_pretrained_model.html#tiatoolbox.models.architecture.get_pretrained_model>`__.
    The command will look like this:
    ``predictor = PatchPredictor(pretrained_model='resnet18-kather100k', pretrained_weights=weights_path, batch_size=32)``.
 -  ``pretrained_weights``: When using a ``pretrained_model``, the
@@ -621,7 +621,7 @@ results. Here are the arguments and their descriptions:
    which is equivalent to level 0. In general, this is the level of
    greatest resolution. In this particular case, the image has only one
    level. More information can be found in the
-   `documentation <https://tia-toolbox.readthedocs.io/en/latest/usage.html?highlight=WSIReader.read_rect#tiatoolbox.wsicore.wsireader.WSIReader.read_rect>`__.
+   `documentation <https://tia-toolbox.readthedocs.io/en/stable/_autosummary/tiatoolbox.wsicore.wsireader.WSIReader.html#tiatoolbox.wsicore.wsireader.WSIReader.read_rect>`__.
 -  ``masks``: A list of paths corresponding to the masks of WSIs in the
    ``imgs`` list. These masks specify the regions in the original WSIs
    from which we want to extract patches. If the mask of a particular

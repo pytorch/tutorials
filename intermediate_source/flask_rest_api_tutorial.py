@@ -321,9 +321,7 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #   for deploying a Flask server in production.
 #
 # - You can also add a UI by creating a page with a form which takes the image and
-#   displays the prediction. Check out the `demo <https://pytorch-imagenet.herokuapp.com/>`_
-#   of a similar project and its `source code <https://github.com/avinassh/pytorch-flask-api-heroku>`_.
-#
+#   displays the prediction. 
 # - In this tutorial, we only showed how to build a service that could return predictions for
 #   a single image at a time. We could modify our service to be able to return predictions for
 #   multiple images at once. In addition, the `service-streamer <https://github.com/ShannonAI/service-streamer>`_
