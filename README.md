@@ -57,8 +57,8 @@ GALLERY_PATTERN="neural_style_transfer_tutorial.py" sphinx-build . _build
 
 The `GALLERY_PATTERN` variable respects regular expressions.
 
-## Spelling Check
-You can run pyspelling to check for spelling errors in the tutorials. To check only Python files, run pyspelling -n python (takes about 3 minutes). To check only .rst files, use pyspelling -n reST. Currently, .rst spell checking is limited to the beginner/ directory. Contributions to enable spell checking in other directories are welcome!
+## Spell Check
+You can run pyspelling to check for spelling errors in the tutorials. To check only Python files, run pyspelling -n python. To check only .rst files, use pyspelling -n reST. Currently, .rst spell checking is limited to the beginner/ directory. Contributions to enable spell checking in other directories are welcome!
 
 
 ```
