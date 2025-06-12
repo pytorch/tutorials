@@ -254,7 +254,7 @@ in a separate ``TORCH_LIBRARY_IMPL`` block:
     m.impl("mymuladd", &mymuladd_cuda);
   }
 
-If you also have a SYCL implementation of ``myaddmul``, you can also register it
+If you also have a SYCL implementation of ``myaddmul``, you can register it
 in a separate ``TORCH_LIBRARY_IMPL`` block:
 
 .. code-block:: cpp
