@@ -32,7 +32,7 @@ x = torch.ones(5)  # input tensor
 y = torch.zeros(3)  # expected output
 w = torch.randn(5, 3, requires_grad=True)
 b = torch.randn(3, requires_grad=True)
-z = torch.matmul(x, w)+b
+z = torch.matmul(x, w) + b
 loss = torch.nn.functional.binary_cross_entropy_with_logits(z, y)
 
 
@@ -133,7 +133,7 @@ print(z_det.requires_grad)
 #   - To mark some parameters in your neural network as **frozen parameters**.
 #   - To **speed up computations** when you are only doing forward pass, because computations on tensors that do
 #     not track gradients would be more efficient.
-#   For additional reference, you can view the autograd mechanics   
+#   For additional reference, you can view the autograd mechanics
 #   documentation:https://docs.pytorch.org/docs/stable/notes/autograd.html#locally-disabling-gradient-computation
 
 ######################################################################
@@ -171,7 +171,7 @@ print(z_det.requires_grad)
 #
 # 2. Torchviz
 # Torchviz is a package to render the computational graph visually.
-# 
+#
 # We can generate an image for the computational graph in the example given below:
 #
 #   import torch
