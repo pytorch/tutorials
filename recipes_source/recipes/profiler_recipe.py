@@ -105,22 +105,24 @@ print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
 
 ######################################################################
 # The output will look like (omitting some columns):
-
-# ---------------------------------  ------------  ------------  ------------  ------------
-#                              Name      Self CPU     CPU total  CPU time avg    # of Calls
-# ---------------------------------  ------------  ------------  ------------  ------------
-#                   model_inference       5.509ms      57.503ms      57.503ms             1
-#                      aten::conv2d     231.000us      31.931ms       1.597ms            20
-#                 aten::convolution     250.000us      31.700ms       1.585ms            20
-#                aten::_convolution     336.000us      31.450ms       1.573ms            20
-#          aten::mkldnn_convolution      30.838ms      31.114ms       1.556ms            20
-#                  aten::batch_norm     211.000us      14.693ms     734.650us            20
-#      aten::_batch_norm_impl_index     319.000us      14.482ms     724.100us            20
-#           aten::native_batch_norm       9.229ms      14.109ms     705.450us            20
-#                        aten::mean     332.000us       2.631ms     125.286us            21
-#                      aten::select       1.668ms       2.292ms       8.988us           255
-# ---------------------------------  ------------  ------------  ------------  ------------
-# Self CPU time total: 57.549m
+#
+# .. code-block:: sh
+#
+#    ---------------------------------  ------------  ------------  ------------  ------------
+#                                 Name      Self CPU     CPU total  CPU time avg    # of Calls
+#    ---------------------------------  ------------  ------------  ------------  ------------
+#                      model_inference       5.509ms      57.503ms      57.503ms             1
+#                         aten::conv2d     231.000us      31.931ms       1.597ms            20
+#                    aten::convolution     250.000us      31.700ms       1.585ms            20
+#                   aten::_convolution     336.000us      31.450ms       1.573ms            20
+#             aten::mkldnn_convolution      30.838ms      31.114ms       1.556ms            20
+#                     aten::batch_norm     211.000us      14.693ms     734.650us            20
+#         aten::_batch_norm_impl_index     319.000us      14.482ms     724.100us            20
+#              aten::native_batch_norm       9.229ms      14.109ms     705.450us            20
+#                           aten::mean     332.000us       2.631ms     125.286us            21
+#                         aten::select       1.668ms       2.292ms       8.988us           255
+#    ---------------------------------  ------------  ------------  ------------  ------------
+#    Self CPU time total: 57.549m
 #
 
 ######################################################################
@@ -218,26 +220,26 @@ print(prof.key_averages().table(sort_by=sort_by_keyword, row_limit=10))
 #
 # .. code-block:: sh
 #
-# -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------
-#                                                    Name      Self XPU    Self XPU %     XPU total  XPU time avg    # of Calls
-# -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------
-#                                         model_inference       0.000us         0.00%       2.567ms       2.567ms             1
-#                                            aten::conv2d       0.000us         0.00%       1.871ms      93.560us            20
-#                                       aten::convolution       0.000us         0.00%       1.871ms      93.560us            20
-#                                      aten::_convolution       0.000us         0.00%       1.871ms      93.560us            20
-#                          aten::convolution_overrideable       1.871ms        72.89%       1.871ms      93.560us            20
-#                                                gen_conv       1.484ms        57.82%       1.484ms      74.216us            20
-#                                        aten::batch_norm       0.000us         0.00%     432.640us      21.632us            20
-#                            aten::_batch_norm_impl_index       0.000us         0.00%     432.640us      21.632us            20
-#                                 aten::native_batch_norm     432.640us        16.85%     432.640us      21.632us            20
-#                                            conv_reorder     386.880us        15.07%     386.880us       6.448us            60
-# -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------
-# Self CPU time total: 712.486ms
-# Self XPU time total: 2.567ms
+#    ------------------------------  ------------  ------------  ------------  ------------  ------------
+#                              Name      Self XPU    Self XPU %     XPU total  XPU time avg    # of Calls
+#    ------------------------------  ------------  ------------  ------------  ------------  ------------
+#                   model_inference       0.000us         0.00%       2.567ms       2.567ms             1
+#                      aten::conv2d       0.000us         0.00%       1.871ms      93.560us            20
+#                 aten::convolution       0.000us         0.00%       1.871ms      93.560us            20
+#                aten::_convolution       0.000us         0.00%       1.871ms      93.560us            20
+#    aten::convolution_overrideable       1.871ms        72.89%       1.871ms      93.560us            20
+#                          gen_conv       1.484ms        57.82%       1.484ms      74.216us            20
+#                  aten::batch_norm       0.000us         0.00%     432.640us      21.632us            20
+#      aten::_batch_norm_impl_index       0.000us         0.00%     432.640us      21.632us            20
+#           aten::native_batch_norm     432.640us        16.85%     432.640us      21.632us            20
+#                      conv_reorder     386.880us        15.07%     386.880us       6.448us            60
+#    ------------------------------  ------------  ------------  ------------  ------------  ------------
+#    Self CPU time total: 712.486ms
+#    Self XPU time total: 2.567ms
 #
 
 ######################################################################
-# Note the occurrence of on-device kernels in the output (e.g. ``sgemm_32x32x32_NN``).
+# Note the occurrence of on-device kernels in the output (e.g. ``sgemm_32x32x32_NN`` for CUDA or ``gen_conv`` for XPU).
 
 ######################################################################
 # 4. Using profiler to analyze memory consumption
