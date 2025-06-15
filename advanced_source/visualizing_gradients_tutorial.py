@@ -22,9 +22,10 @@ By the end of this tutorial, you will be able to:
 -  Visualize gradients after backpropagation in a neural network
 
 We will start off with a simple network to understand how PyTorch
-calculates and stores gradients, and then build on this knowledge to
-visualize the gradient flow of a `ResNet
-model <https://docs.pytorch.org/vision/2.0/models/resnet.html>`__.
+calculates and stores gradients. Building on this knowledge, we will
+then visualize the gradient flow of a more complicated model and see the
+effect that `batch normalization <https://arxiv.org/abs/1502.03167>`__
+has on the gradient distribution.
 
 Before starting, it is recommended to have a solid understanding of
 `tensors and how to manipulate
@@ -46,8 +47,6 @@ would also be useful.
 # 
 
 import torch
-import torchvision
-from torchvision.models import resnet18
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
@@ -192,9 +191,6 @@ print(f"{z.requires_grad=}") # prints True because tensor is a non-leaf node
 # 2. Locally disabling gradient computation with context managers (see
 #    `here <https://docs.pytorch.org/docs/stable/notes/autograd.html#locally-disabling-gradient-computation>`__)
 # 
-
-
-######################################################################
 # In summary, ``requires_grad`` tells autograd which tensors need to have
 # their gradients calculated for backpropagation to work. This is
 # different from which gradients have to be stored inside the tensor,
@@ -337,204 +333,222 @@ print(f"{loss.grad=}")
 
 
 ######################################################################
-# (work-in-progress) Real world example with ResNet
-# -------------------------------------------------
+# Real world example with BatchNorm
+# ---------------------------------
 # 
-# Let’s move on from the toy example above and study a realistic network:
-# `ResNet <https://docs.pytorch.org/vision/2.0/models/resnet.html>`__.
+# Let’s move on from the toy example above and study a more realistic
+# network. We’ll be creating a network intended for the MNIST dataset,
+# similar to the architecture described by the `batch normalization
+# paper <https://arxiv.org/abs/1502.03167>`__.
 # 
 # To illustrate the importance of gradient visualization, we will
-# instantiate two versions of ResNet: one without batch normalization
-# (``BatchNorm``), and one with it. `Batch
-# normalization <https://arxiv.org/abs/1502.03167>`__ is an extremely
+# instantiate one version of the network with batch normalization
+# (BatchNorm), and one without it. Batch normalization is an extremely
 # effective technique to resolve the vanishing/exploding gradients issue,
 # and we will be verifying that experimentally.
 # 
-# We first initiate the models without ``BatchNorm`` following the
-# `documentation <https://docs.pytorch.org/vision/2.0/models/generated/torchvision.models.resnet18.html>`__.
+# The model we will use has a specified number of repeating
+# fully-connected layers which alternate between ``nn.Linear``,
+# ``norm_layer``, and ``nn.Sigmoid``. If we apply batch normalization,
+# then ``norm_layer`` will use
+# `BatchNorm1d <https://docs.pytorch.org/docs/stable/generated/torch.nn.BatchNorm1d.html>`__,
+# otherwise it will use the identity transformation
+# `Identity <https://docs.pytorch.org/docs/stable/generated/torch.nn.Identity.html>`__.
+# 
+
+def fc_layer(in_size, out_size, norm_layer):
+    """Return a stack of linear->norm->sigmoid layers"""
+    return nn.Sequential(nn.Linear(in_size, out_size), norm_layer(out_size), nn.Sigmoid())
+
+class Net(nn.Module):
+    """Define a network that has num_layers of linear->norm->sigmoid transformations"""
+    def __init__(self, in_size=28*28, hidden_size=128, 
+                 out_size=10, num_layers=3, batchnorm=False):
+        super().__init__()
+        if batchnorm is False:
+            norm_layer = nn.Identity
+        else:
+            norm_layer = nn.BatchNorm1d
+            
+        layers = []
+        layers.append(fc_layer(in_size, hidden_size, norm_layer))
+        
+        for i in range(num_layers-1):
+            layers.append(fc_layer(hidden_size, hidden_size, norm_layer))
+            
+        layers.append(nn.Linear(hidden_size, out_size))
+        
+        self.layers = nn.Sequential(*layers)
+        
+    def forward(self, x):
+        x = torch.flatten(x, 1)
+        return self.layers(x)
+
+
+######################################################################
+# Next we set up some dummy data, instantiate two versions of the model,
+# and initialize the optimizers.
 # 
 
 # set up dummy data
-x = torch.randn(1, 3, 224, 224)
-y = torch.randn(1, 1000)
+x = torch.randn(10, 28, 28)
+y = torch.randint(10, (10, ))
 
 # init model
-# model = resnet18(norm_layer=nn.Identity)
-model = resnet18()
-model.train()
-optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+model_bn = Net(batchnorm=True, num_layers=3)
+model_nobn = Net(batchnorm=False, num_layers=3)
+
+model_bn.train()
+model_nobn.train()
+
+optimizer_bn = optim.SGD(model_bn.parameters(), lr=0.01, momentum=0.9)
+optimizer_nobn = optim.SGD(model_nobn.parameters(), lr=0.01, momentum=0.9)
+
+
+
+######################################################################
+# We can verify that batch normalization is only being applied to one of
+# the models by probing one of the internal layers:
+# 
+
+print(model_bn.layers[0])
+print(model_nobn.layers[0])
 
 
 ######################################################################
 # Because we are using a ``nn.Module`` instead of individual tensors for
-# our forward pass, we need another adopt our method to access the
-# intermediate gradients. This is done by `registering a
+# our forward pass, we need another method to access the intermediate
+# gradients. This is done by `registering a
 # hook <https://www.digitalocean.com/community/tutorials/pytorch-hooks-gradient-clipping-debugging>`__.
 # 
-# Note that using backward pass hooks to probe an intermediate nodes
-# gradient is preferred over using ``retain_grad()``. It avoids the memory
-# retention overhead if gradients aren’t needed after backpropagation. It
-# also lets you modify and/or clamp gradients during the backward pass, so
-# they don’t vanish or explode.
+# .. warning::
+# 
+#    Note that using backward pass hooks to probe an intermediate nodes gradient is preferred over using `retain_grad()`.
+#    It avoids the memory retention overhead if gradients aren't needed after backpropagation.
+#    It also lets you modify and/or clamp gradients during the backward pass, so they don't vanish or explode.
+#    However, if in-place operations are performed, you cannot use the backward pass hook
+#    since it wraps the forward pass with views instead of the actual tensors. For more information
+#    please refer to https://github.com/pytorch/pytorch/issues/61519.
 # 
 # The following code defines our forward pass hook (notice the call to
-# ``retain_grad()``) and also collects names of all parameters and layers.
+# ``retain_grad()``) and also gathers descriptive names for the network’s
+# layers.
 # 
 
-def hook_forward(module, args, output):
-    output.retain_grad() # store gradient in ouput tensors
+def hook_forward_wrapper(module_name, outputs):
+    """Python function closure so we can pass args"""
+    def hook_forward(module, args, output):
+        """Hook for forward pass which retains gradients and saves intermediate tensors"""
+        output.retain_grad()
+        outputs.append((module_name, output))
+    return hook_forward
     
-    # grads and layers are global variables
-    outputs.append((layers[module], output))
+def get_all_layers(model, hook_fn):
+    """Register forward pass hook to all outputs in model
     
-def get_all_layers(layer, hook_fn):
-    """Returns dict where keys are children modules and values are layer names"""
+    Returns layers, a dict with keys as layer/module and values as layer/module names
+    e.g.: layers[nn.Conv2d] = layer1.0.conv1 
+
+    Returns outputs, a list of tuples with module name and tensor output. e.g.: 
+    outputs[0] == (layer1.0.conv1, tensor.Torch(...))
+
+    The layer name is passed to a forward hook which will eventually go into a tuple
+    """
     layers = dict()
+    outputs = []
     for name, layer in model.named_modules():
         if any(layer.children()) is False:
             # skip Sequential and/or wrapper modules
             layers[layer] = name
-            layer.register_forward_hook(hook_fn) # hook_forward 
-    return layers
+            layer.register_forward_hook(hook_forward_wrapper(name, outputs))
+    return layers, outputs
 
-def get_all_params(model):
-    """return list of all leaf tensors with requires_grad=True and which are not bias terms"""
-    params = []
-    for name, param in model.named_parameters():
-        if param.requires_grad and "bias" not in name:
-            params.append((name, param))
-    return params
-
-# register hooks 
-layers = get_all_layers(model, hook_forward)
-
-# get parameter gradients
-params = get_all_params(model)
+# register hooks
+layers_bn, outputs_bn = get_all_layers(model_bn, hook_forward_wrapper)
+layers_nobn, outputs_nobn = get_all_layers(model_nobn, hook_forward_wrapper)
 
 
 ######################################################################
-# Let’s check a few of the layers and parameters to make sure things are
-# as expected:
+# Now let’s train the models for a few epochs:
 # 
 
-num_layers = 5 
-print("<--------Params-------->")
-for name, param in params[0:num_layers]:
-    print(name, param.shape)
-
-count = 0
-print("<--------Layers-------->")
-for layer in layers.values():
-    print(layer)
-    count += 1
-    if count >= num_layers:
-        break
-
-
-######################################################################
-# Now let’s run a forward pass and verify our output tensor values were
-# populated.
-# 
-
-outputs = [] # list with layer name, output tensor tuple
-optimizer.zero_grad()
-y_pred = model(x)
-loss = F.mse_loss(y_pred, y) 
-
-print("<--------Outputs-------->")
-for name, output in outputs[0:num_layers]:
-    print(name, output.shape)
-
-
-######################################################################
-# Everything looks good so far, so let’s call ``backward()``, populate the
-# ``grad`` values for all intermediate tensors, and get the average
-# gradient for each layer.
-# 
-
-loss.backward()
-
-def get_grads():
-    layer_idx = []
-    avg_grads = []
-    print("<--------Grads-------->")
-    for idx, (name, output) in enumerate(outputs[0:-2]):
-        if output.grad is not None:
-            avg_grad = output.grad.abs().mean()
-            if idx < num_layers:
-                print(name, avg_grad)
-            avg_grads.append(avg_grad)
-            layer_idx.append(idx)
-    return layer_idx, avg_grads    
-    
-layer_idx, avg_grads = get_grads()
-
-
-######################################################################
-# Now that we have all our gradients stored in ``grads``, we can plot them
-# and see how the average gradient values change as a function of the
-# network depth.
-# 
-
-def plot_grads(layer_idx, avg_grads):    
-    plt.plot(layer_idx, avg_grads)
-    plt.xlabel("Layer depth")
-    plt.ylabel("Average gradient")
-    plt.title("Gradient flow")
-    plt.grid(True)
-    
-plot_grads(layer_idx, avg_grads)
-
-
-######################################################################
-# Upon initialization, this is not very interesting. Let’s try running for
-# several epochs, use gradient descent, and then see how the values
-# change.
-# 
-
-epochs = 20
+epochs = 10 
 
 for epoch in range(epochs):
-    outputs = [] # list with layer name, output tensor tuple
-    optimizer.zero_grad()
-    y_pred = model(x)
-    loss = F.mse_loss(y_pred, y) 
-    loss.backward()
-    optimizer.step()
     
-layer_idx, avg_grads = get_grads()
-plot_grads(layer_idx, avg_grads)
+    # important to clear, because we append to
+    # outputs everytime we do a forward pass
+    outputs_bn.clear() 
+    outputs_nobn.clear()
+    
+    optimizer_bn.zero_grad()
+    optimizer_nobn.zero_grad()
+    
+    y_pred_bn = model_bn(x)
+    y_pred_nobn = model_nobn(x)
+    
+    loss_bn = F.cross_entropy(y_pred_bn, y) 
+    loss_nobn = F.cross_entropy(y_pred_nobn, y) 
+    
+    loss_bn.backward()
+    loss_nobn.backward()
+    
+    optimizer_bn.step()
+    optimizer_nobn.step()
 
 
 ######################################################################
-# Still not very interesting… surprised that the gradients don’t
-# accumulate. Let’s check the leaf tensors… those tensors are probably
-# just recreated whenever I rerun the forward pass, and thus they don’t
-# accumulate. Let’s see if that’s the case with the parameters.
+# After running the forward and backward pass, the ``grad`` values for all
+# the intermediate tensors should be present in ``outputs_bn`` and
+# ``outputs_nobn``. We reduce the gradient matrix to a single number (mean
+# absolute value) so that we can compare the two models.
 # 
 
-def get_param_grads():
+def get_grads(outputs):
     layer_idx = []
     avg_grads = []
-    print("<--------Params-------->")
-    for idx, (name, param) in enumerate(params):
-        if param.grad is not None:
-            avg_grad = param.grad.abs().mean()
-            if idx < num_layers:
-                print(name, avg_grad)
+    for idx, (name, output) in enumerate(outputs):
+        if output.grad is not None:
+            avg_grad = output.grad.abs().mean()
             avg_grads.append(avg_grad)
             layer_idx.append(idx)
     return layer_idx, avg_grads    
     
-layer_idx, avg_grads = get_param_grads()
-
-    
-plot_grads(layer_idx, avg_grads)
+layer_idx_bn, avg_grads_bn = get_grads(outputs_bn)
+layer_idx_nobn, avg_grads_nobn = get_grads(outputs_nobn)
 
 
 ######################################################################
-# (work-in-progress) Conclusion
-# -----------------------------
+# Now that we have all our gradients stored in ``avg_grads``, we can plot
+# them and see how the average gradient values change as a function of the
+# network depth. We see that when we don’t have batch normalization, the
+# gradient values in the intermediate layers fall to zero very quickly.
+# The batch normalization model, however, maintains non-zero gradients in
+# its intermediate layers.
+# 
+
+fig, ax = plt.subplots()
+ax.plot(layer_idx_bn, avg_grads_bn, label="With BatchNorm", marker="o")
+ax.plot(layer_idx_nobn, avg_grads_nobn, label="Without BatchNorm", marker="x")
+ax.set_xlabel("Layer depth")
+ax.set_ylabel("Average gradient")
+ax.set_title("Gradient flow")
+ax.grid(True)
+ax.legend()
+plt.show()
+
+
+######################################################################
+# Conclusion
+# ----------
+# 
+# In this tutorial, we covered when and how PyTorch computes gradients for
+# leaf and non-leaf tensors. By using ``retain_grad``, we can access the
+# gradients of intermediate tensors within autograd’s computational graph.
+# Building upon this, we then demonstrated how to visualize the gradient
+# flow through a neural network wrapped in a ``nn.Module`` class. We
+# qualitatively showed how batch normalization helps to alleviate the
+# vanishing gradient issue which occurs with deep neural networks.
 # 
 # If you would like to learn more about how PyTorch’s autograd system
 # works, please visit the `references <#references>`__ below. If you have
@@ -542,6 +556,20 @@ plot_grads(layer_idx, avg_grads)
 # please use the `PyTorch Forums <https://discuss.pytorch.org/>`__ and/or
 # the `issue tracker <https://github.com/pytorch/tutorials/issues>`__ to
 # reach out.
+# 
+
+
+######################################################################
+# (Optional) Additional exercises
+# -------------------------------
+# 
+# -  Try increasing the number of layers (``num_layers``) in our model and
+#    see what effect this has on the gradient flow graph
+# -  How would you adapt the code to visualize average activations instead
+#    of average gradients? (*Hint: in the ``get_grads()`` function we have
+#    access to the raw tensor output*)
+# -  What are some other methods to deal with vanishing and exploding
+#    gradients?
 # 
 
 
@@ -555,4 +583,11 @@ plot_grads(layer_idx, avg_grads)
 #    torch.autograd <https://docs.pytorch.org/tutorials/beginner/basics/autogradqs_tutorial>`__
 # -  `Autograd
 #    mechanics <https://docs.pytorch.org/docs/stable/notes/autograd.html>`__
+# -  `Batch Normalization: Accelerating Deep Network Training by Reducing
+#    Internal Covariate Shift <https://arxiv.org/abs/1502.03167>`__
+# 
+
+
+######################################################################
+# 
 # 
