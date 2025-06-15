@@ -182,7 +182,7 @@ pred_probab = softmax(logits)
 print(f"Model structure: {model}\n\n")
 
 for name, param in model.named_parameters():
-    print(f"Layer: {name} | Size: {param.size()} | Values : {param[:2]} \n")
+    print(f"Layer: {name} | Size: {param.size()} | Values: {param[:2]} \n")
 
 ######################################################################
 # --------------
