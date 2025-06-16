@@ -78,7 +78,7 @@ We'll also use the following from PyTorch:
 -  optimization (``torch.optim``)
 -  automatic differentiation (``torch.autograd``)
 
-.. GENERATED FROM PYTHON SOURCE LINES 64-95
+.. GENERATED FROM PYTHON SOURCE LINES 64-113
 
 .. code-block:: default
 
@@ -113,6 +113,22 @@ We'll also use the following from PyTorch:
     )
 
 
+    # To ensure reproducibility during training, you can fix the random seeds
+    # by uncommenting the lines below. This makes the results consistent across
+    # runs, which is helpful for debugging or comparing different approaches.
+    #
+    # That said, allowing randomness can be beneficial in practice, as it lets
+    # the model explore different training trajectories.
+
+
+    # seed = 42
+    # random.seed(seed)
+    # torch.manual_seed(seed)
+    # env.reset(seed=seed)
+    # env.action_space.seed(seed)
+    # env.observation_space.seed(seed)
+    # if torch.cuda.is_available(): 
+    #     torch.cuda.manual_seed(seed)
 
 
 
@@ -120,7 +136,9 @@ We'll also use the following from PyTorch:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-115
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 114-133
 
 Replay Memory
 -------------
@@ -142,7 +160,7 @@ For this, we're going to need two classes:
    method for selecting a random batch of transitions for training.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-136
+.. GENERATED FROM PYTHON SOURCE LINES 133-154
 
 .. code-block:: default
 
@@ -174,7 +192,7 @@ For this, we're going to need two classes:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 137-210
+.. GENERATED FROM PYTHON SOURCE LINES 155-228
 
 Now, let's define our model. But first, let's quickly recap what a DQN is.
 
@@ -250,7 +268,7 @@ network). In effect, the network is trying to predict the *expected return* of
 taking each action given the current input.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 210-227
+.. GENERATED FROM PYTHON SOURCE LINES 228-245
 
 .. code-block:: default
 
@@ -278,7 +296,7 @@ taking each action given the current input.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 228-248
+.. GENERATED FROM PYTHON SOURCE LINES 246-266
 
 Training
 --------
@@ -301,7 +319,7 @@ utilities:
    episode.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 248-326
+.. GENERATED FROM PYTHON SOURCE LINES 266-346
 
 .. code-block:: default
 
@@ -313,13 +331,15 @@ utilities:
     # EPS_DECAY controls the rate of exponential decay of epsilon, higher means a slower decay
     # TAU is the update rate of the target network
     # LR is the learning rate of the ``AdamW`` optimizer
+
     BATCH_SIZE = 128
     GAMMA = 0.99
     EPS_START = 0.9
-    EPS_END = 0.05
-    EPS_DECAY = 1000
+    EPS_END = 0.01
+    EPS_DECAY = 2500
     TAU = 0.005
-    LR = 1e-4
+    LR = 3e-4
+
 
     # Get number of actions from gym action space
     n_actions = env.action_space.n
@@ -390,7 +410,7 @@ utilities:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 327-342
+.. GENERATED FROM PYTHON SOURCE LINES 347-362
 
 Training loop
 ^^^^^^^^^^^^^
@@ -408,7 +428,7 @@ added stability. The target network is updated at every step with a
 the hyperparameter ``TAU``, which was previously defined.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 342-390
+.. GENERATED FROM PYTHON SOURCE LINES 362-410
 
 .. code-block:: default
 
@@ -467,7 +487,7 @@ the hyperparameter ``TAU``, which was previously defined.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 391-404
+.. GENERATED FROM PYTHON SOURCE LINES 411-424
 
 Below, you can find the main training loop. At the beginning we reset
 the environment and obtain the initial ``state`` Tensor. Then, we sample
@@ -483,7 +503,7 @@ episodes. Training RL agents can be a noisy process, so restarting training
 can produce better results if convergence is not observed.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 405-453
+.. GENERATED FROM PYTHON SOURCE LINES 425-473
 
 .. code-block:: default
 
@@ -557,7 +577,7 @@ can produce better results if convergence is not observed.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 454-465
+.. GENERATED FROM PYTHON SOURCE LINES 474-485
 
 Here is the diagram that illustrates the overall resulting data flow.
 
@@ -574,7 +594,7 @@ expected Q values. A soft update of its weights are performed at every step.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 3 minutes  49.015 seconds)
+   **Total running time of the script:** ( 10 minutes  36.113 seconds)
 
 
 .. _sphx_glr_download_intermediate_reinforcement_q_learning.py:
