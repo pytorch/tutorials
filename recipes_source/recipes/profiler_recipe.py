@@ -165,16 +165,18 @@ print(prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total
 ######################################################################
 # Profiler can also be used to analyze performance of models executed on GPUs:
 # Users could switch between cpu, cuda and xpu
+activities = [ProfilerActivity.CPU]
 if torch.cuda.is_available():
     device = 'cuda'
+    activities += [ProfilerActivity.CUDA]
 elif torch.xpu.is_available():
     device = 'xpu'
+    activities += [ProfilerActivity.XPU]
 else:
     print('Neither CUDA nor XPU devices are available to demonstrate profiling on acceleration devices')
     import sys
     sys.exit(0)
 
-activities = [ProfilerActivity.CPU, ProfilerActivity.CUDA, ProfilerActivity.XPU]
 sort_by_keyword = device + "_time_total"
 
 model = models.resnet18().to(device)
@@ -308,9 +310,17 @@ print(prof.key_averages().table(sort_by="cpu_memory_usage", row_limit=10))
 # Profiling results can be outputted as a ``.json`` trace file:
 # Tracing CUDA or XPU kernels
 # Users could switch between cpu, cuda and xpu
-device = 'cuda'
-
-activities = [ProfilerActivity.CPU, ProfilerActivity.CUDA, ProfilerActivity.XPU]
+activities = [ProfilerActivity.CPU]
+if torch.cuda.is_available():
+    device = 'cuda'
+    activities += [ProfilerActivity.CUDA]
+elif torch.xpu.is_available():
+    device = 'xpu'
+    activities += [ProfilerActivity.XPU]
+else:
+    print('Neither CUDA nor XPU devices are available to demonstrate profiling on acceleration devices')
+    import sys
+    sys.exit(0)
 
 model = models.resnet18().to(device)
 inputs = torch.randn(5, 3, 224, 224).to(device)
