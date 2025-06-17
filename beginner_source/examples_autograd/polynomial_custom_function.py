@@ -98,9 +98,10 @@ for t in range(2000):
         d -= learning_rate * d.grad
 
         # Manually zero the gradients after updating weights
-        a.grad = None
-        b.grad = None
-        c.grad = None
-        d.grad = None
+        #a.grad = None
+        #b.grad = None
+        #c.grad = None
+        #d.grad = None
+        a.grad, b.grad, c.grad, d.grad = 0. , 0. , 0. , 0.
 
 print(f'Result: y = {a.item()} + {b.item()} * P3({c.item()} + {d.item()} x)')
