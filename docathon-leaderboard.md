@@ -1,6 +1,6 @@
 # 🎉 PyTorch Docathon Leaderboard 2025 🎉
 
-This is the list of the docathon contributors that have participated and contributed to the PyTorch H1 2024 docathon. A big shout out to everyone who have participated! 
+This is the list of the docathon contributors that have participated and contributed to the PyTorch H1 2025 docathon. A big shout out to everyone who have participated! 
 We have awarded points for each merged PR as follows: 
 
 * easy - 2 points
