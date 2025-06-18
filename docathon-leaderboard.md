@@ -1,3 +1,50 @@
+# 🎉 PyTorch Docathon Leaderboard 2025 🎉
+
+This is the list of the docathon contributors that have participated and contributed to the PyTorch H1 2025 docathon. A big shout out to everyone who have participated! 
+We have awarded points for each merged PR as follows: 
+
+* easy - 2 points
+* medium - 5 points
+* advanced - 10 points
+  
+We have granted half points (1, 2, and 5 respectively) for all additional PRs merged against the same issue.
+In some cases, we have awarded credit for the PRs that were not merged or issues that have been closed without a merged PR.
+
+| Rank | Author | Points | PRs |
+|:---:|:------------|------:|:----|
+| 🥇 | [j-silv](https://github.com/j-silv) | 31 | [#155753](https://github.com/pytorch/pytorch/pull/155753), [#155659](https://github.com/pytorch/pytorch/pull/155659), [#155567](https://github.com/pytorch/pytorch/pull/155567), [#155540](https://github.com/pytorch/pytorch/pull/155540), [#155528](https://github.com/pytorch/pytorch/pull/155528), [#155198](https://github.com/pytorch/pytorch/pull/155198), [#155093](https://github.com/pytorch/pytorch/pull/155093), [#3389](https://github.com/pytorch/tutorials/pull/3389) |
+| 🥇 | [windsonsea](https://github.com/windsonsea) | 19 | [#155789](https://github.com/pytorch/pytorch/pull/155789), [#155520](https://github.com/pytorch/pytorch/pull/155520), [#156039](https://github.com/pytorch/pytorch/pull/156039), [#156009](https://github.com/pytorch/pytorch/pull/156009), [#155653](https://github.com/pytorch/pytorch/pull/155653) |
+| 🥇 | [kiszk](https://github.com/kiszk) | 16 | [#155762](https://github.com/pytorch/pytorch/pull/155762), [#155514](https://github.com/pytorch/pytorch/pull/155514), [#155351](https://github.com/pytorch/pytorch/pull/155351), [#155348](https://github.com/pytorch/pytorch/pull/155348), [#155347](https://github.com/pytorch/pytorch/pull/155347) |
+| 🥈 | [Rachel0619](https://github.com/Rachel0619) | 14 | [#155764](https://github.com/pytorch/pytorch/pull/155764), [#155482](https://github.com/pytorch/pytorch/pull/155482), [#3385](https://github.com/pytorch/tutorials/pull/3385), [#3381](https://github.com/pytorch/tutorials/pull/3381) |
+| 🥈 | [jafraustro](https://github.com/jafraustro) | 14 | [#155523](https://github.com/pytorch/pytorch/pull/155523), [#155369](https://github.com/pytorch/pytorch/pull/155369), [#133563](https://github.com/pytorch/pytorch/issues/133563), [#129446](https://github.com/pytorch/pytorch/issues/129446) |
+| 🥈 | [Dhia-naouali](https://github.com/Dhia-naouali) | 12 | [#155911](https://github.com/pytorch/pytorch/pull/155911), [#155840](https://github.com/pytorch/pytorch/pull/155840), [#155505](https://github.com/pytorch/pytorch/pull/155505) |
+| 🥈 | [loganthomas](https://github.com/loganthomas) | 12 | [#155702](https://github.com/pytorch/pytorch/pull/155702), [#155088](https://github.com/pytorch/pytorch/pull/155088), [#155649](https://github.com/pytorch/pytorch/pull/155649) |
+| 🥈 | [nirajkamal](https://github.com/nirajkamal) | 12 | [#155430](https://github.com/pytorch/pytorch/pull/155430), [#155228](https://github.com/pytorch/pytorch/pull/155228), [#3376](https://github.com/pytorch/tutorials/pull/3376) |
+| 🥉 | [Juliandlb](https://github.com/Juliandlb) | 10 | [#155987](https://github.com/pytorch/pytorch/pull/155987), [#155618](https://github.com/pytorch/pytorch/pull/155618) |
+| 🥉 | [ggsmith842](https://github.com/ggsmith842) | 7 | [#155767](https://github.com/pytorch/pytorch/pull/155767), [#155297](https://github.com/pytorch/pytorch/pull/155297) |
+| 🥉 | [ParagEkbote](https://github.com/ParagEkbote) | 7 | [#155683](https://github.com/pytorch/pytorch/pull/155683), [#155341](https://github.com/pytorch/pytorch/pull/155341) |
+| ⭐ | [GdoongMathew](https://github.com/GdoongMathew) | 5 | [#155813](https://github.com/pytorch/pytorch/pull/155813) |
+| ⭐ | [eromomon](https://github.com/eromomon) | 5 | [#155696](https://github.com/pytorch/pytorch/pull/155696) |
+| ⭐ | [dggaytan](https://github.com/dggaytan) | 5 | [#155377](https://github.com/pytorch/pytorch/pull/155377) |
+| ⭐ | [spzala](https://github.com/spzala) | 5 | [#155335](https://github.com/pytorch/pytorch/pull/155335) |
+| ⭐ | [framoncg](https://github.com/framoncg) | 5 | [#155298](https://github.com/pytorch/pytorch/pull/155298) |
+| ⭐ | [abhinav-TB](https://github.com/abhinav-TB) | 5 | [#155252](https://github.com/pytorch/pytorch/pull/155252) |
+| ⭐ | [aagalleg](https://github.com/aagalleg) | 5 | [#155137](https://github.com/pytorch/pytorch/pull/155137) |
+| ⭐ | [kiersten-stokes](https://github.com/kiersten-stokes) | 5 | [#155067](https://github.com/pytorch/pytorch/pull/155067) |
+| ⭐ | [krishnakalyan3](https://github.com/krishnakalyan3) | 5 | [#3387](https://github.com/pytorch/tutorials/pull/3387) |
+| ⭐ | [splion-360](https://github.com/splion-360) | 5 | [#3384](https://github.com/pytorch/tutorials/pull/3384) |
+| ⭐ | [harshaljanjani](https://github.com/harshaljanjani) | 5 | [#3377](https://github.com/pytorch/tutorials/pull/3377) |
+| ⭐ | [b-koopman](https://github.com/b-koopman) | 4 | [#155100](https://github.com/pytorch/pytorch/pull/155100), [#155889](https://github.com/pytorch/pytorch/pull/155889) |
+| ⭐ | [thatgeeman](https://github.com/thatgeeman) | 4 | [#155404](https://github.com/pytorch/pytorch/pull/155404), [#156094](https://github.com/pytorch/pytorch/pull/156094) |
+| ⭐ | [frost-intel](https://github.com/frost-intel) | 2 | [#3393](https://github.com/pytorch/tutorials/pull/3393) |
+| ⭐ | [ANotFox](https://github.com/ANotFox) | 2 | [#155148](https://github.com/pytorch/pytorch/pull/155148) |
+| ⭐ | [QasimKhan5x](https://github.com/QasimKhan5x) | 2 | [#155074](https://github.com/pytorch/pytorch/pull/155074) |
+| ⭐ | [Ashish-Soni08](https://github.com/Ashish-Soni08) | 2 | [#3379](https://github.com/pytorch/tutorials/pull/3379) |
+| ⭐ | [FORTFANOP](https://github.com/FORTFANOP) | 2 | [#3378](https://github.com/pytorch/tutorials/pull/3378) |
+| ⭐ | [newtdms ](https://github.com/newtdms ) | 2 | [#155497](https://github.com/pytorch/pytorch/pull/155497) |
+| ⭐ | [srini047](https://github.com/srini047) | 2 | [#155554](https://github.com/pytorch/pytorch/pull/155554) |
+
+
 # 🎉 Docathon H1 2024 Leaderboard 🎉
 
 This is the list of the docathon contributors that have participated and contributed to the PyTorch H1 2024 docathon. 
