@@ -53,6 +53,7 @@ NOT_RUN = [
     "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
     "advanced_source/semi_structured_sparse", # reenable after 3303 is fixed.
     "intermediate_source/torchrec_intro_tutorial", # reenable after 3302 is fixe
+    "intermediate_source/ax_multiobjective_nas_tutorial"
 ]
 
 def tutorial_source_dirs() -> List[Path]:
