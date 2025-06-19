@@ -42,6 +42,7 @@ We will cover six crucial components of TorchRL:
 #    !pip3 install torchrl
 #    !pip3 install gym[mujoco]
 #    !pip3 install tqdm
+#    !pip install torchrl gymnasium[mujoco] mujoco==3.1.1 (For Google Colab)
 #
 # Proximal Policy Optimization (PPO) is a policy-gradient algorithm where a
 # batch of data is being collected and directly consumed to train the policy to maximise
@@ -211,8 +212,34 @@ entropy_eps = 1e-4
 # to a large panel of RL simulators, allowing you to easily swap one environment
 # with another. For example, creating a wrapped gym environment can be achieved with few characters:
 #
+# -----------------------------------------------------------------------------
+# ⚙️ Google Colab and gymnasium compatibility for Mujoco-based environments
+# -----------------------------------------------------------------------------
 
-base_env = GymEnv("InvertedDoublePendulum-v4", device=device)
+# Try importing gymnasium (preferred), fallback to gym
+try:
+    import gymnasium as gym
+    USING_GYMNASIUM = True
+except ImportError:
+    import gym
+    USING_GYMNASIUM = False
+
+import os
+
+# In headless environments like Google Colab, Mujoco needs osmesa for rendering
+if "google.colab" in str(get_ipython()):
+    os.environ["MUJOCO_GL"] = "osmesa"
+
+# Use a newer environment name if gymnasium is available
+# (v5 environments are preferred; gym uses v4)
+env_version = "v5" if USING_GYMNASIUM else "v4"
+env_id = f"InvertedDoublePendulum-{env_version}"
+
+# Replace this later:
+
+#base_env = GymEnv("InvertedDoublePendulum-v4", device=device)
+base_env = GymEnv(env_id, device=device)
+
 
 ######################################################################
 # There are a few things to notice in this code: first, we created
