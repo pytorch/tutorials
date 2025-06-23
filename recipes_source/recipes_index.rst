@@ -204,13 +204,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :tags: TorchScript
 
 .. customcarditem::
-   :header: Deploying with Flask
-   :card_description: Learn how to use Flask, a lightweight web server, to quickly setup a web API from your trained PyTorch model.
-   :image: ../_static/img/thumbnails/cropped/using-flask-create-restful-api.png
-   :link: ../recipes/deployment_with_flask.html
-   :tags: Production,TorchScript
-
-.. customcarditem::
    :header: PyTorch Mobile Performance Recipes
    :card_description: List of recipes for performance optimizations for using PyTorch on Mobile (Android and iOS).
    :image: ../_static/img/thumbnails/cropped/mobile.png
@@ -502,7 +495,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/compiling_optimizer
    /recipes/torch_compile_backend_ipex
    /recipes/torchscript_inference
-   /recipes/deployment_with_flask
    /recipes/distributed_rpc_profiling
    /recipes/zero_redundancy_optimizer
    /recipes/cuda_rpc
