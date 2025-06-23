@@ -4,31 +4,16 @@ Visualizing Gradients
 
 **Author:** `Justin Silver <https://github.com/j-silv>`__
 
-When training neural networks with PyTorch, it’s possible to ignore some
-of the library’s internal mechanisms. For example, running
-backpropagation requires a simple call to ``backward()``. This tutorial
-dives into how those gradients are calculated and stored in two
-different kinds of PyTorch tensors: leaf vs. non-leaf. It will also
-cover how we can extract and visualize gradients at any layer in the
-network’s computational graph. By inspecting how information flows from
-the end of the network to the parameters we want to optimize, we can
-debug issues that occur during training such as `vanishing or exploding
-gradients <https://arxiv.org/abs/1211.5063>`__.
+This tutorial explains the subtleties of ``requires_grad``,
+``retain_grad``, leaf, and non-leaf tensors using a simple example. It
+then covers how to extract and visualize gradients at any layer in a
+neural network. By inspecting how information flows from the end of the
+network to the parameters we want to optimize, we can debug issues such
+as `vanishing or exploding
+gradients <https://arxiv.org/abs/1211.5063>`__ that occur during
+training.
 
-By the end of this tutorial, you will be able to:
-
--  Differentiate leaf vs. non-leaf tensors
--  Know when to use ``requires_grad`` vs. ``retain_grad``
--  Visualize gradients after backpropagation in a neural network
-
-We will start off with a simple network to understand how PyTorch
-calculates and stores gradients. Building on this knowledge, we will
-then visualize the gradient flow of a more complicated model and see the
-effect that `batch normalization <https://arxiv.org/abs/1502.03167>`__
-has on the gradient distribution.
-
-Before starting, it is recommended to have a solid understanding of
-`tensors and how to manipulate
+Before starting, make sure you understand `tensors and how to manipulate
 them <https://docs.pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html>`__.
 A basic knowledge of `how autograd
 works <https://docs.pytorch.org/tutorials/beginner/basics/autogradqs_tutorial.html>`__
@@ -54,9 +39,9 @@ import matplotlib.pyplot as plt
 
 
 ######################################################################
-# Next, we will instantiate a simple network so that we can focus on the
-# gradients. This will be an affine layer, followed by a ReLU activation,
-# and ending with a MSE loss between the prediction and label tensors.
+# Next, we instantiate a simple network to focus on the gradients. This
+# will be an affine layer, followed by a ReLU activation, and ending with
+# a MSE loss between prediction and label tensors.
 # 
 # .. math::
 # 
@@ -137,8 +122,9 @@ print(f"{z.is_leaf=}")
 ######################################################################
 # The distinction between leaf and non-leaf determines whether the
 # tensor’s gradient will be stored in the ``grad`` property after the
-# backward pass, and thus be usable for gradient descent optimization.
-# We’ll cover this some more in the `following section <#retain-grad>`__.
+# backward pass, and thus be usable for `gradient
+# descent <https://en.wikipedia.org/wiki/Gradient_descent>`__. We’ll cover
+# this some more in the `following section <#retain-grad>`__.
 # 
 # Let’s now investigate how PyTorch calculates and stores gradients for
 # the tensors in its computational graph.
@@ -149,24 +135,24 @@ print(f"{z.is_leaf=}")
 # ``requires_grad``
 # -----------------
 # 
-# To start the generation of the computational graph which can be used for
-# gradient calculation, we need to pass in the ``requires_grad=True``
-# parameter to a tensor constructor. By default, the value is ``False``,
-# and thus PyTorch does not track gradients on any created tensors. To
-# verify this, try not setting ``requires_grad``, re-run the forward pass,
-# and then run backpropagation. You will see:
+# To build the computational graph which can be used for gradient
+# calculation, we need to pass in the ``requires_grad=True`` parameter to
+# a tensor constructor. By default, the value is ``False``, and thus
+# PyTorch does not track gradients on any created tensors. To verify this,
+# try not setting ``requires_grad``, re-run the forward pass, and then run
+# backpropagation. You will see:
 # 
 # ::
 # 
 #    >>> loss.backward()
 #    RuntimeError: element 0 of tensors does not require grad and does not have a grad_fn
 # 
-# PyTorch is telling us that because the tensor is not tracking gradients,
-# autograd can’t backpropagate to any leaf tensors. If you need to change
-# the property, you can call ``requires_grad_()`` on the tensor (notice
-# the ’_’ suffix).
+# This error means that autograd can’t backpropagate to any leaf tensors
+# because ``loss`` is not tracking gradients. If you need to change the
+# property, you can call ``requires_grad_()`` on the tensor (notice the \_
+# suffix).
 # 
-# We can sanity-check which nodes require gradient calculation, just like
+# We can sanity check which nodes require gradient calculation, just like
 # we did above with the ``is_leaf`` attribute:
 # 
 
@@ -176,11 +162,11 @@ print(f"{z.requires_grad=}") # prints True because tensor is a non-leaf node
 
 
 ######################################################################
-# It’s useful to remember that by definition a non-leaf tensor has
-# ``requires_grad=True``. Backpropagation would fail if this wasn’t the
-# case. If the tensor is a leaf, then it will only have
+# It’s useful to remember that a non-leaf tensor has
+# ``requires_grad=True`` by definition, since backpropagation would fail
+# otherwise. If the tensor is a leaf, then it will only have
 # ``requires_grad=True`` if it was specifically set by the user. Another
-# way to phrase this is that if at least one of the inputs to the tensor
+# way to phrase this is that if at least one of the inputs to a tensor
 # requires the gradient, then it will require the gradient as well.
 # 
 # There are two exceptions to this rule:
@@ -193,8 +179,8 @@ print(f"{z.requires_grad=}") # prints True because tensor is a non-leaf node
 # 
 # In summary, ``requires_grad`` tells autograd which tensors need to have
 # their gradients calculated for backpropagation to work. This is
-# different from which gradients have to be stored inside the tensor,
-# which is the topic of the next section.
+# different from which tensors have their ``grad`` field populated, which
+# is the topic of the next section.
 # 
 
 
@@ -210,9 +196,9 @@ loss.backward()
 
 
 ######################################################################
-# This single function call populated the ``grad`` property of all leaf
-# tensors which had ``requires_grad=True``. The ``grad`` is the gradient
-# of the loss with respect to the tensor we are probing. Before running
+# Calling ``backward()`` populates the ``grad`` field of all leaf tensors
+# which had ``requires_grad=True``. The ``grad`` is the gradient of the
+# loss with respect to the tensor we are probing. Before running
 # ``backward()``, this attribute is set to ``None``.
 # 
 
@@ -242,7 +228,7 @@ print(f"{z.grad=}")
 
 
 ######################################################################
-# We also get ``None`` for the gradient, but now PyTorch warns us that a
+# PyTorch returns ``None`` for the gradient and also warns us that a
 # non-leaf node’s ``grad`` attribute is being accessed. Although autograd
 # has to calculate intermediate gradients for backpropagation to work, it
 # assumes you don’t need to access the values afterwards. To change this
@@ -304,15 +290,21 @@ print(f"{loss.grad=}")
 #    >>> x.retain_grad()
 #    RuntimeError: can't retain_grad on Tensor that has requires_grad=False
 # 
-# In summary, using ``retain_grad()`` and ``retains_grad`` only make sense
-# for non-leaf nodes, since the ``grad`` attribute will already be
-# populated for leaf tensors that have ``requires_grad=True``. By default,
-# these non-leaf nodes do not retain (store) their gradient after
+
+
+######################################################################
+# Summary table
+# -------------
+# 
+# Using ``retain_grad()`` and ``retains_grad`` only make sense for
+# non-leaf nodes, since the ``grad`` attribute will already be populated
+# for leaf tensors that have ``requires_grad=True``. By default, these
+# non-leaf nodes do not retain (store) their gradient after
 # backpropagation. We can change that by rerunning the forward pass,
 # telling PyTorch to store the gradients, and then performing
 # backpropagation.
 # 
-# The following table can be used as a cheat-sheet which summarizes the
+# The following table can be used as a reference which summarizes the
 # above discussions. The following scenarios are the only ones that are
 # valid for PyTorch tensors.
 # 
@@ -344,16 +336,18 @@ print(f"{loss.grad=}")
 # To illustrate the importance of gradient visualization, we will
 # instantiate one version of the network with batch normalization
 # (BatchNorm), and one without it. Batch normalization is an extremely
-# effective technique to resolve the vanishing/exploding gradients issue,
-# and we will be verifying that experimentally.
+# effective technique to resolve `vanishing/exploding
+# gradients <https://arxiv.org/abs/1211.5063>`__, and we will be verifying
+# that experimentally.
 # 
-# The model we will use has a specified number of repeating
-# fully-connected layers which alternate between ``nn.Linear``,
-# ``norm_layer``, and ``nn.Sigmoid``. If we apply batch normalization,
-# then ``norm_layer`` will use
+# The model we use has a configurable number of repeating fully-connected
+# layers which alternate between ``nn.Linear``, ``norm_layer``, and
+# ``nn.Sigmoid``. If batch normalization is enabled, then ``norm_layer``
+# will use
 # `BatchNorm1d <https://docs.pytorch.org/docs/stable/generated/torch.nn.BatchNorm1d.html>`__,
-# otherwise it will use the identity transformation
-# `Identity <https://docs.pytorch.org/docs/stable/generated/torch.nn.Identity.html>`__.
+# otherwise it will use the
+# `Identity <https://docs.pytorch.org/docs/stable/generated/torch.nn.Identity.html>`__
+# transformation.
 # 
 
 def fc_layer(in_size, out_size, norm_layer):
@@ -416,60 +410,60 @@ print(model_nobn.layers[0])
 
 
 ######################################################################
-# Because we are using a ``nn.Module`` instead of individual tensors for
-# our forward pass, we need another method to access the intermediate
-# gradients. This is done by `registering a
-# hook <https://www.digitalocean.com/community/tutorials/pytorch-hooks-gradient-clipping-debugging>`__.
+# Because we wrapped up the logic and state of our model in a
+# ``nn.Module``, we need another method to access the intermediate
+# gradients if we want to avoid modifying the module code directly. This
+# is done by `registering a
+# hook <https://docs.pytorch.org/docs/stable/notes/autograd.html#backward-hooks-execution>`__.
 # 
 # .. warning::
 # 
-#    Note that using backward pass hooks to probe an intermediate nodes gradient is preferred over using `retain_grad()`.
-#    It avoids the memory retention overhead if gradients aren't needed after backpropagation.
-#    It also lets you modify and/or clamp gradients during the backward pass, so they don't vanish or explode.
-#    However, if in-place operations are performed, you cannot use the backward pass hook
-#    since it wraps the forward pass with views instead of the actual tensors. For more information
-#    please refer to https://github.com/pytorch/pytorch/issues/61519.
+#    Using backward pass hooks attached to output tensors is preferred over using ``retain_grad()`` on the tensors themselves. An alternative method is to directly attach module hooks (e.g. ``register_full_backward_hook()``) so long as the ``nn.Module`` instance does not do perform any in-place operations. For more information, please refer to `this issue <https://github.com/pytorch/pytorch/issues/61519>`__.
 # 
-# The following code defines our forward pass hook (notice the call to
-# ``retain_grad()``) and also gathers descriptive names for the network’s
-# layers.
+# The following code defines our hooks and gathers descriptive names for
+# the network’s layers.
 # 
 
-def hook_forward_wrapper(module_name, outputs):
-    """Python function closure so we can pass args"""
+# note that wrapper functions are used for Python closure
+# so that we can pass arguments. 
+
+def hook_forward_wrapper(module_name, grads):
     def hook_forward(module, args, output):
-        """Hook for forward pass which retains gradients and saves intermediate tensors"""
-        output.retain_grad()
-        outputs.append((module_name, output))
+        """Forward pass hook which attaches backward pass hooks to intermediate tensors"""
+        output.register_hook(hook_backward_wrapper(module_name, grads))
     return hook_forward
+
+def hook_backward_wrapper(module_name, grads):
+    def hook_backward(grad):
+        """Backward pass hook which appends gradients"""
+        grads.append((module_name, grad))
+    return hook_backward
     
 def get_all_layers(model, hook_fn):
-    """Register forward pass hook to all outputs in model
+    """Register forward pass hook (hook_fn) to model outputs
     
-    Returns layers, a dict with keys as layer/module and values as layer/module names
-    e.g.: layers[nn.Conv2d] = layer1.0.conv1 
-
-    Returns outputs, a list of tuples with module name and tensor output. e.g.: 
-    outputs[0] == (layer1.0.conv1, tensor.Torch(...))
-
-    The layer name is passed to a forward hook which will eventually go into a tuple
+    Returns:
+        - layers: a dict with keys as layer/module and values as layer/module names
+                  e.g. layers[nn.Conv2d] = layer1.0.conv1
+        - grads: a list of tuples with module name and tensor output gradient
+                 e.g. grads[0] == (layer1.0.conv1, tensor.Torch(...))
     """
     layers = dict()
-    outputs = []
+    grads = []
     for name, layer in model.named_modules():
+        # skip Sequential and/or wrapper modules
         if any(layer.children()) is False:
-            # skip Sequential and/or wrapper modules
             layers[layer] = name
-            layer.register_forward_hook(hook_forward_wrapper(name, outputs))
-    return layers, outputs
+            layer.register_forward_hook(hook_fn(name, grads))
+    return layers, grads
 
 # register hooks
-layers_bn, outputs_bn = get_all_layers(model_bn, hook_forward_wrapper)
-layers_nobn, outputs_nobn = get_all_layers(model_nobn, hook_forward_wrapper)
+layers_bn, grads_bn = get_all_layers(model_bn, hook_forward_wrapper)
+layers_nobn, grads_nobn = get_all_layers(model_nobn, hook_forward_wrapper)
 
 
 ######################################################################
-# Now let’s train the models for a few epochs:
+# Let’s now train the models for a few epochs:
 # 
 
 epochs = 10 
@@ -478,8 +472,8 @@ for epoch in range(epochs):
     
     # important to clear, because we append to
     # outputs everytime we do a forward pass
-    outputs_bn.clear() 
-    outputs_nobn.clear()
+    grads_bn.clear() 
+    grads_nobn.clear()
     
     optimizer_bn.zero_grad()
     optimizer_nobn.zero_grad()
@@ -498,33 +492,33 @@ for epoch in range(epochs):
 
 
 ######################################################################
-# After running the forward and backward pass, the ``grad`` values for all
-# the intermediate tensors should be present in ``outputs_bn`` and
-# ``outputs_nobn``. We reduce the gradient matrix to a single number (mean
-# absolute value) so that we can compare the two models.
+# After running the forward and backward pass, the gradients for all the
+# intermediate tensors should be present in ``grads_bn`` and
+# ``grads_nobn``. We compute the mean absolute value of each gradient
+# matrix so that we can compare the two models.
 # 
 
-def get_grads(outputs):
+def get_grads(grads):
     layer_idx = []
     avg_grads = []
-    for idx, (name, output) in enumerate(outputs):
-        if output.grad is not None:
-            avg_grad = output.grad.abs().mean()
+    for idx, (name, grad) in enumerate(grads):
+        if grad is not None:
+            avg_grad = grad.abs().mean()
             avg_grads.append(avg_grad)
-            layer_idx.append(idx)
+            # idx is backwards since we appended in backward pass 
+            layer_idx.append(len(grads) - 1 - idx) 
     return layer_idx, avg_grads    
     
-layer_idx_bn, avg_grads_bn = get_grads(outputs_bn)
-layer_idx_nobn, avg_grads_nobn = get_grads(outputs_nobn)
+layer_idx_bn, avg_grads_bn = get_grads(grads_bn)
+layer_idx_nobn, avg_grads_nobn = get_grads(grads_nobn)
 
 
 ######################################################################
-# Now that we have all our gradients stored in ``avg_grads``, we can plot
-# them and see how the average gradient values change as a function of the
-# network depth. We see that when we don’t have batch normalization, the
-# gradient values in the intermediate layers fall to zero very quickly.
-# The batch normalization model, however, maintains non-zero gradients in
-# its intermediate layers.
+# With the average gradients computed, we can now plot them and see how
+# the values change as a function of the network depth. Notice that when
+# we don’t apply batch normalization, the gradient values in the
+# intermediate layers fall to zero very quickly. The batch normalization
+# model, however, maintains non-zero gradients in its intermediate layers.
 # 
 
 fig, ax = plt.subplots()
@@ -566,7 +560,7 @@ plt.show()
 # -  Try increasing the number of layers (``num_layers``) in our model and
 #    see what effect this has on the gradient flow graph
 # -  How would you adapt the code to visualize average activations instead
-#    of average gradients? (*Hint: in the ``get_grads()`` function we have
+#    of average gradients? (*Hint: in the hook_forward() function we have
 #    access to the raw tensor output*)
 # -  What are some other methods to deal with vanishing and exploding
 #    gradients?
@@ -585,9 +579,6 @@ plt.show()
 #    mechanics <https://docs.pytorch.org/docs/stable/notes/autograd.html>`__
 # -  `Batch Normalization: Accelerating Deep Network Training by Reducing
 #    Internal Covariate Shift <https://arxiv.org/abs/1502.03167>`__
-# 
-
-
-######################################################################
-# 
+# -  `On the difficulty of training Recurrent Neural
+#    Networks <https://arxiv.org/abs/1211.5063>`__
 # 
