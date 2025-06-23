@@ -157,7 +157,7 @@ loaded into CPU RAM, which can be undesirable when:
 
  .. code-block:: none
 
-    loading time without mmap=0.034003257751464844
+    loading time without mmap=0.03504467010498047
 
 
 
@@ -189,7 +189,7 @@ storages will be memory-mapped.
 
  .. code-block:: none
 
-    loading time with mmap=0.002488374710083008
+    loading time with mmap=0.003800630569458008
 
 
 
@@ -219,7 +219,20 @@ checkpoint without loading all tensor storages into CPU memory upfront. For exam
 
 
 
+.. rst-class:: sphx-glr-script-out
 
+.. code-block:: pytb
+
+    Traceback (most recent call last):
+      File "/var/lib/workspace/recipes_source/recipes/module_load_state_dict_tips.py", line 106, in <module>
+        my_processing_function(key, device)
+      File "/var/lib/workspace/recipes_source/recipes/module_load_state_dict_tips.py", line 100, in my_processing_function
+        processed_t = my_special_routine(t, device)
+      File "/var/lib/workspace/recipes_source/recipes/module_load_state_dict_tips.py", line 96, in my_special_routine
+        return t.to(dtype=torch.bfloat16, device=device)
+      File "/usr/local/lib/python3.10/dist-packages/torch/cuda/__init__.py", line 372, in _lazy_init
+        torch._C._cuda_init()
+    RuntimeError: No CUDA GPUs are available
 
 
 
@@ -235,12 +248,6 @@ Next, let's consider the creation of the module.
 .. code-block:: default
 
     m = SomeModule(1000)
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 115-132
@@ -271,12 +278,6 @@ carry data. However, they possess all other metadata a tensor carries such as ``
       new_m = SomeModule(1000)
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 136-139
 
 Using ``load_state_dict(assign=True)``
@@ -289,18 +290,6 @@ Next, we consider the loading of the state dictionary.
 
 
     m.load_state_dict(state_dict)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-
-    <All keys matched successfully>
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 143-155
@@ -333,12 +322,6 @@ is loaded from state dict if ``assign=True`` is passed.
     opt = torch.optim.SGD(new_m.parameters(), lr=1e-3)
 
 
-
-
-
-
-
-
 .. GENERATED FROM PYTHON SOURCE LINES 166-173
 
 Conclusion
@@ -352,7 +335,7 @@ be used to aid when loading a model from a checkpoint.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.555 seconds)
+   **Total running time of the script:** ( 0 minutes  0.244 seconds)
 
 
 .. _sphx_glr_download_recipes_recipes_module_load_state_dict_tips.py:

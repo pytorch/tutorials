@@ -390,7 +390,6 @@
 <p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/onnx/intro_onnx.html">Introduction to ONNX</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
@@ -998,16 +997,16 @@ the traditional <code class="docutils literal notranslate"><span class="pre">nn.
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total sequence length in nested query 10829, max sequence length 137
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total sequence length in nested query 10213, max sequence length 201
 /usr/local/lib/python3.10/dist-packages/torch/_inductor/compile_fx.py:236: UserWarning:
 
 TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
 
-padded_time=0.01962, padded_peak_memory=4.03 GB
-nested_time=0.00252, nested_peak_memory=0.75 GB
+padded_time=0.03160, padded_peak_memory=6.36 GB
+nested_time=0.00242, nested_peak_memory=0.93 GB
 Max difference between vanilla and nested result 0.0
-Nested speedup: 7.79
-Nested peak memory reduction 3.27 GB
+Nested speedup: 13.07
+Nested peak memory reduction 5.42 GB
 </pre></div>
 </div>
 <p>For reference, here are some sample outputs on A100:</p>
@@ -1067,12 +1066,12 @@ Nested peak memory reduction 3.27 GB
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>padded_bw_time=1.89847, padded_bw_peak_mem=4.96 GB
-nested_bw_time=0.06604, nested_bw_peak_mem=3.16 GB
-Nested backward speedup: 28.75
-Nested backward peak memory reduction 1.80 GB
-Difference in out_proj.weight.grad 0.000396728515625
-Difference in packed_proj.weight.grad 0.00177001953125
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>padded_bw_time=2.04643, padded_bw_peak_mem=7.70 GB
+nested_bw_time=0.06628, nested_bw_peak_mem=4.79 GB
+Nested backward speedup: 30.87
+Nested backward peak memory reduction 2.91 GB
+Difference in out_proj.weight.grad 0.00048828125
+Difference in packed_proj.weight.grad 0.0023193359375
 Difference in out_proj.bias.grad 0.0
 Difference in packed_proj.bias.grad 0.001953125
 </pre></div>
@@ -1138,8 +1137,8 @@ tensors for both query and key/value.</p>
 <span class="n">out</span> <span class="o">=</span> <span class="n">new_mha_layer</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">is_causal</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total sequence length in nested query 10693, max sequence length 124
-Total sequence length in nested key/value 10393, max sequence length 148
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total sequence length in nested query 11144, max sequence length 149
+Total sequence length in nested key/value 10268, max sequence length 145
 </pre></div>
 </div>
 <p>As above, we can compare this against the vanilla compiled <code class="docutils literal notranslate"><span class="pre">nn.MultiheadAttention</span></code>.</p>
@@ -1191,8 +1190,8 @@ Total sequence length in nested key/value 10393, max sequence length 148
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Max difference between vanilla and nested result 0.0
-Nested speedup: 6.03
-Nested peak memory reduction 1.30 GB
+Nested speedup: 5.57
+Nested peak memory reduction 1.28 GB
 </pre></div>
 </div>
 <p>Sample outputs on A100:</p>
@@ -1338,7 +1337,7 @@ which is what we do in the MultiheadAttention layer above.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>InputProjection: 0.030346 s, PackedInputProjection: 0.030273 s, speedup: 1.00x
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>InputProjection: 0.034007 s, PackedInputProjection: 0.033304 s, speedup: 1.02x
 </pre></div>
 </div>
 </div>
@@ -1424,7 +1423,7 @@ Depending on your hardware, you might see different results. On an A100 I see
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>SwiGLUFFN: 0.0009142389999396983 s, PackedSwiGLUFFN: 0.0008738980000089214 s, speedup: 1.05x
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>SwiGLUFFN: 0.0009169750001092325 s, PackedSwiGLUFFN: 0.0008310730001994671 s, speedup: 1.10x
 </pre></div>
 </div>
 </div>
@@ -1448,7 +1447,7 @@ implement various transformer architectures. Some examples include</p>
 provides for writing transformer layers and demonstrated examples how to compose
 them. It is our hope that this tutorial has educated the reader on the ease with
 which flexible and performant transformer layers can be implemented by users of PyTorch.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  55.298 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  54.110 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-transformer-building-blocks-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/57114670a041b4c96ed6eb9fc17a6b3f/transformer_building_blocks.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">transformer_building_blocks.py</span></code></a></p>

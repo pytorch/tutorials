@@ -322,14 +322,6 @@ Welcome to PyTorch Tutorials
 
 .. Deploying PyTorch Models in Production
 
-
-.. customcarditem::
-   :header: Deploying PyTorch in Python via a REST API with Flask
-   :card_description: Deploy a PyTorch model using Flask and expose a REST API for model inference using the example of a pretrained DenseNet 121 model which detects the image.
-   :image: _static/img/thumbnails/cropped/Deploying-PyTorch-in-Python-via-a-REST-API-with-Flask.png
-   :link: intermediate/flask_rest_api_tutorial.html
-   :tags: Production
-
 .. customcarditem::
    :header: Introduction to TorchScript
    :card_description: Introduction to TorchScript, an intermediate representation of a PyTorch model (subclass of nn.Module) that can then be run in a high-performance environment such as C++.
@@ -1005,7 +997,6 @@ Additional Resources
    :caption: Deploying PyTorch Models in Production
 
    beginner/onnx/intro_onnx
-   intermediate/flask_rest_api_tutorial
    beginner/Intro_to_TorchScript_tutorial
    advanced/cpp_export
    advanced/super_resolution_with_onnxruntime
