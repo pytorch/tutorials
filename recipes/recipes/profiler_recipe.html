@@ -552,7 +552,7 @@
 to download the full example code</p>
 </div>
 <div class="sphx-glr-example-title section" id="pytorch-profiler">
-<span id="sphx-glr-recipes-recipes-profiler-recipe-py"></span><h1>PyTorch Profiler<a class="headerlink" href="#pytorch-profiler" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Jan 29, 2021 | Last Updated: Jun 15, 2025 | Last Verified: Not Verified</p>
+<span id="sphx-glr-recipes-recipes-profiler-recipe-py"></span><h1>PyTorch Profiler<a class="headerlink" href="#pytorch-profiler" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Jan 29, 2021 | Last Updated: Jun 24, 2025 | Last Verified: Not Verified</p>
 <p>This recipe explains how to use PyTorch profiler and measure the time and
 memory consumption of the model’s operators.</p>
 <div class="section" id="introduction">
@@ -688,18 +688,20 @@ Self<span class="w"> </span>CPU<span class="w"> </span><span class="nb">time</sp
 </pre></div>
 </div>
 <p>Note the occurrence of <code class="docutils literal notranslate"><span class="pre">aten::convolution</span></code> twice with different input shapes.</p>
-<p>Profiler can also be used to analyze performance of models executed on GPUs and XPUs:
+<p>Profiler can also be used to analyze performance of models executed on GPUs:
 Users could switch between cpu, cuda and xpu</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">():</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">activities</span> <span class="o">=</span> <span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">]</span>
+<span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">():</span>
     <span class="n">device</span> <span class="o">=</span> <span class="s1">'cuda'</span>
+    <span class="n">activities</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CUDA</span><span class="p">]</span>
 <span class="k">elif</span> <a class="sphx-glr-backref-module-torch-xpu sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.xpu.is_available.html#torch.xpu.is_available" title="torch.xpu.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">xpu</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">():</span>
     <span class="n">device</span> <span class="o">=</span> <span class="s1">'xpu'</span>
+    <span class="n">activities</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">XPU</span><span class="p">]</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'Neither CUDA nor XPU devices are available to demonstrate profiling on acceleration devices'</span><span class="p">)</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-<span class="n">activities</span> <span class="o">=</span> <span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">,</span> <span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CUDA</span><span class="p">,</span> <span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">XPU</span><span class="p">]</span>
 <span class="n">sort_by_keyword</span> <span class="o">=</span> <span class="n">device</span> <span class="o">+</span> <span class="s2">"_time_total"</span>
 
 <span class="n">model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchvision-models sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.resnet18" title="torchvision.models.resnet18"><span class="n">models</span><span class="o">.</span><span class="n">resnet18</span></a><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
@@ -814,9 +816,17 @@ Self<span class="w"> </span>CPU<span class="w"> </span><span class="nb">time</sp
 <p>Profiling results can be outputted as a <code class="docutils literal notranslate"><span class="pre">.json</span></code> trace file:
 Tracing CUDA or XPU kernels
 Users could switch between cpu, cuda and xpu</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="s1">'cuda'</span>
-
-<span class="n">activities</span> <span class="o">=</span> <span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">,</span> <span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CUDA</span><span class="p">,</span> <span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">XPU</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">activities</span> <span class="o">=</span> <span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">]</span>
+<span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">():</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="s1">'cuda'</span>
+    <span class="n">activities</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CUDA</span><span class="p">]</span>
+<span class="k">elif</span> <a class="sphx-glr-backref-module-torch-xpu sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.xpu.is_available.html#torch.xpu.is_available" title="torch.xpu.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">xpu</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">():</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="s1">'xpu'</span>
+    <span class="n">activities</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">XPU</span><span class="p">]</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'Neither CUDA nor XPU devices are available to demonstrate profiling on acceleration devices'</span><span class="p">)</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
 <span class="n">model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchvision-models sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.resnet18" title="torchvision.models.resnet18"><span class="n">models</span><span class="o">.</span><span class="n">resnet18</span></a><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 <span class="n">inputs</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>

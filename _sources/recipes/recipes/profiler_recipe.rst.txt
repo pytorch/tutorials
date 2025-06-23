@@ -218,23 +218,25 @@ Note the occurrence of ``aten::convolution`` twice with different input shapes.
 
 .. GENERATED FROM PYTHON SOURCE LINES 166-168
 
-Profiler can also be used to analyze performance of models executed on GPUs and XPUs:
+Profiler can also be used to analyze performance of models executed on GPUs:
 Users could switch between cpu, cuda and xpu
 
-.. GENERATED FROM PYTHON SOURCE LINES 168-189
+.. GENERATED FROM PYTHON SOURCE LINES 168-191
 
 .. code-block:: default
 
+    activities = [ProfilerActivity.CPU]
     if torch.cuda.is_available():
         device = 'cuda'
+        activities += [ProfilerActivity.CUDA]
     elif torch.xpu.is_available():
         device = 'xpu'
+        activities += [ProfilerActivity.XPU]
     else:
         print('Neither CUDA nor XPU devices are available to demonstrate profiling on acceleration devices')
         import sys
         sys.exit(0)
 
-    activities = [ProfilerActivity.CPU, ProfilerActivity.CUDA, ProfilerActivity.XPU]
     sort_by_keyword = device + "_time_total"
 
     model = models.resnet18().to(device)
@@ -247,11 +249,11 @@ Users could switch between cpu, cuda and xpu
     print(prof.key_averages().table(sort_by=sort_by_keyword, row_limit=10))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 190-191
+.. GENERATED FROM PYTHON SOURCE LINES 192-193
 
 (Note: the first use of CUDA profiling may bring an extra overhead.)
 
-.. GENERATED FROM PYTHON SOURCE LINES 193-214
+.. GENERATED FROM PYTHON SOURCE LINES 195-216
 
 The resulting table output (omitting some columns):
 
@@ -275,11 +277,11 @@ The resulting table output (omitting some columns):
    Self CUDA time total: 11.666ms
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 216-217
+.. GENERATED FROM PYTHON SOURCE LINES 218-219
 
 (Note: the first use of XPU profiling may bring an extra overhead.)
 
-.. GENERATED FROM PYTHON SOURCE LINES 219-240
+.. GENERATED FROM PYTHON SOURCE LINES 221-242
 
 The resulting table output (omitting some columns):
 
@@ -303,11 +305,11 @@ The resulting table output (omitting some columns):
    Self XPU time total: 2.567ms
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 242-243
+.. GENERATED FROM PYTHON SOURCE LINES 244-245
 
 Note the occurrence of on-device kernels in the output (e.g. ``sgemm_32x32x32_NN`` for CUDA or ``gen_conv`` for XPU).
 
-.. GENERATED FROM PYTHON SOURCE LINES 245-253
+.. GENERATED FROM PYTHON SOURCE LINES 247-255
 
 4. Using profiler to analyze memory consumption
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -318,7 +320,7 @@ In the output below, 'self' memory corresponds to the memory allocated (released
 by the operator, excluding the children calls to the other operators.
 To enable memory profiling functionality pass ``profile_memory=True``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 253-282
+.. GENERATED FROM PYTHON SOURCE LINES 255-284
 
 .. code-block:: default
 
@@ -352,7 +354,7 @@ To enable memory profiling functionality pass ``profile_memory=True``.
     print(prof.key_averages().table(sort_by="cpu_memory_usage", row_limit=10))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 283-303
+.. GENERATED FROM PYTHON SOURCE LINES 285-305
 
 The output might look like this (omitting some columns):
 
@@ -375,7 +377,7 @@ The output might look like this (omitting some columns):
    Self CPU time total: 53.064ms
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 305-311
+.. GENERATED FROM PYTHON SOURCE LINES 307-313
 
 5. Using tracing functionality
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -384,13 +386,21 @@ Profiling results can be outputted as a ``.json`` trace file:
 Tracing CUDA or XPU kernels
 Users could switch between cpu, cuda and xpu
 
-.. GENERATED FROM PYTHON SOURCE LINES 311-323
+.. GENERATED FROM PYTHON SOURCE LINES 313-333
 
 .. code-block:: default
 
-    device = 'cuda'
-
-    activities = [ProfilerActivity.CPU, ProfilerActivity.CUDA, ProfilerActivity.XPU]
+    activities = [ProfilerActivity.CPU]
+    if torch.cuda.is_available():
+        device = 'cuda'
+        activities += [ProfilerActivity.CUDA]
+    elif torch.xpu.is_available():
+        device = 'xpu'
+        activities += [ProfilerActivity.XPU]
+    else:
+        print('Neither CUDA nor XPU devices are available to demonstrate profiling on acceleration devices')
+        import sys
+        sys.exit(0)
 
     model = models.resnet18().to(device)
     inputs = torch.randn(5, 3, 224, 224).to(device)
@@ -401,7 +411,7 @@ Users could switch between cpu, cuda and xpu
     prof.export_chrome_trace("trace.json")
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 324-329
+.. GENERATED FROM PYTHON SOURCE LINES 334-339
 
 You can examine the sequence of profiled operators and CUDA/XPU kernels
 in Chrome trace viewer (``chrome://tracing``):
@@ -409,14 +419,14 @@ in Chrome trace viewer (``chrome://tracing``):
 .. image:: ../../_static/img/trace_img.png
    :scale: 25 %
 
-.. GENERATED FROM PYTHON SOURCE LINES 331-335
+.. GENERATED FROM PYTHON SOURCE LINES 341-345
 
 6. Examining stack traces
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Profiler can be used to analyze Python and TorchScript stack traces:
 
-.. GENERATED FROM PYTHON SOURCE LINES 335-346
+.. GENERATED FROM PYTHON SOURCE LINES 345-356
 
 .. code-block:: default
 
@@ -432,7 +442,7 @@ Profiler can be used to analyze Python and TorchScript stack traces:
     print(prof.key_averages(group_by_stack_n=5).table(sort_by=sort_by_keyword, row_limit=2))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 347-368
+.. GENERATED FROM PYTHON SOURCE LINES 357-378
 
 The output might look like this (omitting some columns):
 
@@ -456,13 +466,13 @@ The output might look like this (omitting some columns):
    Self CUDA time total: 11.659ms
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 370-373
+.. GENERATED FROM PYTHON SOURCE LINES 380-383
 
 Note the two convolutions and the two call sites in ``torchvision/models/resnet.py`` script.
 
 (Warning: stack tracing adds an extra profiling overhead.)
 
-.. GENERATED FROM PYTHON SOURCE LINES 375-391
+.. GENERATED FROM PYTHON SOURCE LINES 385-401
 
 7. Using profiler to analyze long-running jobs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -481,7 +491,7 @@ arguments:
 To illustrate how the API works, let's first consider the following example with
 ``torch.profiler.schedule`` helper function:
 
-.. GENERATED FROM PYTHON SOURCE LINES 391-401
+.. GENERATED FROM PYTHON SOURCE LINES 401-411
 
 .. code-block:: default
 
@@ -496,7 +506,7 @@ To illustrate how the API works, let's first consider the following example with
         repeat=2)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 402-419
+.. GENERATED FROM PYTHON SOURCE LINES 412-429
 
 Profiler assumes that the long-running job is composed of steps, numbered
 starting from zero. The example above defines the following sequence of actions
@@ -516,7 +526,7 @@ for the profiler:
 4. An optional ``repeat`` parameter specifies an upper bound on the number of cycles.
    By default (zero value), profiler will execute cycles as long as the job runs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 421-434
+.. GENERATED FROM PYTHON SOURCE LINES 431-444
 
 Thus, in the example above, profiler will skip the first 15 steps, spend the next step on the warm up,
 actively record the next 3 steps, skip another 5 steps, spend the next step on the warm up, actively
@@ -532,7 +542,7 @@ The current profiler step is stored in ``prof.step_num``.
 
 The following example shows how to use all of the concepts above for CUDA and XPU Kernels:
 
-.. GENERATED FROM PYTHON SOURCE LINES 434-454
+.. GENERATED FROM PYTHON SOURCE LINES 444-464
 
 .. code-block:: default
 
@@ -557,7 +567,7 @@ The following example shows how to use all of the concepts above for CUDA and XP
             p.step()
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 455-463
+.. GENERATED FROM PYTHON SOURCE LINES 465-473
 
 Learn More
 ----------
