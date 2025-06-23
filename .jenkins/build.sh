@@ -151,6 +151,14 @@ elif [[ "${JOB_TYPE}" == "manager" ]]; then
   # Step 7: push new HTML files and static files to gh-pages
   if [[ "$COMMIT_SOURCE" == "refs/heads/master" || "$COMMIT_SOURCE" == "refs/heads/main" ]]; then
     git clone https://github.com/pytorch/tutorials.git -b gh-pages gh-pages
+    # Clean up directories that contain tutorials
+    
+    for dir in beginner intermediate prototype recipes advanced distributed vision text audio; do
+      if [ -d "gh-pages/$dir" ]; then
+        rm -rf "gh-pages/$dir"
+      fi
+    done
+    
     cp -r docs/* gh-pages/
     pushd gh-pages
     # DANGER! DO NOT REMOVE THE `set +x` SETTING HERE!
