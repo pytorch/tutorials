@@ -19,6 +19,12 @@ jobs:
       - name: Get Changed Files
         id: changed-files
         uses: tj-actions/changed-files@d6e91a2266cdb9d62096cebf1e8546899c6aa18f # v45.0.6
+        with:
+          files: |
+            **/*.md
+            **/*.html
+            **/*.rst
+            **/*.txt
 
       - name: Check for Skip Label
         id: skip-label
@@ -33,7 +39,7 @@ jobs:
             return labels.data.some(label => label.name === 'skip-link-check');
           
       - name: Check Links
-        if: steps.skip-label.outputs.result == 'false'
+        if: steps.skip-label.outputs.result == 'false' && steps.changed-files.outputs.any_changed == 'true'
         uses: lycheeverse/lychee-action@v1
         with:
           args: --accept=200,403,429 --base . --verbose --no-progress ${{ steps.changed-files.outputs.all_changed_files }}
@@ -43,6 +49,10 @@ jobs:
       - name: Skip Message
         if: steps.skip-label.outputs.result == 'true'
         run: echo "Link check was skipped due to the presence of the 'skip-link-check' label."
+
+      - name: No Files to Check
+        if: steps.skip-label.outputs.result == 'false' && steps.changed-files.outputs.any_changed == 'false'
+        run: echo "No relevant files were changed in this PR that require link checking."
         
       - name: Suggestions
         if: failure()
