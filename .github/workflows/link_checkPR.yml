@@ -43,7 +43,12 @@ jobs:
       - name: Skip Message
         if: steps.skip-label.outputs.result == 'true'
         run: echo "Link check was skipped due to the presence of the 'skip-link-check' label."
-        
+
+      # Per tj-actions, a delete file is not a changed file so this ensures lint checking does not occur on deleted files
+      - name: No Files to Check
+        if: steps.skip-label.outputs.result == 'false' && steps.changed-files.outputs.any_changed == 'true'
+        run: echo "No relevant files were changed in this PR that require link checking."
+      
       - name: Suggestions
         if: failure()
         run: |
