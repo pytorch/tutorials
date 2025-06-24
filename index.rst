@@ -1048,6 +1048,7 @@ Additional Resources
    :caption: Model Optimization
 
    beginner/profiler
+   intermediate/transformer_building_blocks
    intermediate/tensorboard_profiler_tutorial
    beginner/hyperparameter_tuning_tutorial
    beginner/vt_tutorial
