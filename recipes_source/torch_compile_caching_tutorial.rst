@@ -88,6 +88,9 @@ The aforementioned ``Mega-Cache`` is composed of individual components that can 
 * ``InductorCache``: A bundle of ``FXGraphCache`` and ``Triton`` cache.
 * ``AOTAutogradCache``: A cache of joint graph artifacts.
 * ``PGO-cache``: A cache of dynamic shape decisions to reduce number of recompilations.
+* [``AutotuningCache``](https://github.com/pytorch/pytorch/blob/795a6a0affd349adfb4e3df298b604b74f27b44e/torch/_inductor/runtime/autotune_cache.py#L116):
+``Inductor`` generates ``Triton`` kernels and benchmarks them to select the fastest kernels.
+``torch.compile``'s built-in ``AutotuningCache`` caches these results.
 
 All these cache artifacts are written to ``TORCHINDUCTOR_CACHE_DIR`` which by default will look like ``/tmp/torchinductor_myusername``.
 
