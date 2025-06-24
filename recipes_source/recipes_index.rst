@@ -450,15 +450,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/distributed_comm_debug_mode.html
    :tags: Distributed-Training
 
-.. TorchServe
-
-.. customcarditem::
-   :header: Deploying a PyTorch Stable Diffusion model as a Vertex AI Endpoint
-   :card_description: Learn how to deploy model in Vertex AI with TorchServe
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../recipes/torchserve_vertexai_tutorial.html
-   :tags: Production
-
 .. End of tutorial card section
 
 .. raw:: html
