@@ -322,14 +322,6 @@ Welcome to PyTorch Tutorials
 
 .. Deploying PyTorch Models in Production
 
-
-.. customcarditem::
-   :header: Deploying PyTorch in Python via a REST API with Flask
-   :card_description: Deploy a PyTorch model using Flask and expose a REST API for model inference using the example of a pretrained DenseNet 121 model which detects the image.
-   :image: _static/img/thumbnails/cropped/Deploying-PyTorch-in-Python-via-a-REST-API-with-Flask.png
-   :link: intermediate/flask_rest_api_tutorial.html
-   :tags: Production
-
 .. customcarditem::
    :header: Introduction to TorchScript
    :card_description: Introduction to TorchScript, an intermediate representation of a PyTorch model (subclass of nn.Module) that can then be run in a high-performance environment such as C++.
@@ -619,20 +611,6 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
    :link: advanced/static_quantization_tutorial.html
    :tags: Quantization
-
-.. customcarditem::
-   :header: Grokking PyTorch Intel CPU Performance from First Principles
-   :card_description: A case study on the TorchServe inference framework optimized with Intel® Extension for PyTorch.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: intermediate/torchserve_with_ipex
-   :tags: Model-Optimization,Production
-
-.. customcarditem::
-   :header: Grokking PyTorch Intel CPU Performance from First Principles (Part 2)
-   :card_description: A case study on the TorchServe inference framework optimized with Intel® Extension for PyTorch (Part 2).
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: intermediate/torchserve_with_ipex_2
-   :tags: Model-Optimization,Production
 
 .. customcarditem::
    :header: Multi-Objective Neural Architecture Search with Ax
@@ -1005,7 +983,6 @@ Additional Resources
    :caption: Deploying PyTorch Models in Production
 
    beginner/onnx/intro_onnx
-   intermediate/flask_rest_api_tutorial
    beginner/Intro_to_TorchScript_tutorial
    advanced/cpp_export
    advanced/super_resolution_with_onnxruntime
@@ -1080,8 +1057,6 @@ Additional Resources
    intermediate/dynamic_quantization_bert_tutorial
    intermediate/quantized_transfer_learning_tutorial
    advanced/static_quantization_tutorial
-   intermediate/torchserve_with_ipex
-   intermediate/torchserve_with_ipex_2
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
    intermediate/torch_compile_tutorial

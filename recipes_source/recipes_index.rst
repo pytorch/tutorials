@@ -207,13 +207,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :tags: TorchScript
 
 .. customcarditem::
-   :header: Deploying with Flask
-   :card_description: Learn how to use Flask, a lightweight web server, to quickly setup a web API from your trained PyTorch model.
-   :image: ../_static/img/thumbnails/cropped/using-flask-create-restful-api.png
-   :link: ../recipes/deployment_with_flask.html
-   :tags: Production,TorchScript
-
-.. customcarditem::
    :header: PyTorch Mobile Performance Recipes
    :card_description: List of recipes for performance optimizations for using PyTorch on Mobile (Android and iOS).
    :image: ../_static/img/thumbnails/cropped/mobile.png
@@ -457,15 +450,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/distributed_comm_debug_mode.html
    :tags: Distributed-Training
 
-.. TorchServe
-
-.. customcarditem::
-   :header: Deploying a PyTorch Stable Diffusion model as a Vertex AI Endpoint
-   :card_description: Learn how to deploy model in Vertex AI with TorchServe
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../recipes/torchserve_vertexai_tutorial.html
-   :tags: Production
-
 .. End of tutorial card section
 
 .. raw:: html
@@ -505,7 +489,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/compiling_optimizer
    /recipes/torch_compile_backend_ipex
    /recipes/torchscript_inference
-   /recipes/deployment_with_flask
    /recipes/distributed_rpc_profiling
    /recipes/zero_redundancy_optimizer
    /recipes/cuda_rpc
