@@ -34,21 +34,24 @@ import pytorch_sphinx_theme2
 
 html_theme = "pytorch_sphinx_theme2"
 html_theme_path = [pytorch_sphinx_theme2.get_html_theme_path()]
-import torch
+import distutils.file_util
 import glob
 import random
-import shutil
-from pathlib import Path
-import shutil
-import distutils.file_util
 import re
-from get_sphinx_filenames import SPHINX_SHOULD_RUN
-import pandocfilters
-import pypandoc
-import plotly.io as pio
+import shutil
 from pathlib import Path
 pio.renderers.default = 'sphinx_gallery'
 from redirects import redirects
+
+import pandocfilters
+import plotly.io as pio
+import pypandoc
+import torch
+from get_sphinx_filenames import SPHINX_SHOULD_RUN
+
+pio.renderers.default = "sphinx_gallery"
+
+import multiprocessing
 
 import sphinx_gallery.gen_rst
 
@@ -65,34 +68,6 @@ import sphinx_gallery.gen_rst
 # Alt option 2: Run sphinx gallery once per file (similar to how we shard in CI
 # but with shard sizes of 1), but running sphinx gallery for each file has a
 # ~5min overhead, resulting in the entire suite taking ~2x time
-def call_fn(func, args, kwargs, result_queue):
-    try:
-        result = func(*args, **kwargs)
-        result_queue.put((True, result))
-    except Exception as e:
-        result_queue.put((False, str(e)))
-
-
-def call_in_subprocess(func):
-    def wrapper(*args, **kwargs):
-        result_queue = multiprocessing.Queue()
-        p = multiprocessing.Process(
-            target=call_fn, args=(func, args, kwargs, result_queue)
-        )
-        p.start()
-        p.join()
-        success, result = result_queue.get()
-        if success:
-            return result
-        else:
-            raise RuntimeError(f"Error in subprocess: {result}")
-
-    return wrapper
-
-
-sphinx_gallery.gen_rst.generate_file_rst = call_in_subprocess(
-    sphinx_gallery.gen_rst.generate_file_rst
-)
 
 try:
     import torchvision
@@ -120,7 +95,7 @@ html_meta = {
 }
 
 html_additional_pages = {
-    '404': '404.html',
+    "404": "404.html",
 }
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -245,6 +220,35 @@ html_context = {
 }
 
 
+def get_html_context():
+    context = {
+        "theme_variables": theme_variables,
+        "display_github": True,
+        "github_url": "https://github.com",
+        "github_user": "pytorch",
+        "github_repo": "tutorials",
+        "feedback_url": "https://github.com/pytorch/tutorials",
+        "github_version": "main",
+        "doc_path": "docs/source",
+        "library_links": theme_variables.get("library_links", []),
+        "icon_links": theme_variables.get("icon_links", []),
+        "community_links": theme_variables.get("community_links", []),
+        "pytorch_project": "docs",
+        "language_bindings_links": html_theme_options.get(
+            "language_bindings_links", []
+        ),
+    }
+
+    # Function to determine if edit button should be shown
+    def should_show_edit_button(pagename, sourcename):
+        return not sourcename.endswith(".py")
+
+    context["should_show_edit_button"] = should_show_edit_button
+    return context
+
+
+html_context = get_html_context()
+
 if os.getenv("GALLERY_PATTERN"):
     # GALLERY_PATTERN is to be used when you want to work on a single
     # tutorial.  Previously this was fed into filename_pattern, but
@@ -273,58 +277,6 @@ templates_path = [
     "_templates",
     os.path.join(os.path.dirname(pytorch_sphinx_theme2.__file__), "templates"),
 ]
-
-
-def fix_gallery_edit_links(app, pagename, templatename, context, doctree):
-    if pagename.startswith(
-        ("beginner/", "intermediate/", "advanced/", "recipes/", "prototype/")
-    ):
-        parts = pagename.split("/")
-        gallery_dir = parts[0]
-        # Handle nested directories by joining all parts except the first
-        example_path = "/".join(parts[1:])
-        example_name = parts[-1]
-
-        source_dirs = {}
-        for i in range(len(sphinx_gallery_conf["examples_dirs"])):
-            gallery_dir = sphinx_gallery_conf["gallery_dirs"][i]
-            source_dir = sphinx_gallery_conf["examples_dirs"][i]
-            # Extract the base name without "_source" suffix
-            gallery_base = gallery_dir
-            source_dirs[gallery_base] = source_dir
-
-        if gallery_dir in source_dirs:
-            source_dir = source_dirs[gallery_dir]
-
-            # Reconstruct the path preserving subdirectories
-            subdir = "/".join(parts[1:-1]) if len(parts) > 2 else ""
-
-            # Check if .py file exists
-            py_path = (
-                f"{source_dir}/{subdir}/{example_name}.py"
-                if subdir
-                else f"{source_dir}/{example_name}.py"
-            )
-            rst_path = (
-                f"{source_dir}/{subdir}/{example_name}.rst"
-                if subdir
-                else f"{source_dir}/{example_name}.rst"
-            )
-
-            # Clean up any double slashes
-            py_path = py_path.replace("//", "/")
-            rst_path = rst_path.replace("//", "/")
-
-            # Default to .py file, fallback to .rst if needed
-            file_path = py_path
-            if not os.path.exists(
-                os.path.join(os.path.dirname(__file__), py_path)
-            ) and os.path.exists(os.path.join(os.path.dirname(__file__), rst_path)):
-                file_path = rst_path
-
-            context["edit_url"] = (
-                f"{html_context['github_url']}/{html_context['github_user']}/{html_context['github_repo']}/edit/{html_context['github_version']}/{file_path}"
-            )
 
 
 # The suffix(es) of source filenames.
@@ -364,8 +316,8 @@ exclude_patterns = [
     "Thumbs.db",
     ".DS_Store",
     "src/pytorch-sphinx-theme/docs*",
-    #    "**/huggindef fix_gallery_edit_linksgface_hub/templates/**",
 ]
+
 exclude_patterns += sphinx_gallery_conf["examples_dirs"]
 exclude_patterns += ["*/index.rst"]
 
@@ -478,4 +430,10 @@ html_css_files = [
 
 def setup(app):
     app.connect("source-read", handle_jinja_templates)
-    app.connect("html-page-context", fix_gallery_edit_links)
+    app.connect("html-page-context", update_context)
+
+
+def update_context(app, pagename, templatename, context, doctree):
+    # Get source file name
+    if "page_source_suffix" in context and context["page_source_suffix"] == ".py":
+        context["display_github"] = False
