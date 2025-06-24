@@ -153,7 +153,7 @@ sphinx_gallery_conf = {
 }
 
 html_baseurl = 'https://pytorch.org/tutorials/' # needed for sphinx-sitemap
-rrntkbfubhedfditemap_locales = [None]
+sitemap_locales = [None]
 sitemap_excludes = [
     "search.html",
     "genindex.html",
