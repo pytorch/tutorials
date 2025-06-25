@@ -18,7 +18,7 @@
 <link href="../../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/sg_gallery-dataframe.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/sg_gallery-rendered-html.css" rel="stylesheet" type="text/css"/>
-<link href="../../_static/sphinx-design.5ea377869091fd0449014c60fc090103.min.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/css/custom.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/css/custom2.css" rel="stylesheet" type="text/css"/>
@@ -663,15 +663,7 @@ the original model logic due to the limitations of tracing.</p>
 <span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram" title="torch.onnx.ONNXProgram"><span class="n">onnx_program</span></a><span class="o">.</span><span class="n">model</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.10/dist-packages/onnxscript/converter.py:816: FutureWarning:
-
-'onnxscript.values.Op.param_schemas' is deprecated in version 0.1 and will be removed in the future. Please use '.op_signature' instead.
-
-/usr/local/lib/python3.10/dist-packages/onnxscript/converter.py:816: FutureWarning:
-
-'onnxscript.values.OnnxFunction.param_schemas' is deprecated in version 0.1 and will be removed in the future. Please use '.op_signature' instead.
-
-[torch.onnx] Obtain model graph for `ModelWithControlFlowTest([...]` with `torch.export.export(..., strict=False)`...
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[torch.onnx] Obtain model graph for `ModelWithControlFlowTest([...]` with `torch.export.export(..., strict=False)`...
 
 
 
@@ -760,29 +752,26 @@ graph(
         %"mul"&lt;FLOAT,[1]&gt;
     ),
     initializers=(
-        %"model.mlp.0.bias"&lt;FLOAT,[2]&gt;,
-        %"model.mlp.1.bias"&lt;FLOAT,[1]&gt;
+        %"model.mlp.0.bias"&lt;FLOAT,[2]&gt;{TorchTensor&lt;FLOAT,[2]&gt;(Parameter containing: tensor([-0.1478,  0.0903], requires_grad=True), name='model.mlp.0.bias')},
+        %"model.mlp.1.bias"&lt;FLOAT,[1]&gt;{TorchTensor&lt;FLOAT,[1]&gt;(Parameter containing: tensor([-0.3500], requires_grad=True), name='model.mlp.1.bias')}
     ),
 ) {
     0 |  # node_Constant_8
-         %"val_0"&lt;FLOAT,[3,2]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[3,2]&gt;(array([[-0.39594078,  0.37397644],
-                [ 0.11488368, -0.4373356 ],
-                [-0.5079426 ,  0.18770157]], dtype=float32), name='val_0')}
+         %"val_0"&lt;FLOAT,[3,2]&gt;{Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.3247642 ,  0.02331788], [-0.20268728, -0.14964347], [ 0.11465601,  0.4151875 ]], dtype=float32), name='val_0')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.3247642 ,  0.02331788], [-0.20268728, -0.14964347], [ 0.11465601,  0.4151875 ]], dtype=float32), name='val_0')}
     1 |  # node_MatMul_1
-         %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"input_1", %"val_0")
+         %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"input_1", %"val_0"{[[0.3247641921043396, 0.02331787720322609], [-0.20268727838993073, -0.14964346587657928], [0.1146560087800026, 0.4151875078678131]]})
     2 |  # node_Add_2
-         %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"model.mlp.0.bias")
+         %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"model.mlp.0.bias"{[-0.1477612853050232, 0.09027106314897537]})
     3 |  # node_Constant_9
-         %"val_2"&lt;FLOAT,[2,1]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[2,1]&gt;(array([[ 0.6126466 ],
-                [-0.06077567]], dtype=float32), name='val_2')}
+         %"val_2"&lt;FLOAT,[2,1]&gt;{Tensor&lt;FLOAT,[2,1]&gt;(array([[ 0.61674154], [-0.69301575]], dtype=float32), name='val_2')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[2,1]&gt;(array([[ 0.61674154], [-0.69301575]], dtype=float32), name='val_2')}
     4 |  # node_MatMul_4
-         %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2")
+         %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2"{[[0.6167415380477905], [-0.6930157542228699]]})
     5 |  # node_Add_5
-         %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"model.mlp.1.bias")
+         %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"model.mlp.1.bias"{[-0.34998396039009094]})
     6 |  # node_Constant_10
-         %"convert_element_type_default"&lt;FLOAT,[]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[]&gt;(array(2., dtype=float32), name='convert_element_type_default')}
+         %"convert_element_type_default"&lt;FLOAT,[]&gt;{Tensor&lt;FLOAT,[]&gt;(array(2., dtype=float32), name='convert_element_type_default')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[]&gt;(array(2., dtype=float32), name='convert_element_type_default')}
     7 |  # node_Mul_7
-         %"mul"&lt;FLOAT,[1]&gt; ⬅️ ::Mul(%"linear_1", %"convert_element_type_default")
+         %"mul"&lt;FLOAT,[1]&gt; ⬅️ ::Mul(%"linear_1", %"convert_element_type_default"{2.0})
     return %"mul"&lt;FLOAT,[1]&gt;
 }
 </pre></div>
@@ -888,31 +877,28 @@ graph(
         %"getitem"&lt;FLOAT,[1]&gt;
     ),
     initializers=(
-        %"mlp.0.bias"&lt;FLOAT,[2]&gt;,
-        %"mlp.1.bias"&lt;FLOAT,[1]&gt;
+        %"mlp.0.bias"&lt;FLOAT,[2]&gt;{TorchTensor&lt;FLOAT,[2]&gt;(Parameter containing: tensor([-0.1478,  0.0903], requires_grad=True), name='mlp.0.bias')},
+        %"mlp.1.bias"&lt;FLOAT,[1]&gt;{TorchTensor&lt;FLOAT,[1]&gt;(Parameter containing: tensor([-0.3500], requires_grad=True), name='mlp.1.bias')}
     ),
 ) {
      0 |  # node_Constant_11
-          %"val_0"&lt;FLOAT,[3,2]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[3,2]&gt;(array([[-0.39594078,  0.37397644],
-                 [ 0.11488368, -0.4373356 ],
-                 [-0.5079426 ,  0.18770157]], dtype=float32), name='val_0')}
+          %"val_0"&lt;FLOAT,[3,2]&gt;{Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.3247642 ,  0.02331788], [-0.20268728, -0.14964347], [ 0.11465601,  0.4151875 ]], dtype=float32), name='val_0')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.3247642 ,  0.02331788], [-0.20268728, -0.14964347], [ 0.11465601,  0.4151875 ]], dtype=float32), name='val_0')}
      1 |  # node_MatMul_1
-          %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"x", %"val_0")
+          %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"x", %"val_0"{[[0.3247641921043396, 0.02331787720322609], [-0.20268727838993073, -0.14964346587657928], [0.1146560087800026, 0.4151875078678131]]})
      2 |  # node_Add_2
-          %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"mlp.0.bias")
+          %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"mlp.0.bias"{[-0.1477612853050232, 0.09027106314897537]})
      3 |  # node_Constant_12
-          %"val_2"&lt;FLOAT,[2,1]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[2,1]&gt;(array([[ 0.6126466 ],
-                 [-0.06077567]], dtype=float32), name='val_2')}
+          %"val_2"&lt;FLOAT,[2,1]&gt;{Tensor&lt;FLOAT,[2,1]&gt;(array([[ 0.61674154], [-0.69301575]], dtype=float32), name='val_2')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[2,1]&gt;(array([[ 0.61674154], [-0.69301575]], dtype=float32), name='val_2')}
      4 |  # node_MatMul_4
-          %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2")
+          %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2"{[[0.6167415380477905], [-0.6930157542228699]]})
      5 |  # node_Add_5
-          %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"mlp.1.bias")
+          %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"mlp.1.bias"{[-0.34998396039009094]})
      6 |  # node_ReduceSum_6
-          %"sum_1"&lt;FLOAT,[]&gt; ⬅️ ::ReduceSum(%"linear_1") {keepdims=False, noop_with_empty_axes=0}
+          %"sum_1"&lt;FLOAT,[]&gt; ⬅️ ::ReduceSum(%"linear_1") {noop_with_empty_axes=0, keepdims=False}
      7 |  # node_Constant_13
-          %"scalar_tensor_default"&lt;FLOAT,[]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[]&gt;(array(0., dtype=float32), name='scalar_tensor_default')}
+          %"scalar_tensor_default"&lt;FLOAT,[]&gt;{Tensor&lt;FLOAT,[]&gt;(array(0., dtype=float32), name='scalar_tensor_default')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[]&gt;(array(0., dtype=float32), name='scalar_tensor_default')}
      8 |  # node_Greater_9
-          %"gt"&lt;BOOL,[]&gt; ⬅️ ::Greater(%"sum_1", %"scalar_tensor_default")
+          %"gt"&lt;BOOL,[]&gt; ⬅️ ::Greater(%"sum_1", %"scalar_tensor_default"{0.0})
      9 |  # node_If_10
           %"getitem"&lt;FLOAT,[1]&gt; ⬅️ ::If(%"gt") {then_branch=
               graph(
@@ -925,9 +911,9 @@ graph(
                   ),
               ) {
                   0 |  # node_Constant_1
-                       %"scalar_tensor_default_2"&lt;FLOAT,[]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[]&gt;(array(2., dtype=float32), name='scalar_tensor_default_2')}
+                       %"scalar_tensor_default_2"&lt;FLOAT,[]&gt;{Tensor&lt;FLOAT,[]&gt;(array(2., dtype=float32), name='scalar_tensor_default_2')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[]&gt;(array(2., dtype=float32), name='scalar_tensor_default_2')}
                   1 |  # node_Mul_2
-                       %"mul_true_graph_0"&lt;FLOAT,[1]&gt; ⬅️ ::Mul(%"linear_1", %"scalar_tensor_default_2")
+                       %"mul_true_graph_0"&lt;FLOAT,[1]&gt; ⬅️ ::Mul(%"linear_1", %"scalar_tensor_default_2"{2.0})
                   return %"mul_true_graph_0"&lt;FLOAT,[1]&gt;
               }, else_branch=
               graph(
@@ -969,31 +955,28 @@ graph(
         %"getitem"&lt;FLOAT,[1]&gt;
     ),
     initializers=(
-        %"mlp.0.bias"&lt;FLOAT,[2]&gt;,
-        %"mlp.1.bias"&lt;FLOAT,[1]&gt;
+        %"mlp.0.bias"&lt;FLOAT,[2]&gt;{TorchTensor&lt;FLOAT,[2]&gt;(Parameter containing: tensor([-0.1478,  0.0903], requires_grad=True), name='mlp.0.bias')},
+        %"mlp.1.bias"&lt;FLOAT,[1]&gt;{TorchTensor&lt;FLOAT,[1]&gt;(Parameter containing: tensor([-0.3500], requires_grad=True), name='mlp.1.bias')}
     ),
 ) {
      0 |  # node_Constant_11
-          %"val_0"&lt;FLOAT,[3,2]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[3,2]&gt;(array([[-0.39594078,  0.37397644],
-                 [ 0.11488368, -0.4373356 ],
-                 [-0.5079426 ,  0.18770157]], dtype=float32), name='val_0')}
+          %"val_0"&lt;FLOAT,[3,2]&gt;{Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.3247642 ,  0.02331788], [-0.20268728, -0.14964347], [ 0.11465601,  0.4151875 ]], dtype=float32), name='val_0')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.3247642 ,  0.02331788], [-0.20268728, -0.14964347], [ 0.11465601,  0.4151875 ]], dtype=float32), name='val_0')}
      1 |  # node_MatMul_1
-          %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"x", %"val_0")
+          %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"x", %"val_0"{[[0.3247641921043396, 0.02331787720322609], [-0.20268727838993073, -0.14964346587657928], [0.1146560087800026, 0.4151875078678131]]})
      2 |  # node_Add_2
-          %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"mlp.0.bias")
+          %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"mlp.0.bias"{[-0.1477612853050232, 0.09027106314897537]})
      3 |  # node_Constant_12
-          %"val_2"&lt;FLOAT,[2,1]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[2,1]&gt;(array([[ 0.6126466 ],
-                 [-0.06077567]], dtype=float32), name='val_2')}
+          %"val_2"&lt;FLOAT,[2,1]&gt;{Tensor&lt;FLOAT,[2,1]&gt;(array([[ 0.61674154], [-0.69301575]], dtype=float32), name='val_2')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[2,1]&gt;(array([[ 0.61674154], [-0.69301575]], dtype=float32), name='val_2')}
      4 |  # node_MatMul_4
-          %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2")
+          %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2"{[[0.6167415380477905], [-0.6930157542228699]]})
      5 |  # node_Add_5
-          %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"mlp.1.bias")
+          %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"mlp.1.bias"{[-0.34998396039009094]})
      6 |  # node_ReduceSum_6
-          %"sum_1"&lt;FLOAT,[]&gt; ⬅️ ::ReduceSum(%"linear_1") {keepdims=False, noop_with_empty_axes=0}
+          %"sum_1"&lt;FLOAT,[]&gt; ⬅️ ::ReduceSum(%"linear_1") {noop_with_empty_axes=0, keepdims=False}
      7 |  # node_Constant_13
-          %"scalar_tensor_default"&lt;FLOAT,[]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[]&gt;(array(0., dtype=float32), name='scalar_tensor_default')}
+          %"scalar_tensor_default"&lt;FLOAT,[]&gt;{Tensor&lt;FLOAT,[]&gt;(array(0., dtype=float32), name='scalar_tensor_default')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[]&gt;(array(0., dtype=float32), name='scalar_tensor_default')}
      8 |  # node_Greater_9
-          %"gt"&lt;BOOL,[]&gt; ⬅️ ::Greater(%"sum_1", %"scalar_tensor_default")
+          %"gt"&lt;BOOL,[]&gt; ⬅️ ::Greater(%"sum_1", %"scalar_tensor_default"{0.0})
      9 |  # node_If_10
           %"getitem"&lt;FLOAT,[1]&gt; ⬅️ ::If(%"gt") {then_branch=
               graph(
@@ -1006,9 +989,9 @@ graph(
                   ),
               ) {
                   0 |  # node_Constant_1
-                       %"scalar_tensor_default_2"&lt;FLOAT,[]&gt; ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[]&gt;(array(2., dtype=float32), name='scalar_tensor_default_2')}
+                       %"scalar_tensor_default_2"&lt;FLOAT,[]&gt;{Tensor&lt;FLOAT,[]&gt;(array(2., dtype=float32), name='scalar_tensor_default_2')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[]&gt;(array(2., dtype=float32), name='scalar_tensor_default_2')}
                   1 |  # node_Mul_2
-                       %"mul_true_graph_0"&lt;FLOAT,[1]&gt; ⬅️ ::Mul(%"linear_1", %"scalar_tensor_default_2")
+                       %"mul_true_graph_0"&lt;FLOAT,[1]&gt; ⬅️ ::Mul(%"linear_1", %"scalar_tensor_default_2"{2.0})
                   return %"mul_true_graph_0"&lt;FLOAT,[1]&gt;
               }, else_branch=
               graph(
@@ -1051,7 +1034,7 @@ sit tight and have fun going through all of them to learn all there is about the
 </div>
 <div class="toctree-wrapper compound">
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  2.400 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  2.462 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-onnx-export-control-flow-model-to-onnx-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/7c1717301d5ef4e2f2b6c974660ec4a9/export_control_flow_model_to_onnx_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">export_control_flow_model_to_onnx_tutorial.py</span></code></a></p>
@@ -1126,6 +1109,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <script src="../../_static/underscore.js"></script>
 <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
 <script src="../../_static/doctools.js"></script>
+<script src="../../_static/sphinx_highlight.js"></script>
 <script src="../../_static/clipboard.min.js"></script>
 <script src="../../_static/copybutton.js"></script>
 <script src="../../_static/katex.min.js"></script>
