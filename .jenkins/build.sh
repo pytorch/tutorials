@@ -154,9 +154,7 @@ elif [[ "${JOB_TYPE}" == "manager" ]]; then
     # Clean up directories that contain tutorials
     
     for dir in beginner intermediate prototype recipes advanced distributed vision text audio; do
-      if [ -d "gh-pages/$dir" ]; then
-        rm -rf "gh-pages/$dir"
-      fi
+      rm -rf "gh-pages/$dir"
     done
     
     cp -r docs/* gh-pages/
