@@ -613,20 +613,6 @@ Welcome to PyTorch Tutorials
    :tags: Quantization
 
 .. customcarditem::
-   :header: Grokking PyTorch Intel CPU Performance from First Principles
-   :card_description: A case study on the TorchServe inference framework optimized with Intel® Extension for PyTorch.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: intermediate/torchserve_with_ipex
-   :tags: Model-Optimization,Production
-
-.. customcarditem::
-   :header: Grokking PyTorch Intel CPU Performance from First Principles (Part 2)
-   :card_description: A case study on the TorchServe inference framework optimized with Intel® Extension for PyTorch (Part 2).
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: intermediate/torchserve_with_ipex_2
-   :tags: Model-Optimization,Production
-
-.. customcarditem::
    :header: Multi-Objective Neural Architecture Search with Ax
    :card_description: Learn how to use Ax to search over architectures find optimal tradeoffs between accuracy and latency.
    :image: _static/img/ax_logo.png
@@ -1071,8 +1057,6 @@ Additional Resources
    intermediate/dynamic_quantization_bert_tutorial
    intermediate/quantized_transfer_learning_tutorial
    advanced/static_quantization_tutorial
-   intermediate/torchserve_with_ipex
-   intermediate/torchserve_with_ipex_2
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
    intermediate/torch_compile_tutorial
