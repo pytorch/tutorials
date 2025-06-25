@@ -47,9 +47,8 @@ import pandocfilters
 import pypandoc
 import plotly.io as pio
 from pathlib import Path
-pio.renderers.default = "sphinx_gallery"
-
-import multiprocessing
+pio.renderers.default = 'sphinx_gallery'
+from redirects import redirects
 
 import sphinx_gallery.gen_rst
 
@@ -136,6 +135,7 @@ extensions = [
     "sphinx_sitemap",
     "sphinxcontrib.mermaid",
     "pytorch_sphinx_theme2",
+    "sphinx_reredirects"
 ]
 
 myst_enable_extensions = [
