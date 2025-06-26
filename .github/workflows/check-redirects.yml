@@ -1,0 +1,25 @@
+name: Check Redirects for Deleted or Renamed Files
+
+on:
+  pull_request:
+    paths:
+     - '*/**/*.rst'
+     - '*/**/*.py'
+     - '*/**/*.md'
+
+jobs:
+  check-redirects:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run redirect check script
+        run: |
+            chmod +x ./.github/scripts/check_redirects.sh
+            ./.github/scripts/check_redirects.sh
+        env:
+          BASE_BRANCH: ${{ github.base_ref }}
+          CURRENT_BRANCH: ${{ github.head_ref }}
