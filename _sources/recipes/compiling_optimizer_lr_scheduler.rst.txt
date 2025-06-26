@@ -62,20 +62,7 @@ For this example, we'll use a simple sequence of linear layers.
 
 
 
-.. rst-class:: sphx-glr-script-out
 
-.. code-block:: pytb
-
-    Traceback (most recent call last):
-      File "/var/lib/workspace/recipes_source/compiling_optimizer_lr_scheduler.py", line 27, in <module>
-        *[torch.nn.Linear(1024, 1024, False, device="cuda") for _ in range(10)]
-      File "/var/lib/workspace/recipes_source/compiling_optimizer_lr_scheduler.py", line 27, in <listcomp>
-        *[torch.nn.Linear(1024, 1024, False, device="cuda") for _ in range(10)]
-      File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/linear.py", line 106, in __init__
-        torch.empty((out_features, in_features), **factory_kwargs)
-      File "/usr/local/lib/python3.10/dist-packages/torch/cuda/__init__.py", line 372, in _lazy_init
-        torch._C._cuda_init()
-    RuntimeError: No CUDA GPUs are available
 
 
 
@@ -125,6 +112,22 @@ in ``torch.compile()``.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    tensor(0.0047)
+    tensor(0.0060)
+    tensor(0.0073)
+    tensor(0.0087)
+    tensor(0.0100)
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 77-81
 
 Extension: What happens with a non-tensor LR?
@@ -157,6 +160,45 @@ LR in a tensor.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    V0626 21:12:42.078000 37217 torch/_dynamo/guards.py:2997] [1/1] [__recompiles] Recompiling function wrapper in /usr/local/lib/python3.10/dist-packages/torch/optim/optimizer.py:465
+    V0626 21:12:42.078000 37217 torch/_dynamo/guards.py:2997] [1/1] [__recompiles]     triggered by the following guard failure(s):
+    V0626 21:12:42.078000 37217 torch/_dynamo/guards.py:2997] [1/1] [__recompiles]     - 1/0: Cache line invalidated because L['args'][0] got deallocated
+    V0626 21:12:42.093000 37217 torch/_dynamo/guards.py:2997] [2/1] [__recompiles] Recompiling function step in /usr/local/lib/python3.10/dist-packages/torch/optim/adam.py:212
+    V0626 21:12:42.093000 37217 torch/_dynamo/guards.py:2997] [2/1] [__recompiles]     triggered by the following guard failure(s):
+    V0626 21:12:42.093000 37217 torch/_dynamo/guards.py:2997] [2/1] [__recompiles]     - 2/0: Cache line invalidated because L['self'] got deallocated
+    V0626 21:12:45.176000 37217 torch/_dynamo/guards.py:2997] [2/2] [__recompiles] Recompiling function step in /usr/local/lib/python3.10/dist-packages/torch/optim/adam.py:212
+    V0626 21:12:45.176000 37217 torch/_dynamo/guards.py:2997] [2/2] [__recompiles]     triggered by the following guard failure(s):
+    V0626 21:12:45.176000 37217 torch/_dynamo/guards.py:2997] [2/2] [__recompiles]     - 2/1: ___as_tensor(self.param_groups[0]['lr']).item() == 0.003333333333333333  # (unknown source ___as_tensor(self.param_groups[0]['lr']).item(), please file a bug)
+    V0626 21:12:45.176000 37217 torch/_dynamo/guards.py:2997] [2/2] [__recompiles]     - 2/0: Cache line invalidated because L['self'] got deallocated
+    V0626 21:12:47.239000 37217 torch/_dynamo/guards.py:2997] [2/3] [__recompiles] Recompiling function step in /usr/local/lib/python3.10/dist-packages/torch/optim/adam.py:212
+    V0626 21:12:47.239000 37217 torch/_dynamo/guards.py:2997] [2/3] [__recompiles]     triggered by the following guard failure(s):
+    V0626 21:12:47.239000 37217 torch/_dynamo/guards.py:2997] [2/3] [__recompiles]     - 2/2: ___as_tensor(self.param_groups[0]['lr']).item() == 0.004666666666666667  # (unknown source ___as_tensor(self.param_groups[0]['lr']).item(), please file a bug)
+    V0626 21:12:47.239000 37217 torch/_dynamo/guards.py:2997] [2/3] [__recompiles]     - 2/1: ___as_tensor(self.param_groups[0]['lr']).item() == 0.003333333333333333  # (unknown source ___as_tensor(self.param_groups[0]['lr']).item(), please file a bug)
+    V0626 21:12:47.239000 37217 torch/_dynamo/guards.py:2997] [2/3] [__recompiles]     - 2/0: Cache line invalidated because L['self'] got deallocated
+    V0626 21:12:49.292000 37217 torch/_dynamo/guards.py:2997] [2/4] [__recompiles] Recompiling function step in /usr/local/lib/python3.10/dist-packages/torch/optim/adam.py:212
+    V0626 21:12:49.292000 37217 torch/_dynamo/guards.py:2997] [2/4] [__recompiles]     triggered by the following guard failure(s):
+    V0626 21:12:49.292000 37217 torch/_dynamo/guards.py:2997] [2/4] [__recompiles]     - 2/3: ___as_tensor(self.param_groups[0]['lr']).item() == 0.006000000000000001  # (unknown source ___as_tensor(self.param_groups[0]['lr']).item(), please file a bug)
+    V0626 21:12:49.292000 37217 torch/_dynamo/guards.py:2997] [2/4] [__recompiles]     - 2/2: ___as_tensor(self.param_groups[0]['lr']).item() == 0.004666666666666667  # (unknown source ___as_tensor(self.param_groups[0]['lr']).item(), please file a bug)
+    V0626 21:12:49.292000 37217 torch/_dynamo/guards.py:2997] [2/4] [__recompiles]     - 2/1: ___as_tensor(self.param_groups[0]['lr']).item() == 0.003333333333333333  # (unknown source ___as_tensor(self.param_groups[0]['lr']).item(), please file a bug)
+    V0626 21:12:49.292000 37217 torch/_dynamo/guards.py:2997] [2/4] [__recompiles]     - 2/0: Cache line invalidated because L['self'] got deallocated
+    V0626 21:12:51.343000 37217 torch/_dynamo/guards.py:2997] [2/5] [__recompiles] Recompiling function step in /usr/local/lib/python3.10/dist-packages/torch/optim/adam.py:212
+    V0626 21:12:51.343000 37217 torch/_dynamo/guards.py:2997] [2/5] [__recompiles]     triggered by the following guard failure(s):
+    V0626 21:12:51.343000 37217 torch/_dynamo/guards.py:2997] [2/5] [__recompiles]     - 2/4: ___as_tensor(self.param_groups[0]['lr']).item() == 0.007333333333333335  # (unknown source ___as_tensor(self.param_groups[0]['lr']).item(), please file a bug)
+    V0626 21:12:51.343000 37217 torch/_dynamo/guards.py:2997] [2/5] [__recompiles]     - 2/3: ___as_tensor(self.param_groups[0]['lr']).item() == 0.006000000000000001  # (unknown source ___as_tensor(self.param_groups[0]['lr']).item(), please file a bug)
+    V0626 21:12:51.343000 37217 torch/_dynamo/guards.py:2997] [2/5] [__recompiles]     - 2/2: ___as_tensor(self.param_groups[0]['lr']).item() == 0.004666666666666667  # (unknown source ___as_tensor(self.param_groups[0]['lr']).item(), please file a bug)
+    V0626 21:12:51.343000 37217 torch/_dynamo/guards.py:2997] [2/5] [__recompiles]     - 2/1: ___as_tensor(self.param_groups[0]['lr']).item() == 0.003333333333333333  # (unknown source ___as_tensor(self.param_groups[0]['lr']).item(), please file a bug)
+    V0626 21:12:51.343000 37217 torch/_dynamo/guards.py:2997] [2/5] [__recompiles]     - 2/0: Cache line invalidated because L['self'] got deallocated
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 102-104
 
 With this example, we can see that we recompile the optimizer a few times
@@ -180,7 +222,7 @@ See also:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.008 seconds)
+   **Total running time of the script:** ( 0 minutes  16.097 seconds)
 
 
 .. _sphx_glr_download_recipes_compiling_optimizer_lr_scheduler.py:

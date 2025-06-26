@@ -83,19 +83,19 @@ implementations:
  .. code-block:: none
 
 
-    tensor([[[ 1.4006, -0.3813,  0.6559,  1.0360, -0.4482, -0.5103,  0.2452,
-               0.3682],
-             [ 1.1364, -0.7372,  0.9674,  0.7120, -1.4396,  0.2572,  0.0825,
-               1.1746],
-             [ 1.2339, -0.5876,  0.8612,  0.8166, -1.1196, -0.0178,  0.1087,
-               0.9083]],
+    tensor([[[-0.5614, -0.9114,  1.6037, -0.6704, -0.0239, -0.0600,  0.5551,
+               1.3268],
+             [-0.2130, -0.8095,  0.2534, -0.6649, -0.3765, -0.0174, -0.2428,
+               0.5480],
+             [ 0.6196, -0.9871, -0.7833, -0.3538, -0.7615, -0.9484, -0.6451,
+               0.3084]],
 
-            [[ 1.1321, -0.8044,  0.0658, -0.4742, -1.1169,  0.5980,  1.0035,
-               0.3140],
-             [ 0.2633, -0.6276, -0.0263, -0.8533, -0.8753,  0.8010,  0.8208,
-               0.0586],
-             [ 0.3383, -0.6963,  0.0286, -0.8981, -1.0242,  0.7470,  0.9232,
-               0.1288]]])
+            [[ 0.2021, -0.3867, -0.3483,  0.5796,  0.6845, -0.1975, -0.4867,
+               1.6281],
+             [-0.1459,  0.2868,  0.3748,  0.1239,  0.0304, -0.2799, -0.5276,
+               1.2178],
+             [-0.0461, -0.6689, -0.9016,  1.4124,  0.8813, -0.0216, -0.1020,
+               1.8172]]], device='cuda:0')
 
 
 
@@ -171,11 +171,10 @@ measuring performance.
 
  .. code-block:: none
 
-    No CUDA runtime is found, using CUDA_HOME='/usr/local/cuda'
-    The default implementation runs in 5420115.529 microseconds
-    The math implementation runs in 12486367.295 microseconds
-    The flash attention implementation runs in 5415771.406 microseconds
-    EfficientAttention is not supported. See warnings for reasons.
+    The default implementation runs in 2278.620 microseconds
+    The math implementation runs in 87265.340 microseconds
+    The flash attention implementation runs in 2278.594 microseconds
+    The memory efficient implementation runs in 4392.505 microseconds
 
 
 
@@ -261,24 +260,17 @@ attention block inspired by
 
 
 
+
+
 .. rst-class:: sphx-glr-script-out
 
-.. code-block:: pytb
+ .. code-block:: none
 
-    Traceback (most recent call last):
-      File "/var/lib/workspace/intermediate_source/scaled_dot_product_attention_tutorial.py", line 180, in <module>
-        model = CausalSelfAttention(num_heads=num_heads, embed_dimension=embed_dimension, bias=False, is_causal=True, dropout=0.1).to("cuda").to(dtype).eval()
-      File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1355, in to
-        return self._apply(convert)
-      File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 915, in _apply
-        module._apply(fn)
-      File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 942, in _apply
-        param_applied = fn(param)
-      File "/usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py", line 1341, in convert
-        return t.to(
-      File "/usr/local/lib/python3.10/dist-packages/torch/cuda/__init__.py", line 372, in _lazy_init
-        torch._C._cuda_init()
-    RuntimeError: No CUDA GPUs are available
+    CausalSelfAttention(
+      (c_attn): Linear(in_features=512, out_features=1536, bias=False)
+      (c_proj): Linear(in_features=512, out_features=512, bias=False)
+      (resid_dropout): Dropout(p=0.1, inplace=False)
+    )
 
 
 
@@ -351,6 +343,23 @@ without needing to pad each sequence to the maximum length in the batch. For mor
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /usr/local/lib/python3.10/dist-packages/torch/nested/__init__.py:250: UserWarning:
+
+    The PyTorch API of nested tensors is in prototype stage and will change in the near future. We recommend specifying layout=torch.jagged when constructing a nested tensor, as this layout receives active development, has better operator coverage, and works with torch.compile. (Triggered internally at /pytorch/aten/src/ATen/NestedTensorImpl.cpp:178.)
+
+    Random NT runs in 636.498 microseconds
+    Random Dense runs in 949.563 microseconds
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 246-256
 
 Using SDPA with ``torch.compile``
@@ -382,6 +391,19 @@ To demonstrate this, let's compile the ``CausalSelfAttention`` module using
     compiled_model(x)
     print(
         f"The compiled module runs in  {benchmark_torch_function_in_microseconds(compiled_model, x):.3f} microseconds")
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    The non compiled module runs in  424.714 microseconds
+    The compiled module runs in  521.401 microseconds
+
 
 
 
@@ -423,6 +445,51 @@ inspect the performance characteristics of your code.
     # .. code-block:: python
     #
     #    prof.export_chrome_trace("compiled_causal_attention_trace.json").
+
+
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                                       Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg    # of Calls  
+    -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                             Non-Compilied Causal Attention        16.38%       2.071ms        71.94%       9.093ms       9.093ms       0.000us         0.00%      10.826ms      10.826ms             1  
+                             Non-Compilied Causal Attention         0.00%       0.000us         0.00%       0.000us       0.000us      10.703ms       100.96%      10.703ms      10.703ms             1  
+                                               aten::linear         0.90%     114.276us        33.49%       4.233ms      84.658us       0.000us         0.00%       8.031ms     160.616us            50  
+                                               aten::matmul         1.86%     234.739us        30.32%       3.833ms      76.654us       0.000us         0.00%       8.031ms     160.616us            50  
+                                                   aten::mm         9.30%       1.176ms        26.58%       3.360ms      67.207us       7.807ms        73.64%       8.031ms     160.616us            50  
+             ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn         0.00%       0.000us         0.00%       0.000us       0.000us       5.584ms        52.67%       5.584ms     223.343us            25  
+                         aten::scaled_dot_product_attention         1.63%     205.467us        14.93%       1.887ms      75.483us       0.000us         0.00%       2.795ms     111.789us            25  
+                  aten::_scaled_dot_product_flash_attention         2.48%     313.214us        13.30%       1.682ms      67.265us       0.000us         0.00%       2.795ms     111.789us            25  
+                             aten::_flash_attention_forward         2.49%     314.487us         9.68%       1.223ms      48.930us       2.795ms        26.36%       2.795ms     111.789us            25  
+    void pytorch_flash::flash_fwd_kernel<Flash_fwd_kerne...         0.00%       0.000us         0.00%       0.000us       0.000us       2.795ms        26.36%       2.795ms     111.789us            25  
+    -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+    Self CPU time total: 12.641ms
+    Self CUDA time total: 10.601ms
+
+    -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                                       Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg    # of Calls  
+    -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                  Compiled Causal Attention         0.00%       0.000us         0.00%       0.000us       0.000us      10.687ms       100.62%      10.687ms      10.687ms             1  
+                                  Compiled Causal Attention         6.52%     831.742us        71.68%       9.151ms       9.151ms       0.000us         0.00%      10.621ms      10.621ms             1  
+                                 Torch-Compiled Region: 0/0         6.03%     769.834us        61.63%       7.868ms     314.731us       0.000us         0.00%      10.621ms     424.859us            25  
+                                           CompiledFunction        19.29%       2.462ms        55.60%       7.098ms     283.938us       0.000us         0.00%      10.621ms     424.859us            25  
+                                                   aten::mm         6.52%     832.467us        10.36%       1.323ms      26.459us       7.804ms        73.48%       7.804ms     156.084us            50  
+             ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn         0.00%       0.000us         0.00%       0.000us       0.000us       5.581ms        52.55%       5.581ms     223.246us            25  
+                  aten::_scaled_dot_product_flash_attention         1.74%     222.371us        12.39%       1.581ms      63.260us       0.000us         0.00%       2.817ms     112.691us            25  
+                             aten::_flash_attention_forward         2.45%     312.627us         9.22%       1.177ms      47.063us       2.817ms        26.52%       2.817ms     112.691us            25  
+    void pytorch_flash::flash_fwd_kernel<Flash_fwd_kerne...         0.00%       0.000us         0.00%       0.000us       0.000us       2.817ms        26.52%       2.817ms     112.691us            25  
+    ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_stages_3...         0.00%       0.000us         0.00%       0.000us       0.000us       2.223ms        20.93%       2.223ms      88.922us            25  
+    -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+    Self CPU time total: 12.766ms
+    Self CUDA time total: 10.621ms
 
 
 
@@ -522,6 +589,23 @@ Using SDPA with attn_bias subclasses
     out_upper_left = compiled_sdpa(query, key, value, upper_left_bias)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    <class 'torch.nn.attention.bias.CausalBias'>
+    <class 'torch.nn.attention.bias.CausalBias'>
+    tensor([[ True, False, False, False, False, False, False, False, False, False],
+            [ True,  True, False, False, False, False, False, False, False, False]])
+    tensor([[ True,  True,  True,  True,  True,  True,  True,  True,  True, False],
+            [ True,  True,  True,  True,  True,  True,  True,  True,  True,  True]])
+
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 396-408
 
 Conclusion
@@ -540,7 +624,7 @@ module.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  47.744 seconds)
+   **Total running time of the script:** ( 0 minutes  8.653 seconds)
 
 
 .. _sphx_glr_download_intermediate_scaled_dot_product_attention_tutorial.py:
