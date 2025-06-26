@@ -68,6 +68,30 @@ import sphinx_gallery.gen_rst
 # Alt option 2: Run sphinx gallery once per file (similar to how we shard in CI
 # but with shard sizes of 1), but running sphinx gallery for each file has a
 # ~5min overhead, resulting in the entire suite taking ~2x time
+def call_fn(func, args, kwargs, result_queue):
+    try:
+        result = func(*args, **kwargs)
+        result_queue.put((True, result))
+    except Exception as e:
+        result_queue.put((False, str(e)))
+
+def call_in_subprocess(func):
+    def wrapper(*args, **kwargs):
+        result_queue = multiprocessing.Queue()
+        p = multiprocessing.Process(
+            target=call_fn,
+            args=(func, args, kwargs, result_queue)
+        )
+        p.start()
+        p.join()
+        success, result = result_queue.get()
+        if success:
+            return result
+        else:
+            raise RuntimeError(f"Error in subprocess: {result}")
+    return wrapper
+
+sphinx_gallery.gen_rst.generate_file_rst = call_in_subprocess(sphinx_gallery.gen_rst.generate_file_rst)
 
 try:
     import torchvision
