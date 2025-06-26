@@ -546,7 +546,7 @@
 to download the full example code</p>
 </div>
 <div class="sphx-glr-example-title section" id="saving-and-loading-models">
-<span id="sphx-glr-beginner-saving-loading-models-py"></span><h1>Saving and Loading Models<a class="headerlink" href="#saving-and-loading-models" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Aug 29, 2018 | Last Updated: Sep 10, 2024 | Last Verified: Nov 05, 2024</p>
+<span id="sphx-glr-beginner-saving-loading-models-py"></span><h1>Saving and Loading Models<a class="headerlink" href="#saving-and-loading-models" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Aug 29, 2018 | Last Updated: Jun 26, 2025 | Last Verified: Nov 05, 2024</p>
 <p><strong>Author:</strong> <a class="reference external" href="https://github.com/MatthewInkawhich">Matthew Inkawhich</a></p>
 <p>This document provides solutions to a variety of use cases regarding the
 saving and loading of PyTorch models. Feel free to read the whole
@@ -738,36 +738,28 @@ break in various ways when used in other projects or after refactors.</p>
 <p>Remember that you must call <code class="docutils literal notranslate"><span class="pre">model.eval()</span></code> to set dropout and batch
 normalization layers to evaluation mode before running inference.
 Failing to do this will yield inconsistent inference results.</p>
-</div>
-<div class="section" id="export-load-model-in-torchscript-format">
-<h3>Export/Load Model in TorchScript Format<a class="headerlink" href="#export-load-model-in-torchscript-format" title="Permalink to this heading">¶</a></h3>
-<p>One common way to do inference with a trained model is to use
-<a class="reference external" href="https://pytorch.org/docs/stable/jit.html">TorchScript</a>, an intermediate
-representation of a PyTorch model that can be run in Python as well as in a
-high performance environment like C++. TorchScript is actually the recommended model format
-for scaled inference and deployment.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Using the TorchScript format, you will be able to load the exported model and
-run inference without defining the model class.</p>
-</div>
-<p><strong>Export:</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model_scripted</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="c1"># Export to TorchScript</span>
-<span class="n">model_scripted</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">'model_scripted.pt'</span><span class="p">)</span> <span class="c1"># Save</span>
+<div class="section" id="saving-an-exported-program">
+<h4>Saving an Exported Program<a class="headerlink" href="#saving-an-exported-program" title="Permalink to this heading">¶</a></h4>
+<p>If you are using <code class="docutils literal notranslate"><span class="pre">torch.export</span></code>, you can save and load your <code class="docutils literal notranslate"><span class="pre">ExportedProgram</span></code> using the
+<code class="docutils literal notranslate"><span class="pre">torch.export.save()</span></code> and <code class="docutils literal notranslate"><span class="pre">torch.export.load()</span></code> APIs. with the <code class="docutils literal notranslate"><span class="pre">.pt2</span></code> file extension:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">SimpleModel</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+         <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">10</span>
+
+<span class="c1"># Create a sample input</span>
+<span class="n">sample_input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="c1"># Export the model</span>
+<span class="n">exported_program</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">SimpleModel</span><span class="p">(),</span> <span class="n">sample_input</span><span class="p">)</span>
+
+<span class="c1"># Save the exported program</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">exported_program</span><span class="p">,</span> <span class="s1">'exported_program.pt2'</span><span class="p">)</span>
+
+<span class="c1"># Load the exported program</span>
+<span class="n">saved_exported_program</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">'exported_program.pt2'</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Load:</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">'model_scripted.pt'</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-</pre></div>
 </div>
-<p>Remember that you must call <code class="docutils literal notranslate"><span class="pre">model.eval()</span></code> to set dropout and batch
-normalization layers to evaluation mode before running inference.
-Failing to do this will yield inconsistent inference results.</p>
-<p>For more information on TorchScript, feel free to visit the dedicated
-<a class="reference external" href="https://pytorch.org/tutorials/beginner/Intro_to_TorchScript_tutorial.html">tutorials</a>.
-You will get familiar with the tracing conversion and learn how to
-run a TorchScript module in a <a class="reference external" href="https://pytorch.org/tutorials/advanced/cpp_export.html">C++ environment</a>.</p>
 </div>
 </div>
 <div class="section" id="saving-loading-a-general-checkpoint-for-inference-and-or-resuming-training">
@@ -1046,8 +1038,10 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 </li>
 <li><a class="reference internal" href="#saving-loading-model-for-inference">Saving &amp; Loading Model for Inference</a><ul>
 <li><a class="reference internal" href="#save-load-state-dict-recommended">Save/Load <code class="docutils literal notranslate"><span class="pre">state_dict</span></code> (Recommended)</a></li>
-<li><a class="reference internal" href="#save-load-entire-model">Save/Load Entire Model</a></li>
-<li><a class="reference internal" href="#export-load-model-in-torchscript-format">Export/Load Model in TorchScript Format</a></li>
+<li><a class="reference internal" href="#save-load-entire-model">Save/Load Entire Model</a><ul>
+<li><a class="reference internal" href="#saving-an-exported-program">Saving an Exported Program</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#saving-loading-a-general-checkpoint-for-inference-and-or-resuming-training">Saving &amp; Loading a General Checkpoint for Inference and/or Resuming Training</a><ul>

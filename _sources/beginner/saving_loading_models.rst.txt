@@ -150,7 +150,7 @@ tutorial.
    param_groups     [{'lr': 0.001, 'momentum': 0.9, 'dampening': 0, 'weight_decay': 0, 'nesterov': False, 'params': [4675713712, 4675713784, 4675714000, 4675714072, 4675714216, 4675714288, 4675714432, 4675714504, 4675714648, 4675714720]}]
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 139-265
+.. GENERATED FROM PYTHON SOURCE LINES 139-254
 
 Saving & Loading Model for Inference
 ------------------------------------
@@ -243,43 +243,32 @@ Remember that you must call ``model.eval()`` to set dropout and batch
 normalization layers to evaluation mode before running inference.
 Failing to do this will yield inconsistent inference results.
 
-Export/Load Model in TorchScript Format
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Saving an Exported Program
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One common way to do inference with a trained model is to use
-`TorchScript <https://pytorch.org/docs/stable/jit.html>`__, an intermediate
-representation of a PyTorch model that can be run in Python as well as in a
-high performance environment like C++. TorchScript is actually the recommended model format
-for scaled inference and deployment.
+If you are using ``torch.export``, you can save and load your ``ExportedProgram`` using the
+``torch.export.save()`` and ``torch.export.load()`` APIs. with the ``.pt2`` file extension:
 
-.. note::
-   Using the TorchScript format, you will be able to load the exported model and
-   run inference without defining the model class.
+.. code-block:: python
 
-**Export:**
+   class SimpleModel(torch.nn.Module):
+        def forward(self, x):
+            return x + 10
 
-.. code:: python
+   # Create a sample input
+   sample_input = torch.randn(5)
 
-   model_scripted = torch.jit.script(model) # Export to TorchScript
-   model_scripted.save('model_scripted.pt') # Save
+   # Export the model
+   exported_program = torch.export.export(SimpleModel(), sample_input)
 
-**Load:**
+   # Save the exported program
+   torch.export.save(exported_program, 'exported_program.pt2')
 
-.. code:: python
+   # Load the exported program
+   saved_exported_program = torch.export.load('exported_program.pt2')
 
-   model = torch.jit.load('model_scripted.pt')
-   model.eval()
 
-Remember that you must call ``model.eval()`` to set dropout and batch
-normalization layers to evaluation mode before running inference.
-Failing to do this will yield inconsistent inference results.
-
-For more information on TorchScript, feel free to visit the dedicated
-`tutorials <https://pytorch.org/tutorials/beginner/Intro_to_TorchScript_tutorial.html>`__.
-You will get familiar with the tracing conversion and learn how to
-run a TorchScript module in a `C++ environment <https://pytorch.org/tutorials/advanced/cpp_export.html>`__.
-
-.. GENERATED FROM PYTHON SOURCE LINES 269-328
+.. GENERATED FROM PYTHON SOURCE LINES 256-315
 
 Saving & Loading a General Checkpoint for Inference and/or Resuming Training
 ----------------------------------------------------------------------------
@@ -341,7 +330,7 @@ wish to resuming training, call ``model.train()`` to ensure these layers
 are in training mode.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 331-391
+.. GENERATED FROM PYTHON SOURCE LINES 318-378
 
 Saving Multiple Models in One File
 ----------------------------------
@@ -404,7 +393,7 @@ wish to resuming training, call ``model.train()`` to set these layers to
 training mode.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 394-428
+.. GENERATED FROM PYTHON SOURCE LINES 381-415
 
 Warmstarting Model Using Parameters from a Different Model
 ----------------------------------------------------------
@@ -441,7 +430,7 @@ do not match, simply change the name of the parameter keys in the
 you are loading into.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 431-535
+.. GENERATED FROM PYTHON SOURCE LINES 418-522
 
 Saving & Loading Model Across Devices
 -------------------------------------
