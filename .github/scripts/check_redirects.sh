@@ -7,9 +7,7 @@ fi
 
 
 # Get list of deleted or renamed files in this branch compared to base
-DELETED_FILES=$(git diff --name-status $BASE_BRANCH $CURRENT_BRANCH --diff-filter=DR | grep -E '\.(rst|py|md)$' | grep
-| awk '{print $2}' | grep -E '\.(rst|py|md)$' | grep -v 'redirects.py')
-
+DELETED_FILES=$(git diff --name-status $BASE_BRANCH $CURRENT_BRANCH --diff-filter=DR | awk '{print $2}' | grep -E '\.(rst|py|md)$' | grep -v 'redirects.py')
 # Check if any deleted or renamed files were found
 if [ -z "$DELETED_FILES" ]; then
   echo "No deleted or renamed files found. Skipping check."
@@ -31,9 +29,9 @@ fi
 MISSING_REDIRECTS=0
 for FILE in $DELETED_FILES; do
   # Convert file path to URL path format (remove extension and adjust path)
-  REDIRECT_PATH=$(echo $FILE | sed -E 's/(.+)_source\/(.+)\.(py|rst|md|ipynb)$/\1\/\2.html/')
+  REDIRECT_PATH=$(echo $FILE | sed -E 's/(.+)_source\/(.+)\.(py|rst|md)$/\1\/\2.html/')
 
-  # Check if this path exists in redirects.py as a key (without checking the target)
+  # Check if this path exists in redirects.py as a key. We don't check for values.
   if ! grep -q "\"$REDIRECT_PATH\":" redirects.py; then
     echo "ERROR: Missing redirect for deleted file: $FILE (should have entry for \"$REDIRECT_PATH\")"
     MISSING_REDIRECTS=1
