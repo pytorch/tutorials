@@ -227,11 +227,11 @@ functions to be familiar with:
 # normalization layers to evaluation mode before running inference.
 # Failing to do this will yield inconsistent inference results.
 #
-# Saving an ExportedProgram
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Saving an Exported Program
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# If you are using torch.export, you can save and load your ExportedProgram using the
-# `torch.export.save()` and `torch.export.load()` APIs. with the `.pt2` file extension.
+# If you are using ``torch.export`, you can save and load your `ExportedProgram` using the
+# `torch.export.save()` and `torch.export.load()` APIs. with the `.pt2` file extension:
 #
 # .. code-block:: python
 # 
