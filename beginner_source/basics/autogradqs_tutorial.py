@@ -133,8 +133,7 @@ print(z_det.requires_grad)
 #   - To mark some parameters in your neural network as **frozen parameters**.
 #   - To **speed up computations** when you are only doing forward pass, because computations on tensors that do
 #     not track gradients would be more efficient.
-#   For additional reference, you can view the autograd mechanics
-#   documentation:https://docs.pytorch.org/docs/stable/notes/autograd.html#locally-disabling-gradient-computation
+# See this `note<https://docs.pytorch.org/docs/stable/notes/autograd.html#locally-disabling-gradient-computation>` for additional reference. 
 
 ######################################################################
 
@@ -161,38 +160,14 @@ print(z_det.requires_grad)
 # - accumulates them in the respective tensor’s ``.grad`` attribute
 # - using the chain rule, propagates all the way to the leaf tensors.
 #
-#   We can also visualize the computational graph by the following 2 methods:
+# To get a sense of what this computational graph looks like we can use the following tools:  
 #
-#   1. TORCH_LOGS="+autograd"
-#    By setting the TORCH_LOGS="+autograd" environment variable, we can enable runtime autograd logs for debugging.
+# 1. torchviz is a package to visualize computational graphs  
+# <https://github.com/szagoruyko/pytorchviz>
 #
-#    We can perform the logging in the following manner:
-#    TORCH_LOGS="+autograd"  python test.py
+# 2. TORCH_LOGS="+autograd" enables logging for the backward pass. 
+# <https://dev-discuss.pytorch.org/t/highlighting-a-few-recent-autograd-features-h2-2023/1787>
 #
-# 2. Torchviz
-# Torchviz is a package to render the computational graph visually.
-#
-# We can generate an image for the computational graph in the example given below:
-#
-#   import torch
-#   from torch import nn
-#   from torchviz import make_dot
-#
-#   model = nn.Sequential(
-#       nn.Linear(8, 16),
-#       nn.ReLU(),
-#       nn.Linear(16, 1)
-#   )
-
-#   x = torch.randn(1, 8, requires_grad=True)
-#   y = model(x).mean()
-
-#   log the internal operations using torchviz
-#   import os
-#   os.environ['TORCH_LOGS'] = "+autograd"
-
-#   dot = make_dot(y, params=dict(model.named_parameters()), show_attrs=True, show_saved=True)
-#   dot.render('simple_graph', format='png')
 #
 # .. note::
 #   **DAGs are dynamic in PyTorch**
