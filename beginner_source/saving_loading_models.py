@@ -227,7 +227,30 @@ functions to be familiar with:
 # normalization layers to evaluation mode before running inference.
 # Failing to do this will yield inconsistent inference results.
 #
-
+# Saving an ExportedProgram
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# If you are using torch.export, you can save and load your ExportedProgram using the
+# `torch.export.save()` and `torch.export.load()` APIs. with the `.pt2` file extension.
+#
+# .. code-block:: python
+# 
+#    class SimpleModel(torch.nn.Module):
+#         def forward(self, x):
+#             return x + 10
+#
+#    # Create a sample input
+#    sample_input = torch.randn(5)
+# 
+#    # Export the model
+#    exported_program = torch.export.export(SimpleModel(), sample_input)
+#
+#    # Save the exported program
+#    torch.export.save(exported_program, 'exported_program.pt2')
+#
+#    # Load the exported program
+#    saved_exported_program = torch.export.load('exported_program.pt2')
+#
 
 ######################################################################
 # Saving & Loading a General Checkpoint for Inference and/or Resuming Training
