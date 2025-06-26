@@ -40,21 +40,17 @@ import random
 import re
 import shutil
 from pathlib import Path
+import plotly.io as pio
 pio.renderers.default = 'sphinx_gallery'
 from redirects import redirects
 
 import pandocfilters
-import plotly.io as pio
 import pypandoc
 import torch
 from get_sphinx_filenames import SPHINX_SHOULD_RUN
 
-pio.renderers.default = "sphinx_gallery"
-
-import multiprocessing
-
 import sphinx_gallery.gen_rst
-
+import multiprocessing
 
 # Monkey patch sphinx gallery to run each example in an isolated process so that
 # we don't need to worry about examples changing global state.
