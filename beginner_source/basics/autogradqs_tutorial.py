@@ -133,7 +133,7 @@ print(z_det.requires_grad)
 #   - To mark some parameters in your neural network as **frozen parameters**.
 #   - To **speed up computations** when you are only doing forward pass, because computations on tensors that do
 #     not track gradients would be more efficient.
-
+# See this `note<https://docs.pytorch.org/docs/stable/notes/autograd.html#locally-disabling-gradient-computation>` for additional reference. 
 
 ######################################################################
 
@@ -159,6 +159,15 @@ print(z_det.requires_grad)
 # - computes the gradients from each ``.grad_fn``,
 # - accumulates them in the respective tensor’s ``.grad`` attribute
 # - using the chain rule, propagates all the way to the leaf tensors.
+#
+# To get a sense of what this computational graph looks like we can use the following tools:  
+#
+# 1. torchviz is a package to visualize computational graphs  
+# <https://github.com/szagoruyko/pytorchviz>
+#
+# 2. TORCH_LOGS="+autograd" enables logging for the backward pass. 
+# <https://dev-discuss.pytorch.org/t/highlighting-a-few-recent-autograd-features-h2-2023/1787>
+#
 #
 # .. note::
 #   **DAGs are dynamic in PyTorch**
