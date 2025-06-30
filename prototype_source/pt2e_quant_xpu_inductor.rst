@@ -85,6 +85,7 @@ We will start by performing the necessary imports, capturing the FX Graph from t
         exported_model = export_for_training(
             model,
             example_inputs,
+            strict=True
         ).module()
 
 
