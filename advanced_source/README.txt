@@ -12,7 +12,3 @@ Advanced Tutorials
 3. c_extension.rst
 	Custom C Extensions for PyTorch
 	https://pytorch.org/tutorials/advanced/c_extension.html
-
-4. super_resolution_with_onnxruntime.py
-    Exporting a Model from PyTorch to ONNX and Running it using ONNXRuntime
-	https://pytorch.org/tutorials/advanced/super_resolution_with_onnxruntime.html

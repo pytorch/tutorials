@@ -10,12 +10,6 @@ Export a PyTorch model to ONNX
 
 **Author**: `Ti-Tai Wang <https://github.com/titaiwangms>`_, `Justin Chu <justinchu@microsoft.com>`_, `Thiago Crepaldi <https://github.com/thiagocrepaldi>`_.
 
-.. note::
-    As of PyTorch 2.5, there are two versions of ONNX Exporter.
-
-    * ``torch.onnx.export(..., dynamo=True)`` is the newest (still in beta) exporter using ``torch.export`` and Torch FX to capture the graph. It was released with PyTorch 2.5
-    * ``torch.onnx.export`` uses TorchScript and has been available since PyTorch 1.2.0
-
 """
 
 ###############################################################################
@@ -92,15 +86,6 @@ torch_model = ImageClassifierModel()
 # Create example inputs for exporting the model. The inputs should be a tuple of tensors.
 example_inputs = (torch.randn(1, 1, 32, 32),)
 onnx_program = torch.onnx.export(torch_model, example_inputs, dynamo=True)
-
-######################################################################
-# 3.5. (Optional) Optimize the ONNX model
-# ---------------------------------------
-#
-# The ONNX model can be optimized with constant folding, and elimination of redundant nodes.
-# The optimization is done in-place, so the original ONNX model is modified.
-
-onnx_program.optimize()
 
 ######################################################################
 # As we can see, we didn't need any code change to the model.
