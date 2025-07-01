@@ -10,6 +10,11 @@ Export a PyTorch model to ONNX
 
 **Author**: `Ti-Tai Wang <https://github.com/titaiwangms>`_, `Justin Chu <justinchu@microsoft.com>`_, `Thiago Crepaldi <https://github.com/thiagocrepaldi>`_.
 
+.. note::
+    Starting with PyTorch 2.5, there are two ONNX Exporter options available.
+    * ``torch.onnx.export(..., dynamo=True)`` is the recommended exporter that leverages ``torch.export`` and Torch FX for graph capture.
+    * ``torch.onnx.export`` is the legacy approach that relies on the deprecated TorchScript and is no longer recommended for use.
+
 """
 
 ###############################################################################
