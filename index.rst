@@ -117,13 +117,6 @@ Welcome to PyTorch Tutorials
    :tags: Image/Video
 
 .. customcarditem::
-   :header: Optimizing Vision Transformer Model
-   :card_description: Apply cutting-edge, attention-based transformer models to computer vision tasks.
-   :image: _static/img/thumbnails/cropped/60-min-blitz.png
-   :link: beginner/vt_tutorial.html
-   :tags: Image/Video
-
-.. customcarditem::
    :header: Adversarial Example Generation
    :card_description: Train a convolutional neural network for image classification using transfer learning.
    :image: _static/img/thumbnails/cropped/Adversarial-Example-Generation.png
