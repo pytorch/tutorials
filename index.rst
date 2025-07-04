@@ -405,7 +405,7 @@ Welcome to PyTorch Tutorials
    :card_description: Learn how to use compiled autograd to capture a larger backward graph.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/compiled_autograd_tutorial
-   :tags: Model-Optimization,CUDA
+   :tags: Model-Optimization,CUDA,Compiler
 
 .. customcarditem::
    :header: Custom C++ and CUDA Operators
@@ -575,7 +575,7 @@ Welcome to PyTorch Tutorials
    :card_description: Train BERT, prune it to be 2:4 sparse, and then accelerate it to achieve 2x inference speedups with semi-structured sparsity and torch.compile.
    :image: _static/img/thumbnails/cropped/Pruning-Tutorial.png
    :link: advanced/semi_structured_sparse.html
-   :tags: Text,Model-Optimization
+   :tags: Text,Model-Optimization,Compiler
 
 .. customcarditem::
    :header: (beta) Dynamic Quantization on an LSTM Word Language Model
@@ -613,18 +613,18 @@ Welcome to PyTorch Tutorials
    :tags: Model-Optimization,Best-Practice,Ax,TorchX
 
 .. customcarditem::
-   :header: torch.compile Tutorial
+   :header: Introduction to torch.compile
    :card_description: Speed up your models with minimal code changes using torch.compile, the latest PyTorch compiler solution.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/torch_compile_tutorial.html
-   :tags: Model-Optimization
+   :tags: Model-Optimization,Compiler
 
 .. customcarditem::
    :header: Inductor CPU Backend Debugging and Profiling
    :card_description: Learn the usage, debugging and performance profiling for ``torch.compile`` with Inductor CPU backend.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/inductor_debug_cpu.html
-   :tags: Model-Optimization
+   :tags: Model-Optimization,Compiler
 
 .. customcarditem::
    :header: (beta) Implementing High-Performance Transformers with SCALED DOT PRODUCT ATTENTION
@@ -933,6 +933,17 @@ Additional Resources
    intermediate/tiatoolbox_tutorial
 
 .. toctree::
+   :maxdepth: 1
+   :includehidden:
+   :hidden:
+   :caption: Torch Compiler
+
+   intermediate/torch_compile_tutorial
+   intermediate/compiled_autograd_tutorial
+   intermediate/transformer_building_blocks
+   intermediate/inductor_debug_cpu
+
+.. toctree::
    :maxdepth: 2
    :includehidden:
    :hidden:
@@ -1050,8 +1061,6 @@ Additional Resources
    advanced/static_quantization_tutorial
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
-   intermediate/torch_compile_tutorial
-   intermediate/compiled_autograd_tutorial
    intermediate/inductor_debug_cpu
    intermediate/scaled_dot_product_attention_tutorial
    beginner/knowledge_distillation_tutorial
