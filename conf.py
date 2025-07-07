@@ -235,7 +235,7 @@ html_context = {
     "library_links": theme_variables.get("library_links", []),
     "icon_links": theme_variables.get("icon_links", []),
     "community_links": theme_variables.get("community_links", []),
-    "pytorch_project": "docs",
+    "pytorch_project": "tutorials",
 }
 
 
@@ -252,7 +252,7 @@ def get_html_context():
         "library_links": theme_variables.get("library_links", []),
         "icon_links": theme_variables.get("icon_links", []),
         "community_links": theme_variables.get("community_links", []),
-        "pytorch_project": "docs",
+        "pytorch_project": "tutorials",
     }
 
     # Function to determine if edit button should be shown
