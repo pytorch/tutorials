@@ -184,16 +184,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/tensorboard_with_pytorch.html
    :tags: Visualization,TensorBoard
 
-.. Quantization
-
-.. customcarditem::
-   :header: Dynamic Quantization
-   :card_description:  Apply dynamic quantization to a simple LSTM model.
-   :image: ../_static/img/thumbnails/cropped/using-dynamic-post-training-quantization.png
-   :link: ../recipes/recipes/dynamic_quantization.html
-   :tags: Quantization,Text,Model-Optimization
-
-
 .. Production Development
 
 .. customcarditem::
@@ -216,20 +206,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :image: ../_static/img/thumbnails/cropped/android.png
    :link: ../recipes/android_native_app_with_custom_op.html
    :tags: Mobile
-
-.. customcarditem::
-  :header: Fuse Modules recipe
-  :card_description: Learn how to fuse a list of PyTorch modules into a single module to reduce the model size before quantization.
-  :image: ../_static/img/thumbnails/cropped/mobile.png
-  :link: ../recipes/fuse.html
-  :tags: Mobile
-
-.. customcarditem::
-  :header: Quantization for Mobile Recipe
-  :card_description: Learn how to reduce the model size and make it run faster without losing much on accuracy.
-  :image: ../_static/img/thumbnails/cropped/mobile.png
-  :link: ../recipes/quantization.html
-  :tags: Mobile,Quantization
 
 .. customcarditem::
   :header: Script and Optimize for Mobile
