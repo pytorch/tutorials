@@ -547,22 +547,34 @@
 to download the full example code</p>
 </div>
 <div class="sphx-glr-example-title section" id="pytorch-profiler">
-<span id="sphx-glr-recipes-recipes-profiler-recipe-py"></span><h1>PyTorch Profiler<a class="headerlink" href="#pytorch-profiler" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Jan 29, 2021 | Last Updated: Jun 24, 2025 | Last Verified: Not Verified</p>
-<p>This recipe explains how to use PyTorch profiler and measure the time and
-memory consumption of the model’s operators.</p>
-<div class="section" id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
-<p>PyTorch includes a simple profiler API that is useful when user needs
-to determine the most expensive operators in the model.</p>
-<p>In this recipe, we will use a simple Resnet model to demonstrate how to
-use profiler to analyze model performance.</p>
-</div>
-<div class="section" id="setup">
-<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this heading">¶</a></h2>
-<p>To install <code class="docutils literal notranslate"><span class="pre">torch</span></code> and <code class="docutils literal notranslate"><span class="pre">torchvision</span></code> use the following command:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>torch<span class="w"> </span>torchvision
+<span id="sphx-glr-recipes-recipes-profiler-recipe-py"></span><h1>PyTorch Profiler<a class="headerlink" href="#pytorch-profiler" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Jan 29, 2021 | Last Updated: Jul 08, 2025 | Last Verified: Not Verified</p>
+<p><strong>Author:</strong> <a class="reference external" href="https://github.com/sraikund16">Shivam Raikundalia</a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">"""</span>
+<span class="sd">This recipe explains how to use PyTorch profiler and measure the time and</span>
+<span class="sd">memory consumption of the model's operators.</span>
+
+<span class="sd">Introduction</span>
+<span class="sd">------------</span>
+<span class="sd">PyTorch includes a simple profiler API that is useful when user needs</span>
+<span class="sd">to determine the most expensive operators in the model.</span>
+
+<span class="sd">In this recipe, we will use a simple Resnet model to demonstrate how to</span>
+<span class="sd">use profiler to analyze model performance.</span>
+
+<span class="sd">Prerequisites</span>
+<span class="sd">---------------</span>
+<span class="sd">- ``torch &gt;= 1.9``</span>
+
+<span class="sd">Setup</span>
+<span class="sd">-----</span>
+<span class="sd">To install ``torch`` and ``torchvision`` use the following command:</span>
+
+<span class="sd">.. code-block:: sh</span>
+
+<span class="sd">   pip install torch torchvision</span>
+
+<span class="sd">"""</span>
 </pre></div>
-</div>
 </div>
 <div class="section" id="steps">
 <h2>Steps<a class="headerlink" href="#steps" title="Permalink to this heading">¶</a></h2>
@@ -581,7 +593,7 @@ use profiler to analyze model performance.</p>
 and <code class="docutils literal notranslate"><span class="pre">profiler</span></code> modules:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torchvision.models</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">models</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">torch.profiler</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/profiler.html#torch.profiler.profile" title="torch.profiler.profile"><span class="n">profile</span></a><span class="p">,</span> <span class="n">record_function</span><span class="p">,</span> <span class="n">ProfilerActivity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.profiler</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/profiler.html#torch.profiler.profile" title="torch.profiler.profile"><span class="n">profile</span></a><span class="p">,</span> <span class="n">ProfilerActivity</span><span class="p">,</span> <span class="n">record_function</span>
 </pre></div>
 </div>
 </div>
@@ -661,7 +673,11 @@ spent in children operator calls, while total cpu time includes it. You can choo
 <code class="docutils literal notranslate"><span class="pre">sort_by="self_cpu_time_total"</span></code> into the <code class="docutils literal notranslate"><span class="pre">table</span></code> call.</p>
 <p>To get a finer granularity of results and include operator input shapes, pass <code class="docutils literal notranslate"><span class="pre">group_by_input_shape=True</span></code>
 (note: this requires running the profiler with <code class="docutils literal notranslate"><span class="pre">record_shapes=True</span></code>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">(</span><span class="n">group_by_input_shape</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">"cpu_time_total"</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span>
+    <span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">(</span><span class="n">group_by_input_shape</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">table</span><span class="p">(</span>
+        <span class="n">sort_by</span><span class="o">=</span><span class="s2">"cpu_time_total"</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">10</span>
+    <span class="p">)</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <p>The output might look like this (omitting some columns):</p>
@@ -687,14 +703,17 @@ Self<span class="w"> </span>CPU<span class="w"> </span><span class="nb">time</sp
 Users could switch between cpu, cuda and xpu</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">activities</span> <span class="o">=</span> <span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">]</span>
 <span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">():</span>
-    <span class="n">device</span> <span class="o">=</span> <span class="s1">'cuda'</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="s2">"cuda"</span>
     <span class="n">activities</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CUDA</span><span class="p">]</span>
 <span class="k">elif</span> <a class="sphx-glr-backref-module-torch-xpu sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.xpu.is_available.html#torch.xpu.is_available" title="torch.xpu.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">xpu</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">():</span>
-    <span class="n">device</span> <span class="o">=</span> <span class="s1">'xpu'</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="s2">"xpu"</span>
     <span class="n">activities</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">XPU</span><span class="p">]</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">'Neither CUDA nor XPU devices are available to demonstrate profiling on acceleration devices'</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">"Neither CUDA nor XPU devices are available to demonstrate profiling on acceleration devices"</span>
+    <span class="p">)</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
 <span class="n">sort_by_keyword</span> <span class="o">=</span> <span class="n">device</span> <span class="o">+</span> <span class="s2">"_time_total"</span>
@@ -761,8 +780,9 @@ To enable memory profiling functionality pass <code class="docutils literal notr
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchvision-models sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.resnet18" title="torchvision.models.resnet18"><span class="n">models</span><span class="o">.</span><span class="n">resnet18</span></a><span class="p">()</span>
 <span class="n">inputs</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
 
-<span class="k">with</span> <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/profiler.html#torch.profiler.profile" title="torch.profiler.profile"><span class="n">profile</span></a><span class="p">(</span><span class="n">activities</span><span class="o">=</span><span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">],</span>
-        <span class="n">profile_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/profiler.html#torch.profiler.profile" title="torch.profiler.profile"><span class="n">profile</span></a><span class="p">(</span>
+    <span class="n">activities</span><span class="o">=</span><span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">],</span> <span class="n">profile_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
     <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">"self_cpu_memory_usage"</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
@@ -813,14 +833,17 @@ Tracing CUDA or XPU kernels
 Users could switch between cpu, cuda and xpu</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">activities</span> <span class="o">=</span> <span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">]</span>
 <span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">():</span>
-    <span class="n">device</span> <span class="o">=</span> <span class="s1">'cuda'</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="s2">"cuda"</span>
     <span class="n">activities</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CUDA</span><span class="p">]</span>
 <span class="k">elif</span> <a class="sphx-glr-backref-module-torch-xpu sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.xpu.is_available.html#torch.xpu.is_available" title="torch.xpu.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">xpu</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">():</span>
-    <span class="n">device</span> <span class="o">=</span> <span class="s1">'xpu'</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="s2">"xpu"</span>
     <span class="n">activities</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">XPU</span><span class="p">]</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">'Neither CUDA nor XPU devices are available to demonstrate profiling on acceleration devices'</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">"Neither CUDA nor XPU devices are available to demonstrate profiling on acceleration devices"</span>
+    <span class="p">)</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
 <span class="n">model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchvision-models sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.resnet18" title="torchvision.models.resnet18"><span class="n">models</span><span class="o">.</span><span class="n">resnet18</span></a><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
@@ -844,6 +867,7 @@ in Chrome trace viewer (<code class="docutils literal notranslate"><span class="
 <span class="k">with</span> <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/profiler.html#torch.profiler.profile" title="torch.profiler.profile"><span class="n">profile</span></a><span class="p">(</span>
     <span class="n">activities</span><span class="o">=</span><span class="n">activities</span><span class="p">,</span>
     <span class="n">with_stack</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">experimental_config</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">_C</span><span class="o">.</span><span class="n">_profiler</span><span class="o">.</span><span class="n">_ExperimentalConfig</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
 <span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
     <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
 
@@ -890,12 +914,7 @@ an input and is called by the profiler each time the new trace is ready.</p></li
 <code class="docutils literal notranslate"><span class="pre">torch.profiler.schedule</span></code> helper function:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.profiler</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/profiler.html#torch.profiler.schedule" title="torch.profiler.schedule"><span class="n">schedule</span></a>
 
-<span class="n">my_schedule</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/profiler.html#torch.profiler.schedule" title="torch.profiler.schedule"><span class="n">schedule</span></a><span class="p">(</span>
-    <span class="n">skip_first</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="n">wait</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-    <span class="n">warmup</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">active</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-    <span class="n">repeat</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">my_schedule</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/profiler.html#torch.profiler.schedule" title="torch.profiler.schedule"><span class="n">schedule</span></a><span class="p">(</span><span class="n">skip_first</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">warmup</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Profiler assumes that the long-running job is composed of steps, numbered
@@ -930,18 +949,17 @@ The current profiler step is stored in <code class="docutils literal notranslate
 <p>The following example shows how to use all of the concepts above for CUDA and XPU Kernels:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sort_by_keyword</span> <span class="o">=</span> <span class="s2">"self_"</span> <span class="o">+</span> <span class="n">device</span> <span class="o">+</span> <span class="s2">"_time_total"</span>
 
+
 <span class="k">def</span><span class="w"> </span><span class="nf">trace_handler</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
     <span class="n">output</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="n">sort_by_keyword</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
     <span class="n">p</span><span class="o">.</span><span class="n">export_chrome_trace</span><span class="p">(</span><span class="s2">"/tmp/trace_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">step_num</span><span class="p">)</span> <span class="o">+</span> <span class="s2">".json"</span><span class="p">)</span>
 
+
 <span class="k">with</span> <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/profiler.html#torch.profiler.profile" title="torch.profiler.profile"><span class="n">profile</span></a><span class="p">(</span>
     <span class="n">activities</span><span class="o">=</span><span class="n">activities</span><span class="p">,</span>
-    <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/profiler.html#torch.profiler.schedule" title="torch.profiler.schedule"><span class="n">schedule</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/profiler.html#torch.profiler.schedule" title="torch.profiler.schedule"><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">schedule</span></a><span class="p">(</span>
-        <span class="n">wait</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-        <span class="n">warmup</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-        <span class="n">active</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
-    <span class="n">on_trace_ready</span><span class="o">=</span><span class="n">trace_handler</span>
+    <a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/profiler.html#torch.profiler.schedule" title="torch.profiler.schedule"><span class="n">schedule</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch-profiler sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/profiler.html#torch.profiler.schedule" title="torch.profiler.schedule"><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">schedule</span></a><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">warmup</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+    <span class="n">on_trace_ready</span><span class="o">=</span><span class="n">trace_handler</span><span class="p">,</span>
 <span class="p">)</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
     <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
         <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
@@ -1012,8 +1030,6 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
 <li><a class="reference internal" href="#">PyTorch Profiler</a><ul>
-<li><a class="reference internal" href="#introduction">Introduction</a></li>
-<li><a class="reference internal" href="#setup">Setup</a></li>
 <li><a class="reference internal" href="#steps">Steps</a><ul>
 <li><a class="reference internal" href="#import-all-necessary-libraries">1. Import all necessary libraries</a></li>
 <li><a class="reference internal" href="#instantiate-a-simple-resnet-model">2. Instantiate a simple Resnet model</a></li>
