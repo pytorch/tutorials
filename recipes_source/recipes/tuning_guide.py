@@ -513,7 +513,7 @@ torch.backends.cudnn.benchmark = True
 # for PyTorch models. The key takeaways include:
 #
 # * **General optimizations**: Enable async data loading, disable gradients for
-#   inference, fuse operations with torch.compile, and use efficient memory formats
+#   inference, fuse operations with ``torch.compile``, and use efficient memory formats
 # * **CPU optimizations**: Leverage NUMA controls, optimize OpenMP settings, and
 #   use efficient memory allocators
 # * **GPU optimizations**: Enable Tensor cores, use CUDA graphs, enable cuDNN
