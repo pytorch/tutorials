@@ -54,6 +54,17 @@ Using GPUDirect Storage with ``torch.save`` and ``torch.load``
 GPUDirect Storage requires a storage alignment of 4KB. You can toggle this by using
 ``torch.utils.serialization.config.save.storage_alignment``:
 
+.. GENERATED FROM PYTHON SOURCE LINES 37-43
+
+.. code-block:: default
+
+
+    import torch
+    from torch.utils.serialization import config as serialization_config
+
+    serialization_config.save.storage_alignment = 4096
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 44-52
 
 The steps involved in the process are as follows:
@@ -64,6 +75,20 @@ The steps involved in the process are as follows:
 Given a state dictionary of tensors that are on the GPU, one can use the ``torch.serialization.skip_data`` context
 manager to save a checkpoint that contains all relevant metadata except the storage bytes. For each ``torch.Storage``
 in the state dictionary, space will be reserved within the checkpoint for the storage bytes.
+
+.. GENERATED FROM PYTHON SOURCE LINES 52-61
+
+.. code-block:: default
+
+
+    import torch.nn as nn
+
+    m = nn.Linear(5, 10, device='cuda')
+    sd = m.state_dict()
+
+    with torch.serialization.skip_data():
+        torch.save(sd, "checkpoint.pt")
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 62-75
 
@@ -81,15 +106,58 @@ be saved or loaded to repeatedly you can use the ``torch.cuda.gds.gds_register_b
 Note that ``torch.cuda.gds.GdsFile.save_storage`` binds to the synchronous ``cuFileWrite`` API,
 so no synchronization is needed afterwards.
 
+.. GENERATED FROM PYTHON SOURCE LINES 75-94
+
+.. code-block:: default
+
+
+
+    import os
+    from torch._subclasses.fake_tensor import FakeTensorMode
+
+    with FakeTensorMode() as mode:
+        fake_sd = torch.load("checkpoint.pt")
+
+    for k, v in fake_sd.items():
+        print(f"key={k}, offset={v.untyped_storage()._checkpoint_offset}")
+
+    f = torch.cuda.gds.GdsFile("checkpoint.pt", os.O_RDWR)
+
+    for k, v in sd.items():
+        offset = fake_sd[k].untyped_storage()._checkpoint_offset
+        # save_storage is a wrapper around `cuFileWrite`
+        f.save_storage(v.untyped_storage(), offset)
+
+
+
 .. GENERATED FROM PYTHON SOURCE LINES 95-96
 
 We verify correctness of the saved checkpoint by ``torch.load`` and comparing.
+
+.. GENERATED FROM PYTHON SOURCE LINES 96-101
+
+.. code-block:: default
+
+
+    sd_loaded = torch.load("checkpoint.pt")
+    for k, v in sd_loaded.items():
+        assert torch.equal(v, sd[k])
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 102-105
 
 The loading flow is the inverse: you can use ``torch.load`` with the ``torch.serialization.skip_data`` context
 manager to load everything except the storage bytes. This means that any tensors in the checkpoint will be
 created but their storages will be empty (as if the tensors were created via ``torch.empty``).
+
+.. GENERATED FROM PYTHON SOURCE LINES 105-109
+
+.. code-block:: default
+
+
+    with torch.serialization.skip_data():
+        sd_loaded = torch.load("checkpoint.pt")
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 110-115
 
@@ -98,6 +166,22 @@ ascertain that the loaded checkpoint is the same as the saved checkpoint.
 
 Similar to  ``torch.cuda.gds.GdsFile.save_storage``, ``torch.cuda.gds.GdsFile.load_storage``
 binds to the synchronous ``cuFileRead`` API, so no synchronization is needed afterwards.
+
+.. GENERATED FROM PYTHON SOURCE LINES 115-126
+
+.. code-block:: default
+
+
+    for k, v in sd_loaded.items():
+        assert not torch.equal(v, sd[k])
+        offset = fake_sd[k].untyped_storage()._checkpoint_offset
+        # load_storage is a wrapper around `cuFileRead`
+        f.load_storage(v.untyped_storage(), offset)
+
+    for k, v in sd_loaded.items():
+        assert torch.equal(v, sd[k])
+
+    del f
 
 .. GENERATED FROM PYTHON SOURCE LINES 127-133
 
@@ -108,12 +192,6 @@ In this tutorial we have demonstrated how to use the prototype ``torch.cuda.gds`
 in conjunction with ``torch.save`` and ``torch.load`` on local filesystem. Please
 file an issue in the PyTorch GitHub repo if you have any feedback.
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-134
-
-.. code-block:: default
-
-
-    # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 
 .. rst-class:: sphx-glr-timing
 
