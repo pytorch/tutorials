@@ -818,15 +818,6 @@ Welcome to PyTorch Tutorials
    :link: advanced/sharding.html
    :tags: TorchRec,Recommender
 
-.. Multimodality
-
-.. customcarditem::
-   :header: Introduction to TorchMultimodal
-   :card_description: TorchMultimodal is a library that provides models, primitives and examples for training multimodal tasks
-   :image: _static/img/thumbnails/torchrec.png
-   :link: beginner/flava_finetuning_tutorial.html
-   :tags: TorchMultimodal
-
 
 .. End of tutorial card section
 
@@ -1102,11 +1093,3 @@ Additional Resources
 
    intermediate/torchrec_intro_tutorial
    advanced/sharding
-
-.. toctree::
-   :maxdepth: 2
-   :includehidden:
-   :hidden:
-   :caption: Multimodality
-
-   beginner/flava_finetuning_tutorial
