@@ -19,7 +19,7 @@ PyTorch Profiler
 
 # Prerequisites
 # ---------------
-# - ``torch >= 1.9``
+# - ``torch >= 2.3.0``
 
 # Setup
 # -----
