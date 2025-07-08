@@ -6,4 +6,5 @@ redirects = {
     "intermediate/torchserve_with_ipex.html": "../index.html",
     "intermediate/torchserve_with_ipex_2.html": "../index.html",
     "recipes/torchserve_vertexai_tutorial.html": "../index.html",
+    "beginner/flava_finetuning_tutorial.html": "../index.html",
 }
