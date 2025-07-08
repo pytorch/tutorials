@@ -5,30 +5,28 @@ PyTorch Profiler
 """
 
 ######################################################################
-#
 # This recipe explains how to use PyTorch profiler and measure the time and
 # memory consumption of the model's operators.
-
+#
 # Introduction
 # ------------
-# PyTorch includes a simple profiler API that is useful when user needs
+# PyTorch includes a simple profiler API that is useful when the user needs
 # to determine the most expensive operators in the model.
-
+#
 # In this recipe, we will use a simple Resnet model to demonstrate how to
-# use profiler to analyze model performance.
-
+# use the profiler to analyze model performance.
+#
 # Prerequisites
 # ---------------
 # - ``torch >= 2.3.0``
-
+#
 # Setup
 # -----
 # To install ``torch`` and ``torchvision`` use the following command:
-
+#
 # .. code-block:: sh
-
+#
 #    pip install torch torchvision
-
 #
 
 ######################################################################
