@@ -89,9 +89,9 @@ to copy the upper-triangular part of the matrix into its lower-triangular part
 
  .. code-block:: none
 
-    tensor([[0.9366, 0.8821, 0.1791],
-            [0.8821, 0.5929, 0.5339],
-            [0.1791, 0.5339, 0.7406]])
+    tensor([[0.1434, 0.1240, 0.9128],
+            [0.1240, 0.4196, 0.7688],
+            [0.9128, 0.7688, 0.5764]])
 
 
 
@@ -227,9 +227,9 @@ Now, the matrix of the linear layer is symmetric
 
  .. code-block:: none
 
-    tensor([[ 0.2897,  0.3243, -0.2384],
-            [ 0.3243,  0.4388, -0.4009],
-            [-0.2384, -0.4009,  0.4252]], grad_fn=<AddBackward0>)
+    tensor([[-0.0760,  0.1687, -0.0248],
+            [ 0.1687, -0.0133, -0.3987],
+            [-0.0248, -0.3987,  0.1085]], grad_fn=<AddBackward0>)
 
 
 
@@ -265,12 +265,12 @@ reversed into the lower-triangular part
 
  .. code-block:: none
 
-    tensor([[ 0.0000,  0.0149, -0.0804],
-            [-0.0149,  0.0000,  0.0826],
-            [ 0.0804, -0.0826,  0.0000]], grad_fn=<SelectBackward0>)
-    tensor([[ 0.0000,  0.1306,  0.1168],
-            [-0.1306,  0.0000, -0.0869],
-            [-0.1168,  0.0869,  0.0000]], grad_fn=<SelectBackward0>)
+    tensor([[ 0.0000, -0.1382,  0.0128],
+            [ 0.1382,  0.0000, -0.0294],
+            [-0.0128,  0.0294,  0.0000]], grad_fn=<SelectBackward0>)
+    tensor([[ 0.0000,  0.0668, -0.1117],
+            [-0.0668,  0.0000, -0.0082],
+            [ 0.1117,  0.0082,  0.0000]], grad_fn=<SelectBackward0>)
 
 
 
@@ -406,10 +406,10 @@ parameter ``weight`` has been moved
  .. code-block:: none
 
     {'bias': Parameter containing:
-    tensor([-0.0156,  0.4610, -0.2664], requires_grad=True), 'parametrizations.weight.original': Parameter containing:
-    tensor([[-0.5469, -0.4641,  0.4607],
-            [-0.0167, -0.3346,  0.1373],
-            [ 0.0239, -0.5119,  0.1181]], requires_grad=True)}
+    tensor([-0.5565,  0.1774,  0.3235], requires_grad=True), 'parametrizations.weight.original': Parameter containing:
+    tensor([[ 0.0987,  0.1004, -0.2886],
+            [ 0.0861, -0.0537,  0.2609],
+            [ 0.2754, -0.1547, -0.2582]], requires_grad=True)}
 
 
 
@@ -433,9 +433,9 @@ It now sits under ``layer.parametrizations.weight.original``
  .. code-block:: none
 
     Parameter containing:
-    tensor([[-0.5469, -0.4641,  0.4607],
-            [-0.0167, -0.3346,  0.1373],
-            [ 0.0239, -0.5119,  0.1181]], requires_grad=True)
+    tensor([[ 0.0987,  0.1004, -0.2886],
+            [ 0.0861, -0.0537,  0.2609],
+            [ 0.2754, -0.1547, -0.2582]], requires_grad=True)
 
 
 
@@ -560,7 +560,7 @@ orthogonal weights
 
  .. code-block:: none
 
-    tensor(1.3370e-07, grad_fn=<DistBackward0>)
+    tensor(1.5342e-07, grad_fn=<DistBackward0>)
 
 
 
@@ -601,8 +601,8 @@ Using these two facts, we may reuse the parametrizations before to our advantage
 
  .. code-block:: none
 
-    tensor(3.1438e-07, grad_fn=<DistBackward0>)
-    tensor(0., grad_fn=<DistBackward0>)
+    tensor(3.1540e-07, grad_fn=<DistBackward0>)
+    tensor(5.9605e-08, grad_fn=<DistBackward0>)
     tensor(True)
 
 
@@ -717,7 +717,7 @@ To see this, let's upgrade the Cayley parametrization to also support being init
 
  .. code-block:: none
 
-    tensor(1.2420, grad_fn=<DistBackward0>)
+    tensor(2.5564, grad_fn=<DistBackward0>)
 
 
 
@@ -799,16 +799,16 @@ that tensor will be, in fact, pruned
  .. code-block:: none
 
     Initialization matrix:
-    tensor([[0.8920, 0.1557, 0.8127],
-            [0.4380, 0.5141, 0.7416],
-            [0.6771, 0.5062, 0.8955],
-            [0.0159, 0.0099, 0.5605]])
+    tensor([[0.8545, 0.3178, 0.3954],
+            [0.3986, 0.0710, 0.0249],
+            [0.7361, 0.3259, 0.9922],
+            [0.9341, 0.8743, 0.2799]])
 
     Initialized weight:
-    tensor([[0.8920, 0.1557, 0.8127],
-            [0.4380, 0.5141, 0.7416],
-            [0.6771, 0.5062, 0.8955],
-            [0.0159, 0.0099, 0.0000]], grad_fn=<MulBackward0>)
+    tensor([[0.8545, 0.3178, 0.3954],
+            [0.3986, 0.0000, 0.0249],
+            [0.0000, 0.3259, 0.9922],
+            [0.9341, 0.8743, 0.2799]], grad_fn=<MulBackward0>)
 
 
 
@@ -849,9 +849,9 @@ by using ``parametrize.remove_parametrizations()``
     Before:
     Linear(in_features=3, out_features=3, bias=True)
     Parameter containing:
-    tensor([[-0.0812,  0.0870,  0.3186],
-            [-0.5004,  0.1893, -0.5308],
-            [-0.3358, -0.0225,  0.4921]], requires_grad=True)
+    tensor([[ 0.2627, -0.4631, -0.3698],
+            [-0.0898, -0.4798, -0.3971],
+            [ 0.0609, -0.2842, -0.1903]], requires_grad=True)
 
     Parametrized:
     ParametrizedLinear(
@@ -862,16 +862,16 @@ by using ``parametrize.remove_parametrizations()``
         )
       )
     )
-    tensor([[ 0.0000,  0.0870,  0.3186],
-            [-0.0870,  0.0000, -0.5308],
-            [-0.3186,  0.5308,  0.0000]], grad_fn=<SubBackward0>)
+    tensor([[ 0.0000, -0.4631, -0.3698],
+            [ 0.4631,  0.0000, -0.3971],
+            [ 0.3698,  0.3971,  0.0000]], grad_fn=<SubBackward0>)
 
     After. Weight has skew-symmetric values but it is unconstrained:
     Linear(in_features=3, out_features=3, bias=True)
     Parameter containing:
-    tensor([[ 0.0000,  0.0870,  0.3186],
-            [-0.0870,  0.0000, -0.5308],
-            [-0.3186,  0.5308,  0.0000]], requires_grad=True)
+    tensor([[ 0.0000, -0.4631, -0.3698],
+            [ 0.4631,  0.0000, -0.3971],
+            [ 0.3698,  0.3971,  0.0000]], requires_grad=True)
 
 
 
@@ -909,9 +909,9 @@ the flag ``leave_parametrized=False``
     Before:
     Linear(in_features=3, out_features=3, bias=True)
     Parameter containing:
-    tensor([[-0.2915, -0.5333,  0.3540],
-            [-0.2693, -0.5365, -0.0840],
-            [ 0.3250,  0.4491,  0.4229]], requires_grad=True)
+    tensor([[ 0.1570, -0.3318,  0.2667],
+            [-0.1991,  0.2201,  0.2133],
+            [-0.2246, -0.3447, -0.0987]], requires_grad=True)
 
     Parametrized:
     ParametrizedLinear(
@@ -922,15 +922,15 @@ the flag ``leave_parametrized=False``
         )
       )
     )
-    tensor([[ 0.0000, -0.5333,  0.3540],
-            [ 0.5333,  0.0000, -0.0840],
-            [-0.3540,  0.0840,  0.0000]], grad_fn=<SubBackward0>)
+    tensor([[ 0.0000, -0.3318,  0.2667],
+            [ 0.3318,  0.0000,  0.2133],
+            [-0.2667, -0.2133,  0.0000]], grad_fn=<SubBackward0>)
 
     After. Same as Before:
     Linear(in_features=3, out_features=3, bias=True)
     Parameter containing:
-    tensor([[ 0.0000, -0.5333,  0.3540],
-            [ 0.0000,  0.0000, -0.0840],
+    tensor([[ 0.0000, -0.3318,  0.2667],
+            [ 0.0000,  0.0000,  0.2133],
             [ 0.0000,  0.0000,  0.0000]], requires_grad=True)
 
 
