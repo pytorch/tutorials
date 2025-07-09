@@ -5,7 +5,6 @@ Welcome to PyTorch Tutorials
 
 * `Utilizing Torch Function modes with torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_torch_function_modes.html>`__
 * `Context Parallel Tutorial <https://pytorch.org/tutorials/prototype/context_parallel.html>`__
-* `PyTorch 2 Export Quantization with Intel GPU Backend through Inductor <https://pytorch.org/tutorials/prototype/pt2e_quant_xpu_inductor.html>`__
 * `(beta) Explicit horizontal fusion with foreach_map and torch.compile <https://pytorch.org/tutorials/recipes/foreach_map.html>`__
 * Updated `Inductor Windows CPU Tutorial <https://pytorch.org/tutorials/prototype/inductor_windows.html>`__
 
@@ -114,13 +113,6 @@ Welcome to PyTorch Tutorials
    :card_description: Train a convolutional neural network for image classification using transfer learning.
    :image: _static/img/thumbnails/cropped/Transfer-Learning-for-Computer-Vision-Tutorial.png
    :link: beginner/transfer_learning_tutorial.html
-   :tags: Image/Video
-
-.. customcarditem::
-   :header: Optimizing Vision Transformer Model
-   :card_description: Apply cutting-edge, attention-based transformer models to computer vision tasks.
-   :image: _static/img/thumbnails/cropped/60-min-blitz.png
-   :link: beginner/vt_tutorial.html
    :tags: Image/Video
 
 .. customcarditem::
@@ -321,14 +313,6 @@ Welcome to PyTorch Tutorials
    :tags: Reinforcement-Learning
 
 .. Deploying PyTorch Models in Production
-
-
-.. customcarditem::
-   :header: Deploying PyTorch in Python via a REST API with Flask
-   :card_description: Deploy a PyTorch model using Flask and expose a REST API for model inference using the example of a pretrained DenseNet 121 model which detects the image.
-   :image: _static/img/thumbnails/cropped/Deploying-PyTorch-in-Python-via-a-REST-API-with-Flask.png
-   :link: intermediate/flask_rest_api_tutorial.html
-   :tags: Production
 
 .. customcarditem::
    :header: Introduction to TorchScript
@@ -593,48 +577,6 @@ Welcome to PyTorch Tutorials
    :tags: Text,Model-Optimization
 
 .. customcarditem::
-   :header: (beta) Dynamic Quantization on an LSTM Word Language Model
-   :card_description: Apply dynamic quantization, the easiest form of quantization, to a LSTM-based next word prediction model.
-   :image: _static/img/thumbnails/cropped/experimental-Dynamic-Quantization-on-an-LSTM-Word-Language-Model.png
-   :link: advanced/dynamic_quantization_tutorial.html
-   :tags: Text,Quantization,Model-Optimization
-
-.. customcarditem::
-   :header: (beta) Dynamic Quantization on BERT
-   :card_description: Apply the dynamic quantization on a BERT (Bidirectional Embedding Representations from Transformers) model.
-   :image: _static/img/thumbnails/cropped/experimental-Dynamic-Quantization-on-BERT.png
-   :link: intermediate/dynamic_quantization_bert_tutorial.html
-   :tags: Text,Quantization,Model-Optimization
-
-.. customcarditem::
-   :header: (beta) Quantized Transfer Learning for Computer Vision Tutorial
-   :card_description: Extends the Transfer Learning for Computer Vision Tutorial using a quantized model.
-   :image: _static/img/thumbnails/cropped/60-min-blitz.png
-   :link: intermediate/quantized_transfer_learning_tutorial.html
-   :tags: Image/Video,Quantization,Model-Optimization
-
-.. customcarditem::
-   :header: (beta) Static Quantization with Eager Mode in PyTorch
-   :card_description: This tutorial shows how to do post-training static quantization.
-   :image: _static/img/thumbnails/cropped/60-min-blitz.png
-   :link: advanced/static_quantization_tutorial.html
-   :tags: Quantization
-
-.. customcarditem::
-   :header: Grokking PyTorch Intel CPU Performance from First Principles
-   :card_description: A case study on the TorchServe inference framework optimized with Intel® Extension for PyTorch.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: intermediate/torchserve_with_ipex
-   :tags: Model-Optimization,Production
-
-.. customcarditem::
-   :header: Grokking PyTorch Intel CPU Performance from First Principles (Part 2)
-   :card_description: A case study on the TorchServe inference framework optimized with Intel® Extension for PyTorch (Part 2).
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: intermediate/torchserve_with_ipex_2
-   :tags: Model-Optimization,Production
-
-.. customcarditem::
    :header: Multi-Objective Neural Architecture Search with Ax
    :card_description: Learn how to use Ax to search over architectures find optimal tradeoffs between accuracy and latency.
    :image: _static/img/ax_logo.png
@@ -766,14 +708,14 @@ Welcome to PyTorch Tutorials
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
-   :header: Getting Started with Fully Sharded Data Parallel(FSDP)
-   :card_description: Learn how to train models with Fully Sharded Data Parallel package.
+   :header: Getting Started with Fully Sharded Data Parallel (FSDP2)
+   :card_description: Learn how to train models with Fully Sharded Data Parallel (fully_shard) package.
    :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
    :link: intermediate/FSDP_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
-   :header: Advanced Model Training with Fully Sharded Data Parallel (FSDP)
+   :header: Advanced Model Training with Fully Sharded Data Parallel (FSDP1)
    :card_description: Explore advanced model training with Fully Sharded Data Parallel package.
    :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
    :link: intermediate/FSDP_advanced_tutorial.html
@@ -806,21 +748,21 @@ Welcome to PyTorch Tutorials
    :header: Using the ExecuTorch SDK to Profile a Model
    :card_description: Explore how to use the ExecuTorch SDK to profile, debug, and visualize ExecuTorch models
    :image: _static/img/ExecuTorch-Logo-cropped.svg
-   :link: https://pytorch.org/executorch/stable/tutorials/sdk-integration-tutorial.html
+   :link: https://docs.pytorch.org/executorch/main/tutorials/devtools-integration-tutorial.html
    :tags: Edge
 
 .. customcarditem::
    :header: Building an ExecuTorch iOS Demo App
    :card_description: Explore how to set up the ExecuTorch iOS Demo App, which uses the MobileNet v3 model to process live camera images leveraging three different backends: XNNPACK, Core ML, and Metal Performance Shaders (MPS).
    :image: _static/img/ExecuTorch-Logo-cropped.svg
-   :link: https://pytorch.org/executorch/stable/demo-apps-ios.html
+   :link: https://github.com/pytorch-labs/executorch-examples/tree/main/mv3/apple/ExecuTorchDemo
    :tags: Edge
 
 .. customcarditem::
    :header: Building an ExecuTorch Android Demo App
    :card_description: Learn how to set up the ExecuTorch Android Demo App for image segmentation tasks using the DeepLab v3 model and XNNPACK FP32 backend.
    :image: _static/img/ExecuTorch-Logo-cropped.svg
-   :link: https://pytorch.org/executorch/stable/demo-apps-android.html
+   :link: https://github.com/pytorch-labs/executorch-examples/tree/main/dl3/android/DeepLabV3Demo#executorch-android-demo-app
    :tags: Edge
 
 .. customcarditem::
@@ -846,15 +788,6 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/torchrec.png
    :link: advanced/sharding.html
    :tags: TorchRec,Recommender
-
-.. Multimodality
-
-.. customcarditem::
-   :header: Introduction to TorchMultimodal
-   :card_description: TorchMultimodal is a library that provides models, primitives and examples for training multimodal tasks
-   :image: _static/img/thumbnails/torchrec.png
-   :link: beginner/flava_finetuning_tutorial.html
-   :tags: TorchMultimodal
 
 
 .. End of tutorial card section
@@ -959,7 +892,6 @@ Additional Resources
    beginner/fgsm_tutorial
    beginner/dcgan_faces_tutorial
    intermediate/spatial_transformer_tutorial
-   beginner/vt_tutorial
    intermediate/tiatoolbox_tutorial
 
 .. toctree::
@@ -1005,7 +937,6 @@ Additional Resources
    :caption: Deploying PyTorch Models in Production
 
    beginner/onnx/intro_onnx
-   intermediate/flask_rest_api_tutorial
    beginner/Intro_to_TorchScript_tutorial
    advanced/cpp_export
    advanced/super_resolution_with_onnxruntime
@@ -1073,15 +1004,8 @@ Additional Resources
    beginner/profiler
    intermediate/tensorboard_profiler_tutorial
    beginner/hyperparameter_tuning_tutorial
-   beginner/vt_tutorial
    intermediate/parametrizations
    intermediate/pruning_tutorial
-   advanced/dynamic_quantization_tutorial
-   intermediate/dynamic_quantization_bert_tutorial
-   intermediate/quantized_transfer_learning_tutorial
-   advanced/static_quantization_tutorial
-   intermediate/torchserve_with_ipex
-   intermediate/torchserve_with_ipex_2
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
    intermediate/torch_compile_tutorial
@@ -1123,9 +1047,9 @@ Additional Resources
 
    Exporting to ExecuTorch Tutorial <https://pytorch.org/executorch/stable/tutorials/export-to-executorch-tutorial.html>
    Running an ExecuTorch Model in C++ Tutorial < https://pytorch.org/executorch/stable/running-a-model-cpp-tutorial.html>
-   Using the ExecuTorch SDK to Profile a Model <https://pytorch.org/executorch/stable/tutorials/sdk-integration-tutorial.html>
-   Building an ExecuTorch iOS Demo App <https://pytorch.org/executorch/stable/demo-apps-ios.html>
-   Building an ExecuTorch Android Demo App <https://pytorch.org/executorch/stable/demo-apps-android.html>
+   Using the ExecuTorch SDK to Profile a Model <https://docs.pytorch.org/executorch/main/tutorials/devtools-integration-tutorial.html>
+   Building an ExecuTorch iOS Demo App <https://github.com/pytorch-labs/executorch-examples/tree/main/mv3/apple/ExecuTorchDemo>
+   Building an ExecuTorch Android Demo App <https://github.com/pytorch-labs/executorch-examples/tree/main/dl3/android/DeepLabV3Demo#executorch-android-demo-app>
    Lowering a Model as a Delegate <https://pytorch.org/executorch/stable/examples-end-to-end-to-lower-model-to-delegate.html>
 
 .. toctree::
@@ -1136,11 +1060,3 @@ Additional Resources
 
    intermediate/torchrec_intro_tutorial
    advanced/sharding
-
-.. toctree::
-   :maxdepth: 2
-   :includehidden:
-   :hidden:
-   :caption: Multimodality
-
-   beginner/flava_finetuning_tutorial

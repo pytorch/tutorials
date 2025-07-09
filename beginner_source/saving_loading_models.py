@@ -227,43 +227,30 @@ functions to be familiar with:
 # normalization layers to evaluation mode before running inference.
 # Failing to do this will yield inconsistent inference results.
 #
-# Export/Load Model in TorchScript Format
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Saving an Exported Program
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# One common way to do inference with a trained model is to use
-# `TorchScript <https://pytorch.org/docs/stable/jit.html>`__, an intermediate
-# representation of a PyTorch model that can be run in Python as well as in a
-# high performance environment like C++. TorchScript is actually the recommended model format
-# for scaled inference and deployment.
+# If you are using ``torch.export``, you can save and load your ``ExportedProgram`` using the
+# ``torch.export.save()`` and ``torch.export.load()`` APIs. with the ``.pt2`` file extension:
 #
-# .. note::
-#    Using the TorchScript format, you will be able to load the exported model and
-#    run inference without defining the model class.
+# .. code-block:: python
+# 
+#    class SimpleModel(torch.nn.Module):
+#         def forward(self, x):
+#             return x + 10
 #
-# **Export:**
+#    # Create a sample input
+#    sample_input = torch.randn(5)
+# 
+#    # Export the model
+#    exported_program = torch.export.export(SimpleModel(), sample_input)
 #
-# .. code:: python
+#    # Save the exported program
+#    torch.export.save(exported_program, 'exported_program.pt2')
 #
-#    model_scripted = torch.jit.script(model) # Export to TorchScript
-#    model_scripted.save('model_scripted.pt') # Save
+#    # Load the exported program
+#    saved_exported_program = torch.export.load('exported_program.pt2')
 #
-# **Load:**
-#
-# .. code:: python
-#
-#    model = torch.jit.load('model_scripted.pt')
-#    model.eval()
-#
-# Remember that you must call ``model.eval()`` to set dropout and batch
-# normalization layers to evaluation mode before running inference.
-# Failing to do this will yield inconsistent inference results.
-#
-# For more information on TorchScript, feel free to visit the dedicated
-# `tutorials <https://pytorch.org/tutorials/beginner/Intro_to_TorchScript_tutorial.html>`__.
-# You will get familiar with the tracing conversion and learn how to
-# run a TorchScript module in a `C++ environment <https://pytorch.org/tutorials/advanced/cpp_export.html>`__.
-
-
 
 ######################################################################
 # Saving & Loading a General Checkpoint for Inference and/or Resuming Training

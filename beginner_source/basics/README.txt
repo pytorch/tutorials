@@ -13,7 +13,7 @@ Learn the Basics
     Tensors
     https://pytorch.org/tutorials/beginner/basics/tensor_tutorial.html
 
-4. dataquickstart_tutorial.py
+4. data_tutorial.py
     Datasets & DataLoaders
     https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
 

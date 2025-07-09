@@ -48,12 +48,10 @@ NOT_RUN = [
     "recipes_source/recipes/timer_quick_start",
     "recipes_source/recipes/amp_recipe",
     "recipes_source/recipes/Captum_Recipe",
-    "intermediate_source/flask_rest_api_tutorial",
     "intermediate_source/text_to_speech_with_torchaudio",
     "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
     "advanced_source/semi_structured_sparse", # reenable after 3303 is fixed.
     "intermediate_source/torchrec_intro_tutorial", # reenable after 3302 is fixe
-    "intermediate_source/memory_format_tutorial", # causes other tutorials like torch_logs fail. "state" issue, reseting dynamo didn't help
 ]
 
 def tutorial_source_dirs() -> List[Path]:
