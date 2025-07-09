@@ -78,10 +78,6 @@ download:
 	wget -nv -N https://download.pytorch.org/models/resnet18-5c106cde.pth -P $(DATADIR)
 	cp $(DATADIR)/resnet18-5c106cde.pth prototype_source/data/resnet18_pretrained_float.pth
 
-	# Download vocab for beginner_source/flava_finetuning_tutorial.py
-	wget -nv -N http://dl.fbaipublicfiles.com/pythia/data/vocab.tar.gz -P $(DATADIR)
-	tar $(TAROPTS) -xzf $(DATADIR)/vocab.tar.gz -C ./beginner_source/data/
-
 	# Download PennFudanPed dataset for intermediate_source/torchvision_tutorial.py
 	wget https://www.cis.upenn.edu/~jshi/ped_html/PennFudanPed.zip -P $(DATADIR)
 	unzip -o $(DATADIR)/PennFudanPed.zip -d intermediate_source/data/
