@@ -85,7 +85,7 @@ def call_in_subprocess(func):
             raise RuntimeError(f"Error in subprocess: {result}")
     return wrapper
 
-sphinx_gallery.gen_rst.generate_file_rst = call_in_subprocess(sphinx_gallery.gen_rst.generate_file_rst)
+# sphinx_gallery.gen_rst.generate_file_rst = call_in_subprocess(sphinx_gallery.gen_rst.generate_file_rst)
 
 try:
     import torchvision
