@@ -71,6 +71,7 @@ def call_fn(func, args, kwargs, result_queue):
 
 def call_in_subprocess(func):
     def wrapper(*args, **kwargs):
+        multiprocessing.set_start_method("fork", force=True)
         result_queue = multiprocessing.Queue()
         p = multiprocessing.Process(
             target=call_fn,
@@ -85,7 +86,10 @@ def call_in_subprocess(func):
             raise RuntimeError(f"Error in subprocess: {result}")
     return wrapper
 
-sphinx_gallery.gen_rst.generate_file_rst = call_in_subprocess(sphinx_gallery.gen_rst.generate_file_rst)
+# Windows does not support multiprocessing with fork, so we do not monkey patch
+# sphinx gallery to run in subprocesses.
+if os.getenv("TUTORIALS_ISOLATE_BUILD", "1") == "1" and not sys.platform.startswith("win"):
+    sphinx_gallery.gen_rst.generate_file_rst = call_in_subprocess(sphinx_gallery.gen_rst.generate_file_rst)
 
 try:
     import torchvision
