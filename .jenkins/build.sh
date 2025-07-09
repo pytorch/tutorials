@@ -15,6 +15,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 # Install pandoc (does not install from pypi)
 sudo apt-get update
 sudo apt-get install -y pandoc
+pip install sphinx-gallery==0.19.0
 
 # NS: Path to python runtime should already be part of docker container
 # export PATH=/opt/conda/bin:$PATH
@@ -152,11 +153,11 @@ elif [[ "${JOB_TYPE}" == "manager" ]]; then
   if [[ "$COMMIT_SOURCE" == "refs/heads/master" || "$COMMIT_SOURCE" == "refs/heads/main" ]]; then
     git clone https://github.com/pytorch/tutorials.git -b gh-pages gh-pages
     # Clean up directories that contain tutorials
-    
+
     for dir in beginner intermediate prototype recipes advanced distributed vision text audio; do
       rm -rf "gh-pages/$dir"
     done
-    
+
     cp -r docs/* gh-pages/
     pushd gh-pages
     # DANGER! DO NOT REMOVE THE `set +x` SETTING HERE!
