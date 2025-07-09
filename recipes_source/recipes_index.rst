@@ -187,16 +187,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/tensorboard_with_pytorch.html
    :tags: Visualization,TensorBoard
 
-.. Quantization
-
-.. customcarditem::
-   :header: Dynamic Quantization
-   :card_description:  Apply dynamic quantization to a simple LSTM model.
-   :image: ../_static/img/thumbnails/cropped/using-dynamic-post-training-quantization.png
-   :link: ../recipes/recipes/dynamic_quantization.html
-   :tags: Quantization,Text,Model-Optimization
-
-
 .. Production Development
 
 .. customcarditem::
@@ -205,13 +195,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :image: ../_static/img/thumbnails/cropped/torchscript_overview.png
    :link: ../recipes/torchscript_inference.html
    :tags: TorchScript
-
-.. customcarditem::
-   :header: Deploying with Flask
-   :card_description: Learn how to use Flask, a lightweight web server, to quickly setup a web API from your trained PyTorch model.
-   :image: ../_static/img/thumbnails/cropped/using-flask-create-restful-api.png
-   :link: ../recipes/deployment_with_flask.html
-   :tags: Production,TorchScript
 
 .. customcarditem::
    :header: PyTorch Mobile Performance Recipes
@@ -226,20 +209,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :image: ../_static/img/thumbnails/cropped/android.png
    :link: ../recipes/android_native_app_with_custom_op.html
    :tags: Mobile
-
-.. customcarditem::
-  :header: Fuse Modules recipe
-  :card_description: Learn how to fuse a list of PyTorch modules into a single module to reduce the model size before quantization.
-  :image: ../_static/img/thumbnails/cropped/mobile.png
-  :link: ../recipes/fuse.html
-  :tags: Mobile
-
-.. customcarditem::
-  :header: Quantization for Mobile Recipe
-  :card_description: Learn how to reduce the model size and make it run faster without losing much on accuracy.
-  :image: ../_static/img/thumbnails/cropped/mobile.png
-  :link: ../recipes/quantization.html
-  :tags: Mobile,Quantization
 
 .. customcarditem::
   :header: Script and Optimize for Mobile
@@ -457,15 +426,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/distributed_comm_debug_mode.html
    :tags: Distributed-Training
 
-.. TorchServe
-
-.. customcarditem::
-   :header: Deploying a PyTorch Stable Diffusion model as a Vertex AI Endpoint
-   :card_description: Learn how to deploy model in Vertex AI with TorchServe
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../recipes/torchserve_vertexai_tutorial.html
-   :tags: Production
-
 .. End of tutorial card section
 
 .. raw:: html
@@ -505,7 +465,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/compiling_optimizer
    /recipes/torch_compile_backend_ipex
    /recipes/torchscript_inference
-   /recipes/deployment_with_flask
    /recipes/distributed_rpc_profiling
    /recipes/zero_redundancy_optimizer
    /recipes/cuda_rpc
