@@ -1,13 +1,28 @@
 # -*- coding: utf-8 -*-
 """
-(beta) Channels Last Memory Format in PyTorch
+Channels Last Memory Format in PyTorch
 *******************************************************
 **Author**: `Vitaly Fedyunin <https://github.com/VitalyFedyunin>`_
 
-What is Channels Last
----------------------
+.. grid:: 2
 
-Channels last memory format is an alternative way of ordering NCHW tensors in memory preserving dimensions ordering. Channels last tensors ordered in such a way that channels become the densest dimension (aka storing images pixel-per-pixel).
+    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+       :class-card: card-prerequisites
+
+       * What is the channels last memory format in PyTorch?
+       * How can it be used to improve performance on certain operators?
+
+    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+       :class-card: card-prerequisites
+
+       * PyTorch v1.5.0
+       * A CUDA-capable GPU
+
+#########################################################################
+# Overview - What is channels last?
+# ---------------------------------
+
+The channels last memory format is an alternative way of ordering NCHW tensors in memory preserving dimensions ordering. Channels last tensors ordered in such a way that channels become the densest dimension (aka storing images pixel-per-pixel).
 
 For example, classic (contiguous) storage of NCHW tensor (in our case it is two 4x4 images with 3 color channels) look like this:
 
@@ -19,7 +34,7 @@ Channels last memory format orders data differently:
 .. figure:: /_static/img/channels_last_memory_format.png
    :alt: channels_last_memory_format
 
-Pytorch supports memory formats (and provides back compatibility with existing models including eager, JIT, and TorchScript) by utilizing  existing strides structure.
+Pytorch supports memory formats by utilizing the existing strides structure.
 For example, 10x3x16x16 batch in Channels last format will have strides equal to (768, 1, 48, 3).
 """
 
@@ -387,3 +402,12 @@ for (m, attrs) in old_attrs.items():
 #
 # If you have feedback and/or suggestions for improvement, please let us
 # know by creating `an issue <https://github.com/pytorch/pytorch/issues>`_.
+
+######################################################################
+# Conclusion
+# ----------
+#
+# This tutorial introduced the "channels last" memory format and demonstrated
+# how to use it for performance gains. For a practical example of accelerating
+# vision models using channels last, see the post
+# `here <https://pytorch.org/blog/accelerating-pytorch-vision-models-with-channels-last-on-cpu/>`_.

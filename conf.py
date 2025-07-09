@@ -45,7 +45,7 @@ import pypandoc
 import plotly.io as pio
 from pathlib import Path
 pio.renderers.default = 'sphinx_gallery'
-
+from redirects import redirects
 
 import sphinx_gallery.gen_rst
 import multiprocessing
@@ -121,7 +121,8 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_gallery.gen_gallery',
     'sphinx_design',
-    'sphinx_sitemap'
+    'sphinx_sitemap',
+    'sphinx_reredirects'
 ]
 
 intersphinx_mapping = {
