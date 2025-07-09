@@ -1,28 +1,33 @@
 """
 PyTorch Profiler
 ====================================
-This recipe explains how to use PyTorch profiler and measure the time and
-memory consumption of the model's operators.
-
-Introduction
-------------
-PyTorch includes a simple profiler API that is useful when user needs
-to determine the most expensive operators in the model.
-
-In this recipe, we will use a simple Resnet model to demonstrate how to
-use profiler to analyze model performance.
-
-Setup
------
-To install ``torch`` and ``torchvision`` use the following command:
-
-.. code-block:: sh
-
-   pip install torch torchvision
-
-
+**Author:** `Shivam Raikundalia <https://github.com/sraikund16>`_
 """
 
+######################################################################
+# This recipe explains how to use PyTorch profiler and measure the time and
+# memory consumption of the model's operators.
+#
+# Introduction
+# ------------
+# PyTorch includes a simple profiler API that is useful when the user needs
+# to determine the most expensive operators in the model.
+#
+# In this recipe, we will use a simple Resnet model to demonstrate how to
+# use the profiler to analyze model performance.
+#
+# Prerequisites
+# ---------------
+# - ``torch >= 2.3.0``
+#
+# Setup
+# -----
+# To install ``torch`` and ``torchvision`` use the following command:
+#
+# .. code-block:: sh
+#
+#    pip install torch torchvision
+#
 
 ######################################################################
 # Steps
@@ -45,7 +50,7 @@ To install ``torch`` and ``torchvision`` use the following command:
 
 import torch
 import torchvision.models as models
-from torch.profiler import profile, record_function, ProfilerActivity
+from torch.profiler import profile, ProfilerActivity, record_function
 
 
 ######################################################################
@@ -135,7 +140,11 @@ print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
 # To get a finer granularity of results and include operator input shapes, pass ``group_by_input_shape=True``
 # (note: this requires running the profiler with ``record_shapes=True``):
 
-print(prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total", row_limit=10))
+print(
+    prof.key_averages(group_by_input_shape=True).table(
+        sort_by="cpu_time_total", row_limit=10
+    )
+)
 
 ########################################################################################
 # The output might look like this (omitting some columns):
@@ -163,18 +172,23 @@ print(prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total
 # Note the occurrence of ``aten::convolution`` twice with different input shapes.
 
 ######################################################################
-# Profiler can also be used to analyze performance of models executed on GPUs and XPUs:
+# Profiler can also be used to analyze performance of models executed on GPUs:
 # Users could switch between cpu, cuda and xpu
+activities = [ProfilerActivity.CPU]
 if torch.cuda.is_available():
-    device = 'cuda'
+    device = "cuda"
+    activities += [ProfilerActivity.CUDA]
 elif torch.xpu.is_available():
-    device = 'xpu'
+    device = "xpu"
+    activities += [ProfilerActivity.XPU]
 else:
-    print('Neither CUDA nor XPU devices are available to demonstrate profiling on acceleration devices')
+    print(
+        "Neither CUDA nor XPU devices are available to demonstrate profiling on acceleration devices"
+    )
     import sys
+
     sys.exit(0)
 
-activities = [ProfilerActivity.CPU, ProfilerActivity.CUDA, ProfilerActivity.XPU]
 sort_by_keyword = device + "_time_total"
 
 model = models.resnet18().to(device)
@@ -254,8 +268,9 @@ print(prof.key_averages().table(sort_by=sort_by_keyword, row_limit=10))
 model = models.resnet18()
 inputs = torch.randn(5, 3, 224, 224)
 
-with profile(activities=[ProfilerActivity.CPU],
-        profile_memory=True, record_shapes=True) as prof:
+with profile(
+    activities=[ProfilerActivity.CPU], profile_memory=True, record_shapes=True
+) as prof:
     model(inputs)
 
 print(prof.key_averages().table(sort_by="self_cpu_memory_usage", row_limit=10))
@@ -308,9 +323,20 @@ print(prof.key_averages().table(sort_by="cpu_memory_usage", row_limit=10))
 # Profiling results can be outputted as a ``.json`` trace file:
 # Tracing CUDA or XPU kernels
 # Users could switch between cpu, cuda and xpu
-device = 'cuda'
+activities = [ProfilerActivity.CPU]
+if torch.cuda.is_available():
+    device = "cuda"
+    activities += [ProfilerActivity.CUDA]
+elif torch.xpu.is_available():
+    device = "xpu"
+    activities += [ProfilerActivity.XPU]
+else:
+    print(
+        "Neither CUDA nor XPU devices are available to demonstrate profiling on acceleration devices"
+    )
+    import sys
 
-activities = [ProfilerActivity.CPU, ProfilerActivity.CUDA, ProfilerActivity.XPU]
+    sys.exit(0)
 
 model = models.resnet18().to(device)
 inputs = torch.randn(5, 3, 224, 224).to(device)
@@ -337,6 +363,7 @@ sort_by_keyword = "self_" + device + "_time_total"
 with profile(
     activities=activities,
     with_stack=True,
+    experimental_config=torch._C._profiler._ExperimentalConfig(verbose=True),
 ) as prof:
     model(inputs)
 
@@ -391,12 +418,7 @@ print(prof.key_averages(group_by_stack_n=5).table(sort_by=sort_by_keyword, row_l
 
 from torch.profiler import schedule
 
-my_schedule = schedule(
-    skip_first=10,
-    wait=5,
-    warmup=1,
-    active=3,
-    repeat=2)
+my_schedule = schedule(skip_first=10, wait=5, warmup=1, active=3, repeat=2)
 
 ######################################################################
 # Profiler assumes that the long-running job is composed of steps, numbered
@@ -434,18 +456,17 @@ my_schedule = schedule(
 
 sort_by_keyword = "self_" + device + "_time_total"
 
+
 def trace_handler(p):
     output = p.key_averages().table(sort_by=sort_by_keyword, row_limit=10)
     print(output)
     p.export_chrome_trace("/tmp/trace_" + str(p.step_num) + ".json")
 
+
 with profile(
     activities=activities,
-    schedule=torch.profiler.schedule(
-        wait=1,
-        warmup=1,
-        active=2),
-    on_trace_ready=trace_handler
+    schedule=torch.profiler.schedule(wait=1, warmup=1, active=2),
+    on_trace_ready=trace_handler,
 ) as p:
     for idx in range(8):
         model(inputs)
