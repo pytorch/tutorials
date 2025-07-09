@@ -15,7 +15,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 # Install pandoc (does not install from pypi)
 sudo apt-get update
 sudo apt-get install -y pandoc
-pip install sphinx-gallery==0.19.0
+pip install sphinx-gallery==0.17.1
 
 # NS: Path to python runtime should already be part of docker container
 # export PATH=/opt/conda/bin:$PATH
