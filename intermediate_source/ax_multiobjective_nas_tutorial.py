@@ -40,7 +40,6 @@ This tutorial makes use of the following PyTorch libraries:
 - `BoTorch <https://github.com/pytorch/botorch>`__ (the Bayesian Optimization library powering Ax's algorithms)
 """
 
-
 ######################################################################
 # Defining the TorchX App
 # -----------------------
@@ -52,6 +51,7 @@ This tutorial makes use of the following PyTorch libraries:
 # job and creates a `TorchX AppDef <https://pytorch.org/torchx/latest/basics.html>`__
 # with the appropriate settings.
 #
+raise RuntimeError("nope")
 
 from pathlib import Path
 
@@ -245,7 +245,7 @@ class MyTensorboardMetric(TensorboardMetric):
         mul = event_multiplexer.EventMultiplexer(max_reload_threads=20)
         mul.AddRunsFromDirectory(Path(log_dir).joinpath(str(trial.index)).as_posix(), None)
         mul.Reload()
-    
+
         return mul
 
     # This indicates whether the metric is queryable while the trial is
