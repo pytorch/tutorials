@@ -18,14 +18,29 @@
 .. _sphx_glr_intermediate_memory_format_tutorial.py:
 
 
-(beta) Channels Last Memory Format in PyTorch
+Channels Last Memory Format in PyTorch
 *******************************************************
 **Author**: `Vitaly Fedyunin <https://github.com/VitalyFedyunin>`_
 
-What is Channels Last
----------------------
+.. grid:: 2
 
-Channels last memory format is an alternative way of ordering NCHW tensors in memory preserving dimensions ordering. Channels last tensors ordered in such a way that channels become the densest dimension (aka storing images pixel-per-pixel).
+    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+       :class-card: card-prerequisites
+
+       * What is the channels last memory format in PyTorch?
+       * How can it be used to improve performance on certain operators?
+
+    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+       :class-card: card-prerequisites
+
+       * PyTorch v1.5.0
+       * A CUDA-capable GPU
+
+#########################################################################
+# Overview - What is channels last?
+# ---------------------------------
+
+The channels last memory format is an alternative way of ordering NCHW tensors in memory preserving dimensions ordering. Channels last tensors ordered in such a way that channels become the densest dimension (aka storing images pixel-per-pixel).
 
 For example, classic (contiguous) storage of NCHW tensor (in our case it is two 4x4 images with 3 color channels) look like this:
 
@@ -37,15 +52,15 @@ Channels last memory format orders data differently:
 .. figure:: /_static/img/channels_last_memory_format.png
    :alt: channels_last_memory_format
 
-Pytorch supports memory formats (and provides back compatibility with existing models including eager, JIT, and TorchScript) by utilizing  existing strides structure.
+Pytorch supports memory formats by utilizing the existing strides structure.
 For example, 10x3x16x16 batch in Channels last format will have strides equal to (768, 1, 48, 3).
 
-.. GENERATED FROM PYTHON SOURCE LINES 27-29
+.. GENERATED FROM PYTHON SOURCE LINES 42-44
 
 Channels last memory format is implemented for 4D NCHW Tensors only.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 31-36
+.. GENERATED FROM PYTHON SOURCE LINES 46-51
 
 Memory Format API
 -----------------------
@@ -53,11 +68,11 @@ Memory Format API
 Here is how to convert tensors between contiguous and channels
 last memory formats.
 
-.. GENERATED FROM PYTHON SOURCE LINES 38-39
+.. GENERATED FROM PYTHON SOURCE LINES 53-54
 
 Classic PyTorch contiguous tensor
 
-.. GENERATED FROM PYTHON SOURCE LINES 39-45
+.. GENERATED FROM PYTHON SOURCE LINES 54-60
 
 .. code-block:: default
 
@@ -80,11 +95,11 @@ Classic PyTorch contiguous tensor
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 46-47
+.. GENERATED FROM PYTHON SOURCE LINES 61-62
 
 Conversion operator
 
-.. GENERATED FROM PYTHON SOURCE LINES 47-51
+.. GENERATED FROM PYTHON SOURCE LINES 62-66
 
 .. code-block:: default
 
@@ -106,11 +121,11 @@ Conversion operator
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-53
+.. GENERATED FROM PYTHON SOURCE LINES 67-68
 
 Back to contiguous
 
-.. GENERATED FROM PYTHON SOURCE LINES 53-56
+.. GENERATED FROM PYTHON SOURCE LINES 68-71
 
 .. code-block:: default
 
@@ -130,11 +145,11 @@ Back to contiguous
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 57-58
+.. GENERATED FROM PYTHON SOURCE LINES 72-73
 
 Alternative option
 
-.. GENERATED FROM PYTHON SOURCE LINES 58-61
+.. GENERATED FROM PYTHON SOURCE LINES 73-76
 
 .. code-block:: default
 
@@ -154,11 +169,11 @@ Alternative option
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 62-63
+.. GENERATED FROM PYTHON SOURCE LINES 77-78
 
 Format checks
 
-.. GENERATED FROM PYTHON SOURCE LINES 63-65
+.. GENERATED FROM PYTHON SOURCE LINES 78-80
 
 .. code-block:: default
 
@@ -177,7 +192,7 @@ Format checks
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 66-84
+.. GENERATED FROM PYTHON SOURCE LINES 81-99
 
 There are minor difference between the two APIs ``to`` and
 ``contiguous``. We suggest to stick with ``to`` when explicitly
@@ -198,7 +213,7 @@ would restride tensor with a meaningful stride on dimensions whose
 sizes are 1 in order to properly represent the intended memory
 format
 
-.. GENERATED FROM PYTHON SOURCE LINES 84-88
+.. GENERATED FROM PYTHON SOURCE LINES 99-103
 
 .. code-block:: default
 
@@ -220,7 +235,7 @@ format
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 89-99
+.. GENERATED FROM PYTHON SOURCE LINES 104-114
 
 Same thing applies to explicit permutation API ``permute``. In
 special case where ambiguity could occur, ``permute`` does not
@@ -233,11 +248,11 @@ dimensions are all equal to ``1`` (``C==1 && H==1 && W==1``),
 current implementation cannot mark a tensor as channels last memory
 format.
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-102
+.. GENERATED FROM PYTHON SOURCE LINES 116-117
 
 Create as channels last
 
-.. GENERATED FROM PYTHON SOURCE LINES 102-105
+.. GENERATED FROM PYTHON SOURCE LINES 117-120
 
 .. code-block:: default
 
@@ -257,11 +272,11 @@ Create as channels last
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 106-107
+.. GENERATED FROM PYTHON SOURCE LINES 121-122
 
 ``clone`` preserves memory format
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-110
+.. GENERATED FROM PYTHON SOURCE LINES 122-125
 
 .. code-block:: default
 
@@ -281,11 +296,11 @@ Create as channels last
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-112
+.. GENERATED FROM PYTHON SOURCE LINES 126-127
 
 ``to``, ``cuda``, ``float`` ... preserves memory format
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-116
+.. GENERATED FROM PYTHON SOURCE LINES 127-131
 
 .. code-block:: default
 
@@ -306,11 +321,11 @@ Create as channels last
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 117-118
+.. GENERATED FROM PYTHON SOURCE LINES 132-133
 
 ``empty_like``, ``*_like`` operators preserves memory format
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-121
+.. GENERATED FROM PYTHON SOURCE LINES 133-136
 
 .. code-block:: default
 
@@ -330,11 +345,11 @@ Create as channels last
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 122-123
+.. GENERATED FROM PYTHON SOURCE LINES 137-138
 
 Pointwise operators preserves memory format
 
-.. GENERATED FROM PYTHON SOURCE LINES 123-126
+.. GENERATED FROM PYTHON SOURCE LINES 138-141
 
 .. code-block:: default
 
@@ -354,7 +369,7 @@ Pointwise operators preserves memory format
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 127-133
+.. GENERATED FROM PYTHON SOURCE LINES 142-148
 
 ``Conv``, ``Batchnorm`` modules using ``cudnn`` backends support channels last
 (only works for cuDNN >= 7.6). Convolution modules, unlike binary
@@ -363,7 +378,7 @@ If all inputs are in contiguous memory format, the operator
 produces output in contiguous memory format. Otherwise, output will
 be in channels last memory format.
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-144
+.. GENERATED FROM PYTHON SOURCE LINES 148-159
 
 .. code-block:: default
 
@@ -391,7 +406,7 @@ be in channels last memory format.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 145-150
+.. GENERATED FROM PYTHON SOURCE LINES 160-165
 
 When input tensor reaches a operator without channels last support,
 a permutation should automatically apply in the kernel to restore
@@ -399,7 +414,7 @@ contiguous on input tensor. This introduces overhead and stops the
 channels last memory format propagation. Nevertheless, it guarantees
 correct output.
 
-.. GENERATED FROM PYTHON SOURCE LINES 152-165
+.. GENERATED FROM PYTHON SOURCE LINES 167-180
 
 Performance Gains
 --------------------------------------------------------------------
@@ -415,7 +430,7 @@ https://github.com/NVIDIA/apex.
 
 ``python main_amp.py -a resnet50 --b 200 --workers 16 --opt-level O2  ./data``
 
-.. GENERATED FROM PYTHON SOURCE LINES 165-198
+.. GENERATED FROM PYTHON SOURCE LINES 180-213
 
 .. code-block:: default
 
@@ -459,13 +474,13 @@ https://github.com/NVIDIA/apex.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 199-202
+.. GENERATED FROM PYTHON SOURCE LINES 214-217
 
 Passing ``--channels-last true`` allows running a model in Channels last format with observed 22% performance gain.
 
 ``python main_amp.py -a resnet50 --b 200 --workers 16 --opt-level O2 --channels-last true ./data``
 
-.. GENERATED FROM PYTHON SOURCE LINES 202-239
+.. GENERATED FROM PYTHON SOURCE LINES 217-254
 
 .. code-block:: default
 
@@ -513,19 +528,19 @@ Passing ``--channels-last true`` allows running a model in Channels last format 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 240-243
+.. GENERATED FROM PYTHON SOURCE LINES 255-258
 
 The following list of models has the full support of Channels last and showing 8%-35% performance gains on Volta devices:
 ``alexnet``, ``mnasnet0_5``, ``mnasnet0_75``, ``mnasnet1_0``, ``mnasnet1_3``, ``mobilenet_v2``, ``resnet101``, ``resnet152``, ``resnet18``, ``resnet34``, ``resnet50``, ``resnext50_32x4d``, ``shufflenet_v2_x0_5``, ``shufflenet_v2_x1_0``, ``shufflenet_v2_x1_5``, ``shufflenet_v2_x2_0``, ``squeezenet1_0``, ``squeezenet1_1``, ``vgg11``, ``vgg11_bn``, ``vgg13``, ``vgg13_bn``, ``vgg16``, ``vgg16_bn``, ``vgg19``, ``vgg19_bn``, ``wide_resnet101_2``, ``wide_resnet50_2``
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 245-248
+.. GENERATED FROM PYTHON SOURCE LINES 260-263
 
 The following list of models has the full support of Channels last and showing 26%-76% performance gains on Intel(R) Xeon(R) Ice Lake (or newer) CPUs:
 ``alexnet``, ``densenet121``, ``densenet161``, ``densenet169``, ``googlenet``, ``inception_v3``, ``mnasnet0_5``, ``mnasnet1_0``, ``resnet101``, ``resnet152``, ``resnet18``, ``resnet34``, ``resnet50``, ``resnext101_32x8d``, ``resnext50_32x4d``, ``shufflenet_v2_x0_5``, ``shufflenet_v2_x1_0``, ``squeezenet1_0``, ``squeezenet1_1``, ``vgg11``, ``vgg11_bn``, ``vgg13``, ``vgg13_bn``, ``vgg16``, ``vgg16_bn``, ``vgg19``, ``vgg19_bn``, ``wide_resnet101_2``, ``wide_resnet50_2``
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 250-258
+.. GENERATED FROM PYTHON SOURCE LINES 265-273
 
 Converting existing models
 --------------------------
@@ -536,7 +551,7 @@ the graph as soon as input (or certain weight) is formatted
 correctly.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 258-266
+.. GENERATED FROM PYTHON SOURCE LINES 273-281
 
 .. code-block:: default
 
@@ -555,7 +570,7 @@ correctly.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 267-289
+.. GENERATED FROM PYTHON SOURCE LINES 282-304
 
 However, not all operators fully converted to support channels last
 (usually returning contiguous output instead). In the example posted
@@ -580,7 +595,7 @@ operator doesn't match the memory format of the input.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 289-366
+.. GENERATED FROM PYTHON SOURCE LINES 304-381
 
 .. code-block:: default
 
@@ -668,18 +683,18 @@ operator doesn't match the memory format of the input.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 367-371
+.. GENERATED FROM PYTHON SOURCE LINES 382-386
 
 If you found an operator that doesn't support channels last tensors
 and you want to contribute, feel free to use following developers
 guide https://github.com/pytorch/pytorch/wiki/Writing-memory-format-aware-operators.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 373-374
+.. GENERATED FROM PYTHON SOURCE LINES 388-389
 
 Code below is to recover the attributes of torch.
 
-.. GENERATED FROM PYTHON SOURCE LINES 374-379
+.. GENERATED FROM PYTHON SOURCE LINES 389-394
 
 .. code-block:: default
 
@@ -695,7 +710,7 @@ Code below is to recover the attributes of torch.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 380-390
+.. GENERATED FROM PYTHON SOURCE LINES 395-405
 
 Work to do
 ----------
@@ -708,10 +723,20 @@ There are still many things to do, such as:
 If you have feedback and/or suggestions for improvement, please let us
 know by creating `an issue <https://github.com/pytorch/pytorch/issues>`_.
 
+.. GENERATED FROM PYTHON SOURCE LINES 407-414
+
+Conclusion
+----------
+
+This tutorial introduced the "channels last" memory format and demonstrated
+how to use it for performance gains. For a practical example of accelerating
+vision models using channels last, see the post
+`here <https://pytorch.org/blog/accelerating-pytorch-vision-models-with-channels-last-on-cpu/>`_.
+
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.370 seconds)
+   **Total running time of the script:** ( 0 minutes  0.369 seconds)
 
 
 .. _sphx_glr_download_intermediate_memory_format_tutorial.py:
