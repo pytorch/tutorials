@@ -535,7 +535,7 @@ Multi-GPU Training</a> || <a class="reference external" href="../beginner/ddp_se
 Tolerance</a> || <a class="reference external" href="ddp_series_multinode.html">Multi-Node
 training</a> || <strong>minGPT Training</strong></p>
 <div class="section" id="training-real-world-models-with-ddp">
-<h1>Training “real-world” models with DDP<a class="headerlink" href="#training-real-world-models-with-ddp" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Sep 27, 2022 | Last Updated: Jan 23, 2025 | Last Verified: Nov 05, 2024</p>
+<h1>Training “real-world” models with DDP<a class="headerlink" href="#training-real-world-models-with-ddp" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Sep 27, 2022 | Last Updated: Jul 09, 2025 | Last Verified: Nov 05, 2024</p>
 <p>Authors: <a class="reference external" href="https://github.com/subramen">Suraj Subramanian</a></p>
 <div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
 <div class="sd-row sd-row-cols-2 sd-row-cols-xs-2 sd-row-cols-sm-2 sd-row-cols-md-2 sd-row-cols-lg-2 docutils">
@@ -565,10 +565,10 @@ training</a> || <strong>minGPT Training</strong></p>
 <div class="sd-card-title sd-font-weight-bold docutils">
 <svg aria-hidden="true" class="sd-octicon sd-octicon-list-unordered" height="1.0em" version="1.1" viewbox="0 0 16 16" width="1.0em"><path d="M2 4a1 1 0 100-2 1 1 0 000 2zm3.75-1.5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zm0 5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zm0 5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zM3 8a1 1 0 11-2 0 1 1 0 012 0zm-1 6a1 1 0 100-2 1 1 0 000 2z" fill-rule="evenodd"></path></svg> Prerequisites</div>
 <ul class="simple">
+<li><p class="sd-card-text">PyTorch <a class="reference external" href="https://pytorch.org/get-started/locally/">installed</a> with CUDA on all machines</p></li>
 <li><p class="sd-card-text">Familiarity with <a class="reference external" href="../beginner/ddp_series_multigpu.html">multi-GPU training</a> and <a class="reference external" href="../beginner/ddp_series_fault_tolerance.html">torchrun</a></p></li>
 <li><p class="sd-card-text">[Optional] Familiarity with <a class="reference external" href="ddp_series_multinode.html">multinode training</a></p></li>
-<li><p class="sd-card-text">2 or more TCP-reachable GPU machines (this tutorial uses AWS p3.2xlarge instances)</p></li>
-<li><p class="sd-card-text">PyTorch <a class="reference external" href="https://pytorch.org/get-started/locally/">installed</a> with CUDA on all machines</p></li>
+<li><p class="sd-card-text">2 or more TCP-reachable GPU machines for multi-node training (this tutorial uses AWS p3.2xlarge instances)</p></li>
 </ul>
 </div>
 </div>
@@ -610,17 +610,16 @@ that are more sensitive to precision drops are maintained in FP32 precision.</p>
 Since DDP replicates the model on each GPU, it only works when GPUs have sufficient capacity to accomodate the full footprint.
 When models grow larger, more aggressive techniques might be useful:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://pytorch.org/docs/stable/checkpoint.html">activation checkpointing</a>: Instead of saving intermediate activations during the forward pass, the activations are recomputed during the backward pass. In this approach, we run more compute but save on memory footprint.</p></li>
-<li><p><a class="reference external" href="https://pytorch.org/docs/stable/fsdp.html">Fully-Sharded Data Parallel</a>: Here the model is not replicated but “sharded” across all the GPUs, and computation is overlapped with communication in the forward and backward passes. Read our <a class="reference external" href="https://medium.com/pytorch/training-a-1-trillion-parameter-model-with-pytorch-fully-sharded-data-parallel-on-aws-3ac13aa96cff">blog</a> to learn how we trained a 1 Trillion parameter model with FSDP.</p></li>
+<li><p><a class="reference external" href="https://pytorch.org/docs/stable/checkpoint.html">Activation checkpointing</a>: Instead of saving intermediate activations during the forward pass, the activations are recomputed during the backward pass. In this approach, we run more compute but save on memory footprint.</p></li>
+<li><p><a class="reference external" href="https://docs.pytorch.org/docs/stable/distributed.fsdp.fully_shard.html">Fully-Sharded Data Parallel</a>: Here the model is not replicated but “sharded” across all the GPUs, and computation is overlapped with communication in the forward and backward passes. Read our <a class="reference external" href="https://medium.com/pytorch/training-a-1-trillion-parameter-model-with-pytorch-fully-sharded-data-parallel-on-aws-3ac13aa96cff">blog</a> to learn how we trained a 1 Trillion parameter model with FSDP.</p></li>
 </ul>
 <div class="section" id="further-reading">
 <h3>Further Reading<a class="headerlink" href="#further-reading" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference external" href="ddp_series_multinode.html">Multi-Node training with DDP</a> (previous tutorial in this series)</p></li>
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/amp.html">Mixed Precision training</a></p></li>
-<li><p><a class="reference external" href="https://pytorch.org/docs/stable/fsdp.html">Fully-Sharded Data Parallel</a></p></li>
+<li><p><a class="reference external" href="https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html">Fully-Sharded Data Parallel tutorial</a></p></li>
 <li><p><a class="reference external" href="https://medium.com/pytorch/training-a-1-trillion-parameter-model-with-pytorch-fully-sharded-data-parallel-on-aws-3ac13aa96cff">Training a 1T parameter model with FSDP</a></p></li>
-<li><p><a class="reference external" href="https://www.youtube.com/playlist?list=PL_lsbAsL_o2BT6aerEKgIoufVD_fodnuT">FSDP Video Tutorial Series</a></p></li>
 </ul>
 </div>
 </div>
