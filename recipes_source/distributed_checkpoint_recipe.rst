@@ -151,7 +151,7 @@ Now, let's create a toy module, wrap it with FSDP, feed it with some dummy input
             join=True,
         )
 
-Please go ahead and check the `checkpoint` directory. You should see world_size checkpoint files as shown below.
+Please go ahead and check the `checkpoint` directory. You should see checkpoint files corresponding to the number of files as shown below. For example, if you have 8 devices, you should see 8 files.
 
 .. figure:: /_static/img/distributed/distributed_checkpoint_generated_files.png
    :width: 100%
