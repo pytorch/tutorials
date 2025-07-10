@@ -85,7 +85,10 @@ def call_in_subprocess(func):
             raise RuntimeError(f"Error in subprocess: {result}")
     return wrapper
 
-sphinx_gallery.gen_rst.generate_file_rst = call_in_subprocess(sphinx_gallery.gen_rst.generate_file_rst)
+# Windows does not support multiprocessing with fork and mac has issues with
+# fork so we do not monkey patch sphinx gallery to run in subprocesses.
+if os.getenv("TUTORIALS_ISOLATE_BUILD", "1") == "1" and not sys.platform.startswith("win") and not sys.platform == "darwin":
+    sphinx_gallery.gen_rst.generate_file_rst = call_in_subprocess(sphinx_gallery.gen_rst.generate_file_rst)
 
 try:
     import torchvision
