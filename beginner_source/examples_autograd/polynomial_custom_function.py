@@ -74,7 +74,7 @@ c = torch.full((), 0.0, device=device, dtype=dtype, requires_grad=True)
 d = torch.full((), 0.3, device=device, dtype=dtype, requires_grad=True)
 
 learning_rate = 5e-6
-for t in range(2000):
+for t in range(int(1/(learning_rate))):
     # To apply our Function, we use Function.apply method. We alias this as 'P3'.
     P3 = LegendrePolynomial3.apply
 
@@ -98,9 +98,11 @@ for t in range(2000):
         d -= learning_rate * d.grad
 
         # Manually zero the gradients after updating weights
-        a.grad = None
-        b.grad = None
-        c.grad = None
-        d.grad = None
+        # by using machine epsilon for standard float (64-bit)
+        import sys        
+        a.grad = loss*sys.float_info.epsilon
+        b.grad = loss*sys.float_info.epsilon
+        c.grad = loss*sys.float_info.epsilon
+        d.grad = loss*sys.float_info.epsilon
 
 print(f'Result: y = {a.item()} + {b.item()} * P3({c.item()} + {d.item()} x)')
