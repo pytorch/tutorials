@@ -13,12 +13,12 @@
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" rel="stylesheet" type="text/css"/>
-<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-dataframe.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-rendered-html.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/custom.css" rel="stylesheet" type="text/css"/>
@@ -533,8 +533,8 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="sphx-glr-download-link-note admonition note">
 <p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-intermediate-transformer-building-blocks-py"><span class="std std-ref">here</span></a>
-to download the full example code</p>
+<p><a class="reference internal" href="#sphx-glr-download-intermediate-transformer-building-blocks-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code.</p>
 </div>
 <span class="target" id="sphx-glr-intermediate-transformer-building-blocks-py"></span><div class="sphx-glr-example-title section" id="accelerating-pytorch-transformers-by-replacing-nn-transformer-with-nested-tensors-and-torch-compile">
 <h1>Accelerating PyTorch Transformers by replacing <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> with Nested Tensors and <code class="docutils literal notranslate"><span class="pre">torch.compile()</span></code><a class="headerlink" href="#accelerating-pytorch-transformers-by-replacing-nn-transformer-with-nested-tensors-and-torch-compile" title="Permalink to this heading">¶</a></h1>
@@ -689,7 +689,7 @@ skipped, performance and memory usage improve.</p></li>
 <p>We’ll demonstrate the above by building upon the <code class="docutils literal notranslate"><span class="pre">MultiheadAttention</span></code> layer in the
 <a class="reference external" href="https://pytorch.org/tutorials/prototype/nestedtensor.html">Nested Tensor tutorial</a>
 and comparing it to the <code class="docutils literal notranslate"><span class="pre">nn.MultiheadAttention</span></code> layer.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
 
@@ -818,7 +818,7 @@ and comparing it to the <code class="docutils literal notranslate"><span class="
 <p>In this section, we include a utility to generate semi-realistic data using
 <code class="docutils literal notranslate"><span class="pre">Zipf</span></code> distribution for sentence lengths. This is used to generate the nested
 query, key, and value tensors. We also include a benchmark utility.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">zipf_sentence_lengths</span><span class="p">(</span><span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">:</span>
@@ -893,7 +893,7 @@ query, key, and value tensors. We also include a benchmark utility.</p>
 <p>We will now demonstrate the performance improvements of using nested tensors
 in the <code class="docutils literal notranslate"><span class="pre">MultiheadAttention</span></code> layer + compile for self attention. We compare this against
 the traditional <code class="docutils literal notranslate"><span class="pre">nn.MultiheadAttention</span></code> + compile with padding and masking.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">E_total</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">E_total</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span>
 <span class="n">E_out</span> <span class="o">=</span> <span class="n">E_q</span>
 <span class="n">d_model</span> <span class="o">=</span> <span class="n">E_q</span>
 <span class="n">nheads</span> <span class="o">=</span> <span class="mi">8</span>
@@ -985,16 +985,16 @@ the traditional <code class="docutils literal notranslate"><span class="pre">nn.
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total sequence length in nested query 10021, max sequence length 129
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total sequence length in nested query 10805, max sequence length 174
 /usr/local/lib/python3.10/dist-packages/torch/_inductor/compile_fx.py:236: UserWarning:
 
 TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
 
-padded_time=0.01860, padded_peak_memory=3.73 GB
-nested_time=0.00244, nested_peak_memory=0.70 GB
+padded_time=0.02467, padded_peak_memory=5.29 GB
+nested_time=0.00259, nested_peak_memory=0.87 GB
 Max difference between vanilla and nested result 0.0
-Nested speedup: 7.62
-Nested peak memory reduction 3.03 GB
+Nested speedup: 9.53
+Nested peak memory reduction 4.43 GB
 </pre></div>
 </div>
 <p>For reference, here are some sample outputs on A100:</p>
@@ -1006,7 +1006,7 @@ Nested peak memory reduction 3.03 GB
 </pre></div>
 </div>
 <p>We can also see the same for backward pass</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">entry_length</span></a> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">sentence_lengths</span></a><span class="p">):</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">entry_length</span></a> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">sentence_lengths</span></a><span class="p">):</span>
     <span class="c1"># padding-specific step: remove output projection bias from padded entries for fair comparison</span>
     <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">padded_result</span></a><span class="p">[</span><span class="n">i</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">entry_length</span></a><span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
@@ -1054,12 +1054,12 @@ Nested peak memory reduction 3.03 GB
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>padded_bw_time=1.96554, padded_bw_peak_mem=4.63 GB
-nested_bw_time=0.06612, nested_bw_peak_mem=2.94 GB
-Nested backward speedup: 29.73
-Nested backward peak memory reduction 1.68 GB
-Difference in out_proj.weight.grad 0.000335693359375
-Difference in packed_proj.weight.grad 0.00152587890625
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>padded_bw_time=1.68003, padded_bw_peak_mem=6.42 GB
+nested_bw_time=0.06592, nested_bw_peak_mem=4.02 GB
+Nested backward speedup: 25.49
+Nested backward peak memory reduction 2.40 GB
+Difference in out_proj.weight.grad 0.0005035400390625
+Difference in packed_proj.weight.grad 0.0025634765625
 Difference in out_proj.bias.grad 0.0
 Difference in packed_proj.bias.grad 0.001953125
 </pre></div>
@@ -1113,7 +1113,7 @@ are from different sequences.</p>
 from the decoder and the key/value come from the encoder.</p>
 <p>The above MultiheadAttention layer nicely generalizes to this case with nested
 tensors for both query and key/value.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">query</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">q_len</span></a> <span class="o">=</span> <span class="n">gen_batch</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">query</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">q_len</span></a> <span class="o">=</span> <span class="n">gen_batch</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
 <span class="n">_</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">kv_len</span></a> <span class="o">=</span> <span class="n">gen_batch</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span>
@@ -1125,12 +1125,12 @@ tensors for both query and key/value.</p>
 <span class="n">out</span> <span class="o">=</span> <span class="n">new_mha_layer</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">is_causal</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total sequence length in nested query 10525, max sequence length 162
-Total sequence length in nested key/value 10523, max sequence length 222
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total sequence length in nested query 10526, max sequence length 119
+Total sequence length in nested key/value 10421, max sequence length 139
 </pre></div>
 </div>
 <p>As above, we can compare this against the vanilla compiled <code class="docutils literal notranslate"><span class="pre">nn.MultiheadAttention</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.manual_seed.html#torch.manual_seed" title="torch.manual_seed"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span></a><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.manual_seed.html#torch.manual_seed" title="torch.manual_seed"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span></a><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
 <span class="n">query</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">q_len</span></a> <span class="o">=</span> <span class="n">gen_batch</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
 <span class="n">_</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">kv_len</span></a> <span class="o">=</span> <span class="n">gen_batch</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">padded_query</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">padded_key</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">padded_value</span></a> <span class="o">=</span> <span class="p">(</span>
@@ -1178,8 +1178,8 @@ Total sequence length in nested key/value 10523, max sequence length 222
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Max difference between vanilla and nested result 0.0
-Nested speedup: 6.14
-Nested peak memory reduction 1.36 GB
+Nested speedup: 5.08
+Nested peak memory reduction 1.19 GB
 </pre></div>
 </div>
 <p>Sample outputs on A100:</p>
@@ -1211,7 +1211,7 @@ to the attention score. The example below takes the <code class="docutils litera
 that implements <a class="reference external" href="https://arxiv.org/abs/2108.12409">ALiBi</a> from
 <a class="reference external" href="https://github.com/pytorch-labs/attention-gym">attention gym</a> and uses it
 with nested input tensors.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.nn.attention.flex_attention</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-nn-attention-flex_attention sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/nn.attention.flex_attention.html#torch.nn.attention.flex_attention.flex_attention" title="torch.nn.attention.flex_attention.flex_attention"><span class="n">flex_attention</span></a>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.nn.attention.flex_attention</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-nn-attention-flex_attention sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/nn.attention.flex_attention.html#torch.nn.attention.flex_attention.flex_attention" title="torch.nn.attention.flex_attention.flex_attention"><span class="n">flex_attention</span></a>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">generate_alibi_bias</span><span class="p">(</span><span class="n">H</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
@@ -1246,7 +1246,7 @@ In particular, the function creates a sparse block mask for a “stacked sequenc
 the variable length sequences in the NJT combined into one, while properly masking out
 inter-sequence attention. In the following example, we show how to create a
 causal block mask using this utility.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.nn.attention.flex_attention</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-nn-attention-flex_attention sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/nn.attention.flex_attention.html#torch.nn.attention.flex_attention.create_nested_block_mask" title="torch.nn.attention.flex_attention.create_nested_block_mask"><span class="n">create_nested_block_mask</span></a>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.nn.attention.flex_attention</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-nn-attention-flex_attention sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/nn.attention.flex_attention.html#torch.nn.attention.flex_attention.create_nested_block_mask" title="torch.nn.attention.flex_attention.create_nested_block_mask"><span class="n">create_nested_block_mask</span></a>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">causal_mask</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">q_idx</span><span class="p">,</span> <span class="n">kv_idx</span><span class="p">):</span>
@@ -1280,7 +1280,7 @@ are the same tensor. Each of these tensors is projected with a
 <code class="docutils literal notranslate"><span class="pre">Linear(E_q,</span> <span class="pre">E_total)</span></code> layer. Instead, we can pack this into one layer,
 which is what we do in the MultiheadAttention layer above.</p>
 <p>Let us compare the performance of the packed projection against the usual method:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">InputProjection</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">InputProjection</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_total</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">dtype</span></a><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">factory_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"device"</span><span class="p">:</span> <span class="n">device</span><span class="p">,</span> <span class="s2">"dtype"</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">dtype</span></a><span class="p">}</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -1325,7 +1325,7 @@ which is what we do in the MultiheadAttention layer above.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>InputProjection: 0.032192 s, PackedInputProjection: 0.031477 s, speedup: 1.02x
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>InputProjection: 0.033953 s, PackedInputProjection: 0.032670 s, speedup: 1.04x
 </pre></div>
 </div>
 </div>
@@ -1333,7 +1333,7 @@ which is what we do in the MultiheadAttention layer above.</p>
 <h3>SwiGLU feed forward network of Transformer Layer<a class="headerlink" href="#swiglu-feed-forward-network-of-transformer-layer" title="Permalink to this heading">¶</a></h3>
 <p>Swish-Gated Linear Unit (SwiGLU) is a non-linear activation function that is increasingly popular in the feed-forward
 network of the transformer layer (e.g. Llama). A feed-forward network with SwiGLU activation is defined as:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">SwiGLUFFN</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">SwiGLUFFN</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">dim</span><span class="p">,</span>
@@ -1360,7 +1360,7 @@ network of the transformer layer (e.g. Llama). A feed-forward network with SwiGL
 </pre></div>
 </div>
 <p>An alternative way of implementing this that uses packed projection is</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">PackedSwiGLUFFN</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">PackedSwiGLUFFN</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">dim</span><span class="p">,</span>
@@ -1389,7 +1389,7 @@ network of the transformer layer (e.g. Llama). A feed-forward network with SwiGL
 <p>We can compare the performance of the two implementations as follows
 Depending on your hardware, you might see different results. On an A100 I see
 1.12x speedup for D=128.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">D</span> <span class="o">=</span> <span class="mi">128</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">D</span> <span class="o">=</span> <span class="mi">128</span>
 
 <span class="n">swigluffn</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">SwiGLUFFN</span></a><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">D</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">dtype</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span></a><span class="p">))</span>
 <span class="n">packed_swigluffn</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span>
@@ -1411,7 +1411,7 @@ Depending on your hardware, you might see different results. On an A100 I see
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>SwiGLUFFN: 0.0009320840001691977 s, PackedSwiGLUFFN: 0.0008599699999649602 s, speedup: 1.08x
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>SwiGLUFFN: 0.0009201650000250083 s, PackedSwiGLUFFN: 0.0008655240001189668 s, speedup: 1.06x
 </pre></div>
 </div>
 </div>
@@ -1435,13 +1435,16 @@ implement various transformer architectures. Some examples include</p>
 provides for writing transformer layers and demonstrated examples how to compose
 them. It is our hope that this tutorial has educated the reader on the ease with
 which flexible and performant transformer layers can be implemented by users of PyTorch.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  53.934 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 3.200 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-transformer-building-blocks-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/e201125c39959609ca168c306995205c/transformer_building_blocks.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">transformer_building_blocks.ipynb</span></code></a></p>
+</div>
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/57114670a041b4c96ed6eb9fc17a6b3f/transformer_building_blocks.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">transformer_building_blocks.py</span></code></a></p>
 </div>
-<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
-<p><a class="reference download internal" download="" href="../_downloads/e201125c39959609ca168c306995205c/transformer_building_blocks.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">transformer_building_blocks.ipynb</span></code></a></p>
+<div class="sphx-glr-download sphx-glr-download-zip docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/9e1bf792ffacdc6aa490d8ac2246cba7/transformer_building_blocks.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">transformer_building_blocks.zip</span></code></a></p>
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>

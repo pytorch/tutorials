@@ -12,12 +12,12 @@
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" rel="stylesheet" type="text/css"/>
-<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-dataframe.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-rendered-html.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/custom.css" rel="stylesheet" type="text/css"/>
@@ -534,8 +534,8 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="sphx-glr-download-link-note admonition note">
 <p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-intermediate-fx-conv-bn-fuser-py"><span class="std std-ref">here</span></a>
-to download the full example code</p>
+<p><a class="reference internal" href="#sphx-glr-download-intermediate-fx-conv-bn-fuser-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code.</p>
 </div>
 <div class="sphx-glr-example-title section" id="beta-building-a-convolution-batch-norm-fuser-in-fx">
 <span id="sphx-glr-intermediate-fx-conv-bn-fuser-py"></span><h1>(beta) Building a Convolution/Batch Norm fuser in FX<a class="headerlink" href="#beta-building-a-convolution-batch-norm-fuser-in-fx" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Mar 04, 2021 | Last Updated: Jan 16, 2024 | Last Verified: Nov 05, 2024</p>
@@ -551,7 +551,7 @@ transformations of PyTorch, to do the following:</p>
 <a class="reference external" href="https://github.com/pytorch/pytorch/blob/orig/release/1.8/torch/fx/experimental/fuser.py">https://github.com/pytorch/pytorch/blob/orig/release/1.8/torch/fx/experimental/fuser.py</a></p>
 <p>First, let’s get some imports out of the way (we will be using all
 of these later in the code).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Iterable</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Iterable</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.fx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">fx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
@@ -562,7 +562,7 @@ of these later in the code).</p>
 and batch norms. Note that this model has some tricky components - some of
 the conv/batch norm patterns are hidden within Sequentials and one of the
 <code class="docutils literal notranslate"><span class="pre">BatchNorms</span></code> is wrapped in another Module.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">WrappedBatchNorm</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">WrappedBatchNorm</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mod</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html#torch.nn.BatchNorm2d" title="torch.nn.BatchNorm2d"><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span></a><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -602,7 +602,7 @@ accessing the computational graph. FX resolves this problem by symbolically
 tracing the actual operations called, so that we can track the computations
 through the <cite>forward</cite> call, nested within Sequential modules, or wrapped in
 an user-defined module.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">traced_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-fx sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/fx.html#torch.fx.symbolic_trace" title="torch.fx.symbolic_trace"><span class="n">torch</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">symbolic_trace</span></a><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">traced_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-fx sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/fx.html#torch.fx.symbolic_trace" title="torch.fx.symbolic_trace"><span class="n">torch</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">symbolic_trace</span></a><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">traced_model</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -623,7 +623,7 @@ norm entirely from our model! Read
 code here is copied from
 <a class="reference external" href="https://github.com/pytorch/pytorch/blob/orig/release/1.8/torch/nn/utils/fusion.py">https://github.com/pytorch/pytorch/blob/orig/release/1.8/torch/nn/utils/fusion.py</a>
 clarity purposes.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">fuse_conv_bn_eval</span><span class="p">(</span><span class="n">conv</span><span class="p">,</span> <span class="n">bn</span><span class="p">):</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">fuse_conv_bn_eval</span><span class="p">(</span><span class="n">conv</span><span class="p">,</span> <span class="n">bn</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Given a conv Module `A` and an batch_norm module `B`, returns a conv</span>
 <span class="sd">    module `C` such that C(x) == B(A(x)) in inference mode.</span>
@@ -658,7 +658,7 @@ clarity purposes.</p>
 <p>Now that we have our computational graph as well as a method for fusing
 convolution and batch norm, all that remains is to iterate over the FX graph
 and apply the desired fusions.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_parent_name</span><span class="p">(</span><span class="n">target</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_parent_name</span><span class="p">(</span><span class="n">target</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Splits a ``qualname`` into parent path and last atom.</span>
 <span class="sd">    For example, `foo.bar.baz` -&gt; (`foo.bar`, `baz`)</span>
@@ -730,7 +730,7 @@ for a more usable pass.</p>
 <p>We can now run this fusion pass on our initial toy model and verify that our
 results are identical. In addition, we can print out the code for our fused
 model and verify that there are no more batch norms.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fused_model</span> <span class="o">=</span> <span class="n">fuse</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">fused_model</span> <span class="o">=</span> <span class="n">fuse</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">fused_model</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
 <span class="n">inp</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <a class="sphx-glr-backref-module-torch-testing sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/testing.html#torch.testing.assert_allclose" title="torch.testing.assert_allclose"><span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span></a><span class="p">(</span><span class="n">fused_model</span><span class="p">(</span><span class="n">inp</span><span class="p">),</span> <span class="n">model</span><span class="p">(</span><span class="n">inp</span><span class="p">))</span>
@@ -741,7 +741,7 @@ model and verify that there are no more batch norms.</p>
 <h2>Benchmarking our Fusion on ResNet18<a class="headerlink" href="#benchmarking-our-fusion-on-resnet18" title="Permalink to this heading">¶</a></h2>
 <p>We can test our fusion pass on a larger model like ResNet18 and see how much
 this pass improves inference performance.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torchvision.models</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">models</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torchvision.models</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">models</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
 <span class="n">rn18</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchvision-models sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.resnet18" title="torchvision.models.resnet18"><span class="n">models</span><span class="o">.</span><span class="n">resnet18</span></a><span class="p">()</span>
@@ -767,7 +767,7 @@ this pass improves inference performance.</p>
 (“torchscriptable”) PyTorch code, we can easily <code class="docutils literal notranslate"><span class="pre">jit.script</span></code> the output to try
 and increase our performance even more. In this way, our FX model
 transformation composes with TorchScript with no issues.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jit_rn18</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-jit sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.jit.script.html#torch.jit.script" title="torch.jit.script"><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span></a><span class="p">(</span><span class="n">fused_rn18</span><span class="p">)</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">jit_rn18</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-jit sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.jit.script.html#torch.jit.script" title="torch.jit.script"><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span></a><span class="p">(</span><span class="n">fused_rn18</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"jit time: "</span><span class="p">,</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">jit_rn18</span><span class="p">))</span>
 
 
@@ -784,13 +784,15 @@ transformation composes with TorchScript with no issues.</p>
 <span class="c1"># you might have.</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-fx-conv-bn-fuser-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/a22e5922e71fe39ad848a64968a5570e/fx_conv_bn_fuser.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">fx_conv_bn_fuser.ipynb</span></code></a></p>
+</div>
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/a8a58591f09624693bd748be066141fd/fx_conv_bn_fuser.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">fx_conv_bn_fuser.py</span></code></a></p>
 </div>
-<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
-<p><a class="reference download internal" download="" href="../_downloads/a22e5922e71fe39ad848a64968a5570e/fx_conv_bn_fuser.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">fx_conv_bn_fuser.ipynb</span></code></a></p>
+<div class="sphx-glr-download sphx-glr-download-zip docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/3ccba9140ee6b66c01d01b2fca05ab3b/fx_conv_bn_fuser.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">fx_conv_bn_fuser.zip</span></code></a></p>
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>

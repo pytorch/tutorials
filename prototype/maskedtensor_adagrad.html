@@ -12,12 +12,12 @@
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" rel="stylesheet" type="text/css"/>
-<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-dataframe.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-rendered-html.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/custom.css" rel="stylesheet" type="text/css"/>
@@ -532,8 +532,8 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="sphx-glr-download-link-note admonition note">
 <p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-prototype-maskedtensor-adagrad-py"><span class="std std-ref">here</span></a>
-to download the full example code</p>
+<p><a class="reference internal" href="#sphx-glr-download-prototype-maskedtensor-adagrad-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code.</p>
 </div>
 <div class="sphx-glr-example-title section" id="prototype-efficiently-writing-sparse-semantics-for-adagrad-with-maskedtensor">
 <span id="sphx-glr-prototype-maskedtensor-adagrad-py"></span><h1>(Prototype) Efficiently writing “sparse” semantics for Adagrad with MaskedTensor<a class="headerlink" href="#prototype-efficiently-writing-sparse-semantics-for-adagrad-with-maskedtensor" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 28, 2022 | Last Updated: Oct 28, 2022 | Last Verified: Not Verified</p>
@@ -554,7 +554,7 @@ In the end the code snippets are repeated without additional comments to show th
 </div>
 <div class="section" id="preparation">
 <h2>Preparation<a class="headerlink" href="#preparation" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
 <span class="c1"># Disable prototype warnings and such</span>
@@ -612,7 +612,7 @@ implementation in PyTorch with the ultimate goal of simplifying and more faithfu
 <div class="section" id="original-sparse-implementation">
 <h2>Original Sparse Implementation<a class="headerlink" href="#original-sparse-implementation" title="Permalink to this heading">¶</a></h2>
 <p>Now, let’s break down the code with some inline comments:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_make_sparse</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">grad</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">grad_indices</span></a><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_make_sparse</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">grad</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">grad_indices</span></a><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
     <span class="n">size</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">grad</span></a><span class="o">.</span><span class="n">size</span><span class="p">()</span>
     <span class="k">if</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">grad_indices</span></a><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">values</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.empty_like.html#torch.empty_like" title="torch.empty_like"><span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">grad</span></a><span class="p">)</span>
@@ -669,7 +669,7 @@ MaskedTensor proposes to disentangle the sparsity optimization from the semantic
 currently we can’t have dense semantics with sparse storage or masked semantics with dense storage.
 MaskedTensor enables these ideas by purposefully separating the storage from the semantics.</p>
 <p>Consider the above example using a masked gradient:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Let's now import MaskedTensor!</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Let's now import MaskedTensor!</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch.masked</span><span class="w"> </span><span class="kn">import</span> <span class="n">masked_tensor</span>
 
 <span class="c1"># Create an entirely new set of parameters to avoid errors</span>
@@ -693,7 +693,7 @@ MaskedTensor enables these ideas by purposefully separating the storage from the
 In particular, much of the boilerplate code around <code class="docutils literal notranslate"><span class="pre">_make_sparse</span></code>
 (and needing to have a separate implementation per layout) is handled for the user with <code class="xref py py-class docutils literal notranslate"><span class="pre">MaskedTensor</span></code>.</p>
 <p>At this point, let’s print both this version and original version for easier comparison:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"state_sum:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">state_sum</span></a><span class="p">)</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"state_sum:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">state_sum</span></a><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"state_sum2:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">state_sum2</span></a><span class="p">)</span>
 </pre></div>
 </div>
@@ -705,7 +705,7 @@ state_sum2:
         [16.5000,  0.5000, 25.5000,  0.5000]])
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"std:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">std</span></a><span class="p">)</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"std:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">std</span></a><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"std2:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">std2</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -723,7 +723,7 @@ std2:
 )
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"param:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">param</span></a><span class="p">)</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"param:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">param</span></a><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"param2:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">param2</span></a><span class="p">)</span>
 </pre></div>
 </div>
@@ -750,13 +750,16 @@ and development, while enabling sparse semantics, such as this one.</p>
 <a class="reference external" href="https://pytorch.org/tutorials/prototype/maskedtensor_advanced_semantics.html">MaskedTensor Advanced Semantics</a>
 to see some of the differences in design decisions between <code class="xref py py-class docutils literal notranslate"><span class="pre">MaskedTensor</span></code> and NumPy’s MaskedArray, as well
 as reduction semantics.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.032 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.031 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-prototype-maskedtensor-adagrad-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/9c494adfa705afca5e6375d6cb339a14/maskedtensor_adagrad.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">maskedtensor_adagrad.ipynb</span></code></a></p>
+</div>
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/25b0b65f5731eb063aab5b9034092772/maskedtensor_adagrad.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">maskedtensor_adagrad.py</span></code></a></p>
 </div>
-<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
-<p><a class="reference download internal" download="" href="../_downloads/9c494adfa705afca5e6375d6cb339a14/maskedtensor_adagrad.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">maskedtensor_adagrad.ipynb</span></code></a></p>
+<div class="sphx-glr-download sphx-glr-download-zip docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/4b7ff3a3a5891446bd625fc97f39ffa9/maskedtensor_adagrad.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">maskedtensor_adagrad.zip</span></code></a></p>
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>

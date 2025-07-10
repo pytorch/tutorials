@@ -12,12 +12,12 @@
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" rel="stylesheet" type="text/css"/>
-<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-dataframe.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-rendered-html.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/custom.css" rel="stylesheet" type="text/css"/>
@@ -532,8 +532,8 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="sphx-glr-download-link-note admonition note">
 <p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-intermediate-optimizer-step-in-backward-tutorial-py"><span class="std std-ref">here</span></a>
-to download the full example code</p>
+<p><a class="reference internal" href="#sphx-glr-download-intermediate-optimizer-step-in-backward-tutorial-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code.</p>
 </div>
 <div class="sphx-glr-example-title section" id="how-to-save-memory-by-fusing-the-optimizer-step-into-the-backward-pass">
 <span id="sphx-glr-intermediate-optimizer-step-in-backward-tutorial-py"></span><h1>How to save memory by fusing the optimizer step into the backward pass<a class="headerlink" href="#how-to-save-memory-by-fusing-the-optimizer-step-into-the-backward-pass" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 02, 2023 | Last Updated: Jan 16, 2024 | Last Verified: Nov 05, 2024</p>
@@ -560,7 +560,7 @@ Otherwise, this technique would benefit similarly on any device.</p></li>
 vision transformer model from torchvision, but feel free to substitute
 with your own model. We will also use <code class="docutils literal notranslate"><span class="pre">torch.optim.Adam</span></code> as our optimizer,
 but, again, feel free to substitute with your own optimizer.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torchvision</span><span class="w"> </span><span class="kn">import</span> <span class="n">models</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pickle</span><span class="w"> </span><span class="kn">import</span> <span class="n">dump</span>
 
@@ -571,45 +571,43 @@ but, again, feel free to substitute with your own optimizer.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading: "https://download.pytorch.org/models/vit_l_16-852ce7e3.pth" to /var/lib/ci-user/.cache/torch/hub/checkpoints/vit_l_16-852ce7e3.pth
 
   0%|          | 0.00/1.13G [00:00&lt;?, ?B/s]
-  3%|3         | 39.4M/1.13G [00:00&lt;00:02, 413MB/s]
-  7%|6         | 79.0M/1.13G [00:00&lt;00:02, 414MB/s]
- 10%|#         | 118M/1.13G [00:00&lt;00:02, 404MB/s]
- 14%|#3        | 157M/1.13G [00:00&lt;00:04, 244MB/s]
- 16%|#6        | 186M/1.13G [00:00&lt;00:03, 259MB/s]
- 19%|#8        | 215M/1.13G [00:00&lt;00:03, 261MB/s]
- 21%|##1       | 244M/1.13G [00:00&lt;00:03, 271MB/s]
- 24%|##3       | 277M/1.13G [00:00&lt;00:03, 291MB/s]
- 27%|##7       | 314M/1.13G [00:01&lt;00:02, 320MB/s]
- 30%|###       | 352M/1.13G [00:01&lt;00:02, 342MB/s]
- 34%|###3      | 393M/1.13G [00:01&lt;00:02, 366MB/s]
- 37%|###7      | 430M/1.13G [00:01&lt;00:02, 374MB/s]
- 40%|####      | 467M/1.13G [00:01&lt;00:02, 342MB/s]
- 43%|####3     | 500M/1.13G [00:01&lt;00:02, 334MB/s]
- 46%|####5     | 533M/1.13G [00:01&lt;00:02, 325MB/s]
- 49%|####8     | 568M/1.13G [00:01&lt;00:01, 335MB/s]
- 52%|#####1    | 600M/1.13G [00:01&lt;00:01, 335MB/s]
- 54%|#####4    | 632M/1.13G [00:02&lt;00:01, 315MB/s]
- 57%|#####7    | 663M/1.13G [00:02&lt;00:01, 291MB/s]
- 60%|######    | 699M/1.13G [00:02&lt;00:01, 316MB/s]
- 64%|######3   | 740M/1.13G [00:02&lt;00:01, 346MB/s]
- 67%|######6   | 774M/1.13G [00:02&lt;00:01, 345MB/s]
- 70%|######9   | 808M/1.13G [00:02&lt;00:01, 351MB/s]
- 73%|#######2  | 842M/1.13G [00:02&lt;00:00, 352MB/s]
- 75%|#######5  | 876M/1.13G [00:02&lt;00:00, 323MB/s]
- 78%|#######8  | 908M/1.13G [00:02&lt;00:00, 314MB/s]
- 81%|########1 | 946M/1.13G [00:03&lt;00:00, 337MB/s]
- 85%|########4 | 986M/1.13G [00:03&lt;00:00, 362MB/s]
- 88%|########7 | 1.00G/1.13G [00:03&lt;00:00, 335MB/s]
- 91%|######### | 1.03G/1.13G [00:03&lt;00:00, 313MB/s]
- 94%|#########4| 1.07G/1.13G [00:03&lt;00:00, 343MB/s]
- 97%|#########7| 1.10G/1.13G [00:03&lt;00:00, 346MB/s]
-100%|##########| 1.13G/1.13G [00:03&lt;00:00, 322MB/s]
+  1%|          | 13.0M/1.13G [00:00&lt;00:08, 136MB/s]
+  2%|▏         | 28.0M/1.13G [00:00&lt;00:08, 148MB/s]
+  6%|▌         | 67.1M/1.13G [00:00&lt;00:04, 268MB/s]
+  9%|▉         | 107M/1.13G [00:00&lt;00:03, 327MB/s]
+ 13%|█▎        | 147M/1.13G [00:00&lt;00:02, 361MB/s]
+ 16%|█▌        | 188M/1.13G [00:00&lt;00:02, 382MB/s]
+ 20%|█▉        | 228M/1.13G [00:00&lt;00:02, 394MB/s]
+ 23%|██▎       | 268M/1.13G [00:00&lt;00:02, 402MB/s]
+ 26%|██▋       | 306M/1.13G [00:00&lt;00:02, 384MB/s]
+ 30%|██▉       | 346M/1.13G [00:01&lt;00:02, 395MB/s]
+ 33%|███▎      | 384M/1.13G [00:01&lt;00:02, 356MB/s]
+ 36%|███▌      | 419M/1.13G [00:01&lt;00:02, 359MB/s]
+ 40%|███▉      | 460M/1.13G [00:01&lt;00:01, 376MB/s]
+ 43%|████▎     | 500M/1.13G [00:01&lt;00:01, 389MB/s]
+ 46%|████▋     | 540M/1.13G [00:01&lt;00:01, 398MB/s]
+ 50%|████▉     | 580M/1.13G [00:01&lt;00:01, 405MB/s]
+ 53%|█████▎    | 619M/1.13G [00:01&lt;00:01, 405MB/s]
+ 57%|█████▋    | 658M/1.13G [00:01&lt;00:01, 403MB/s]
+ 60%|██████    | 698M/1.13G [00:01&lt;00:01, 408MB/s]
+ 64%|██████▎   | 738M/1.13G [00:02&lt;00:01, 411MB/s]
+ 67%|██████▋   | 777M/1.13G [00:02&lt;00:00, 410MB/s]
+ 70%|███████   | 816M/1.13G [00:02&lt;00:00, 396MB/s]
+ 74%|███████▎  | 856M/1.13G [00:02&lt;00:00, 401MB/s]
+ 77%|███████▋  | 896M/1.13G [00:02&lt;00:00, 407MB/s]
+ 81%|████████  | 936M/1.13G [00:02&lt;00:00, 410MB/s]
+ 84%|████████▍ | 975M/1.13G [00:02&lt;00:00, 402MB/s]
+ 87%|████████▋ | 0.99G/1.13G [00:02&lt;00:00, 398MB/s]
+ 91%|█████████ | 1.03G/1.13G [00:02&lt;00:00, 404MB/s]
+ 94%|█████████▍| 1.07G/1.13G [00:02&lt;00:00, 391MB/s]
+ 98%|█████████▊| 1.11G/1.13G [00:03&lt;00:00, 399MB/s]
+100%|██████████| 1.13G/1.13G [00:03&lt;00:00, 384MB/s]
 </pre></div>
 </div>
 <p>Now let’s define our typical training loop. You should use real images when
 training, but for the purposes of this tutorial, we are passing in fake
 inputs and not worrying about loading any actual data.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IMAGE_SIZE</span> <span class="o">=</span> <span class="mi">224</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">IMAGE_SIZE</span> <span class="o">=</span> <span class="mi">224</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">train</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">):</span>
   <span class="c1"># create our fake image input: tensor shape is batch_size, channels, height, width</span>
@@ -644,7 +642,7 @@ not worry about them for now as they are usually small and ephemeral.</p></li>
 <h2>Capturing and visualizing memory snapshots<a class="headerlink" href="#capturing-and-visualizing-memory-snapshots" title="Permalink to this heading">¶</a></h2>
 <p>Let’s get us a memory snapshot! As your code runs, consider what you may expect
 the CUDA memory timeline to look like.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># tell CUDA to start recording memory allocations</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># tell CUDA to start recording memory allocations</span>
 <a class="sphx-glr-backref-module-torch-cuda-memory sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/torch_cuda_memory.html#torch.cuda.memory._record_memory_history" title="torch.cuda.memory._record_memory_history"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">_record_memory_history</span></a><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="s1">'all'</span><span class="p">)</span>
 
 <span class="c1"># train 3 steps</span>
@@ -729,7 +727,7 @@ out below so we don’t spend resources rerunning the code.</p>
 <span class="n">optimizer</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="torch.optim.Adam"><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.parameters" title="torch.nn.Module.parameters"><span class="n">model</span><span class="o">.</span><span class="n">parameters</span></a><span class="p">())</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instead of having just *one* optimizer, we will have a ``dict`` of optimizers</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instead of having just *one* optimizer, we will have a ``dict`` of optimizers</span>
 <span class="c1"># for every parameter so we could reference them in our hook.</span>
 <span class="n">optimizer_dict</span> <span class="o">=</span> <span class="p">{</span><a class="sphx-glr-backref-module-torch-nn-parameter sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.parameter.Parameter.html#torch.nn.parameter.Parameter" title="torch.nn.parameter.Parameter"><span class="n">p</span></a><span class="p">:</span> <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="torch.optim.Adam"><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span></a><span class="p">([</span><a class="sphx-glr-backref-module-torch-nn-parameter sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.parameter.Parameter.html#torch.nn.parameter.Parameter" title="torch.nn.parameter.Parameter"><span class="n">p</span></a><span class="p">],</span> <span class="n">foreach</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">for</span> <a class="sphx-glr-backref-module-torch-nn-parameter sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.parameter.Parameter.html#torch.nn.parameter.Parameter" title="torch.nn.parameter.Parameter"><span class="n">p</span></a> <span class="ow">in</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.parameters" title="torch.nn.Module.parameters"><span class="n">model</span><span class="o">.</span><span class="n">parameters</span></a><span class="p">()}</span>
 
@@ -768,7 +766,7 @@ is to make this API easier to adopt with LRSchedulers and other features
 you are already used to.</p>
 <p>But let me get back to convincing you that this technique is worth it.
 We will consult our friend, the memory snapshot.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># delete optimizer memory from before to get a clean slate for the next</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># delete optimizer memory from before to get a clean slate for the next</span>
 <span class="c1"># memory snapshot</span>
 <span class="k">del</span> <span class="n">optimizer</span>
 
@@ -826,13 +824,16 @@ fusing the optimizer into the backward step through the new
 <code class="docutils literal notranslate"><span class="pre">Tensor.register_post_accumulate_grad_hook()</span></code> API and <em>when</em> to apply this
 technique (when gradients memory is significant). Along the way, we also learned
 about memory snapshots, which are generally useful in memory optimization.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  10.114 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 9.708 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-optimizer-step-in-backward-tutorial-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/dfe0a5e2472fa9d26daaa0f82eefb5b6/optimizer_step_in_backward_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">optimizer_step_in_backward_tutorial.ipynb</span></code></a></p>
+</div>
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/678a3ee2efc3fad76b565fdd254b297d/optimizer_step_in_backward_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">optimizer_step_in_backward_tutorial.py</span></code></a></p>
 </div>
-<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
-<p><a class="reference download internal" download="" href="../_downloads/dfe0a5e2472fa9d26daaa0f82eefb5b6/optimizer_step_in_backward_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">optimizer_step_in_backward_tutorial.ipynb</span></code></a></p>
+<div class="sphx-glr-download sphx-glr-download-zip docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/b04f7e6a93c00c90f510ed45c058d7cb/optimizer_step_in_backward_tutorial.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">optimizer_step_in_backward_tutorial.zip</span></code></a></p>
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>

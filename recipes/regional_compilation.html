@@ -12,12 +12,12 @@
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" rel="stylesheet" type="text/css"/>
-<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-binder.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-dataframe.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-rendered-html.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/custom.css" rel="stylesheet" type="text/css"/>
@@ -532,8 +532,8 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="sphx-glr-download-link-note admonition note">
 <p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-recipes-regional-compilation-py"><span class="std std-ref">here</span></a>
-to download the full example code</p>
+<p><a class="reference internal" href="#sphx-glr-download-recipes-regional-compilation-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code.</p>
 </div>
 <div class="sphx-glr-example-title section" id="reducing-torch-compile-cold-start-compilation-time-with-regional-compilation">
 <span id="sphx-glr-recipes-regional-compilation-py"></span><h1>Reducing torch.compile cold start compilation time with regional compilation<a class="headerlink" href="#reducing-torch-compile-cold-start-compilation-time-with-regional-compilation" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 10, 2024 | Last Updated: Oct 16, 2024 | Last Verified: Oct 10, 2024</p>
@@ -562,7 +562,7 @@ available.</p>
 you can enable the configuration flag <code class="docutils literal notranslate"><span class="pre">torch._dynamo.config.inline_inbuilt_nn_modules=True</span></code>
 to prevent recompilations during regional compilation. In version 2.5, this flag is enabled by default.</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">perf_counter</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">perf_counter</span>
 </pre></div>
 </div>
 </div>
@@ -576,7 +576,7 @@ to prevent recompilations during regional compilation. In version 2.5, this flag
 <li><p>Measure the compilation time of the full model and the regional compilation.</p></li>
 </ol>
 <p>First, let’s import the necessary libraries for loading our data:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
 </pre></div>
 </div>
@@ -586,7 +586,7 @@ large language model is composed of many Transformer blocks. In this recipe,
 we will create a <code class="docutils literal notranslate"><span class="pre">Layer</span></code> using the <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> class as a proxy for a repeated region.
 We will then create a <code class="docutils literal notranslate"><span class="pre">Model</span></code> which is composed of 64 instances of this
 <code class="docutils literal notranslate"><span class="pre">Layer</span></code> class.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Layer</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Layer</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">linear1</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
@@ -629,7 +629,7 @@ most users take with <code class="docutils literal notranslate"><span class="pre
 the <code class="docutils literal notranslate"><span class="pre">Model</span></code> object. This will effectively inline the 64 layers, producing a
 large graph to compile. You can look at the full graph by running this recipe
 with <code class="docutils literal notranslate"><span class="pre">TORCH_LOGS=graph_code</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Model</span></a><span class="p">(</span><span class="n">apply_regional_compilation</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Model</span></a><span class="p">(</span><span class="n">apply_regional_compilation</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
 <span class="n">full_compiled_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -637,7 +637,7 @@ with <code class="docutils literal notranslate"><span class="pre">TORCH_LOGS=gra
 By strategically choosing to compile a repeated region of the model, we can compile a
 much smaller graph and then reuse the compiled graph for all the regions.
 In the example, <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> is applied only to the <code class="docutils literal notranslate"><span class="pre">layers</span></code> and not the full model.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">regional_compiled_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Model</span></a><span class="p">(</span><span class="n">apply_regional_compilation</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">regional_compiled_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">Model</span></a><span class="p">(</span><span class="n">apply_regional_compilation</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Applying compilation to a repeated region, instead of full model, leads to
@@ -656,7 +656,7 @@ speedup differences between the full model and regional compilation.</p>
 In the code below, we measure the total time spent in the first invocation. While this method is not
 precise, it provides a good estimate since the majority of the time is spent in
 compilation.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">measure_latency</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">measure_latency</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
     <span class="c1"># Reset the compiler caches to ensure no reuse between different runs</span>
     <a class="sphx-glr-backref-module-torch-compiler sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.compiler.reset.html#torch.compiler.reset" title="torch.compiler.reset"><span class="n">torch</span><span class="o">.</span><span class="n">compiler</span><span class="o">.</span><span class="n">reset</span></a><span class="p">()</span>
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">_inductor</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">fresh_inductor_cache</span><span class="p">():</span>
@@ -681,8 +681,8 @@ compilation.</p>
 
 TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
 
-Full model compilation time = 26.62 seconds
-Regional compilation time = 1.33 seconds
+Full model compilation time = 10.77 seconds
+Regional compilation time = 1.09 seconds
 </pre></div>
 </div>
 </div>
@@ -692,13 +692,16 @@ Regional compilation time = 1.33 seconds
 has repeated regions. This approach requires user modifications to apply <cite>torch.compile</cite> to
 the repeated regions instead of more commonly used full model compilation. We
 are continually working on reducing cold start compilation time.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  29.264 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 13.165 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-regional-compilation-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/cbd5804c4553cb4a23dc24137bde6077/regional_compilation.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">regional_compilation.ipynb</span></code></a></p>
+</div>
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/1ac8a049de0513cb49a0e834e4c27a20/regional_compilation.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">regional_compilation.py</span></code></a></p>
 </div>
-<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
-<p><a class="reference download internal" download="" href="../_downloads/cbd5804c4553cb4a23dc24137bde6077/regional_compilation.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">regional_compilation.ipynb</span></code></a></p>
+<div class="sphx-glr-download sphx-glr-download-zip docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/9e958043a51d6477abc403a70ccb3646/regional_compilation.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">regional_compilation.zip</span></code></a></p>
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>

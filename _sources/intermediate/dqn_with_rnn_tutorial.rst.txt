@@ -10,8 +10,8 @@
     .. note::
         :class: sphx-glr-download-link-note
 
-        Click :ref:`here <sphx_glr_download_intermediate_dqn_with_rnn_tutorial.py>`
-        to download the full example code
+        :ref:`Go to the end <sphx_glr_download_intermediate_dqn_with_rnn_tutorial.py>`
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -90,7 +90,7 @@ Setup
 
 .. GENERATED FROM PYTHON SOURCE LINES 72-104
 
-.. code-block:: default
+.. code-block:: Python
 
 
 
@@ -173,7 +173,7 @@ Two transforms are important for the purpose of this tutorial:
 
 .. GENERATED FROM PYTHON SOURCE LINES 157-171
 
-.. code-block:: default
+.. code-block:: Python
 
 
     env = TransformedEnv(
@@ -203,7 +203,7 @@ As always, we need to initialize manually our normalization constants:
 
 .. GENERATED FROM PYTHON SOURCE LINES 174-177
 
-.. code-block:: default
+.. code-block:: Python
 
     env.transform[-1].init_stats(1000, reduce_dim=[0, 1, 2], cat_dim=0, keep_dims=[0])
     td = env.reset()
@@ -235,7 +235,7 @@ can assist us with this:
 
 .. GENERATED FROM PYTHON SOURCE LINES 193-205
 
-.. code-block:: default
+.. code-block:: Python
 
 
     feature = Mod(
@@ -264,7 +264,7 @@ output vector:
 
 .. GENERATED FROM PYTHON SOURCE LINES 209-211
 
-.. code-block:: default
+.. code-block:: Python
 
     n_cells = feature(env.reset())["embed"].shape[-1]
 
@@ -302,7 +302,7 @@ values for these attributes to facilitate its construction.
 
 .. GENERATED FROM PYTHON SOURCE LINES 234-243
 
-.. code-block:: default
+.. code-block:: Python
 
 
     lstm = LSTMModule(
@@ -326,7 +326,7 @@ Let us look at the LSTM Module class, specifically its in and out_keys:
 
 .. GENERATED FROM PYTHON SOURCE LINES 245-248
 
-.. code-block:: default
+.. code-block:: Python
 
     print("in_keys", lstm.in_keys)
     print("out_keys", lstm.out_keys)
@@ -363,7 +363,7 @@ exactly that:
 
 .. GENERATED FROM PYTHON SOURCE LINES 262-264
 
-.. code-block:: default
+.. code-block:: Python
 
     env.append_transform(lstm.make_tensordict_primer())
 
@@ -415,7 +415,7 @@ that we have added the primer:
 
 .. GENERATED FROM PYTHON SOURCE LINES 267-269
 
-.. code-block:: default
+.. code-block:: Python
 
     print(env)
 
@@ -471,7 +471,7 @@ our policy.
 
 .. GENERATED FROM PYTHON SOURCE LINES 276-283
 
-.. code-block:: default
+.. code-block:: Python
 
     mlp = MLP(
         out_features=2,
@@ -493,7 +493,7 @@ and fill the bias with zeros:
 
 .. GENERATED FROM PYTHON SOURCE LINES 285-289
 
-.. code-block:: default
+.. code-block:: Python
 
 
     mlp[-1].bias.data.fill_(0.0)
@@ -522,7 +522,7 @@ Categorical (sometimes called "sparse") encoding or the one-hot version of it.
 
 .. GENERATED FROM PYTHON SOURCE LINES 301-303
 
-.. code-block:: default
+.. code-block:: Python
 
     qval = QValueModule(spec=env.action_spec)
 
@@ -547,7 +547,7 @@ We can now put things together in a :class:`~tensordict.nn.TensorDictSequential`
 
 .. GENERATED FROM PYTHON SOURCE LINES 313-315
 
-.. code-block:: default
+.. code-block:: Python
 
     stoch_policy = Seq(feature, lstm, mlp, qval)
 
@@ -569,7 +569,7 @@ This decay is achieved via a call to :meth:`~torchrl.modules.EGreedyModule.step`
 
 .. GENERATED FROM PYTHON SOURCE LINES 322-330
 
-.. code-block:: default
+.. code-block:: Python
 
     exploration_module = EGreedyModule(
         annealing_num_steps=1_000_000, spec=env.action_spec, eps_init=0.2
@@ -605,7 +605,7 @@ assume that the input data is sequential in nature.
 
 .. GENERATED FROM PYTHON SOURCE LINES 345-347
 
-.. code-block:: default
+.. code-block:: Python
 
     policy = Seq(feature, lstm.set_recurrent_mode(True), mlp, qval)
 
@@ -633,7 +633,7 @@ initialize them before creating an optimizer and such.
 
 .. GENERATED FROM PYTHON SOURCE LINES 351-353
 
-.. code-block:: default
+.. code-block:: Python
 
     policy(env.reset())
 
@@ -689,7 +689,7 @@ as a target network.
 
 .. GENERATED FROM PYTHON SOURCE LINES 365-367
 
-.. code-block:: default
+.. code-block:: Python
 
     loss_fn = DQNLoss(policy, action_space=env.action_spec, delay_value=True)
 
@@ -709,7 +709,7 @@ this work.
 
 .. GENERATED FROM PYTHON SOURCE LINES 372-376
 
-.. code-block:: default
+.. code-block:: Python
 
     updater = SoftUpdate(loss_fn, eps=0.95)
 
@@ -742,7 +742,7 @@ on disk.
 
 .. GENERATED FROM PYTHON SOURCE LINES 392-397
 
-.. code-block:: default
+.. code-block:: Python
 
     collector = SyncDataCollector(env, stoch_policy, frames_per_batch=50, total_frames=200, device=device)
     rb = TensorDictReplayBuffer(
@@ -767,7 +767,7 @@ every 50 data collection, and plot the results after training.
 
 .. GENERATED FROM PYTHON SOURCE LINES 404-440
 
-.. code-block:: default
+.. code-block:: Python
 
 
     utd = 16
@@ -854,15 +854,15 @@ every 50 data collection, and plot the results after training.
         device=cpu,
         is_shared=False)
 
-      0%|          | 50/1000000 [00:00<2:59:18, 92.95it/s]
-      0%|          | 50/1000000 [00:19<2:59:18, 92.95it/s]
-    steps: 11, loss_val:  0.0002, action_spread: tensor([45,  5]):   0%|          | 50/1000000 [00:30<2:59:18, 92.95it/s]
-    steps: 11, loss_val:  0.0002, action_spread: tensor([45,  5]):   0%|          | 100/1000000 [00:31<102:51:05,  2.70it/s]
-    steps: 12, loss_val:  0.0004, action_spread: tensor([46,  4]):   0%|          | 100/1000000 [01:02<102:51:05,  2.70it/s]
-    steps: 12, loss_val:  0.0004, action_spread: tensor([46,  4]):   0%|          | 150/1000000 [01:02<134:55:29,  2.06it/s]
-    steps: 12, loss_val:  0.0003, action_spread: tensor([ 2, 48]):   0%|          | 150/1000000 [01:33<134:55:29,  2.06it/s]
-    steps: 12, loss_val:  0.0003, action_spread: tensor([ 2, 48]):   0%|          | 200/1000000 [01:34<151:26:37,  1.83it/s]
-    steps: 23, loss_val:  0.0005, action_spread: tensor([16, 34]):   0%|          | 200/1000000 [02:05<151:26:37,  1.83it/s]
+      0%|          | 50/1000000 [00:00<3:01:41, 91.72it/s]
+      0%|          | 50/1000000 [00:19<3:01:41, 91.72it/s]
+    steps: 11, loss_val:  0.0004, action_spread: tensor([ 5, 45]):   0%|          | 50/1000000 [00:31<3:01:41, 91.72it/s]
+    steps: 11, loss_val:  0.0004, action_spread: tensor([ 5, 45]):   0%|          | 100/1000000 [00:32<104:08:29,  2.67it/s]
+    steps: 11, loss_val:  0.0003, action_spread: tensor([ 4, 46]):   0%|          | 100/1000000 [01:03<104:08:29,  2.67it/s]
+    steps: 11, loss_val:  0.0003, action_spread: tensor([ 4, 46]):   0%|          | 150/1000000 [01:03<137:09:11,  2.03it/s]
+    steps: 11, loss_val:  0.0003, action_spread: tensor([45,  5]):   0%|          | 150/1000000 [01:34<137:09:11,  2.03it/s]
+    steps: 11, loss_val:  0.0003, action_spread: tensor([45,  5]):   0%|          | 200/1000000 [01:35<152:42:00,  1.82it/s]
+    steps: 11, loss_val:  0.0002, action_spread: tensor([ 5, 45]):   0%|          | 200/1000000 [02:06<152:42:00,  1.82it/s]
 
 
 
@@ -873,7 +873,7 @@ Let's plot our results:
 
 .. GENERATED FROM PYTHON SOURCE LINES 443-450
 
-.. code-block:: default
+.. code-block:: Python
 
     if traj_lens:
         from matplotlib import pyplot as plt
@@ -918,7 +918,7 @@ Further Reading
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 2 minutes  10.626 seconds)
+   **Total running time of the script:** (2 minutes 11.828 seconds)
 
 
 .. _sphx_glr_download_intermediate_dqn_with_rnn_tutorial.py:
@@ -927,14 +927,17 @@ Further Reading
 
   .. container:: sphx-glr-footer sphx-glr-footer-example
 
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+      :download:`Download Jupyter notebook: dqn_with_rnn_tutorial.ipynb <dqn_with_rnn_tutorial.ipynb>`
 
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: dqn_with_rnn_tutorial.py <dqn_with_rnn_tutorial.py>`
 
-    .. container:: sphx-glr-download sphx-glr-download-jupyter
+    .. container:: sphx-glr-download sphx-glr-download-zip
 
-      :download:`Download Jupyter notebook: dqn_with_rnn_tutorial.ipynb <dqn_with_rnn_tutorial.ipynb>`
+      :download:`Download zipped: dqn_with_rnn_tutorial.zip <dqn_with_rnn_tutorial.zip>`
 
 
 .. only:: html
