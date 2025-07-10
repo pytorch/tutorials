@@ -45,7 +45,7 @@ just work.
 # Example: Wrapping PIL's crop into a custom operator
 # ------------------------------------
 # Let's say that we are using PIL's ``crop`` operation.
-raise RuntimeError("nope")
+
 import torch
 from torchvision.transforms.functional import to_pil_image, pil_to_tensor
 import PIL
