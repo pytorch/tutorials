@@ -395,4 +395,3 @@ html_css_files = [
 
 def setup(app):
     app.connect("source-read", handle_jinja_templates)
-    app.connect("html-page-context", update_context)
