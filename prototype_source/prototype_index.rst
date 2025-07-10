@@ -31,85 +31,6 @@ Prototype features are not available as part of binary distributions like PyPI o
 
 .. Add prototype tutorial cards below this line
 
-.. Quantization
-
-.. customcarditem::
-   :header: FX Graph Mode Quantization User Guide
-   :card_description: Learn about FX Graph Mode Quantization.
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../prototype/fx_graph_mode_quant_guide.html
-   :tags: FX,Quantization
-
-.. customcarditem::
-   :header: FX Graph Mode Post Training Dynamic Quantization
-   :card_description: Learn how to do post training dynamic quantization in graph mode based on torch.fx.
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../prototype/fx_graph_mode_ptq_dynamic.html
-   :tags: FX,Quantization
-
-.. customcarditem::
-   :header: FX Graph Mode Post Training Static Quantization
-   :card_description: Learn how to do post training static quantization in graph mode based on torch.fx.
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../prototype/fx_graph_mode_ptq_static.html
-   :tags: FX,Quantization
-
-.. customcarditem::
-   :header: Graph Mode Dynamic Quantization on BERT
-   :card_description: Learn how to do post training dynamic quantization with graph mode quantization on BERT models.
-   :image: ../_static/img/thumbnails/cropped/graph-mode-dynamic-bert.png
-   :link: ../prototype/graph_mode_dynamic_bert_tutorial.html
-   :tags: Text,Quantization
-
-.. customcarditem::
-   :header: PyTorch Numeric Suite Tutorial
-   :card_description: Learn how to use the PyTorch Numeric Suite to support quantization debugging efforts.
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../prototype/numeric_suite_tutorial.html
-   :tags: Debugging,Quantization
-
-.. customcarditem::
-   :header: How to Write a Quantizer for PyTorch 2 Export Quantization
-   :card_description: Learn how to implement a Quantizer for PT2 Export Quantization
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../prototype/pt2e_quantizer.html
-   :tags: Quantization
-
-.. customcarditem::
-   :header: PyTorch 2 Export Post Training Quantization
-   :card_description: Learn how to use Post Training Quantization in PyTorch 2 Export.
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../prototype/pt2e_quant_ptq.html
-   :tags: Quantization
-
-.. customcarditem::
-   :header: PyTorch 2 Export Quantization-Aware Training
-   :card_description: Learn how to use Quantization-Aware-Training in PyTorch 2 Export.
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../prototype/pt2e_quant_qat.html
-   :tags: Quantization
-
-.. customcarditem::
-   :header: PyTorch 2 Export Quantization with X86 Backend through Inductor
-   :card_description: Learn how to use PT2 Export Quantization with X86 Backend through Inductor.
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../prototype/pt2e_quant_x86_inductor.html
-   :tags: Quantization
-
-.. customcarditem::
-   :header: PyTorch 2 Export Quantization for OpenVINO torch.compile Backend
-   :card_description: Learn how to use PT2 Export Quantization with OpenVINO torch.compile Backend.
-   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: ../prototype/openvino_quantizer.html
-   :tags: Quantization
-
-.. customcarditem::
-   :header: PyTorch 2 Export Quantization with Intel GPU Backend through Inductor
-   :card_description: Learn how to use PT2 Export Quantization with Intel GPU Backend through Inductor.
-   :image: _static/img/thumbnails/cropped/pytorch-logo.png
-   :link: ../prototype/pt2e_quant_xpu_inductor.html
-   :tags: Quantization
-
 .. Sparsity
 
 .. customcarditem::
@@ -295,16 +216,9 @@ Prototype features are not available as part of binary distributions like PyPI o
    :hidden:
 
    prototype/context_parallel.html
-   prototype/fx_graph_mode_quant_guide.html
-   prototype/fx_graph_mode_ptq_dynamic.html
-   prototype/fx_graph_mode_ptq_static.html
    prototype/flight_recorder_tutorial.html
-   prototype/graph_mode_dynamic_bert_tutorial.html
    prototype/inductor_cpp_wrapper_tutorial.html
    prototype/inductor_windows.html
-   prototype/pt2e_quantizer.html
-   prototype/pt2e_quant_ptq.html
-   prototype/pt2e_quant_qat.html
    prototype/ios_gpu_workflow.html
    prototype/nnapi_mobilenetv2.html
    prototype/tracing_based_selective_build.html
