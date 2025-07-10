@@ -21,7 +21,7 @@
 Introduction to TorchRec
 ==================================
 
-**TorchRec** is a PyTorch library tailored for building scalable and efficient recommendation systems using embeddings. 
+**TorchRec** is a PyTorch library tailored for building scalable and efficient recommendation systems using embeddings.
 This tutorial guides you through the installation process, introduces the concept of embeddings, and highlights their importance in
 recommendation systems. It offers practical demonstrations on implementing embeddings with PyTorch
 and TorchRec, focusing on handling large embedding tables through distributed training and advanced optimizations.
@@ -30,7 +30,7 @@ and TorchRec, focusing on handling large embedding tables through distributed tr
 
     .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
        :class-card: card-prerequisites
-       
+
        * Fundamentals of embeddings and their role in recommendation systems
        * How to set up TorchRec to manage and implement embeddings in PyTorch environments
        * Explore advanced techniques for distributing large embedding tables across multiple GPUs
@@ -47,7 +47,7 @@ and TorchRec, focusing on handling large embedding tables through distributed tr
 Install Dependencies
 ^^^^^^^^^^^^^^^^^^^^
 
-Before running this tutorial in Google Colab or other environment, install the
+Before running this tutorial in Google Colab, make sure to install the
 following dependencies:
 
 .. code-block:: sh
@@ -57,13 +57,13 @@ following dependencies:
    !pip3 install torchmetrics==1.0.3
    !pip3 install torchrec --index-url https://download.pytorch.org/whl/cu121
 
-.. note:: 
+.. note::
    If you are running this in Google Colab, make sure to switch to a GPU runtime type.
    For more information,
    see `Enabling CUDA <https://pytorch.org/tutorials/beginner/colab#enabling-cuda>`__
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-114
+.. GENERATED FROM PYTHON SOURCE LINES 51-113
 
 Embeddings
 ~~~~~~~~~~
@@ -103,7 +103,7 @@ Embeddings are trained in RecSys through the following process:
   hashed to the total size of the embedding table to prevent issues when
   the ID > number of rows
 
-* Embeddings are then retrieved and **pooled, such as taking the sum or 
+* Embeddings are then retrieved and **pooled, such as taking the sum or
   mean of the embeddings**. This is required as there can be a variable number of
   embeddings per example while the model expects consistent shapes.
 
@@ -128,7 +128,7 @@ TorchRec specific modules and data types, and depict how distributed training
 works with TorchRec.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 114-118
+.. GENERATED FROM PYTHON SOURCE LINES 113-117
 
 .. code-block:: Python
 
@@ -137,12 +137,18 @@ works with TorchRec.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 119-134
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 118-133
 
 Embeddings in PyTorch
 ---------------------
 
-In PyTorch, we have the following types of embeddings:  
+In PyTorch, we have the following types of embeddings:
 
 * :class:`torch.nn.Embedding`: An embedding table where forward pass returns the
   embeddings themselves as is.
@@ -152,10 +158,10 @@ In PyTorch, we have the following types of embeddings:
   as **Pooled Embeddings**.
 
 In this section, we will go over a very brief introduction to performing
-embedding lookups by passing in indices into the table. 
+embedding lookups by passing in indices into the table.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-178
+.. GENERATED FROM PYTHON SOURCE LINES 133-177
 
 .. code-block:: Python
 
@@ -204,7 +210,59 @@ embedding lookups by passing in indices into the table.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 179-185
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Weights: tensor([[0.6467, 0.4895, 0.0219, 0.9045],
+            [0.7102, 0.0289, 0.0704, 0.8486],
+            [0.2543, 0.8553, 0.2152, 0.3074],
+            [0.3698, 0.1927, 0.2565, 0.8903],
+            [0.6445, 0.3696, 0.3936, 0.0406],
+            [0.8981, 0.0133, 0.4778, 0.5089],
+            [0.3074, 0.6695, 0.9071, 0.6179],
+            [0.6909, 0.1408, 0.3191, 0.3094],
+            [0.4343, 0.4177, 0.1546, 0.5013],
+            [0.2792, 0.5718, 0.8209, 0.3980]])
+    Embedding Collection Table:  Parameter containing:
+    tensor([[0.6467, 0.4895, 0.0219, 0.9045],
+            [0.7102, 0.0289, 0.0704, 0.8486],
+            [0.2543, 0.8553, 0.2152, 0.3074],
+            [0.3698, 0.1927, 0.2565, 0.8903],
+            [0.6445, 0.3696, 0.3936, 0.0406],
+            [0.8981, 0.0133, 0.4778, 0.5089],
+            [0.3074, 0.6695, 0.9071, 0.6179],
+            [0.6909, 0.1408, 0.3191, 0.3094],
+            [0.4343, 0.4177, 0.1546, 0.5013],
+            [0.2792, 0.5718, 0.8209, 0.3980]], requires_grad=True)
+    Embedding Bag Collection Table:  Parameter containing:
+    tensor([[0.6467, 0.4895, 0.0219, 0.9045],
+            [0.7102, 0.0289, 0.0704, 0.8486],
+            [0.2543, 0.8553, 0.2152, 0.3074],
+            [0.3698, 0.1927, 0.2565, 0.8903],
+            [0.6445, 0.3696, 0.3936, 0.0406],
+            [0.8981, 0.0133, 0.4778, 0.5089],
+            [0.3074, 0.6695, 0.9071, 0.6179],
+            [0.6909, 0.1408, 0.3191, 0.3094],
+            [0.4343, 0.4177, 0.1546, 0.5013],
+            [0.2792, 0.5718, 0.8209, 0.3980]], requires_grad=True)
+    Input row IDS:  tensor([[1, 3]])
+    Embedding Collection Results: 
+    tensor([[[0.7102, 0.0289, 0.0704, 0.8486],
+             [0.3698, 0.1927, 0.2565, 0.8903]]], grad_fn=<EmbeddingBackward0>)
+    Shape:  torch.Size([1, 2, 4])
+    Embedding Bag Collection Results: 
+    tensor([[0.5400, 0.1108, 0.1635, 0.8695]], grad_fn=<EmbeddingBagBackward0>)
+    Shape:  torch.Size([1, 4])
+    Mean:  tensor([[0.5400, 0.1108, 0.1635, 0.8695]], grad_fn=<MeanBackward1>)
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 178-184
 
 Congratulations! Now you have a basic understanding of how to use
 embedding tables --- one of the foundations of modern recommendation
@@ -213,7 +271,7 @@ example, the relationship between a given user and the pages and posts
 they have liked.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 188-220
+.. GENERATED FROM PYTHON SOURCE LINES 187-218
 
 TorchRec Features Overview
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -231,7 +289,7 @@ won't be able to fit on 1 GPU, even with 80G of memory.
 In order to train models with massive embedding tables, sharding these
 tables across GPUs is required, which then introduces a whole new set of
 problems and opportunities in parallelism and optimization. Luckily, we have
-the TorchRec library that has encountered, consolidated, and addressed
+the TorchRec library <https://docs.pytorch.org/torchrec/overview.html>`__ that has encountered, consolidated, and addressed
 many of these concerns. TorchRec serves as a **library that provides
 primitives for large scale distributed embeddings**.
 
@@ -244,11 +302,10 @@ Below is a quick outline of what this section consists of:
 
 * TorchRec Modules and Data Types
 * Distributed Training, Sharding, and Optimizations
-* Inference
 
-Let's begin with importing TorchRec: 
+Let's begin with importing TorchRec:
 
-.. GENERATED FROM PYTHON SOURCE LINES 220-224
+.. GENERATED FROM PYTHON SOURCE LINES 218-222
 
 .. code-block:: Python
 
@@ -257,7 +314,13 @@ Let's begin with importing TorchRec:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 225-247
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 223-245
 
 TorchRec Modules and Data Types
 ----------------------------------
@@ -277,12 +340,12 @@ We will use ``EmbeddingBagCollection`` to represent a group of
 embedding bags.
 
 In the example code below, we create an ``EmbeddingBagCollection`` (EBC)
-with two embedding bags, 1 representing **products** and 1 representing **users**. 
+with two embedding bags, 1 representing **products** and 1 representing **users**.
 Each table, ``product_table`` and ``user_table``, is represented by a 64 dimension
 embedding of size 4096.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 247-270
+.. GENERATED FROM PYTHON SOURCE LINES 245-268
 
 .. code-block:: Python
 
@@ -303,20 +366,35 @@ embedding of size 4096.
                 num_embeddings=4096,
                 feature_names=["user"],
                 pooling=torchrec.PoolingType.SUM,
-            )
-        ]
+            ),
+        ],
     )
     print(ebc.embedding_bags)
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 271-274
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    ModuleDict(
+      (product_table): EmbeddingBag(4096, 64, mode='sum')
+      (user_table): EmbeddingBag(4096, 64, mode='sum')
+    )
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 269-272
 
 Let’s inspect the forward method for ``EmbeddingBagCollection`` and the
 module’s inputs and outputs:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 274-282
+.. GENERATED FROM PYTHON SOURCE LINES 272-280
 
 .. code-block:: Python
 
@@ -329,7 +407,59 @@ module’s inputs and outputs:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 283-307
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+        def forward(
+            self,
+            features: KeyedJaggedTensor,  # can also take TensorDict as input
+        ) -> KeyedTensor:
+            """
+            Run the EmbeddingBagCollection forward pass. This method takes in a `KeyedJaggedTensor`
+            and returns a `KeyedTensor`, which is the result of pooling the embeddings for each feature.
+
+            Args:
+                features (KeyedJaggedTensor): Input KJT
+            Returns:
+                KeyedTensor
+            """
+            flat_feature_names: List[str] = []
+            features = maybe_td_to_kjt(features, None)
+            for names in self._feature_names:
+                flat_feature_names.extend(names)
+            inverse_indices = reorder_inverse_indices(
+                inverse_indices=features.inverse_indices_or_none(),
+                feature_names=flat_feature_names,
+            )
+            pooled_embeddings: List[torch.Tensor] = []
+            feature_dict = features.to_dict()
+            for i, embedding_bag in enumerate(self.embedding_bags.values()):
+                for feature_name in self._feature_names[i]:
+                    f = feature_dict[feature_name]
+                    res = embedding_bag(
+                        input=f.values(),
+                        offsets=f.offsets(),
+                        per_sample_weights=f.weights() if self._is_weighted else None,
+                    ).float()
+                    pooled_embeddings.append(res)
+            return KeyedTensor(
+                keys=self._embedding_names,
+                values=process_pooled_embeddings(
+                    pooled_embeddings=pooled_embeddings,
+                    inverse_indices=inverse_indices,
+                ),
+                length_per_key=self._lengths_per_embedding,
+            )
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 281-305
 
 TorchRec Input/Output Data Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -356,7 +486,7 @@ tensor denoting how many indices are in an example for a batch and a
 ``values`` tensor containing the indices themselves.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 307-316
+.. GENERATED FROM PYTHON SOURCE LINES 305-314
 
 .. code-block:: Python
 
@@ -370,12 +500,18 @@ tensor denoting how many indices are in an example for a batch and a
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 317-319
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 315-317
 
 Next, let's look at the offsets as well as what is contained in each batch
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 319-393
+.. GENERATED FROM PYTHON SOURCE LINES 317-391
 
 .. code-block:: Python
 
@@ -454,14 +590,47 @@ Next, let's look at the offsets as well as what is contained in each batch
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 394-398
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Offsets:  tensor([1, 3])
+    First Batch:  tensor([5])
+    Second Batch:  tensor([7, 1])
+    Offsets:  tensor([0, 1, 3])
+    List of Values:  [tensor([5]), tensor([7, 1])]
+    JaggedTensor({
+        [[5], [7, 1]]
+    })
+
+    Keys:  ['product', 'user']
+    Lengths:  tensor([3, 1, 2, 2])
+    Values:  tensor([1, 2, 1, 5, 2, 3, 4, 1])
+    to_dict:  {'product': <torchrec.sparse.jagged_tensor.JaggedTensor object at 0x7f4fb6db16c0>, 'user': <torchrec.sparse.jagged_tensor.JaggedTensor object at 0x7f4fb6db1600>}
+    KeyedJaggedTensor({
+        "product": [[1, 2, 1], [5]],
+        "user": [[2, 3], [4, 1]]
+    })
+
+    ['product', 'user']
+    torch.Size([2, 128])
+    product torch.Size([2, 64])
+    user torch.Size([2, 64])
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 392-396
 
 Congrats! You now understand TorchRec modules and data types.
 Give yourself a pat on the back for making it this far. Next, we will
 learn about distributed training and sharding.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 401-429
+.. GENERATED FROM PYTHON SOURCE LINES 399-427
 
 Distributed Training and Sharding
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -487,12 +656,12 @@ has a process per GPU. Inference does not run into this requirement**
 
 In the example code below, we set up our PyTorch distributed environment.
 
-.. warning:: 
+.. warning::
    If you are running this in Google Colab, you can only call this cell once,
    calling it again will cause an error as you can only initialize the process
    group once.
 
-.. GENERATED FROM PYTHON SOURCE LINES 429-450
+.. GENERATED FROM PYTHON SOURCE LINES 427-448
 
 .. code-block:: Python
 
@@ -518,7 +687,19 @@ In the example code below, we set up our PyTorch distributed environment.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 451-519
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Distributed environment initialized: <module 'torch.distributed' from '/usr/local/lib/python3.10/dist-packages/torch/distributed/__init__.py'>
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 449-517
 
 Distributed Embeddings
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -570,11 +751,11 @@ environment:
 
 * **The module sharder**: This class exposes a ``shard`` API
   that handles sharding a TorchRec Module, producing a sharded module.
-  * For ``EmbeddingBagCollection``, the sharder is `EmbeddingBagCollectionSharder <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.embeddingbag.EmbeddingBagCollectionSharder>`__
+  * For ``EmbeddingBagCollection``, the sharder is `EmbeddingBagCollectionSharder `
 * **Sharded module**: This class is a sharded variant of a TorchRec module.
   It has the same input/output as a the regular TorchRec module, but much
   more optimized and works in a distributed environment.
-  * For ``EmbeddingBagCollection``, the sharded variant is `ShardedEmbeddingBagCollection <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.embeddingbag.ShardedEmbeddingBagCollection>`__
+  * For ``EmbeddingBagCollection``, the sharded variant is `ShardedEmbeddingBagCollection`
 
 Every TorchRec module has an unsharded and sharded variant.
 
@@ -589,7 +770,7 @@ embeddings to the correct GPUs.
 
 Refresher of our ``EmbeddingBagCollection`` module
 
-.. GENERATED FROM PYTHON SOURCE LINES 519-535
+.. GENERATED FROM PYTHON SOURCE LINES 517-533
 
 .. code-block:: Python
 
@@ -610,7 +791,19 @@ Refresher of our ``EmbeddingBagCollection`` module
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 536-577
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Process Group: <torch.distributed.distributed_c10d.ProcessGroup object at 0x7f4fb6d3f9b0>
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 534-575
 
 Planner
 ~~~~~~~
@@ -634,7 +827,7 @@ given the number of embedding tables and the number of GPUs, what is the optimal
 configuration. Turns out, this is incredibly difficult to do manually,
 with tons of factors that engineers have to consider to ensure an
 optimal sharding plan. Luckily, TorchRec provides an auto planner when
-the planner is used. 
+the planner is used.
 
 The TorchRec planner:
 
@@ -654,7 +847,7 @@ To learn more about sharding, see our `sharding
 tutorial <https://pytorch.org/tutorials/advanced/sharding.html>`__.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 577-592
+.. GENERATED FROM PYTHON SOURCE LINES 575-590
 
 .. code-block:: Python
 
@@ -674,7 +867,29 @@ tutorial <https://pytorch.org/tutorials/advanced/sharding.html>`__.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 593-605
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Sharding Plan generated: module: 
+
+        param     | sharding type | compute kernel | ranks
+    ------------- | ------------- | -------------- | -----
+    product_table | table_wise    | fused          | [0]  
+    user_table    | table_wise    | fused          | [0]  
+
+        param     | shard offsets | shard sizes |   placement  
+    ------------- | ------------- | ----------- | -------------
+    product_table | [0, 0]        | [4096, 64]  | rank:0/cuda:0
+    user_table    | [0, 0]        | [4096, 64]  | rank:0/cuda:0
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 591-603
 
 Planner Result
 ~~~~~~~~~~~~~~
@@ -689,7 +904,7 @@ instead of determining a new sharding plan everytime. Below, we use the
 sharding plan to finally generate our ``ShardedEmbeddingBagCollection``.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 605-617
+.. GENERATED FROM PYTHON SOURCE LINES 603-615
 
 .. code-block:: Python
 
@@ -706,7 +921,42 @@ sharding plan to finally generate our ``ShardedEmbeddingBagCollection``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 618-629
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /usr/local/lib/python3.10/dist-packages/torch/distributed/distributed_c10d.py:859: UserWarning:
+
+    `_get_pg_default_device` will be deprecated, it only stays for backward-compatiblity reason. If you need to find a device for object collectives, please use `_get_object_coll_device`. If you need to query the device types supported by group, please use `_device_capability(group)`. 
+
+    /usr/local/lib/python3.10/dist-packages/torch/distributed/distributed_c10d.py:903: UserWarning:
+
+    Multiple backends are registered with this ProcessGroup. We cannot determine which one is the default. Returning cpu. Please consider using other APIs.
+
+    Sharded EBC Module: ShardedEmbeddingBagCollection(
+      (lookups): 
+       GroupedPooledEmbeddingsLookup(
+          (_emb_modules): ModuleList(
+            (0): BatchedFusedEmbeddingBag(
+              (_emb_module): SplitTableBatchedEmbeddingBagsCodegen()
+            )
+          )
+        )
+       (_output_dists): 
+       TwPooledEmbeddingDist()
+      (embedding_bags): ModuleDict(
+        (product_table): Module()
+        (user_table): Module()
+      )
+    )
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 616-627
 
 GPU Training with ``LazyAwaitable``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -714,13 +964,13 @@ GPU Training with ``LazyAwaitable``
 Remember that TorchRec is a highly optimized library for distributed
 embeddings. A concept that TorchRec introduces to enable higher
 performance for training on GPU is a
-`LazyAwaitable <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.types.LazyAwaitable>`__.
+`LazyAwaitable `.
 You will see ``LazyAwaitable`` types as outputs of various sharded
 TorchRec modules. All a ``LazyAwaitable`` type does is delay calculating some
 result as long as possible, and it does it by acting like an async type.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 629-669
+.. GENERATED FROM PYTHON SOURCE LINES 627-667
 
 .. code-block:: Python
 
@@ -765,7 +1015,24 @@ result as long as possible, and it does it by acting like an async type.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 670-700
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    <torchrec.distributed.embeddingbag.EmbeddingBagCollectionAwaitable object at 0x7f4fb6c03fd0>
+    <class 'torchrec.sparse.jagged_tensor.KeyedTensor'>
+    ['product', 'user']
+    torch.Size([2, 128])
+    product torch.Size([2, 64])
+    user torch.Size([2, 64])
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 668-698
 
 Anatomy of Sharded TorchRec modules
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -795,10 +1062,10 @@ The backwards pass does all of these collectives but in the reverse
 order for distribution of gradients. ``input_dist``, ``lookup``, and
 ``output_dist`` all depend on the sharding scheme. Since we sharded in a
 table-wise fashion, these APIs are modules that are constructed by
-`TwPooledEmbeddingSharding <https://pytorch.org/torchrec/torchrec.distributed.sharding.html#torchrec.distributed.sharding.tw_sharding.TwPooledEmbeddingSharding>`__.
+`TwPooledEmbeddingSharding`.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 700-710
+.. GENERATED FROM PYTHON SOURCE LINES 698-708
 
 .. code-block:: Python
 
@@ -813,7 +1080,21 @@ table-wise fashion, these APIs are modules that are constructed by
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 711-734
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    [TwPooledEmbeddingDist(
+      (_dist): PooledEmbeddingsAllToAll()
+    )]
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 709-732
 
 Optimizing Embedding Lookups
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -839,7 +1120,7 @@ instead of traditional ``nn.EmbeddingBags`` for optimized embedding
 lookups.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 734-738
+.. GENERATED FROM PYTHON SOURCE LINES 732-736
 
 .. code-block:: Python
 
@@ -848,7 +1129,25 @@ lookups.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 739-763
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    [GroupedPooledEmbeddingsLookup(
+      (_emb_modules): ModuleList(
+        (0): BatchedFusedEmbeddingBag(
+          (_emb_module): SplitTableBatchedEmbeddingBagsCodegen()
+        )
+      )
+    )]
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 737-761
 
 ``DistributedModelParallel``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -858,7 +1157,7 @@ able to take the ``EmbeddingBagCollectionSharder`` and use the unsharded
 ``EmbeddingBagCollection`` to generate a
 ``ShardedEmbeddingBagCollection`` module. This workflow is fine, but
 typically when implementing model parallel,
-`DistributedModelParallel <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel>`__
+`DistributedModelParallel`
 (DMP) is used as the standard interface. When wrapping your model (in
 our case ``ebc``), with DMP, the following will occur:
 
@@ -875,7 +1174,7 @@ since we have two embedding tables and one GPU, TorchRec will place both
 on the single GPU.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 763-774
+.. GENERATED FROM PYTHON SOURCE LINES 761-774
 
 .. code-block:: Python
 
@@ -888,6 +1187,20 @@ on the single GPU.
     out.wait()
 
     model
+
+
+    from fbgemm_gpu.split_embedding_configs import EmbOptimType
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    WARNING:root:Could not determine LOCAL_WORLD_SIZE from environment, falling back to WORLD_SIZE.
+
 
 
 
@@ -913,7 +1226,7 @@ Adding in the Optimizer
 
 Remember that TorchRec modules are hyperoptimized for large scale
 distributed training. An important optimization is in regards to the
-optimizer. 
+optimizer.
 
 TorchRec modules provide a seamless API to fuse the
 backwards pass and optimize step in training, providing a significant
@@ -952,7 +1265,7 @@ Once the optimizer is created through ``DistributedModelParallel``, you
 still need to manage an optimizer for the other parameters not
 associated with TorchRec embedding modules. To find the other
 parameters,
-use ``in_backward_optimizer_filter(model.named_parameters())``. 
+use ``in_backward_optimizer_filter(model.named_parameters())``.
 Apply an optimizer to those parameters as you would a normal Torch
 optimizer and combine this and the ``model.fused_optimizer`` into one
 ``CombinedOptimizer`` that you can use in your training loop to
@@ -969,14 +1282,13 @@ depending on your preferences:
    parameters to ``fused_params`` to pass to the ``TBE`` in the ``EmbeddingBagCollection`` or ``EmbeddingCollection``.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 850-918
+.. GENERATED FROM PYTHON SOURCE LINES 850-931
 
 .. code-block:: Python
 
 
     # Option 1: Passing optimizer kwargs through fused parameters
     from torchrec.optim.optimizers import in_backward_optimizer_filter
-    from fbgemm_gpu.split_embedding_configs import EmbOptimType
 
 
     # We initialize the sharder with
@@ -990,17 +1302,25 @@ depending on your preferences:
     sharder_with_fused_params = EmbeddingBagCollectionSharder(fused_params=fused_params)
 
     # We'll use same plan and unsharded EBC as before but this time with our new sharder
-    sharded_ebc_fused_params = sharder_with_fused_params.shard(ebc, plan.plan[""], env, torch.device("cuda"))
+    sharded_ebc_fused_params = sharder_with_fused_params.shard(
+        ebc, plan.plan[""], env, torch.device("cuda")
+    )
 
     # Looking at the optimizer of each, we can see that the learning rate changed, which indicates our optimizer has been applied correctly.
     # If seen, we can also look at the TBE logs of the cell to see that our new optimizer is indeed being applied
     print(f"Original Sharded EBC fused optimizer: {sharded_ebc.fused_optimizer}")
-    print(f"Sharded EBC with fused parameters fused optimizer: {sharded_ebc_fused_params.fused_optimizer}")
+    print(
+        f"Sharded EBC with fused parameters fused optimizer: {sharded_ebc_fused_params.fused_optimizer}"
+    )
 
     print(f"Type of optimizer: {type(sharded_ebc_fused_params.fused_optimizer)}")
 
-    from torch.distributed.optim import _apply_optimizer_in_backward as apply_optimizer_in_backward
     import copy
+
+    from torch.distributed.optim import (
+        _apply_optimizer_in_backward as apply_optimizer_in_backward,
+    )
+
     # Option 2: Applying optimizer through apply_optimizer_in_backward
     # Note: we need to call apply_optimizer_in_backward on unsharded model first and then shard it
 
@@ -1012,7 +1332,9 @@ depending on your preferences:
         print(f"{name=}")
         apply_optimizer_in_backward(torch.optim.SGD, [param], optimizer_kwargs)
 
-    sharded_ebc_apply_opt = sharder.shard(ebc_apply_opt, plan.plan[""], env, torch.device("cuda"))
+    sharded_ebc_apply_opt = sharder.shard(
+        ebc_apply_opt, plan.plan[""], env, torch.device("cuda")
+    )
 
     # Now when we print the optimizer, we will see our new learning rate, you can verify momentum through the TBE logs as well if outputted
     print(sharded_ebc_apply_opt.fused_optimizer)
@@ -1022,7 +1344,11 @@ depending on your preferences:
     # Practically, just non TorchRec module parameters. Since our module is just a TorchRec EBC
     # there are no other parameters that aren't associated with TorchRec
     print("Non Fused Model Parameters:")
-    print(dict(in_backward_optimizer_filter(sharded_ebc_fused_params.named_parameters())).keys())
+    print(
+        dict(
+            in_backward_optimizer_filter(sharded_ebc_fused_params.named_parameters())
+        ).keys()
+    )
 
     # Here we do a dummy backwards call and see that parameter updates for fused
     # optimizers happen as a result of the backward pass
@@ -1042,224 +1368,48 @@ depending on your preferences:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 919-956
-
-Inference
-~~~~~~~~~
-
-Now that we are able to train distributed embeddings, how can we take
-the trained model and optimize it for inference? Inference is typically
-very sensitive to **performance and size of the model**. Running just
-the trained model in a Python environment is incredibly inefficient.
-There are two key differences between inference and training
-environments:
-
-* **Quantization**: Inference models are typically
-  quantized, where model parameters lose precision for lower latency in
-  predictions and reduced model size. For example FP32 (4 bytes) in
-  trained model to INT8 (1 byte) for each embedding weight. This is also
-  necessary given the vast scale of embedding tables, as we want to use as
-  few devices as possible for inference to minimize latency.
-
-* **C++ environment**: Inference latency is very important, so in order to ensure
-  ample performance, the model is typically ran in a C++ environment,
-  along with the situations where we don't have a Python runtime, like on
-  device.
-
-TorchRec provides primitives for converting a TorchRec model into being
-inference ready with:
-
-* APIs for quantizing the model, introducing
-  optimizations automatically with FBGEMM TBE
-* Sharding embeddings for distributed inference
-* Compiling the model to `TorchScript <https://pytorch.org/docs/stable/jit.html>`__
-  (compatible in C++)
-
-In this section, we will go over this entire workflow of:
-
-* Quantizing the model
-* Sharding the quantized model
-* Compiling the sharded quantized model into TorchScript
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 956-974
-
-.. code-block:: Python
-
-
-    ebc
-
-    class InferenceModule(torch.nn.Module):
-        def __init__(self, ebc: torchrec.EmbeddingBagCollection):
-            super().__init__()
-            self.ebc_ = ebc
-
-        def forward(self, kjt: KeyedJaggedTensor):
-            return self.ebc_(kjt)
-
-    module = InferenceModule(ebc)
-    for name, param in module.named_parameters():
-        # Here, the parameters should still be FP32, as we are using a standard EBC
-        # FP32 is default, regularly used for training
-        print(name, param.shape, param.dtype)
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 975-982
+.. rst-class:: sphx-glr-script-out
 
-Quantization
-~~~~~~~~~~~~
+ .. code-block:: none
 
-As you can see above, the normal EBC contains embedding table weights as
-FP32 precision (32 bits for each weight). Here, we will use the TorchRec
-inference library to quantize the embedding weights of the model to INT8
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 982-1035
-
-.. code-block:: Python
-
-
-    from torch import quantization as quant
-    from torchrec.modules.embedding_configs import QuantConfig
-    from torchrec.quant.embedding_modules import (
-        EmbeddingBagCollection as QuantEmbeddingBagCollection,
+    Original Sharded EBC fused optimizer: : EmbeddingFusedOptimizer (
+    Parameter Group 0
+        lr: 0.009999999776482582
     )
-
-
-    quant_dtype = torch.int8
-
-
-    qconfig = QuantConfig(
-        # dtype of the result of the embedding lookup, post activation
-        # torch.float generally for compatibility with rest of the model
-        # as rest of the model here usually isn't quantized
-        activation=quant.PlaceholderObserver.with_args(dtype=torch.float),
-        # quantized type for embedding weights, aka parameters to actually quantize
-        weight=quant.PlaceholderObserver.with_args(dtype=quant_dtype),
+    Sharded EBC with fused parameters fused optimizer: : EmbeddingFusedOptimizer (
+    Parameter Group 0
+        lr: 0.019999999552965164
     )
-    qconfig_spec = {
-        # Map of module type to qconfig
-        torchrec.EmbeddingBagCollection: qconfig,
-    }
-    mapping = {
-        # Map of module type to quantized module type
-        torchrec.EmbeddingBagCollection: QuantEmbeddingBagCollection,
-    }
-
-
-    module = InferenceModule(ebc)
-
-    # Quantize the module
-    qebc = quant.quantize_dynamic(
-        module,
-        qconfig_spec=qconfig_spec,
-        mapping=mapping,
-        inplace=False,
+    Type of optimizer: <class 'torchrec.optim.keyed.CombinedOptimizer'>
+    name='embedding_bags.product_table.weight'
+    name='embedding_bags.user_table.weight'
+    : EmbeddingFusedOptimizer (
+    Parameter Group 0
+        lr: 0.5
     )
-
-
-    print(f"Quantized EBC: {qebc}")
-
-    kjt = kjt.to("cpu")
-
-    qebc(kjt)
-
-    # Once quantized, goes from parameters -> buffers, as no longer trainable
-    for name, buffer in qebc.named_buffers():
-        # The shapes of the tables should be the same but the dtype should be int8 now
-        # post quantization
-        print(name, buffer.shape, buffer.dtype)
+    <class 'torchrec.optim.keyed.CombinedOptimizer'>
+    Non Fused Model Parameters:
+    dict_keys([])
+    First Iteration Loss: 256.0680236816406
+    Second Iteration Loss: 245.8459014892578
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 1036-1043
 
-Shard
-~~~~~
-
-Here we perform sharding of the TorchRec quantized model. This is to
-ensure we are using the performant module through FBGEMM TBE. Here we
-are using one device to be consistent with training (1 TBE).
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 1043-1063
-
-.. code-block:: Python
-
-
-    from torchrec import distributed as trec_dist
-    from torchrec.distributed.shard import _shard_modules
-
-
-    sharded_qebc = _shard_modules(
-        module=qebc,
-        device=torch.device("cpu"),
-        env=trec_dist.ShardingEnv.from_local(
-            1,
-            0,
-        ),
-    )
-
-
-    print(f"Sharded Quantized EBC: {sharded_qebc}")
-
-    sharded_qebc(kjt)
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 1064-1076
-
-Compilation
-~~~~~~~~~~~
-
-Now we have the optimized eager TorchRec inference model. The next step
-is to ensure that this model is loadable in C++, as currently it is only
-runnable in a Python runtime.
-
-The recommended method of compilation at Meta is two fold: `torch.fx
-tracing <https://pytorch.org/docs/stable/fx.html>`__ (generate
-intermediate representation of model) and converting the result to
-TorchScript, where TorchScript is C++ compatible.
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 1076-1095
-
-.. code-block:: Python
-
-
-    from torchrec.fx import Tracer
-
-
-    tracer = Tracer(leaf_modules=["IntNBitTableBatchedEmbeddingBagsCodegen"])
-
-    graph = tracer.trace(sharded_qebc)
-    gm = torch.fx.GraphModule(sharded_qebc, graph)
-
-    print("Graph Module Created!")
-
-    print(gm.code)
-
-    scripted_gm = torch.jit.script(gm)
-    print("Scripted Graph Module Created!")
-
-    print(scripted_gm.code)
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 1096-1105
+.. GENERATED FROM PYTHON SOURCE LINES 932-939
 
 Conclusion
 ^^^^^^^^^^
-
-In this tutorial, you have gone from training a distributed RecSys model all the way
-to making it inference ready. The `TorchRec repo
+In this tutorial, you have done training a distributed RecSys model
+If you are interested in the inference the `TorchRec repo
 <https://github.com/pytorch/torchrec/tree/main/torchrec/inference>`__ has a
-full example of how to load a TorchRec TorchScript model into C++ for
-inference.
+full example of how to run the TorchRec in Inference mode.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 1108-1117
+.. GENERATED FROM PYTHON SOURCE LINES 942-951
 
 See Also
 --------------
@@ -1270,6 +1420,11 @@ example, which includes multinode training on the Criteo 1TB
 dataset using the methods described in `Deep Learning Recommendation Model
 for Personalization and Recommendation Systems <https://arxiv.org/abs/1906.00091>`__.
 
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** (0 minutes 1.063 seconds)
 
 
 .. _sphx_glr_download_intermediate_torchrec_intro_tutorial.py:

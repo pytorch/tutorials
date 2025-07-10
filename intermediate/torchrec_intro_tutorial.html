@@ -538,7 +538,7 @@
 to download the full example code.</p>
 </div>
 <div class="sphx-glr-example-title section" id="introduction-to-torchrec">
-<span id="sphx-glr-intermediate-torchrec-intro-tutorial-py"></span><h1>Introduction to TorchRec<a class="headerlink" href="#introduction-to-torchrec" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 02, 2024 | Last Updated: Oct 10, 2024 | Last Verified: Oct 02, 2024</p>
+<span id="sphx-glr-intermediate-torchrec-intro-tutorial-py"></span><h1>Introduction to TorchRec<a class="headerlink" href="#introduction-to-torchrec" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 02, 2024 | Last Updated: Jul 10, 2025 | Last Verified: Oct 02, 2024</p>
 <p><strong>TorchRec</strong> is a PyTorch library tailored for building scalable and efficient recommendation systems using embeddings.
 This tutorial guides you through the installation process, introduces the concept of embeddings, and highlights their importance in
 recommendation systems. It offers practical demonstrations on implementing embeddings with PyTorch
@@ -575,7 +575,7 @@ and TorchRec, focusing on handling large embedding tables through distributed tr
 </div>
 <div class="section" id="install-dependencies">
 <h2>Install Dependencies<a class="headerlink" href="#install-dependencies" title="Permalink to this heading">¶</a></h2>
-<p>Before running this tutorial in Google Colab or other environment, install the
+<p>Before running this tutorial in Google Colab, make sure to install the
 following dependencies:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>!pip3<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span>torch<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu121<span class="w"> </span>-U
 !pip3<span class="w"> </span>install<span class="w"> </span>fbgemm_gpu<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu121
@@ -659,44 +659,87 @@ embedding lookups by passing in indices into the table.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">num_embeddings</span><span class="p">,</span> <span class="n">embedding_dim</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">4</span>
 
 <span class="c1"># Initialize our embedding table</span>
-<span class="n">weights</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.rand.html#torch.rand" title="torch.rand"><span class="n">torch</span><span class="o">.</span><span class="n">rand</span></a><span class="p">(</span><span class="n">num_embeddings</span><span class="p">,</span> <span class="n">embedding_dim</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Weights:"</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weights</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.rand.html#torch.rand" title="torch.rand"><span class="n">torch</span><span class="o">.</span><span class="n">rand</span></a><span class="p">(</span><span class="n">num_embeddings</span><span class="p">,</span> <span class="n">embedding_dim</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Weights:"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weights</span></a><span class="p">)</span>
 
 <span class="c1"># Pass in pre-generated weights just for example, typically weights are randomly initialized</span>
-<span class="n">embedding_collection</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Embedding.html#torch.nn.Embedding" title="torch.nn.Embedding"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span></a><span class="p">(</span>
-    <span class="n">num_embeddings</span><span class="p">,</span> <span class="n">embedding_dim</span><span class="p">,</span> <span class="n">_weight</span><span class="o">=</span><span class="n">weights</span>
+<a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Embedding.html#torch.nn.Embedding" title="torch.nn.Embedding"><span class="n">embedding_collection</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Embedding.html#torch.nn.Embedding" title="torch.nn.Embedding"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span></a><span class="p">(</span>
+    <span class="n">num_embeddings</span><span class="p">,</span> <span class="n">embedding_dim</span><span class="p">,</span> <span class="n">_weight</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weights</span></a>
 <span class="p">)</span>
-<span class="n">embedding_bag_collection</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html#torch.nn.EmbeddingBag" title="torch.nn.EmbeddingBag"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">EmbeddingBag</span></a><span class="p">(</span>
-    <span class="n">num_embeddings</span><span class="p">,</span> <span class="n">embedding_dim</span><span class="p">,</span> <span class="n">_weight</span><span class="o">=</span><span class="n">weights</span>
+<a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html#torch.nn.EmbeddingBag" title="torch.nn.EmbeddingBag"><span class="n">embedding_bag_collection</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html#torch.nn.EmbeddingBag" title="torch.nn.EmbeddingBag"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">EmbeddingBag</span></a><span class="p">(</span>
+    <span class="n">num_embeddings</span><span class="p">,</span> <span class="n">embedding_dim</span><span class="p">,</span> <span class="n">_weight</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">weights</span></a>
 <span class="p">)</span>
 
 <span class="c1"># Print out the tables, we should see the same weights as above</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Embedding Collection Table: "</span><span class="p">,</span> <span class="n">embedding_collection</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Embedding Bag Collection Table: "</span><span class="p">,</span> <span class="n">embedding_bag_collection</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Embedding Collection Table: "</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-nn-parameter sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.parameter.Parameter.html#torch.nn.parameter.Parameter" title="torch.nn.parameter.Parameter"><span class="n">embedding_collection</span><span class="o">.</span><span class="n">weight</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Embedding Bag Collection Table: "</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-nn-parameter sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.parameter.Parameter.html#torch.nn.parameter.Parameter" title="torch.nn.parameter.Parameter"><span class="n">embedding_bag_collection</span><span class="o">.</span><span class="n">weight</span></a><span class="p">)</span>
 
 <span class="c1"># Lookup rows (ids for embedding ids) from the embedding tables</span>
 <span class="c1"># 2D tensor with shape (batch_size, ids for each batch)</span>
-<span class="n">ids</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Input row IDS: "</span><span class="p">,</span> <span class="n">ids</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">ids</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Input row IDS: "</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">ids</span></a><span class="p">)</span>
 
-<span class="n">embeddings</span> <span class="o">=</span> <span class="n">embedding_collection</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">embeddings</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Embedding.html#torch.nn.Embedding" title="torch.nn.Embedding"><span class="n">embedding_collection</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">ids</span></a><span class="p">)</span>
 
 <span class="c1"># Print out the embedding lookups</span>
 <span class="c1"># You should see the specific embeddings be the same as the rows (ids) of the embedding tables above</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Embedding Collection Results: "</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">embeddings</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Shape: "</span><span class="p">,</span> <span class="n">embeddings</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">embeddings</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Shape: "</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="torch.Size"><span class="n">embeddings</span><span class="o">.</span><span class="n">shape</span></a><span class="p">)</span>
 
 <span class="c1"># ``nn.EmbeddingBag`` default pooling is mean, so should be mean of batch dimension of values above</span>
-<span class="n">pooled_embeddings</span> <span class="o">=</span> <span class="n">embedding_bag_collection</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">pooled_embeddings</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html#torch.nn.EmbeddingBag" title="torch.nn.EmbeddingBag"><span class="n">embedding_bag_collection</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">ids</span></a><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Embedding Bag Collection Results: "</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">pooled_embeddings</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Shape: "</span><span class="p">,</span> <span class="n">pooled_embeddings</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">pooled_embeddings</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Shape: "</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="torch.Size"><span class="n">pooled_embeddings</span><span class="o">.</span><span class="n">shape</span></a><span class="p">)</span>
 
 <span class="c1"># ``nn.EmbeddingBag`` is the same as ``nn.Embedding`` but just with pooling (mean, sum, and so on)</span>
 <span class="c1"># We can see that the mean of the embeddings of embedding_collection is the same as the output of the embedding_bag_collection</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Mean: "</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.mean.html#torch.mean" title="torch.mean"><span class="n">torch</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><span class="n">embedding_collection</span><span class="p">(</span><span class="n">ids</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Mean: "</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.mean.html#torch.mean" title="torch.mean"><span class="n">torch</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Embedding.html#torch.nn.Embedding" title="torch.nn.Embedding"><span class="n">embedding_collection</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">ids</span></a><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Weights: tensor([[0.6467, 0.4895, 0.0219, 0.9045],
+        [0.7102, 0.0289, 0.0704, 0.8486],
+        [0.2543, 0.8553, 0.2152, 0.3074],
+        [0.3698, 0.1927, 0.2565, 0.8903],
+        [0.6445, 0.3696, 0.3936, 0.0406],
+        [0.8981, 0.0133, 0.4778, 0.5089],
+        [0.3074, 0.6695, 0.9071, 0.6179],
+        [0.6909, 0.1408, 0.3191, 0.3094],
+        [0.4343, 0.4177, 0.1546, 0.5013],
+        [0.2792, 0.5718, 0.8209, 0.3980]])
+Embedding Collection Table:  Parameter containing:
+tensor([[0.6467, 0.4895, 0.0219, 0.9045],
+        [0.7102, 0.0289, 0.0704, 0.8486],
+        [0.2543, 0.8553, 0.2152, 0.3074],
+        [0.3698, 0.1927, 0.2565, 0.8903],
+        [0.6445, 0.3696, 0.3936, 0.0406],
+        [0.8981, 0.0133, 0.4778, 0.5089],
+        [0.3074, 0.6695, 0.9071, 0.6179],
+        [0.6909, 0.1408, 0.3191, 0.3094],
+        [0.4343, 0.4177, 0.1546, 0.5013],
+        [0.2792, 0.5718, 0.8209, 0.3980]], requires_grad=True)
+Embedding Bag Collection Table:  Parameter containing:
+tensor([[0.6467, 0.4895, 0.0219, 0.9045],
+        [0.7102, 0.0289, 0.0704, 0.8486],
+        [0.2543, 0.8553, 0.2152, 0.3074],
+        [0.3698, 0.1927, 0.2565, 0.8903],
+        [0.6445, 0.3696, 0.3936, 0.0406],
+        [0.8981, 0.0133, 0.4778, 0.5089],
+        [0.3074, 0.6695, 0.9071, 0.6179],
+        [0.6909, 0.1408, 0.3191, 0.3094],
+        [0.4343, 0.4177, 0.1546, 0.5013],
+        [0.2792, 0.5718, 0.8209, 0.3980]], requires_grad=True)
+Input row IDS:  tensor([[1, 3]])
+Embedding Collection Results:
+tensor([[[0.7102, 0.0289, 0.0704, 0.8486],
+         [0.3698, 0.1927, 0.2565, 0.8903]]], grad_fn=&lt;EmbeddingBackward0&gt;)
+Shape:  torch.Size([1, 2, 4])
+Embedding Bag Collection Results:
+tensor([[0.5400, 0.1108, 0.1635, 0.8695]], grad_fn=&lt;EmbeddingBagBackward0&gt;)
+Shape:  torch.Size([1, 4])
+Mean:  tensor([[0.5400, 0.1108, 0.1635, 0.8695]], grad_fn=&lt;MeanBackward1&gt;)
 </pre></div>
 </div>
 <p>Congratulations! Now you have a basic understanding of how to use
@@ -721,7 +764,7 @@ won’t be able to fit on 1 GPU, even with 80G of memory.</p>
 <p>In order to train models with massive embedding tables, sharding these
 tables across GPUs is required, which then introduces a whole new set of
 problems and opportunities in parallelism and optimization. Luckily, we have
-the TorchRec library that has encountered, consolidated, and addressed
+the TorchRec library &lt;<a class="reference external" href="https://docs.pytorch.org/torchrec/overview.html">https://docs.pytorch.org/torchrec/overview.html</a>&gt;`__ that has encountered, consolidated, and addressed
 many of these concerns. TorchRec serves as a <strong>library that provides
 primitives for large scale distributed embeddings</strong>.</p>
 <p>Next, we will explore the major features of the TorchRec
@@ -733,7 +776,6 @@ Below is a quick outline of what this section consists of:</p>
 <ul class="simple">
 <li><p>TorchRec Modules and Data Types</p></li>
 <li><p>Distributed Training, Sharding, and Optimizations</p></li>
-<li><p>Inference</p></li>
 </ul>
 <p>Let’s begin with importing TorchRec:</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torchrec</span>
@@ -754,7 +796,7 @@ embedding bags.</p>
 with two embedding bags, 1 representing <strong>products</strong> and 1 representing <strong>users</strong>.
 Each table, <code class="docutils literal notranslate"><span class="pre">product_table</span></code> and <code class="docutils literal notranslate"><span class="pre">user_table</span></code>, is represented by a 64 dimension
 embedding of size 4096.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">ebc</span> <span class="o">=</span> <span class="n">torchrec</span><span class="o">.</span><span class="n">EmbeddingBagCollection</span><span class="p">(</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">ebc</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torchrec</span><span class="o">.</span><span class="n">EmbeddingBagCollection</span></a><span class="p">(</span>
     <span class="n">device</span><span class="o">=</span><span class="s2">"cpu"</span><span class="p">,</span>
     <span class="n">tables</span><span class="o">=</span><span class="p">[</span>
         <span class="n">torchrec</span><span class="o">.</span><span class="n">EmbeddingBagConfig</span><span class="p">(</span>
@@ -770,10 +812,16 @@ embedding of size 4096.</p>
             <span class="n">num_embeddings</span><span class="o">=</span><span class="mi">4096</span><span class="p">,</span>
             <span class="n">feature_names</span><span class="o">=</span><span class="p">[</span><span class="s2">"user"</span><span class="p">],</span>
             <span class="n">pooling</span><span class="o">=</span><span class="n">torchrec</span><span class="o">.</span><span class="n">PoolingType</span><span class="o">.</span><span class="n">SUM</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="p">]</span>
+        <span class="p">),</span>
+    <span class="p">],</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">ebc</span><span class="o">.</span><span class="n">embedding_bags</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.ModuleDict.html#torch.nn.ModuleDict" title="torch.nn.ModuleDict"><span class="n">ebc</span><span class="o">.</span><span class="n">embedding_bags</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>ModuleDict(
+  (product_table): EmbeddingBag(4096, 64, mode='sum')
+  (user_table): EmbeddingBag(4096, 64, mode='sum')
+)
 </pre></div>
 </div>
 <p>Let’s inspect the forward method for <code class="docutils literal notranslate"><span class="pre">EmbeddingBagCollection</span></code> and the
@@ -782,7 +830,49 @@ module’s inputs and outputs:</p>
 
 <span class="c1"># Let's look at the ``EmbeddingBagCollection`` forward method</span>
 <span class="c1"># What is a ``KeyedJaggedTensor`` and ``KeyedTensor``?</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">ebc</span><span class="o">.</span><span class="n">forward</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.forward" title="torch.nn.Module.forward"><span class="n">ebc</span><span class="o">.</span><span class="n">forward</span></a><span class="p">))</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>def forward(
+    self,
+    features: KeyedJaggedTensor,  # can also take TensorDict as input
+) -&gt; KeyedTensor:
+    """
+    Run the EmbeddingBagCollection forward pass. This method takes in a `KeyedJaggedTensor`
+    and returns a `KeyedTensor`, which is the result of pooling the embeddings for each feature.
+
+    Args:
+        features (KeyedJaggedTensor): Input KJT
+    Returns:
+        KeyedTensor
+    """
+    flat_feature_names: List[str] = []
+    features = maybe_td_to_kjt(features, None)
+    for names in self._feature_names:
+        flat_feature_names.extend(names)
+    inverse_indices = reorder_inverse_indices(
+        inverse_indices=features.inverse_indices_or_none(),
+        feature_names=flat_feature_names,
+    )
+    pooled_embeddings: List[torch.Tensor] = []
+    feature_dict = features.to_dict()
+    for i, embedding_bag in enumerate(self.embedding_bags.values()):
+        for feature_name in self._feature_names[i]:
+            f = feature_dict[feature_name]
+            res = embedding_bag(
+                input=f.values(),
+                offsets=f.offsets(),
+                per_sample_weights=f.weights() if self._is_weighted else None,
+            ).float()
+            pooled_embeddings.append(res)
+    return KeyedTensor(
+        keys=self._embedding_names,
+        values=process_pooled_embeddings(
+            pooled_embeddings=pooled_embeddings,
+            inverse_indices=inverse_indices,
+        ),
+        length_per_key=self._lengths_per_embedding,
+    )
 </pre></div>
 </div>
 </div>
@@ -808,27 +898,27 @@ tensor denoting how many indices are in an example for a batch and a
 <code class="docutils literal notranslate"><span class="pre">values</span></code> tensor containing the indices themselves.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Batch Size 2</span>
 <span class="c1"># 1 ID in example 1, 2 IDs in example 2</span>
-<span class="n">id_list_feature_lengths</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">id_list_feature_lengths</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
 
 <span class="c1"># Values (IDs) tensor: ID 5 is in example 1, ID 7, 1 is in example 2</span>
-<span class="n">id_list_feature_values</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">id_list_feature_values</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>Next, let’s look at the offsets as well as what is contained in each batch</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Lengths can be converted to offsets for easy indexing of values</span>
-<span class="n">id_list_feature_offsets</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.cumsum.html#torch.cumsum" title="torch.cumsum"><span class="n">torch</span><span class="o">.</span><span class="n">cumsum</span></a><span class="p">(</span><span class="n">id_list_feature_lengths</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">id_list_feature_offsets</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.cumsum.html#torch.cumsum" title="torch.cumsum"><span class="n">torch</span><span class="o">.</span><span class="n">cumsum</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">id_list_feature_lengths</span></a><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Offsets: "</span><span class="p">,</span> <span class="n">id_list_feature_offsets</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"First Batch: "</span><span class="p">,</span> <span class="n">id_list_feature_values</span><span class="p">[:</span> <span class="n">id_list_feature_offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Offsets: "</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">id_list_feature_offsets</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"First Batch: "</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">id_list_feature_values</span></a><span class="p">[:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">id_list_feature_offsets</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
 <span class="nb">print</span><span class="p">(</span>
     <span class="s2">"Second Batch: "</span><span class="p">,</span>
-    <span class="n">id_list_feature_values</span><span class="p">[</span><span class="n">id_list_feature_offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">id_list_feature_offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">id_list_feature_values</span></a><span class="p">[</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">id_list_feature_offsets</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">id_list_feature_offsets</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
 <span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">torchrec</span><span class="w"> </span><span class="kn">import</span> <span class="n">JaggedTensor</span>
 
 <span class="c1"># ``JaggedTensor`` is just a wrapper around lengths/offsets and values tensors!</span>
-<span class="n">jt</span> <span class="o">=</span> <span class="n">JaggedTensor</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="n">id_list_feature_values</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="n">id_list_feature_lengths</span><span class="p">)</span>
+<span class="n">jt</span> <span class="o">=</span> <span class="n">JaggedTensor</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">id_list_feature_values</span></a><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">id_list_feature_lengths</span></a><span class="p">)</span>
 
 <span class="c1"># Automatically compute offsets from lengths</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Offsets: "</span><span class="p">,</span> <span class="n">jt</span><span class="o">.</span><span class="n">offsets</span><span class="p">())</span>
@@ -884,8 +974,32 @@ tensor denoting how many indices are in an example for a batch and a
 
 <span class="c1"># Nice to_dict method to determine the embeddings that belong to each feature</span>
 <span class="n">result_dict</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
-<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">embedding</span> <span class="ow">in</span> <span class="n">result_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">embedding</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">embedding</span></a> <span class="ow">in</span> <span class="n">result_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="torch.Size"><span class="n">embedding</span><span class="o">.</span><span class="n">shape</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Offsets:  tensor([1, 3])
+First Batch:  tensor([5])
+Second Batch:  tensor([7, 1])
+Offsets:  tensor([0, 1, 3])
+List of Values:  [tensor([5]), tensor([7, 1])]
+JaggedTensor({
+    [[5], [7, 1]]
+})
+
+Keys:  ['product', 'user']
+Lengths:  tensor([3, 1, 2, 2])
+Values:  tensor([1, 2, 1, 5, 2, 3, 4, 1])
+to_dict:  {'product': &lt;torchrec.sparse.jagged_tensor.JaggedTensor object at 0x7f4fb6db16c0&gt;, 'user': &lt;torchrec.sparse.jagged_tensor.JaggedTensor object at 0x7f4fb6db1600&gt;}
+KeyedJaggedTensor({
+    "product": [[1, 2, 1], [5]],
+    "user": [[2, 3], [4, 1]]
+})
+
+['product', 'user']
+torch.Size([2, 128])
+product torch.Size([2, 64])
+user torch.Size([2, 64])
 </pre></div>
 </div>
 <p>Congrats! You now understand TorchRec modules and data types.
@@ -936,6 +1050,9 @@ group once.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Distributed environment initialized: </span><span class="si">{</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-module" href="https://docs.pytorch.org/docs/stable/distributed.html#module-torch.distributed" title="torch.distributed"><span class="n">dist</span></a><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Distributed environment initialized: &lt;module 'torch.distributed' from '/usr/local/lib/python3.10/dist-packages/torch/distributed/__init__.py'&gt;
+</pre></div>
+</div>
 </div>
 <div class="section" id="distributed-embeddings">
 <h3>Distributed Embeddings<a class="headerlink" href="#distributed-embeddings" title="Permalink to this heading">¶</a></h3>
@@ -981,11 +1098,11 @@ environment:</p>
 <ul class="simple">
 <li><p><strong>The module sharder</strong>: This class exposes a <code class="docutils literal notranslate"><span class="pre">shard</span></code> API
 that handles sharding a TorchRec Module, producing a sharded module.
-* For <code class="docutils literal notranslate"><span class="pre">EmbeddingBagCollection</span></code>, the sharder is <a class="reference external" href="https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.embeddingbag.EmbeddingBagCollectionSharder">EmbeddingBagCollectionSharder</a></p></li>
+* For <code class="docutils literal notranslate"><span class="pre">EmbeddingBagCollection</span></code>, the sharder is <a href="#id1"><span class="problematic" id="id2">`</span></a>EmbeddingBagCollectionSharder `</p></li>
 <li><p><strong>Sharded module</strong>: This class is a sharded variant of a TorchRec module.
 It has the same input/output as a the regular TorchRec module, but much
 more optimized and works in a distributed environment.
-* For <code class="docutils literal notranslate"><span class="pre">EmbeddingBagCollection</span></code>, the sharded variant is <a class="reference external" href="https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.embeddingbag.ShardedEmbeddingBagCollection">ShardedEmbeddingBagCollection</a></p></li>
+* For <code class="docutils literal notranslate"><span class="pre">EmbeddingBagCollection</span></code>, the sharded variant is <cite>ShardedEmbeddingBagCollection</cite></p></li>
 </ul>
 <p>Every TorchRec module has an unsharded and sharded variant.</p>
 <ul class="simple">
@@ -1012,6 +1129,9 @@ embeddings to the correct GPUs.</p>
 <span class="k">assert</span> <span class="n">pg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"Process group is not initialized"</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Process Group: </span><span class="si">{</span><span class="n">pg</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Process Group: &lt;torch.distributed.distributed_c10d.ProcessGroup object at 0x7f4fb6d3f9b0&gt;
 </pre></div>
 </div>
 </div>
@@ -1064,6 +1184,19 @@ tutorial</a>.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sharding Plan generated: </span><span class="si">{</span><span class="n">plan</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Sharding Plan generated: module:
+
+    param     | sharding type | compute kernel | ranks
+------------- | ------------- | -------------- | -----
+product_table | table_wise    | fused          | [0]
+user_table    | table_wise    | fused          | [0]
+
+    param     | shard offsets | shard sizes |   placement
+------------- | ------------- | ----------- | -------------
+product_table | [0, 0]        | [4096, 64]  | rank:0/cuda:0
+user_table    | [0, 0]        | [4096, 64]  | rank:0/cuda:0
+</pre></div>
+</div>
 </div>
 <div class="section" id="planner-result">
 <h3>Planner Result<a class="headerlink" href="#planner-result" title="Permalink to this heading">¶</a></h3>
@@ -1080,9 +1213,35 @@ sharding plan to finally generate our <code class="docutils literal notranslate"
 <span class="n">env</span> <span class="o">=</span> <span class="n">ShardingEnv</span><span class="o">.</span><span class="n">from_process_group</span><span class="p">(</span><span class="n">pg</span><span class="p">)</span>
 
 <span class="c1"># Shard the ``EmbeddingBagCollection`` module using the ``EmbeddingBagCollectionSharder``</span>
-<span class="n">sharded_ebc</span> <span class="o">=</span> <span class="n">sharder</span><span class="o">.</span><span class="n">shard</span><span class="p">(</span><span class="n">ebc</span><span class="p">,</span> <span class="n">plan</span><span class="o">.</span><span class="n">plan</span><span class="p">[</span><span class="s2">""</span><span class="p">],</span> <span class="n">env</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda"</span><span class="p">))</span>
+<span class="n">sharded_ebc</span> <span class="o">=</span> <span class="n">sharder</span><span class="o">.</span><span class="n">shard</span><span class="p">(</span><span class="n">ebc</span><span class="p">,</span> <span class="n">plan</span><span class="o">.</span><span class="n">plan</span><span class="p">[</span><span class="s2">""</span><span class="p">],</span> <span class="n">env</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda"</span><span class="p">))</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sharded EBC Module: </span><span class="si">{</span><span class="n">sharded_ebc</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.10/dist-packages/torch/distributed/distributed_c10d.py:859: UserWarning:
+
+`_get_pg_default_device` will be deprecated, it only stays for backward-compatiblity reason. If you need to find a device for object collectives, please use `_get_object_coll_device`. If you need to query the device types supported by group, please use `_device_capability(group)`.
+
+/usr/local/lib/python3.10/dist-packages/torch/distributed/distributed_c10d.py:903: UserWarning:
+
+Multiple backends are registered with this ProcessGroup. We cannot determine which one is the default. Returning cpu. Please consider using other APIs.
+
+Sharded EBC Module: ShardedEmbeddingBagCollection(
+  (lookups):
+   GroupedPooledEmbeddingsLookup(
+      (_emb_modules): ModuleList(
+        (0): BatchedFusedEmbeddingBag(
+          (_emb_module): SplitTableBatchedEmbeddingBagsCodegen()
+        )
+      )
+    )
+   (_output_dists):
+   TwPooledEmbeddingDist()
+  (embedding_bags): ModuleDict(
+    (product_table): Module()
+    (user_table): Module()
+  )
+)
 </pre></div>
 </div>
 </div>
@@ -1092,8 +1251,8 @@ sharding plan to finally generate our <code class="docutils literal notranslate"
 <p>Remember that TorchRec is a highly optimized library for distributed
 embeddings. A concept that TorchRec introduces to enable higher
 performance for training on GPU is a
-<a class="reference external" href="https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.types.LazyAwaitable">LazyAwaitable</a>.
-You will see <code class="docutils literal notranslate"><span class="pre">LazyAwaitable</span></code> types as outputs of various sharded
+<cite>LazyAwaitable `.
+You will see ``LazyAwaitable`</cite> types as outputs of various sharded
 TorchRec modules. All a <code class="docutils literal notranslate"><span class="pre">LazyAwaitable</span></code> type does is delay calculating some
 result as long as possible, and it does it by acting like an async type.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
@@ -1102,12 +1261,12 @@ result as long as possible, and it does it by acting like an async type.</p>
 
 
 <span class="c1"># Demonstrate a ``LazyAwaitable`` type:</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">ExampleAwaitable</span><span class="p">(</span><span class="n">LazyAwaitable</span><span class="p">[</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">]):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ExampleAwaitable</span><span class="p">(</span><span class="n">LazyAwaitable</span><span class="p">[</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">]):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_size</span> <span class="o">=</span> <span class="n">size</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_wait_impl</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_wait_impl</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">:</span>
         <span class="k">return</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.ones.html#torch.ones" title="torch.ones"><span class="n">torch</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_size</span><span class="p">)</span>
 
 
@@ -1131,8 +1290,16 @@ result as long as possible, and it does it by acting like an async type.</p>
 
 <span class="c1"># Same output format as unsharded ``EmbeddingBagCollection``</span>
 <span class="n">result_dict</span> <span class="o">=</span> <span class="n">kt</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
-<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">embedding</span> <span class="ow">in</span> <span class="n">result_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">embedding</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">embedding</span></a> <span class="ow">in</span> <span class="n">result_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/size.html#torch.Size" title="torch.Size"><span class="n">embedding</span><span class="o">.</span><span class="n">shape</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;torchrec.distributed.embeddingbag.EmbeddingBagCollectionAwaitable object at 0x7f4fb6c03fd0&gt;
+&lt;class 'torchrec.sparse.jagged_tensor.KeyedTensor'&gt;
+['product', 'user']
+torch.Size([2, 128])
+product torch.Size([2, 64])
+user torch.Size([2, 64])
 </pre></div>
 </div>
 <div class="section" id="anatomy-of-sharded-torchrec-modules">
@@ -1161,7 +1328,7 @@ the lower level details.</p>
 order for distribution of gradients. <code class="docutils literal notranslate"><span class="pre">input_dist</span></code>, <code class="docutils literal notranslate"><span class="pre">lookup</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">output_dist</span></code> all depend on the sharding scheme. Since we sharded in a
 table-wise fashion, these APIs are modules that are constructed by
-<a class="reference external" href="https://pytorch.org/torchrec/torchrec.distributed.sharding.html#torchrec.distributed.sharding.tw_sharding.TwPooledEmbeddingSharding">TwPooledEmbeddingSharding</a>.</p>
+<cite>TwPooledEmbeddingSharding</cite>.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">sharded_ebc</span>
 
 <span class="c1"># Distribute input KJTs to all other GPUs and receive KJTs</span>
@@ -1169,6 +1336,11 @@ table-wise fashion, these APIs are modules that are constructed by
 
 <span class="c1"># Distribute output embeddings to all other GPUs and receive embeddings</span>
 <span class="n">sharded_ebc</span><span class="o">.</span><span class="n">_output_dists</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[TwPooledEmbeddingDist(
+  (_dist): PooledEmbeddingsAllToAll()
+)]
 </pre></div>
 </div>
 </div>
@@ -1195,6 +1367,15 @@ lookups.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">sharded_ebc</span><span class="o">.</span><span class="n">_lookups</span>
 </pre></div>
 </div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[GroupedPooledEmbeddingsLookup(
+  (_emb_modules): ModuleList(
+    (0): BatchedFusedEmbeddingBag(
+      (_emb_module): SplitTableBatchedEmbeddingBagsCodegen()
+    )
+  )
+)]
+</pre></div>
+</div>
 </div>
 <div class="section" id="distributedmodelparallel">
 <h3><code class="docutils literal notranslate"><span class="pre">DistributedModelParallel</span></code><a class="headerlink" href="#distributedmodelparallel" title="Permalink to this heading">¶</a></h3>
@@ -1203,7 +1384,7 @@ able to take the <code class="docutils literal notranslate"><span class="pre">Em
 <code class="docutils literal notranslate"><span class="pre">EmbeddingBagCollection</span></code> to generate a
 <code class="docutils literal notranslate"><span class="pre">ShardedEmbeddingBagCollection</span></code> module. This workflow is fine, but
 typically when implementing model parallel,
-<a class="reference external" href="https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel">DistributedModelParallel</a>
+<cite>DistributedModelParallel</cite>
 (DMP) is used as the standard interface. When wrapping your model (in
 our case <code class="docutils literal notranslate"><span class="pre">ebc</span></code>), with DMP, the following will occur:</p>
 <ol class="arabic simple">
@@ -1220,12 +1401,18 @@ since we have two embedding tables and one GPU, TorchRec will place both
 on the single GPU.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">ebc</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">torchrec</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">DistributedModelParallel</span><span class="p">(</span><span class="n">ebc</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda"</span><span class="p">))</span>
+<span class="n">model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torchrec</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">DistributedModelParallel</span></a><span class="p">(</span><span class="n">ebc</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda"</span><span class="p">))</span>
 
 <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">kjt</span><span class="p">)</span>
 <span class="n">out</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
 
 <span class="n">model</span>
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">fbgemm_gpu.split_embedding_configs</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmbOptimType</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>WARNING:root:Could not determine LOCAL_WORLD_SIZE from environment, falling back to WORLD_SIZE.
 </pre></div>
 </div>
 </div>
@@ -1296,7 +1483,6 @@ parameters to <code class="docutils literal notranslate"><span class="pre">fused
 </ol>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Option 1: Passing optimizer kwargs through fused parameters</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torchrec.optim.optimizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">in_backward_optimizer_filter</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">fbgemm_gpu.split_embedding_configs</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmbOptimType</span>
 
 
 <span class="c1"># We initialize the sharder with</span>
@@ -1310,17 +1496,25 @@ parameters to <code class="docutils literal notranslate"><span class="pre">fused
 <span class="n">sharder_with_fused_params</span> <span class="o">=</span> <span class="n">EmbeddingBagCollectionSharder</span><span class="p">(</span><span class="n">fused_params</span><span class="o">=</span><span class="n">fused_params</span><span class="p">)</span>
 
 <span class="c1"># We'll use same plan and unsharded EBC as before but this time with our new sharder</span>
-<span class="n">sharded_ebc_fused_params</span> <span class="o">=</span> <span class="n">sharder_with_fused_params</span><span class="o">.</span><span class="n">shard</span><span class="p">(</span><span class="n">ebc</span><span class="p">,</span> <span class="n">plan</span><span class="o">.</span><span class="n">plan</span><span class="p">[</span><span class="s2">""</span><span class="p">],</span> <span class="n">env</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda"</span><span class="p">))</span>
+<span class="n">sharded_ebc_fused_params</span> <span class="o">=</span> <span class="n">sharder_with_fused_params</span><span class="o">.</span><span class="n">shard</span><span class="p">(</span>
+    <span class="n">ebc</span><span class="p">,</span> <span class="n">plan</span><span class="o">.</span><span class="n">plan</span><span class="p">[</span><span class="s2">""</span><span class="p">],</span> <span class="n">env</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda"</span><span class="p">)</span>
+<span class="p">)</span>
 
 <span class="c1"># Looking at the optimizer of each, we can see that the learning rate changed, which indicates our optimizer has been applied correctly.</span>
 <span class="c1"># If seen, we can also look at the TBE logs of the cell to see that our new optimizer is indeed being applied</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Original Sharded EBC fused optimizer: </span><span class="si">{</span><span class="n">sharded_ebc</span><span class="o">.</span><span class="n">fused_optimizer</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sharded EBC with fused parameters fused optimizer: </span><span class="si">{</span><span class="n">sharded_ebc_fused_params</span><span class="o">.</span><span class="n">fused_optimizer</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"Sharded EBC with fused parameters fused optimizer: </span><span class="si">{</span><span class="n">sharded_ebc_fused_params</span><span class="o">.</span><span class="n">fused_optimizer</span><span class="si">}</span><span class="s2">"</span>
+<span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Type of optimizer: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">sharded_ebc_fused_params</span><span class="o">.</span><span class="n">fused_optimizer</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.optim</span><span class="w"> </span><span class="kn">import</span> <span class="n">_apply_optimizer_in_backward</span> <span class="k">as</span> <span class="n">apply_optimizer_in_backward</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.optim</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_apply_optimizer_in_backward</span> <span class="k">as</span> <span class="n">apply_optimizer_in_backward</span><span class="p">,</span>
+<span class="p">)</span>
+
 <span class="c1"># Option 2: Applying optimizer through apply_optimizer_in_backward</span>
 <span class="c1"># Note: we need to call apply_optimizer_in_backward on unsharded model first and then shard it</span>
 
@@ -1328,11 +1522,13 @@ parameters to <code class="docutils literal notranslate"><span class="pre">fused
 <span class="n">ebc_apply_opt</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ebc</span><span class="p">)</span>
 <span class="n">optimizer_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"lr"</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">}</span>
 
-<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">ebc_apply_opt</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">():</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-nn-parameter sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.parameter.Parameter.html#torch.nn.parameter.Parameter" title="torch.nn.parameter.Parameter"><span class="n">param</span></a> <span class="ow">in</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.named_parameters" title="torch.nn.Module.named_parameters"><span class="n">ebc_apply_opt</span><span class="o">.</span><span class="n">named_parameters</span></a><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
-    <span class="n">apply_optimizer_in_backward</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD" title="torch.optim.SGD"><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span></a><span class="p">,</span> <span class="p">[</span><span class="n">param</span><span class="p">],</span> <span class="n">optimizer_kwargs</span><span class="p">)</span>
+    <span class="n">apply_optimizer_in_backward</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD" title="torch.optim.SGD"><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span></a><span class="p">,</span> <span class="p">[</span><a class="sphx-glr-backref-module-torch-nn-parameter sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.parameter.Parameter.html#torch.nn.parameter.Parameter" title="torch.nn.parameter.Parameter"><span class="n">param</span></a><span class="p">],</span> <span class="n">optimizer_kwargs</span><span class="p">)</span>
 
-<span class="n">sharded_ebc_apply_opt</span> <span class="o">=</span> <span class="n">sharder</span><span class="o">.</span><span class="n">shard</span><span class="p">(</span><span class="n">ebc_apply_opt</span><span class="p">,</span> <span class="n">plan</span><span class="o">.</span><span class="n">plan</span><span class="p">[</span><span class="s2">""</span><span class="p">],</span> <span class="n">env</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda"</span><span class="p">))</span>
+<span class="n">sharded_ebc_apply_opt</span> <span class="o">=</span> <span class="n">sharder</span><span class="o">.</span><span class="n">shard</span><span class="p">(</span>
+    <span class="n">ebc_apply_opt</span><span class="p">,</span> <span class="n">plan</span><span class="o">.</span><span class="n">plan</span><span class="p">[</span><span class="s2">""</span><span class="p">],</span> <span class="n">env</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda"</span><span class="p">)</span>
+<span class="p">)</span>
 
 <span class="c1"># Now when we print the optimizer, we will see our new learning rate, you can verify momentum through the TBE logs as well if outputted</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">sharded_ebc_apply_opt</span><span class="o">.</span><span class="n">fused_optimizer</span><span class="p">)</span>
@@ -1342,201 +1538,63 @@ parameters to <code class="docutils literal notranslate"><span class="pre">fused
 <span class="c1"># Practically, just non TorchRec module parameters. Since our module is just a TorchRec EBC</span>
 <span class="c1"># there are no other parameters that aren't associated with TorchRec</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Non Fused Model Parameters:"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">in_backward_optimizer_filter</span><span class="p">(</span><span class="n">sharded_ebc_fused_params</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()))</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">in_backward_optimizer_filter</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.named_parameters" title="torch.nn.Module.named_parameters"><span class="n">sharded_ebc_fused_params</span><span class="o">.</span><span class="n">named_parameters</span></a><span class="p">())</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<span class="p">)</span>
 
 <span class="c1"># Here we do a dummy backwards call and see that parameter updates for fused</span>
 <span class="c1"># optimizers happen as a result of the backward pass</span>
 
-<span class="n">ebc_output</span> <span class="o">=</span> <span class="n">sharded_ebc_fused_params</span><span class="p">(</span><span class="n">kjt</span><span class="p">)</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
-<span class="n">loss</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.sum.html#torch.sum" title="torch.sum"><span class="n">torch</span><span class="o">.</span><span class="n">sum</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.ones_like.html#torch.ones_like" title="torch.ones_like"><span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span></a><span class="p">(</span><span class="n">ebc_output</span><span class="p">)</span> <span class="o">-</span> <span class="n">ebc_output</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"First Iteration Loss: </span><span class="si">{</span><span class="n">loss</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">ebc_output</span></a> <span class="o">=</span> <span class="n">sharded_ebc_fused_params</span><span class="p">(</span><span class="n">kjt</span><span class="p">)</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">loss</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.sum.html#torch.sum" title="torch.sum"><span class="n">torch</span><span class="o">.</span><span class="n">sum</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.ones_like.html#torch.ones_like" title="torch.ones_like"><span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">ebc_output</span></a><span class="p">)</span> <span class="o">-</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">ebc_output</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"First Iteration Loss: </span><span class="si">{</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">loss</span></a><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/generated/torch.Tensor.backward.html#torch.Tensor.backward" title="torch.Tensor.backward"><span class="n">loss</span><span class="o">.</span><span class="n">backward</span></a><span class="p">()</span>
 
-<span class="n">ebc_output</span> <span class="o">=</span> <span class="n">sharded_ebc_fused_params</span><span class="p">(</span><span class="n">kjt</span><span class="p">)</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
-<span class="n">loss</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.sum.html#torch.sum" title="torch.sum"><span class="n">torch</span><span class="o">.</span><span class="n">sum</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.ones_like.html#torch.ones_like" title="torch.ones_like"><span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span></a><span class="p">(</span><span class="n">ebc_output</span><span class="p">)</span> <span class="o">-</span> <span class="n">ebc_output</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">ebc_output</span></a> <span class="o">=</span> <span class="n">sharded_ebc_fused_params</span><span class="p">(</span><span class="n">kjt</span><span class="p">)</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">loss</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.sum.html#torch.sum" title="torch.sum"><span class="n">torch</span><span class="o">.</span><span class="n">sum</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.ones_like.html#torch.ones_like" title="torch.ones_like"><span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">ebc_output</span></a><span class="p">)</span> <span class="o">-</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">ebc_output</span></a><span class="p">)</span>
 <span class="c1"># We don't call an optimizer.step(), so for the loss to have changed here,</span>
 <span class="c1"># that means that the gradients were somehow updated, which is what the</span>
 <span class="c1"># fused optimizer automatically handles for us</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Second Iteration Loss: </span><span class="si">{</span><span class="n">loss</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Second Iteration Loss: </span><span class="si">{</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">loss</span></a><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="section" id="inference">
-<h3>Inference<a class="headerlink" href="#inference" title="Permalink to this heading">¶</a></h3>
-<p>Now that we are able to train distributed embeddings, how can we take
-the trained model and optimize it for inference? Inference is typically
-very sensitive to <strong>performance and size of the model</strong>. Running just
-the trained model in a Python environment is incredibly inefficient.
-There are two key differences between inference and training
-environments:</p>
-<ul class="simple">
-<li><p><strong>Quantization</strong>: Inference models are typically
-quantized, where model parameters lose precision for lower latency in
-predictions and reduced model size. For example FP32 (4 bytes) in
-trained model to INT8 (1 byte) for each embedding weight. This is also
-necessary given the vast scale of embedding tables, as we want to use as
-few devices as possible for inference to minimize latency.</p></li>
-<li><p><strong>C++ environment</strong>: Inference latency is very important, so in order to ensure
-ample performance, the model is typically ran in a C++ environment,
-along with the situations where we don’t have a Python runtime, like on
-device.</p></li>
-</ul>
-<p>TorchRec provides primitives for converting a TorchRec model into being
-inference ready with:</p>
-<ul class="simple">
-<li><p>APIs for quantizing the model, introducing
-optimizations automatically with FBGEMM TBE</p></li>
-<li><p>Sharding embeddings for distributed inference</p></li>
-<li><p>Compiling the model to <a class="reference external" href="https://pytorch.org/docs/stable/jit.html">TorchScript</a>
-(compatible in C++)</p></li>
-</ul>
-<p>In this section, we will go over this entire workflow of:</p>
-<ul class="simple">
-<li><p>Quantizing the model</p></li>
-<li><p>Sharding the quantized model</p></li>
-<li><p>Compiling the sharded quantized model into TorchScript</p></li>
-</ul>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">ebc</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">InferenceModule</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebc</span><span class="p">:</span> <span class="n">torchrec</span><span class="o">.</span><span class="n">EmbeddingBagCollection</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ebc_</span> <span class="o">=</span> <span class="n">ebc</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kjt</span><span class="p">:</span> <span class="n">KeyedJaggedTensor</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ebc_</span><span class="p">(</span><span class="n">kjt</span><span class="p">)</span>
-
-<span class="n">module</span> <span class="o">=</span> <span class="n">InferenceModule</span><span class="p">(</span><span class="n">ebc</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">():</span>
-    <span class="c1"># Here, the parameters should still be FP32, as we are using a standard EBC</span>
-    <span class="c1"># FP32 is default, regularly used for training</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">param</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">param</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Original Sharded EBC fused optimizer: : EmbeddingFusedOptimizer (
+Parameter Group 0
+    lr: 0.009999999776482582
+)
+Sharded EBC with fused parameters fused optimizer: : EmbeddingFusedOptimizer (
+Parameter Group 0
+    lr: 0.019999999552965164
+)
+Type of optimizer: &lt;class 'torchrec.optim.keyed.CombinedOptimizer'&gt;
+name='embedding_bags.product_table.weight'
+name='embedding_bags.user_table.weight'
+: EmbeddingFusedOptimizer (
+Parameter Group 0
+    lr: 0.5
+)
+&lt;class 'torchrec.optim.keyed.CombinedOptimizer'&gt;
+Non Fused Model Parameters:
+dict_keys([])
+First Iteration Loss: 256.0680236816406
+Second Iteration Loss: 245.8459014892578
 </pre></div>
-</div>
-</div>
-<div class="section" id="quantization">
-<h3>Quantization<a class="headerlink" href="#quantization" title="Permalink to this heading">¶</a></h3>
-<p>As you can see above, the normal EBC contains embedding table weights as
-FP32 precision (32 bits for each weight). Here, we will use the TorchRec
-inference library to quantize the embedding weights of the model to INT8</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">quantization</span> <span class="k">as</span> <span class="n">quant</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">torchrec.modules.embedding_configs</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantConfig</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">torchrec.quant.embedding_modules</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">EmbeddingBagCollection</span> <span class="k">as</span> <span class="n">QuantEmbeddingBagCollection</span><span class="p">,</span>
-<span class="p">)</span>
-
-
-<span class="n">quant_dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">int8</span>
-
-
-<span class="n">qconfig</span> <span class="o">=</span> <span class="n">QuantConfig</span><span class="p">(</span>
-    <span class="c1"># dtype of the result of the embedding lookup, post activation</span>
-    <span class="c1"># torch.float generally for compatibility with rest of the model</span>
-    <span class="c1"># as rest of the model here usually isn't quantized</span>
-    <span class="n">activation</span><span class="o">=</span><span class="n">quant</span><span class="o">.</span><span class="n">PlaceholderObserver</span><span class="o">.</span><span class="n">with_args</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">),</span>
-    <span class="c1"># quantized type for embedding weights, aka parameters to actually quantize</span>
-    <span class="n">weight</span><span class="o">=</span><span class="n">quant</span><span class="o">.</span><span class="n">PlaceholderObserver</span><span class="o">.</span><span class="n">with_args</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">quant_dtype</span><span class="p">),</span>
-<span class="p">)</span>
-<span class="n">qconfig_spec</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="c1"># Map of module type to qconfig</span>
-    <span class="n">torchrec</span><span class="o">.</span><span class="n">EmbeddingBagCollection</span><span class="p">:</span> <span class="n">qconfig</span><span class="p">,</span>
-<span class="p">}</span>
-<span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="c1"># Map of module type to quantized module type</span>
-    <span class="n">torchrec</span><span class="o">.</span><span class="n">EmbeddingBagCollection</span><span class="p">:</span> <span class="n">QuantEmbeddingBagCollection</span><span class="p">,</span>
-<span class="p">}</span>
-
-
-<span class="n">module</span> <span class="o">=</span> <span class="n">InferenceModule</span><span class="p">(</span><span class="n">ebc</span><span class="p">)</span>
-
-<span class="c1"># Quantize the module</span>
-<span class="n">qebc</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">quantize_dynamic</span><span class="p">(</span>
-    <span class="n">module</span><span class="p">,</span>
-    <span class="n">qconfig_spec</span><span class="o">=</span><span class="n">qconfig_spec</span><span class="p">,</span>
-    <span class="n">mapping</span><span class="o">=</span><span class="n">mapping</span><span class="p">,</span>
-    <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span>
-
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Quantized EBC: </span><span class="si">{</span><span class="n">qebc</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-
-<span class="n">kjt</span> <span class="o">=</span> <span class="n">kjt</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
-
-<span class="n">qebc</span><span class="p">(</span><span class="n">kjt</span><span class="p">)</span>
-
-<span class="c1"># Once quantized, goes from parameters -&gt; buffers, as no longer trainable</span>
-<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">buffer</span> <span class="ow">in</span> <span class="n">qebc</span><span class="o">.</span><span class="n">named_buffers</span><span class="p">():</span>
-    <span class="c1"># The shapes of the tables should be the same but the dtype should be int8 now</span>
-    <span class="c1"># post quantization</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">buffer</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">buffer</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="shard">
-<h3>Shard<a class="headerlink" href="#shard" title="Permalink to this heading">¶</a></h3>
-<p>Here we perform sharding of the TorchRec quantized model. This is to
-ensure we are using the performant module through FBGEMM TBE. Here we
-are using one device to be consistent with training (1 TBE).</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torchrec</span><span class="w"> </span><span class="kn">import</span> <span class="n">distributed</span> <span class="k">as</span> <span class="n">trec_dist</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">torchrec.distributed.shard</span><span class="w"> </span><span class="kn">import</span> <span class="n">_shard_modules</span>
-
-
-<span class="n">sharded_qebc</span> <span class="o">=</span> <span class="n">_shard_modules</span><span class="p">(</span>
-    <span class="n">module</span><span class="o">=</span><span class="n">qebc</span><span class="p">,</span>
-    <span class="n">device</span><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cpu"</span><span class="p">),</span>
-    <span class="n">env</span><span class="o">=</span><span class="n">trec_dist</span><span class="o">.</span><span class="n">ShardingEnv</span><span class="o">.</span><span class="n">from_local</span><span class="p">(</span>
-        <span class="mi">1</span><span class="p">,</span>
-        <span class="mi">0</span><span class="p">,</span>
-    <span class="p">),</span>
-<span class="p">)</span>
-
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sharded Quantized EBC: </span><span class="si">{</span><span class="n">sharded_qebc</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-
-<span class="n">sharded_qebc</span><span class="p">(</span><span class="n">kjt</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="compilation">
-<h3>Compilation<a class="headerlink" href="#compilation" title="Permalink to this heading">¶</a></h3>
-<p>Now we have the optimized eager TorchRec inference model. The next step
-is to ensure that this model is loadable in C++, as currently it is only
-runnable in a Python runtime.</p>
-<p>The recommended method of compilation at Meta is two fold: <a class="reference external" href="https://pytorch.org/docs/stable/fx.html">torch.fx
-tracing</a> (generate
-intermediate representation of model) and converting the result to
-TorchScript, where TorchScript is C++ compatible.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torchrec.fx</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tracer</span>
-
-
-<span class="n">tracer</span> <span class="o">=</span> <span class="n">Tracer</span><span class="p">(</span><span class="n">leaf_modules</span><span class="o">=</span><span class="p">[</span><span class="s2">"IntNBitTableBatchedEmbeddingBagsCodegen"</span><span class="p">])</span>
-
-<span class="n">graph</span> <span class="o">=</span> <span class="n">tracer</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">sharded_qebc</span><span class="p">)</span>
-<span class="n">gm</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-fx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/fx.html#torch.fx.GraphModule" title="torch.fx.GraphModule"><span class="n">torch</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">sharded_qebc</span><span class="p">,</span> <span class="n">graph</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Graph Module Created!"</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">gm</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
-
-<span class="n">scripted_gm</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-jit sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.jit.script.html#torch.jit.script" title="torch.jit.script"><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span></a><span class="p">(</span><span class="n">gm</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Scripted Graph Module Created!"</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">scripted_gm</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
-</pre></div>
-</div>
 </div>
 </div>
 <div class="section" id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
-<p>In this tutorial, you have gone from training a distributed RecSys model all the way
-to making it inference ready. The <a class="reference external" href="https://github.com/pytorch/torchrec/tree/main/torchrec/inference">TorchRec repo</a> has a
-full example of how to load a TorchRec TorchScript model into C++ for
-inference.</p>
+<p>In this tutorial, you have done training a distributed RecSys model
+If you are interested in the inference the <a class="reference external" href="https://github.com/pytorch/torchrec/tree/main/torchrec/inference">TorchRec repo</a> has a
+full example of how to run the TorchRec in Inference mode.</p>
 <p>For more information, please see our
 <a class="reference external" href="https://github.com/facebookresearch/dlrm/tree/main/torchrec_dlrm/">dlrm</a>
 example, which includes multinode training on the Criteo 1TB
 dataset using the methods described in <a class="reference external" href="https://arxiv.org/abs/1906.00091">Deep Learning Recommendation Model
 for Personalization and Recommendation Systems</a>.</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.063 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-torchrec-intro-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/8d83c5b10438a4bcc94963daaddeaeec/torchrec_intro_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">torchrec_intro_tutorial.ipynb</span></code></a></p>
@@ -1623,13 +1681,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 </li>
 <li><a class="reference internal" href="#optimizer-classes">Optimizer Classes</a></li>
 <li><a class="reference internal" href="#fused-optimizer-in-torchrec">Fused optimizer in TorchRec</a></li>
-<li><a class="reference internal" href="#adding-an-optimizer-to-embeddingbagcollection">Adding an Optimizer to <code class="docutils literal notranslate"><span class="pre">EmbeddingBagCollection</span></code></a><ul>
-<li><a class="reference internal" href="#inference">Inference</a></li>
-<li><a class="reference internal" href="#quantization">Quantization</a></li>
-<li><a class="reference internal" href="#shard">Shard</a></li>
-<li><a class="reference internal" href="#compilation">Compilation</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#adding-an-optimizer-to-embeddingbagcollection">Adding an Optimizer to <code class="docutils literal notranslate"><span class="pre">EmbeddingBagCollection</span></code></a></li>
 <li><a class="reference internal" href="#conclusion">Conclusion</a></li>
 </ul>
 </li>
