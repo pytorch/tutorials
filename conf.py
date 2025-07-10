@@ -29,14 +29,15 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('./.jenkins'))
-import pytorch_sphinx_theme
+sys.path.insert(0, os.path.abspath("."))
+sys.path.insert(0, os.path.abspath("./.jenkins"))
+import pytorch_sphinx_theme2
+html_theme = "pytorch_sphinx_theme2"
+html_theme_path = [pytorch_sphinx_theme2.get_html_theme_path()]
 import torch
 import glob
 import random
 import shutil
-from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective, CustomCalloutItemDirective, CustomCardItemDirective
 import distutils.file_util
 import re
 from get_sphinx_filenames import SPHINX_SHOULD_RUN
@@ -125,16 +126,27 @@ extensions = [
     'sphinx_gallery.gen_gallery',
     'sphinx_design',
     'sphinx_sitemap',
-    'sphinx_reredirects'
+    'sphinx_reredirects',
+    'sphinxcontrib.mermaid'
 ]
 
 intersphinx_mapping = {
     "torch": ("https://pytorch.org/docs/stable/", None),
-    "tensordict": ("https://pytorch.github.io/tensordict/", None),
-    "torchrl": ("https://pytorch.org/rl/", None),
+    "tensordict": ("https://pytorch.github.io/tensordict/stable", None),
+    "torchrl": ("https://pytorch.org/rl/stable", None),
     "torchaudio": ("https://pytorch.org/audio/stable/", None),
     "torchtext": ("https://pytorch.org/text/stable/", None),
     "torchvision": ("https://pytorch.org/vision/stable/", None),
+}
+
+html_meta = {
+    "description": "Master PyTorch with our step-by-step tutorials for all skill levels. Start your journey to becoming a PyTorch expert today!",
+    "keywords": "PyTorch, tutorials, Getting Started, deep learning, AI",
+    "author": "PyTorch Contributors",
+}
+
+html_additional_pages = {
+    "404": "404.html",
 }
 
 # -- Sphinx-gallery configuration --------------------------------------------
@@ -162,6 +174,58 @@ sitemap_excludes = [
     "genindex.html",
 ]
 sitemap_url_scheme = "{link}"
+
+html_theme_options = {
+    "navigation_with_keys": False,
+    "analytics_id": "GTM-T8XT4PS",
+    "pytorch_project": "tutorials",
+    "logo": {
+        "text": "",
+    },
+    "icon_links": [
+        {
+            "name": "X",
+            "url": "https://x.com/PyTorch",
+            "icon": "fa-brands fa-x-twitter",
+        },
+        {
+            "name": "GitHub",
+            "url": "https://github.com/pytorch/tutorials",
+            "icon": "fa-brands fa-github",
+        },
+        {
+            "name": "Discourse",
+            "url": "https://dev-discuss.pytorch.org/",
+            "icon": "fa-brands fa-discourse",
+        },
+        {
+            "name": "PyPi",
+            "url": "https://pypi.org/project/torch/",
+            "icon": "fa-brands fa-python",
+        },
+    ],
+    "use_edit_page_button": True,
+    "header_links_before_dropdown": 9,
+    "navbar_start": ["pytorch_version"],
+    "navbar_center": "navbar-nav",
+    "display_version": True,
+}
+
+theme_variables = pytorch_sphinx_theme2.get_theme_variables()
+
+html_context = {
+    "theme_variables": theme_variables,
+    "display_github": True,
+    "github_url": "https://github.com",
+    "github_user": "pytorch",
+    "github_repo": "tutorials",
+    "feedback_url": "https://github.com/pytorch/tutorials",
+    "github_version": "main",
+    "doc_path": ".",
+    "library_links": theme_variables.get("library_links", []),
+    "pytorch_project": "tutorials",
+}
+
 
 if os.getenv('GALLERY_PATTERN'):
     # GALLERY_PATTERN is to be used when you want to work on a single
@@ -206,7 +270,7 @@ author = 'PyTorch contributors'
 # built documents.
 #
 # The short X.Y version.
-version = str(torch.__version__)
+version = "v" + str(torch.__version__)
 # The full version, including alpha/beta/rc tags.
 release = str(torch.__version__)
 
@@ -223,6 +287,12 @@ language = 'en'
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'src/pytorch-sphinx-theme/docs*']
 exclude_patterns += sphinx_gallery_conf['examples_dirs']
 exclude_patterns += ['*/index.rst']
+
+# Handling for HuggingFace Hub jinja templates
+def handle_jinja_templates(app, docname, source):
+    if "huggingface_hub/templates" in docname:
+        # Replace Jinja templates with quoted strings
+        source[0] = re.sub(r"(\{\{.*?\}\})", r'"\1"', source[0])
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -261,18 +331,6 @@ html_static_path = ['_static']
 #     '**': ['sidebarlogo.html', 'globaltoc.html', 'searchbox.html', 'sourcelink.html']
 # }
 
-
-html_theme = 'pytorch_sphinx_theme'
-html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
-html_logo = '_static/img/pytorch-logo-dark.svg'
-html_theme_options = {
-    'pytorch_project': 'tutorials',
-    'collapse_navigation': False,
-    'display_version': True,
-    'navigation_with_keys': True,
-    'logo_only': False,
-    'analytics_id': 'GTM-T8XT4PS',
-}
 
 
 # -- Options for HTMLHelp output ------------------------------------------
@@ -333,33 +391,8 @@ texinfo_documents = [
 
 html_css_files = [
         'https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css',
-        'css/custom.css',
-        'css/custom2.css'
     ]
 
-html_js_files = [
-    "js/custom.js",
-]
-
 def setup(app):
-    # NOTE: in Sphinx 1.8+ `html_css_files` is an official configuration value
-    # and can be moved outside of this function (and the setup(app) function
-    # can be deleted).
-    #html_css_files = [
-    #    'https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css',
-    #    'css/custom.css'
-    #]
-    # In Sphinx 1.8 it was renamed to `add_css_file`, 1.7 and prior it is
-    # `add_stylesheet` (deprecated in 1.8).
-    #add_css = getattr(app, 'add_css_file', app.add_stylesheet)
-    #for css_file in html_css_files:
-    #    add_css(css_file)
-    # Custom CSS
-    #app.add_stylesheet('css/pytorch_theme.css')
-    # app.add_stylesheet('https://fonts.googleapis.com/css?family=Lato')
-    # Custom directives
-    app.add_directive('includenodoc', IncludeDirective)
-    app.add_directive('galleryitem', GalleryItemDirective)
-    app.add_directive('customgalleryitem', CustomGalleryItemDirective)
-    app.add_directive('customcarditem', CustomCardItemDirective)
-    app.add_directive('customcalloutitem', CustomCalloutItemDirective)
+    app.connect("source-read", handle_jinja_templates)
+    app.connect("html-page-context", update_context)

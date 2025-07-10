@@ -1,5 +1,5 @@
-Distributed and Parallel Training Tutorials
-===========================================
+Distributed
+===========
 
 Distributed training is a model training paradigm that involves
 spreading training workload across multiple worker nodes, therefore
@@ -186,3 +186,23 @@ Custom Extensions
         cpp extensions.
         +++
         :octicon:`code;1em` Code
+
+.. toctree::
+   :hidden:
+   :maxdepth: 2
+
+   beginner/dist_overview
+   beginner/ddp_series_intro
+   intermediate/ddp_tutorial
+   intermediate/dist_tuto
+   intermediate/FSDP_tutorial
+   intermediate/FSDP_advanced_tutorial
+   intermediate/TCPStore_libuv_backend
+   intermediate/TP_tutorial
+   intermediate/pipelining_tutorial
+   intermediate/process_group_cpp_extension_tutorial
+   intermediate/rpc_tutorial
+   intermediate/rpc_param_server_tutorial
+   intermediate/rpc_async_execution
+   advanced/rpc_ddp_tutorial
+   advanced/generic_join
