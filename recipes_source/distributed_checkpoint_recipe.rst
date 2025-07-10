@@ -59,10 +59,9 @@ Now, let's create a toy module, wrap it with FSDP, feed it with some dummy input
     import torch.multiprocessing as mp
     import torch.nn as nn
 
-    from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
+    from torch.distributed.fsdp import fully_shard
     from torch.distributed.checkpoint.state_dict import get_state_dict, set_state_dict
     from torch.distributed.checkpoint.stateful import Stateful
-    from torch.distributed.fsdp.fully_sharded_data_parallel import StateDictType
 
     CHECKPOINT_DIR = "checkpoint"
 
@@ -127,7 +126,7 @@ Now, let's create a toy module, wrap it with FSDP, feed it with some dummy input
 
         # create a model and move it to GPU with id rank
         model = ToyModel().to(rank)
-        model = FSDP(model)
+        model = fully_shard(model)
 
         loss_fn = nn.MSELoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
@@ -152,7 +151,7 @@ Now, let's create a toy module, wrap it with FSDP, feed it with some dummy input
             join=True,
         )
 
-Please go ahead and check the `checkpoint` directory. You should see 8 checkpoint files as shown below.
+Please go ahead and check the `checkpoint` directory. You should see world_size checkpoint files as shown below.
 
 .. figure:: /_static/img/distributed/distributed_checkpoint_generated_files.png
    :width: 100%
@@ -183,7 +182,7 @@ The reason that we need the ``state_dict`` prior to loading is:
     import torch.multiprocessing as mp
     import torch.nn as nn
 
-    from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
+    from torch.distributed.fsdp import fully_shard
 
     CHECKPOINT_DIR = "checkpoint"
 
@@ -248,7 +247,7 @@ The reason that we need the ``state_dict`` prior to loading is:
 
         # create a model and move it to GPU with id rank
         model = ToyModel().to(rank)
-        model = FSDP(model)
+        model = fully_shard(model)
 
         optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
