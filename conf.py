@@ -96,7 +96,6 @@ try:
 except ImportError:
     import warnings
     warnings.warn('unable to load "torchvision" package')
-import pytorch_sphinx_theme
 
 rst_epilog ="""
 .. |edit| image:: /_static/pencil-16.png
@@ -249,7 +248,10 @@ for i in range(len(sphinx_gallery_conf['examples_dirs'])):
         distutils.file_util.copy_file(f, gallery_subdir_path, update=True)
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = [
+    "_templates",
+    os.path.join(os.path.dirname(pytorch_sphinx_theme2.__file__), "templates"),
+]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
