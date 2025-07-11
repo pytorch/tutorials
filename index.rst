@@ -874,7 +874,6 @@ Additional Resources
    :maxdepth: 1
    :hidden:
 
-
    deep-dive
 
 .. toctree::
