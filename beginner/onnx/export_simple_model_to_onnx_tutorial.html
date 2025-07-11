@@ -390,7 +390,6 @@
 <li class="toctree-l1"><a class="reference internal" href="intro_onnx.html">Introduction to ONNX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/realtime_rpi.html">Real Time Inference on Raspberry Pi 4 (30 fps!)</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Profiling PyTorch</span></p>
@@ -540,15 +539,13 @@ to download the full example code.</p>
 <a class="reference external" href="onnx_registry_tutorial.html">Extending the ONNX exporter operator support</a> ||
 <a class="reference external" href="export_control_flow_model_to_onnx_tutorial.html">Export a model with control flow to ONNX</a></p>
 <div class="section" id="export-a-pytorch-model-to-onnx">
-<h1>Export a PyTorch model to ONNX<a class="headerlink" href="#export-a-pytorch-model-to-onnx" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 04, 2023 | Last Updated: Mar 05, 2025 | Last Verified: Nov 05, 2024</p>
+<h1>Export a PyTorch model to ONNX<a class="headerlink" href="#export-a-pytorch-model-to-onnx" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 04, 2023 | Last Updated: Jul 11, 2025 | Last Verified: Nov 05, 2024</p>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/titaiwangms">Ti-Tai Wang</a>, <a class="reference external" href="mailto:justinchu%40microsoft.com">Justin Chu</a>, <a class="reference external" href="https://github.com/thiagocrepaldi">Thiago Crepaldi</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>As of PyTorch 2.5, there are two versions of ONNX Exporter.</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">torch.onnx.export(...,</span> <span class="pre">dynamo=True)</span></code> is the newest (still in beta) exporter using <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> and Torch FX to capture the graph. It was released with PyTorch 2.5</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">torch.onnx.export</span></code> uses TorchScript and has been available since PyTorch 1.2.0</p></li>
-</ul>
+<p>Starting with PyTorch 2.5, there are two ONNX Exporter options available.
+* <code class="docutils literal notranslate"><span class="pre">torch.onnx.export(...,</span> <span class="pre">dynamo=True)</span></code> is the recommended exporter that leverages <code class="docutils literal notranslate"><span class="pre">torch.export</span></code> and Torch FX for graph capture.
+* <code class="docutils literal notranslate"><span class="pre">torch.onnx.export</span></code> is the legacy approach that relies on the deprecated TorchScript and is no longer recommended for use.</p>
 </div>
 <p>In the <a class="reference external" href="https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html">60 Minute Blitz</a>,
 we had the opportunity to learn about PyTorch at a high level and train a small neural network to classify images.
@@ -626,14 +623,6 @@ Next, we can export the model to ONNX format.</p>
 [torch.onnx] Translate the graph into ONNX... ✅
 </pre></div>
 </div>
-</div>
-<div class="section" id="optional-optimize-the-onnx-model">
-<h2>3.5. (Optional) Optimize the ONNX model<a class="headerlink" href="#optional-optimize-the-onnx-model" title="Permalink to this heading">¶</a></h2>
-<p>The ONNX model can be optimized with constant folding, and elimination of redundant nodes.
-The optimization is done in-place, so the original ONNX model is modified.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a class="sphx-glr-backref-module-torch-onnx sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/onnx_dynamo.html#torch.onnx.ONNXProgram.optimize" title="torch.onnx.ONNXProgram.optimize"><span class="n">onnx_program</span><span class="o">.</span><span class="n">optimize</span></a><span class="p">()</span>
-</pre></div>
-</div>
 <p>As we can see, we didn’t need any code change to the model.
 The resulting ONNX model is stored within <code class="docutils literal notranslate"><span class="pre">torch.onnx.ONNXProgram</span></code> as a binary protobuf file.</p>
 </div>
@@ -696,19 +685,19 @@ and get the output. In this tutorial, ONNX Runtime is executed on CPU, but it co
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Input length: 1
-Sample input: [array([[[[ 0.2909586 , -0.16776061,  2.0345833 , ..., -1.4175575 ,
-          -3.0078852 ,  1.1142342 ],
-         [ 2.4384978 , -0.02146361,  0.42435926, ...,  0.30522406,
-           2.4036999 ,  0.07518231],
-         [-0.8422651 ,  0.8969469 , -0.66980714, ...,  2.2009041 ,
-          -1.1950244 ,  0.263957  ],
+Sample input: [array([[[[ 0.8077769 , -1.1620618 ,  0.3078614 , ...,  1.2328205 ,
+          -0.8203982 , -1.8998418 ],
+         [-0.76920867,  2.8026905 , -0.37524274, ..., -0.5852109 ,
+          -0.36623234, -0.15639408],
+         [-0.4593637 , -0.3974099 , -0.00714702, ...,  0.61176485,
+          -1.2971392 ,  1.4642049 ],
          ...,
-         [-0.2705366 , -0.3799238 , -1.0112374 , ...,  1.7143095 ,
-          -1.1196649 ,  1.2062474 ],
-         [ 0.35737452, -0.7376885 , -1.0851845 , ...,  1.2041197 ,
-          -0.04380998,  2.431557  ],
-         [-0.30422908,  0.32281178, -0.5324823 , ..., -1.302959  ,
-          -1.0240093 ,  0.84166265]]]], dtype=float32)]
+         [ 1.5014129 , -1.5653477 ,  0.14109269, ..., -0.9649964 ,
+          -1.2397114 ,  0.32432103],
+         [-0.3394915 , -1.0786741 , -0.4288228 , ..., -0.02568253,
+           1.4432737 , -0.30545273],
+         [-1.8414826 , -0.98087394, -1.6774335 , ...,  0.26240435,
+          -0.32037872, -0.79783064]]]], dtype=float32)]
 </pre></div>
 </div>
 </div>
@@ -731,8 +720,8 @@ Before comparing the results, we need to convert the PyTorch’s output to match
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>PyTorch and ONNX Runtime output matched!
 Output length: 1
-Sample output: [[ 0.04879961  0.01101916 -0.1512354   0.13191068  0.08199437 -0.10467514
-   0.00408266  0.01699975  0.06706374 -0.02369459]]
+Sample output: [[-0.00864579 -0.05814453 -0.04948734 -0.02571016  0.07071146  0.02565705
+   0.07147534  0.09821317 -0.01507765 -0.05334966]]
 </pre></div>
 </div>
 </div>
@@ -755,7 +744,7 @@ sit tight and have fun going through all of them to learn all there is about the
 </div>
 <div class="toctree-wrapper compound">
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.485 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.470 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-onnx-export-simple-model-to-onnx-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/8dd55b9d6d32d45fae2642c7ffbf454e/export_simple_model_to_onnx_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">export_simple_model_to_onnx_tutorial.ipynb</span></code></a></p>
@@ -812,7 +801,6 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#install-the-required-dependencies">1. Install the required dependencies</a></li>
 <li><a class="reference internal" href="#author-a-simple-image-classifier-model">2. Author a simple image classifier model</a></li>
 <li><a class="reference internal" href="#export-the-model-to-onnx-format">3. Export the model to ONNX format</a></li>
-<li><a class="reference internal" href="#optional-optimize-the-onnx-model">3.5. (Optional) Optimize the ONNX model</a></li>
 <li><a class="reference internal" href="#save-the-onnx-model-in-a-file">4. Save the ONNX model in a file</a></li>
 <li><a class="reference internal" href="#visualize-the-onnx-model-graph-using-netron">5. Visualize the ONNX model graph using Netron</a></li>
 <li><a class="reference internal" href="#execute-the-onnx-model-with-onnx-runtime">6. Execute the ONNX model with ONNX Runtime</a></li>

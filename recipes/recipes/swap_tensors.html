@@ -390,7 +390,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/onnx/intro_onnx.html">Introduction to ONNX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/realtime_rpi.html">Real Time Inference on Raspberry Pi 4 (30 fps!)</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Profiling PyTorch</span></p>
@@ -588,17 +587,17 @@ run without error but the weights of the <code class="docutils literal notransla
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>weight in mod: Parameter containing:
-tensor([[-0.8205],
-        [ 0.0763]], requires_grad=True)
+tensor([[0.5708],
+        [0.6688]], requires_grad=True)
 weight in optimizer: [Parameter containing:
-tensor([[-0.8205],
-        [ 0.0763]], requires_grad=True)]
+tensor([[0.5708],
+        [0.6688]], requires_grad=True)]
 weight in mod: Parameter containing:
-tensor([[-1.6410],
-        [ 0.1525]], requires_grad=True)
+tensor([[1.1417],
+        [1.3375]], requires_grad=True)
 weight in optimizer: [Parameter containing:
-tensor([[-0.8205],
-        [ 0.0763]], requires_grad=True)]
+tensor([[0.5708],
+        [0.6688]], requires_grad=True)]
 </pre></div>
 </div>
 </div>
@@ -670,8 +669,8 @@ of the subclass’ payload (<code class="docutils literal notranslate"><span cla
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"m.bias.dtype: </span><span class="si">{</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">m</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">dtype</span></a><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before: id(m.weight)=140568990508000, id(m.bias)=140568990508960
-After: id(m.weight)=140568990508000, id(m.bias)=140568990508960
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before: id(m.weight)=139972749860816, id(m.bias)=139972749862256
+After: id(m.weight)=139972749860816, id(m.bias)=139972749862256
 m.weight.dtype: torch.bfloat16
 m.weight.elem.dtype: torch.float32
 m.bias.dtype: torch.bfloat16
@@ -695,8 +694,8 @@ the <code class="docutils literal notranslate"><span class="pre">dtype</span></c
 <a class="sphx-glr-backref-module-torch-__future__ sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/future_mod.html#torch.__future__.set_swap_module_params_on_conversion" title="torch.__future__.set_swap_module_params_on_conversion"><span class="n">torch</span><span class="o">.</span><span class="n">__future__</span><span class="o">.</span><span class="n">set_swap_module_params_on_conversion</span></a><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before: id(m.weight)=140568990509280, id(m.bias)=140569119973728
-After: id(m.weight)=140568990509280, id(m.bias)=140569119973728
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before: id(m.weight)=139972749862416, id(m.bias)=139973014139776
+After: id(m.weight)=139972749862416, id(m.bias)=139973014139776
 m.weight.dtype: torch.bfloat16
 m.weight.elem.dtype: torch.bfloat16
 m.bias.dtype: torch.bfloat16
@@ -779,22 +778,22 @@ for biases, we want to preserve the properties of the tensor in the <code class=
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"m.state_dict() after load_state_dict():</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.state_dict" title="torch.nn.Module.state_dict"><span class="n">m</span><span class="o">.</span><span class="n">state_dict</span></a><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before: id(weight)=140568990508160, id(bias)=140568989965248
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before: id(weight)=139972749859696, id(bias)=139973014036992
 m.state_dict() before load_state_dict():
  OrderedDict([('weight', MyQuantizedLinearWeight(tensor(..., device='meta', size=(5, 3)), scale=0.5)), ('bias', tensor(..., device='meta', size=(5,)))])
 state_dict:
- OrderedDict([('weight', tensor([[ 0.0433,  0.2104,  0.3603],
-        [-0.3331,  0.2819, -0.3129],
-        [-0.5030,  0.2456,  0.2239],
-        [-0.4294,  0.2675,  0.1588],
-        [-0.2252, -0.3218, -0.1930]])), ('bias', tensor([ 0.1269,  0.2238,  0.4599,  0.0817, -0.0447]))])
-After: id(weight)=140568990508160, id(bias)=140568989965248
+ OrderedDict([('weight', tensor([[ 0.3150,  0.2297, -0.4766],
+        [-0.2122, -0.3763, -0.4204],
+        [ 0.4869, -0.5129, -0.5509],
+        [-0.2914, -0.3338,  0.1031],
+        [ 0.2270, -0.0828,  0.2550]])), ('bias', tensor([ 0.1517, -0.2511,  0.2584,  0.0511, -0.4816]))])
+After: id(weight)=139972749859696, id(bias)=139973014036992
 m.state_dict() after load_state_dict():
- OrderedDict([('weight', MyQuantizedLinearWeight(tensor([[ 0.0433,  0.2104,  0.3603],
-        [-0.3331,  0.2819, -0.3129],
-        [-0.5030,  0.2456,  0.2239],
-        [-0.4294,  0.2675,  0.1588],
-        [-0.2252, -0.3218, -0.1930]]), scale=0.5)), ('bias', tensor([ 0.1269,  0.2238,  0.4599,  0.0817, -0.0447]))])
+ OrderedDict([('weight', MyQuantizedLinearWeight(tensor([[ 0.3150,  0.2297, -0.4766],
+        [-0.2122, -0.3763, -0.4204],
+        [ 0.4869, -0.5129, -0.5509],
+        [-0.2914, -0.3338,  0.1031],
+        [ 0.2270, -0.0828,  0.2550]]), scale=0.5)), ('bias', tensor([ 0.1517, -0.2511,  0.2584,  0.0511, -0.4816]))])
 </pre></div>
 </div>
 <p>The above is a toy example of how we can use the new extension point in
@@ -810,7 +809,7 @@ to apply the transforms as needed.</p>
 of preserving references for parameters in <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> as well as how to
 use the two new extension points that are gated by
 <code class="docutils literal notranslate"><span class="pre">torch.__future__.set_swap_module_params_on_conversion</span></code>.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.015 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.016 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-recipes-swap-tensors-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/8ec147fe4546ad23cb0cefdb015f3352/swap_tensors.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">swap_tensors.ipynb</span></code></a></p>
