@@ -29,27 +29,32 @@
 #
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath("./.jenkins"))
 import pytorch_sphinx_theme2
+
 html_theme = "pytorch_sphinx_theme2"
 html_theme_path = [pytorch_sphinx_theme2.get_html_theme_path()]
-import torch
+import distutils.file_util
 import glob
 import random
-import shutil
-import distutils.file_util
 import re
-from get_sphinx_filenames import SPHINX_SHOULD_RUN
-import pandocfilters
-import pypandoc
-import plotly.io as pio
+import shutil
 from pathlib import Path
-pio.renderers.default = 'sphinx_gallery'
-from redirects import redirects
+
+import pandocfilters
+import plotly.io as pio
+import pypandoc
+import torch
+from get_sphinx_filenames import SPHINX_SHOULD_RUN
+
+pio.renderers.default = "sphinx_gallery"
+import multiprocessing
 
 import sphinx_gallery.gen_rst
-import multiprocessing
+from redirects import redirects
+
 
 # Monkey patch sphinx gallery to run each example in an isolated process so that
 # we don't need to worry about examples changing global state.
@@ -70,12 +75,12 @@ def call_fn(func, args, kwargs, result_queue):
     except Exception as e:
         result_queue.put((False, str(e)))
 
+
 def call_in_subprocess(func):
     def wrapper(*args, **kwargs):
         result_queue = multiprocessing.Queue()
         p = multiprocessing.Process(
-            target=call_fn,
-            args=(func, args, kwargs, result_queue)
+            target=call_fn, args=(func, args, kwargs, result_queue)
         )
         p.start()
         p.join()
@@ -84,20 +89,29 @@ def call_in_subprocess(func):
             return result
         else:
             raise RuntimeError(f"Error in subprocess: {result}")
+
     return wrapper
+
 
 # Windows does not support multiprocessing with fork and mac has issues with
 # fork so we do not monkey patch sphinx gallery to run in subprocesses.
-if os.getenv("TUTORIALS_ISOLATE_BUILD", "1") == "1" and not sys.platform.startswith("win") and not sys.platform == "darwin":
-    sphinx_gallery.gen_rst.generate_file_rst = call_in_subprocess(sphinx_gallery.gen_rst.generate_file_rst)
+if (
+    os.getenv("TUTORIALS_ISOLATE_BUILD", "1") == "1"
+    and not sys.platform.startswith("win")
+    and not sys.platform == "darwin"
+):
+    sphinx_gallery.gen_rst.generate_file_rst = call_in_subprocess(
+        sphinx_gallery.gen_rst.generate_file_rst
+    )
 
 try:
     import torchvision
 except ImportError:
     import warnings
+
     warnings.warn('unable to load "torchvision" package')
 
-rst_epilog ="""
+rst_epilog = """
 .. |edit| image:: /_static/pencil-16.png
            :width: 16px
            :height: 16px
@@ -110,23 +124,23 @@ rst_epilog ="""
 # needs_sphinx = '1.0'
 
 html_meta = {
-    'description': 'Master PyTorch with our step-by-step tutorials for all skill levels. Start your journey to becoming a PyTorch expert today!',
-    'keywords': 'PyTorch, tutorials, Getting Started, deep learning, AI',
-    'author': 'PyTorch Contributors'
+    "description": "Master PyTorch with our step-by-step tutorials for all skill levels. Start your journey to becoming a PyTorch expert today!",
+    "keywords": "PyTorch, tutorials, Getting Started, deep learning, AI",
+    "author": "PyTorch Contributors",
 }
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinxcontrib.katex',
-    'sphinx.ext.intersphinx',
-    'sphinx_copybutton',
-    'sphinx_gallery.gen_gallery',
-    'sphinx_design',
-    'sphinx_sitemap',
-    'sphinx_reredirects',
-    'sphinxcontrib.mermaid'
+    "sphinxcontrib.katex",
+    "sphinx.ext.intersphinx",
+    "sphinx_copybutton",
+    "sphinx_gallery.gen_gallery",
+    "sphinx_design",
+    "sphinx_sitemap",
+    "sphinx_reredirects",
+    "sphinxcontrib.mermaid",
 ]
 
 intersphinx_mapping = {
@@ -151,22 +165,30 @@ html_additional_pages = {
 # -- Sphinx-gallery configuration --------------------------------------------
 
 sphinx_gallery_conf = {
-    'examples_dirs': ['beginner_source', 'intermediate_source',
-                      'advanced_source', 'recipes_source', 'prototype_source'],
-    'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
-    'filename_pattern': re.compile(SPHINX_SHOULD_RUN),
-    'promote_jupyter_magic': True,
-    'backreferences_dir': None,
-    'first_notebook_cell': ("# For tips on running notebooks in Google Colab, see\n"
-                            "# https://pytorch.org/tutorials/beginner/colab\n"
-                            "%matplotlib inline"),
-    'ignore_pattern': r'_torch_export_nightly_tutorial.py',
-    'pypandoc': {'extra_args': ['--mathjax', '--toc'],
-                 'filters': ['.jenkins/custom_pandoc_filter.py'],
+    "examples_dirs": [
+        "beginner_source",
+        "intermediate_source",
+        "advanced_source",
+        "recipes_source",
+        "prototype_source",
+    ],
+    "gallery_dirs": ["beginner", "intermediate", "advanced", "recipes", "prototype"],
+    "filename_pattern": re.compile(SPHINX_SHOULD_RUN),
+    "promote_jupyter_magic": True,
+    "backreferences_dir": None,
+    "first_notebook_cell": (
+        "# For tips on running notebooks in Google Colab, see\n"
+        "# https://pytorch.org/tutorials/beginner/colab\n"
+        "%matplotlib inline"
+    ),
+    "ignore_pattern": r"_torch_export_nightly_tutorial.py",
+    "pypandoc": {
+        "extra_args": ["--mathjax", "--toc"],
+        "filters": [".jenkins/custom_pandoc_filter.py"],
     },
 }
 
-html_baseurl = 'https://pytorch.org/tutorials/' # needed for sphinx-sitemap
+html_baseurl = "https://pytorch.org/tutorials/"  # needed for sphinx-sitemap
 sitemap_locales = [None]
 sitemap_excludes = [
     "search.html",
@@ -226,7 +248,7 @@ html_context = {
 }
 
 
-if os.getenv('GALLERY_PATTERN'):
+if os.getenv("GALLERY_PATTERN"):
     # GALLERY_PATTERN is to be used when you want to work on a single
     # tutorial.  Previously this was fed into filename_pattern, but
     # if you do that, you still end up parsing all of the other Python
@@ -234,9 +256,11 @@ if os.getenv('GALLERY_PATTERN'):
     # ignore_pattern also skips parsing.
     # See https://github.com/sphinx-gallery/sphinx-gallery/issues/721
     # for a more detailed description of the issue.
-    sphinx_gallery_conf['ignore_pattern'] = r'/(?!' + re.escape(os.getenv('GALLERY_PATTERN')) + r')[^/]+$'
+    sphinx_gallery_conf["ignore_pattern"] = (
+        r"/(?!" + re.escape(os.getenv("GALLERY_PATTERN")) + r")[^/]+$"
+    )
 
-for i in range(len(sphinx_gallery_conf['examples_dirs'])):
+for i in range(len(sphinx_gallery_conf["examples_dirs"])):
     gallery_dir = Path(sphinx_gallery_conf["gallery_dirs"][i])
     source_dir = Path(sphinx_gallery_conf["examples_dirs"][i])
 
@@ -257,15 +281,15 @@ templates_path = [
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = 'PyTorch Tutorials'
-copyright = '2024, PyTorch'
-author = 'PyTorch contributors'
+project = "PyTorch Tutorials"
+copyright = "2024, PyTorch"
+author = "PyTorch contributors"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -281,14 +305,20 @@ release = str(torch.__version__)
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = 'en'
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'src/pytorch-sphinx-theme/docs*']
-exclude_patterns += sphinx_gallery_conf['examples_dirs']
-exclude_patterns += ['*/index.rst']
+exclude_patterns = [
+    "_build",
+    "Thumbs.db",
+    ".DS_Store",
+    "src/pytorch-sphinx-theme/docs*",
+]
+exclude_patterns += sphinx_gallery_conf["examples_dirs"]
+exclude_patterns += ["*/index.rst"]
+
 
 # Handling for HuggingFace Hub jinja templates
 def handle_jinja_templates(app, docname, source):
@@ -296,8 +326,9 @@ def handle_jinja_templates(app, docname, source):
         # Replace Jinja templates with quoted strings
         source[0] = re.sub(r"(\{\{.*?\}\})", r'"\1"', source[0])
 
+
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
@@ -325,7 +356,7 @@ todo_include_todos = False
 # # Add any paths that contain custom static files (such as style sheets) here,
 # # relative to this directory. They are copied after the builtin static files,
 # # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # # Custom sidebar templates, maps document names to template names.
 # html_sidebars = {
@@ -334,11 +365,10 @@ html_static_path = ['_static']
 # }
 
 
-
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'PyTorchTutorialsdoc'
+htmlhelp_basename = "PyTorchTutorialsdoc"
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -347,15 +377,12 @@ latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     #
     # 'preamble': '',
-
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
@@ -365,8 +392,13 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'PyTorchTutorials.tex', 'PyTorch Tutorials',
-     'Sasank, PyTorch contributors', 'manual'),
+    (
+        master_doc,
+        "PyTorchTutorials.tex",
+        "PyTorch Tutorials",
+        "Sasank, PyTorch contributors",
+        "manual",
+    ),
 ]
 
 
@@ -374,10 +406,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'pytorchtutorials', 'PyTorch Tutorials',
-     [author], 1)
-]
+man_pages = [(master_doc, "pytorchtutorials", "PyTorch Tutorials", [author], 1)]
 
 
 # -- Options for Texinfo output -------------------------------------------
@@ -386,14 +415,48 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'PyTorchTutorials', 'PyTorch Tutorials',
-     author, 'PyTorchTutorials', 'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        "PyTorchTutorials",
+        "PyTorch Tutorials",
+        author,
+        "PyTorchTutorials",
+        "One line description of project.",
+        "Miscellaneous",
+    ),
 ]
 
 html_css_files = [
-        'https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css',
-    ]
+    "https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css",
+]
+
+
+def html_page_context(app, pagename, templatename, context, doctree):
+    # Check if the page is in gallery directories
+    for gallery_dir in sphinx_gallery_conf["gallery_dirs"]:
+        if pagename.startswith(gallery_dir):
+            # Get corresponding examples directory
+            examples_dir = sphinx_gallery_conf["examples_dirs"][
+                sphinx_gallery_conf["gallery_dirs"].index(gallery_dir)
+            ]
+
+            # Calculate relative path within the gallery
+            rel_path = (
+                pagename[len(gallery_dir) + 1 :] if pagename != gallery_dir else ""
+            )
+
+            # Check for .py file in examples directory
+            py_path = os.path.join(app.srcdir, examples_dir, rel_path + ".py")
+
+            # If a .py file exists, this page was generated from Python
+            if os.path.exists(py_path):
+                context["display_github"] = False
+                return
+
+    # Enable for all other pages
+    context["display_github"] = True
+
 
 def setup(app):
     app.connect("source-read", handle_jinja_templates)
+    app.connect("html-page-context", html_page_context)
