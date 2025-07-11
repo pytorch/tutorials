@@ -531,7 +531,7 @@
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="section" id="getting-started-with-distributed-checkpoint-dcp">
-<h1>Getting Started with Distributed Checkpoint (DCP)<a class="headerlink" href="#getting-started-with-distributed-checkpoint-dcp" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 02, 2023 | Last Updated: May 08, 2025 | Last Verified: Nov 05, 2024</p>
+<h1>Getting Started with Distributed Checkpoint (DCP)<a class="headerlink" href="#getting-started-with-distributed-checkpoint-dcp" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Oct 02, 2023 | Last Updated: Jul 10, 2025 | Last Verified: Nov 05, 2024</p>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/wz337">Iris Zhang</a>, <a class="reference external" href="https://github.com/kumpera">Rodrigo Kumpera</a>, <a class="reference external" href="https://github.com/fegin">Chien-Chin Huang</a>, <a class="reference external" href="https://github.com/lucasllc">Lucas Pasqualin</a></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -578,10 +578,9 @@ generalized to other environments.</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.fsdp</span><span class="w"> </span><span class="kn">import</span> <span class="n">FullyShardedDataParallel</span> <span class="k">as</span> <span class="n">FSDP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.fsdp</span><span class="w"> </span><span class="kn">import</span> <span class="n">fully_shard</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.checkpoint.state_dict</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_state_dict</span><span class="p">,</span> <span class="n">set_state_dict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.checkpoint.stateful</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stateful</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.fsdp.fully_sharded_data_parallel</span><span class="w"> </span><span class="kn">import</span> <span class="n">StateDictType</span>
 
 <span class="n">CHECKPOINT_DIR</span> <span class="o">=</span> <span class="s2">"checkpoint"</span>
 
@@ -646,7 +645,7 @@ generalized to other environments.</p>
 
     <span class="c1"># create a model and move it to GPU with id rank</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">ToyModel</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">FSDP</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">fully_shard</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
     <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
     <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
@@ -672,7 +671,7 @@ generalized to other environments.</p>
     <span class="p">)</span>
 </pre></div>
 </div>
-<p>Please go ahead and check the <cite>checkpoint</cite> directory. You should see 8 checkpoint files as shown below.</p>
+<p>Please go ahead and check the <cite>checkpoint</cite> directory. You should see checkpoint files corresponding to the number of files as shown below. For example, if you have 8 devices, you should see 8 files.</p>
 <div class="figure align-center">
 <a class="reference internal image-reference" href="../_images/distributed_checkpoint_generated_files.png"><img alt="Distributed Checkpoint" src="../_images/distributed_checkpoint_generated_files.png" style="width: 100%;"/></a>
 </div>
@@ -697,7 +696,7 @@ The reason that we need the <code class="docutils literal notranslate"><span cla
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.fsdp</span><span class="w"> </span><span class="kn">import</span> <span class="n">FullyShardedDataParallel</span> <span class="k">as</span> <span class="n">FSDP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.fsdp</span><span class="w"> </span><span class="kn">import</span> <span class="n">fully_shard</span>
 
 <span class="n">CHECKPOINT_DIR</span> <span class="o">=</span> <span class="s2">"checkpoint"</span>
 
@@ -762,7 +761,7 @@ The reason that we need the <code class="docutils literal notranslate"><span cla
 
     <span class="c1"># create a model and move it to GPU with id rank</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">ToyModel</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">FSDP</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">fully_shard</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
     <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 

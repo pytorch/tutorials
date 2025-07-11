@@ -531,7 +531,7 @@
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="section" id="asynchronous-saving-with-distributed-checkpoint-dcp">
-<h1>Asynchronous Saving with Distributed Checkpoint (DCP)<a class="headerlink" href="#asynchronous-saving-with-distributed-checkpoint-dcp" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Jul 22, 2024 | Last Updated: Jul 22, 2024 | Last Verified: Nov 05, 2024</p>
+<h1>Asynchronous Saving with Distributed Checkpoint (DCP)<a class="headerlink" href="#asynchronous-saving-with-distributed-checkpoint-dcp" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Jul 22, 2024 | Last Updated: Jul 10, 2025 | Last Verified: Nov 05, 2024</p>
 <p><strong>Author:</strong> <a class="reference external" href="https://github.com/lucasllc">Lucas Pasqualin</a>, <a class="reference external" href="https://github.com/wz337">Iris Zhang</a>, <a class="reference external" href="https://github.com/kumpera">Rodrigo Kumpera</a>, <a class="reference external" href="https://github.com/fegin">Chien-Chin Huang</a></p>
 <p>Checkpointing is often a bottle-neck in the critical path for distributed training workloads, incurring larger and larger costs as both model and world sizes grow.
 One excellent strategy for offsetting this cost is to checkpoint in parallel, asynchronously. Below, we expand the save example
@@ -593,10 +593,9 @@ checkpoints to one asynchronous request at a time, avoiding additional memory pr
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.fsdp</span><span class="w"> </span><span class="kn">import</span> <span class="n">FullyShardedDataParallel</span> <span class="k">as</span> <span class="n">FSDP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.fsdp</span><span class="w"> </span><span class="kn">import</span> <span class="n">fully_shard</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.checkpoint.state_dict</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_state_dict</span><span class="p">,</span> <span class="n">set_state_dict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.checkpoint.stateful</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stateful</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.fsdp.fully_sharded_data_parallel</span><span class="w"> </span><span class="kn">import</span> <span class="n">StateDictType</span>
 
 <span class="n">CHECKPOINT_DIR</span> <span class="o">=</span> <span class="s2">"checkpoint"</span>
 
@@ -616,7 +615,7 @@ checkpoints to one asynchronous request at a time, avoiding additional memory pr
 
     <span class="k">def</span><span class="w"> </span><span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># this line automatically manages FSDP FQN's, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT</span>
-        <span class="n">model_state_dict</span><span class="p">,</span> <span class="n">optimizer_state_dict</span> <span class="o">=</span> <span class="n">get_state_dict</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+        <span class="n">model_state_dict</span><span class="p">,</span> <span class="n">optimizer_state_dict</span> <span class="o">=</span> <span class="n">get_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">"model"</span><span class="p">:</span> <span class="n">model_state_dict</span><span class="p">,</span>
             <span class="s2">"optim"</span><span class="p">:</span> <span class="n">optimizer_state_dict</span>
@@ -647,7 +646,7 @@ checkpoints to one asynchronous request at a time, avoiding additional memory pr
     <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"MASTER_PORT"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"12355 "</span>
 
     <span class="c1"># initialize the process group</span>
-    <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">"nccl"</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">"gloo"</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>
     <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
 
 
@@ -661,7 +660,7 @@ checkpoints to one asynchronous request at a time, avoiding additional memory pr
 
     <span class="c1"># create a model and move it to GPU with id rank</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">ToyModel</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">FSDP</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">fully_shard</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
     <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
     <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
@@ -715,11 +714,10 @@ peak memory pressure being sustained through the application life.</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.fsdp</span><span class="w"> </span><span class="kn">import</span> <span class="n">FullyShardedDataParallel</span> <span class="k">as</span> <span class="n">FSDP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.fsdp</span><span class="w"> </span><span class="kn">import</span> <span class="n">fully_shard</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.checkpoint.state_dict</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_state_dict</span><span class="p">,</span> <span class="n">set_state_dict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.checkpoint.stateful</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stateful</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.fsdp.fully_sharded_data_parallel</span><span class="w"> </span><span class="kn">import</span> <span class="n">StateDictType</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.checkpoint</span><span class="w"> </span><span class="kn">import</span> <span class="n">StorageWriter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.checkpoint</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileSystemWriter</span> <span class="k">as</span> <span class="n">StorageWriter</span>
 
 <span class="n">CHECKPOINT_DIR</span> <span class="o">=</span> <span class="s2">"checkpoint"</span>
 
@@ -739,7 +737,7 @@ peak memory pressure being sustained through the application life.</p>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># this line automatically manages FSDP FQN's, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT</span>
-        <span class="n">model_state_dict</span><span class="p">,</span> <span class="n">optimizer_state_dict</span> <span class="o">=</span> <span class="n">get_state_dict</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+        <span class="n">model_state_dict</span><span class="p">,</span> <span class="n">optimizer_state_dict</span> <span class="o">=</span> <span class="n">get_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">"model"</span><span class="p">:</span> <span class="n">model_state_dict</span><span class="p">,</span>
             <span class="s2">"optim"</span><span class="p">:</span> <span class="n">optimizer_state_dict</span>
@@ -770,7 +768,7 @@ peak memory pressure being sustained through the application life.</p>
     <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"MASTER_PORT"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"12355 "</span>
 
     <span class="c1"># initialize the process group</span>
-    <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">"nccl"</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">"gloo"</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>
     <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
 
 
@@ -784,7 +782,7 @@ peak memory pressure being sustained through the application life.</p>
 
     <span class="c1"># create a model and move it to GPU with id rank</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">ToyModel</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">FSDP</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">fully_shard</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
     <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
     <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
@@ -794,7 +792,7 @@ peak memory pressure being sustained through the application life.</p>
     <span class="c1"># into a persistent buffer with pinned memory enabled.</span>
     <span class="c1"># Note: It's important that the writer persists in between checkpointing requests, since it maintains the</span>
     <span class="c1"># pinned memory buffer.</span>
-    <span class="n">writer</span> <span class="o">=</span> <span class="n">StorageWriter</span><span class="p">(</span><span class="n">cached_state_dict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">writer</span> <span class="o">=</span> <span class="n">StorageWriter</span><span class="p">(</span><span class="n">cache_staged_state_dict</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">CHECKPOINT_DIR</span><span class="p">)</span>
     <span class="n">checkpoint_future</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
         <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
