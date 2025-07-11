@@ -99,6 +99,13 @@ Welcome to PyTorch Tutorials
    :link: intermediate/pinmem_nonblock.html
    :tags: Getting-Started
 
+.. customcarditem::
+   :header: Visualizing Gradients in PyTorch
+   :card_description: Learn how gradients are calculated with Autograd for leaf and non-leaf tensors.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: advanced/visualizing_gradients_tutorial.html
+   :tags: Getting-Started
+
 .. Image/Video
 
 .. customcarditem::
@@ -873,6 +880,7 @@ Additional Resources
    intermediate/nlp_from_scratch_index
    intermediate/tensorboard_tutorial
    intermediate/pinmem_nonblock
+   advanced/visualizing_gradients_tutorial
 
 .. toctree::
    :maxdepth: 1
