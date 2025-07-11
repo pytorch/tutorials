@@ -31,7 +31,7 @@ quantization and measure their impact.
 #    > conda create -n myenv python=3.10
 #    > pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu121
 #    > pip install git+https://github.com/facebookresearch/segment-anything.git
-#    > pip install git+https://github.com/pytorch-labs/ao.git
+#    > pip install git+https://github.com/pytorch/ao.git
 #
 # Segment Anything Model checkpoint setup:
 #
@@ -44,7 +44,7 @@ quantization and measure their impact.
 #
 
 import torch
-from torchao.quantization.quant_api import quantize_, int8_dynamic_activation_int8_weight
+from torchao.quantization.quant_api import quantize_, Int8DynamicActivationInt8WeightConfig
 from torchao.utils import unwrap_tensor_subclass, TORCH_VERSION_AT_LEAST_2_5
 from segment_anything import sam_model_registry
 from torch.utils.benchmark import Timer
@@ -143,7 +143,7 @@ print(f"bf16 compiled runtime of the block is {comp_res['time']:0.2f}ms and peak
 # for improvements.
 #
 # Next, let's apply quantization. Quantization for GPUs comes in three main forms
-# in `torchao <https://github.com/pytorch-labs/ao>`_ which is just native
+# in `torchao <https://github.com/pytorch/ao>`_ which is just native
 # pytorch+python code. This includes:
 #
 # * int8 dynamic quantization
@@ -157,9 +157,9 @@ print(f"bf16 compiled runtime of the block is {comp_res['time']:0.2f}ms and peak
 # in memory bound situations where the benefit comes from loading less
 # weight data, rather than doing less computation. The torchao APIs:
 #
-# ``int8_dynamic_activation_int8_weight()``,
-# ``int8_weight_only()`` or
-# ``int4_weight_only()``
+# ``Int8DynamicActivationInt8WeightConfig()``,
+# ``Int8WeightOnlyConfig()`` or
+# ``Int4WeightOnlyConfig()``
 #
 # can be used to easily apply the desired quantization technique and then
 # once the model is compiled with ``torch.compile`` with ``max-autotune``, quantization is
@@ -171,7 +171,7 @@ print(f"bf16 compiled runtime of the block is {comp_res['time']:0.2f}ms and peak
 #    ``apply_weight_only_int8_quant`` instead as drop in replacement for the two
 #    above (no replacement for int4).
 #
-# The difference between the two APIs is that ``int8_dynamic_activation`` API
+# The difference between the two APIs is that the ``Int8DynamicActivationInt8WeightConfig`` API
 # alters the weight tensor of the linear module so instead of doing a
 # normal linear, it does a quantized operation. This is helpful when you
 # have non-standard linear ops that do more than one thing. The ``apply``
@@ -186,7 +186,7 @@ del model_c, model, image
 model, image = get_sam_model(only_one_block, batchsize)
 model = model.to(torch.bfloat16)
 image = image.to(torch.bfloat16)
-quantize_(model, int8_dynamic_activation_int8_weight())
+quantize_(model, Int8DynamicActivationInt8WeightConfig())
 if not TORCH_VERSION_AT_LEAST_2_5:
     # needed for subclass + compile to work on older versions of pytorch
     unwrap_tensor_subclass(model)
@@ -224,7 +224,7 @@ model, image = get_sam_model(only_one_block, batchsize)
 model = model.to(torch.bfloat16)
 image = image.to(torch.bfloat16)
 torch._inductor.config.force_fuse_int_mm_with_mul = True
-quantize_(model, int8_dynamic_activation_int8_weight())
+quantize_(model, Int8DynamicActivationInt8WeightConfig())
 if not TORCH_VERSION_AT_LEAST_2_5:
     # needed for subclass + compile to work on older versions of pytorch
     unwrap_tensor_subclass(model)
@@ -258,7 +258,7 @@ torch._inductor.config.epilogue_fusion = False
 torch._inductor.config.coordinate_descent_tuning = True
 torch._inductor.config.coordinate_descent_check_all_directions = True
 torch._inductor.config.force_fuse_int_mm_with_mul = True
-quantize_(model, int8_dynamic_activation_int8_weight())
+quantize_(model, Int8DynamicActivationInt8WeightConfig())
 if not TORCH_VERSION_AT_LEAST_2_5:
     # needed for subclass + compile to work on older versions of pytorch
     unwrap_tensor_subclass(model)
@@ -290,7 +290,7 @@ try:
     model, image = get_sam_model(False, batchsize)
     model = model.to(torch.bfloat16)
     image = image.to(torch.bfloat16)
-    quantize_(model, int8_dynamic_activation_int8_weight())
+    quantize_(model, Int8DynamicActivationInt8WeightConfig())
     if not TORCH_VERSION_AT_LEAST_2_5:
         # needed for subclass + compile to work on older versions of pytorch
         unwrap_tensor_subclass(model)
@@ -315,6 +315,6 @@ except Exception as e:
 # the model. For example, this can be done with some form of flash attention.
 #
 # For more information visit
-# `torchao <https://github.com/pytorch-labs/ao>`_ and try it on your own
+# `torchao <https://github.com/pytorch/ao>`_ and try it on your own
 # models.
 #
