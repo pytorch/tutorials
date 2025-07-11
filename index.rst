@@ -248,7 +248,7 @@ Welcome to PyTorch Tutorials
 .. ONNX
 
 .. customcarditem::
-   :header: (optional) Exporting a PyTorch model to ONNX using TorchDynamo backend and Running it using ONNX Runtime
+   :header: Exporting a PyTorch model to ONNX using TorchDynamo backend and Running it using ONNX Runtime
    :card_description: Build a image classifier model in PyTorch and convert it to ONNX before deploying it with ONNX Runtime.
    :image: _static/img/thumbnails/cropped/Exporting-PyTorch-Models-to-ONNX-Graphs.png
    :link: beginner/onnx/export_simple_model_to_onnx_tutorial.html
@@ -327,13 +327,6 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Loading-a-TorchScript-Model-in-Cpp.png
    :link: advanced/cpp_export.html
    :tags: Production,TorchScript
-
-.. customcarditem::
-   :header: (optional) Exporting a PyTorch Model to ONNX using TorchScript backend and Running it using ONNX Runtime
-   :card_description:  Convert a model defined in PyTorch into the ONNX format and then run it with ONNX Runtime.
-   :image: _static/img/thumbnails/cropped/optional-Exporting-a-Model-from-PyTorch-to-ONNX-and-Running-it-using-ONNX-Runtime.png
-   :link: advanced/super_resolution_with_onnxruntime.html
-   :tags: Production,ONNX
 
 .. customcarditem::
    :header: Profiling PyTorch
