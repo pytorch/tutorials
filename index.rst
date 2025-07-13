@@ -86,6 +86,14 @@ Welcome to PyTorch Tutorials
    :tags: Getting-Started
 
 .. customcarditem::
+   :header: Indian Currency Note Detection with YOLOv5
+   :card_description: Learn to train and run a YOLOv5 model to detect Indian currency notes using Roboflow and PyTorch.
+   :image: _static/img/thumbnails/cropped/indian-currency-yolo.png
+   :link: beginner/indian_notes_detection_tutorial.html
+   :tags: Image/Video,Object-Detection
+
+
+.. customcarditem::
    :header: Visualizing Models, Data, and Training with TensorBoard
    :card_description: Learn to use TensorBoard to visualize data and model training.
    :image: _static/img/thumbnails/cropped/visualizing-with-tensorboard.png
@@ -783,6 +791,9 @@ Welcome to PyTorch Tutorials
    :tags: TorchRec,Recommender
 
 
+
+
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -831,6 +842,9 @@ Additional Resources
    :description: Learn how to copy tutorial data into Google Drive so that you can run tutorials on Google Colab.
    :button_link: beginner/colab.html
    :button_text: Open
+
+
+
 
 .. End of callout section
 
