@@ -24,7 +24,7 @@ sudo apt-get install -y pandoc
 # Install 2.5 to merge all 2.4 PRs - uncomment to install nightly binaries (update the version as needed).
 sudo pip uninstall -y fbgemm-gpu torchrec
 sudo pip uninstall -y torch torchvision torchaudio torchtext torchdata torchrl tensordict
-sudo pip3 install fbgemm-gpu==1.2.0 torchrec==1.2.0 --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu124
+sudo pip3 install torchrec==1.2.0 --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu124
 pip3 install torch==2.8.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu126
 pip3 install torchrl==0.9.1 tensordict==0.9.1
 
