@@ -152,7 +152,7 @@ control, as well as third-party backend solutions.
    :header: Building a Convolution/Batch Norm fuser in FX
    :card_description: Build a simple FX pass that fuses batch norm into convolution to improve performance during inference.
    :image: _static/img/thumbnails/cropped/Deploying-PyTorch-in-Python-via-a-REST-API-with-Flask.png
-   :link: intermediate/fx_conv_bn_fuser.html
+   :link: intermediate/torch_compile_conv_bn_fuser
    :tags: FX
 
 .. customcarditem::
@@ -212,5 +212,5 @@ control, as well as third-party backend solutions.
    :hidden:
    :caption: Code Transforms with FX
 
-   intermediate/fx_conv_bn_fuser
+   intermediate/torch_compile_conv_bn_fuser
    intermediate/fx_profiling_tutorial
