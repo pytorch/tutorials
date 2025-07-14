@@ -10,6 +10,9 @@ export LANG=C.UTF-8
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
+
+pip install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git@csl/handle_new_sphinx_version#egg=pytorch_sphinx_theme
+
 # Update root certificates by installing new libgnutls30
 
 # Install pandoc (does not install from pypi)

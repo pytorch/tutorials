@@ -153,7 +153,6 @@ sphinx_gallery_conf = {
     'pypandoc': {'extra_args': ['--mathjax', '--toc'],
                  'filters': ['.jenkins/custom_pandoc_filter.py'],
     },
-    'download_link_format': 'ipynb',
 }
 
 html_baseurl = 'https://pytorch.org/tutorials/' # needed for sphinx-sitemap
