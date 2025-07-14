@@ -26,7 +26,7 @@ sudo pip uninstall -y fbgemm-gpu torchrec
 sudo pip uninstall -y torch torchvision torchaudio torchtext torchdata torchrl tensordict
 pip3 install torch==2.8.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu126
 pip3 install torchrl==0.9.1 tensordict==0.9.1
-sudo pip3 install fbgemm-gpu==1.2.0 torchrec==1.2.0 --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu126
+# sudo pip3 install fbgemm-gpu==1.2.0 torchrec==1.2.0 --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu126
 
 
 # Install two language tokenizers for Translation with TorchText tutorial
