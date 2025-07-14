@@ -392,6 +392,7 @@ optim = torch.optim.Adam(policy.parameters(), lr=3e-4)
 #   For the sake of efficiency, we're only running a few thousands iterations
 #   here. In a real setting, the total number of frames should be set to 1M.
 #
+
 collector = SyncDataCollector(
     env, stoch_policy, frames_per_batch=50, total_frames=200, device=device
 )
