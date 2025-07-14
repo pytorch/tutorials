@@ -1,20 +1,25 @@
 # -*- coding: utf-8 -*-
 """
 Building a Convolution/Batch Norm fuser with torch.compile
-******************************************************************
-**Author**: `Horace He <https://github.com/chillee>`__, `Will Feng <https://github.com/yf225>`__
+===========================================================
 
-In this tutorial, we are going to use torch.compile and its pattern matching
-capabilities to do the following:
+**Author:** `Horace He <https://github.com/chillee>`_, `Will Feng <https://github.com/yf225>`_
 
-1) Find patterns of conv/batch norm in the data dependencies.
-2) For the patterns found in 1), fold the batch norm statistics into the convolution weights.
+.. grid:: 2
 
-Note that this specific optimization only works for models in inference mode (i.e. `mode.eval()`).
-But the pattern matching system in torch.compile works for both training and inference.
+    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+       :class-card: card-prerequisites
 
-We will demonstrate how to register custom fusion patterns with torch.compile's
-pattern matcher to optimize model performance.
+       * How to register custom fusion patterns with torch.compile's pattern matcher
+
+    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+       :class-card: card-prerequisites
+
+       * PyTorch v2.7.0
+
+.. note::
+   This optimization only works for models in inference mode (i.e. ``model.eval()``).
+   However, torch.compile's pattern matching system works for both training and inference.
 
 """
 
