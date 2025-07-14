@@ -60,7 +60,7 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   export FILES_TO_RUN
 
   # Step 3: Run `make docs` to generate HTML files and static files for these tutorialis
-  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
+  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git@csl/handle_new_sphinx_version#egg=pytorch_sphinx_theme
   make docs
 
   # Step 3.1: Run the post-processing script:
@@ -122,7 +122,7 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   awsv2 s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z
 elif [[ "${JOB_TYPE}" == "manager" ]]; then
   # Step 1: Generate no-plot HTML pages for all tutorials
-  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
+  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git@csl/handle_new_sphinx_version#egg=pytorch_sphinx_theme
   make html-noplot
   cp -r _build/html docs
 
@@ -155,11 +155,11 @@ elif [[ "${JOB_TYPE}" == "manager" ]]; then
   if [[ "$COMMIT_SOURCE" == "refs/heads/master" || "$COMMIT_SOURCE" == "refs/heads/main" ]]; then
     git clone https://github.com/pytorch/tutorials.git -b gh-pages gh-pages
     # Clean up directories that contain tutorials
-    
+
     for dir in beginner intermediate prototype recipes advanced distributed vision text audio; do
       rm -rf "gh-pages/$dir"
     done
-    
+
     cp -r docs/* gh-pages/
     pushd gh-pages
     # DANGER! DO NOT REMOVE THE `set +x` SETTING HERE!
