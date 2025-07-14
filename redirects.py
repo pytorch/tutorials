@@ -29,4 +29,7 @@ redirects = {
     "receipes/fuse.html": "../index.html",
     "receipes/quantization.html": "../index.html",
     "receipes/receipes/dynamic_quantization.html": "../index.html",
+    "advanced/torch_script_custom_classes": "../index.html",
+    "beginner/Intro_to_TorchScript_tutorial.html": "../index.html",
+    "prototype/torchscript_freezing.html": "../index.html",
 }
