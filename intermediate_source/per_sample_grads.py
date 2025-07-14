@@ -168,7 +168,6 @@ ft_per_sample_grads = ft_compute_sample_grad(params, buffers, data, targets)
 # we can double check that the results using ``grad`` and ``vmap`` match the
 # results of hand processing each one individually:
 
-# Replace the comparison section with this updated code
 for name, ft_per_sample_grad in ft_per_sample_grads.items():
     # Find the corresponding manually computed gradient
     idx = list(model.named_parameters()).index((name, model.get_parameter(name)))
