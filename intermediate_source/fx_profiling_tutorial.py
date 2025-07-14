@@ -216,9 +216,6 @@ print(interp.summary(True))
 #
 # * ``MaxPool2d`` takes up the most time. This is a known issue:
 #   https://github.com/pytorch/pytorch/issues/51393
-# * BatchNorm2d also takes up significant time. We can continue this
-#   line of thinking and optimize this in the Conv-BN Fusion with FX
-#   `tutorial <https://pytorch.org/tutorials/intermediate/fx_conv_bn_fuser.html>`_. 
 #
 #
 # Conclusion

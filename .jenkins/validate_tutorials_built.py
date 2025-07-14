@@ -23,7 +23,7 @@ NOT_RUN = [
     "beginner_source/examples_autograd/polynomial_autograd",
     "beginner_source/examples_autograd/polynomial_custom_function",
     "intermediate_source/mnist_train_nas",  # used by ax_multiobjective_nas_tutorial.py
-    "intermediate_source/fx_conv_bn_fuser",
+    "intermediate_source/torch_compile_conv_bn_fuser",
     "intermediate_source/_torch_export_nightly_tutorial",  # does not work on release
     "advanced_source/usb_semisup_learn", # fails with CUDA OOM error, should try on a different worker
     "prototype_source/fx_graph_mode_ptq_dynamic",
