@@ -169,7 +169,7 @@ ft_per_sample_grads = ft_compute_sample_grad(params, buffers, data, targets)
 # results of hand processing each one individually:
 
 for name, ft_per_sample_grad in ft_per_sample_grads.items():
-    # Find the corresponding manually computed gradient
+    # Find the corresponding manually computed gradient.
     idx = list(model.named_parameters()).index((name, model.get_parameter(name)))
     per_sample_grad = per_sample_grads[idx]
 
