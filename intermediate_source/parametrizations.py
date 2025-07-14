@@ -132,7 +132,7 @@ print(cnn.weight[2, 2])
 # Inspecting a parametrized module
 # --------------------------------
 #
-# When a module is parametrized, we find that the module has changed in three ways:
+# When a module is parametrized, we find that the module has changed in the following ways:
 #
 # 1) ``model.weight`` is now a property
 #
