@@ -350,13 +350,6 @@ Welcome to PyTorch Tutorials
 .. Code Transformations with FX
 
 .. customcarditem::
-   :header: Building a Convolution/Batch Norm fuser in FX
-   :card_description: Build a simple FX pass that fuses batch norm into convolution to improve performance during inference.
-   :image: _static/img/thumbnails/cropped/Deploying-PyTorch-in-Python-via-a-REST-API-with-Flask.png
-   :link: intermediate/fx_conv_bn_fuser.html
-   :tags: FX
-
-.. customcarditem::
    :header: Building a Simple Performance Profiler with FX
    :card_description: Build a simple FX interpreter to record the runtime of op, module, and function calls and report statistics
    :image: _static/img/thumbnails/cropped/Deploying-PyTorch-in-Python-via-a-REST-API-with-Flask.png
@@ -582,6 +575,13 @@ Welcome to PyTorch Tutorials
    :card_description: Speed up your models with minimal code changes using torch.compile, the latest PyTorch compiler solution.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/torch_compile_tutorial.html
+   :tags: Model-Optimization
+
+.. customcarditem::
+   :header: Building a Convolution/Batch Norm fuser in torch.compile
+   :card_description: Build a simple pattern matcher pass that fuses batch norm into convolution to improve performance during inference.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torch_compile_conv_bn_fuser.html
    :tags: Model-Optimization
 
 .. customcarditem::
@@ -873,6 +873,7 @@ Additional Resources
 .. toctree::
    :maxdepth: 1
    :hidden:
+
 
    deep-dive
 
