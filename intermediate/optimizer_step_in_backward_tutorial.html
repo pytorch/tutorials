@@ -400,7 +400,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Code Transforms with FX</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="fx_conv_bn_fuser.html">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Frontend APIs</span></p>
@@ -438,6 +437,7 @@
 <li class="toctree-l1"><a class="reference internal" href="nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="torch_compile_conv_bn_fuser.html">Building a Convolution/Batch Norm fuser with torch.compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="compiled_autograd_tutorial.html">Compiled Autograd: Capturing a larger backward graph for <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
@@ -570,34 +570,39 @@ but, again, feel free to substitute with your own optimizer.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading: "https://download.pytorch.org/models/vit_l_16-852ce7e3.pth" to /var/lib/ci-user/.cache/torch/hub/checkpoints/vit_l_16-852ce7e3.pth
 
   0%|          | 0.00/1.13G [00:00&lt;?, ?B/s]
-  4%|▎         | 41.2M/1.13G [00:00&lt;00:02, 431MB/s]
-  7%|▋         | 83.0M/1.13G [00:00&lt;00:02, 435MB/s]
- 11%|█         | 124M/1.13G [00:00&lt;00:02, 419MB/s]
- 14%|█▍        | 164M/1.13G [00:00&lt;00:02, 407MB/s]
- 18%|█▊        | 206M/1.13G [00:00&lt;00:02, 416MB/s]
- 21%|██▏       | 249M/1.13G [00:00&lt;00:02, 427MB/s]
- 25%|██▌       | 292M/1.13G [00:00&lt;00:02, 435MB/s]
- 29%|██▉       | 335M/1.13G [00:00&lt;00:01, 439MB/s]
- 33%|███▎      | 377M/1.13G [00:00&lt;00:01, 441MB/s]
- 36%|███▌      | 420M/1.13G [00:01&lt;00:01, 443MB/s]
- 40%|███▉      | 463M/1.13G [00:01&lt;00:01, 445MB/s]
- 44%|████▎     | 506M/1.13G [00:01&lt;00:01, 438MB/s]
- 47%|████▋     | 549M/1.13G [00:01&lt;00:01, 441MB/s]
- 51%|█████     | 591M/1.13G [00:01&lt;00:01, 432MB/s]
- 55%|█████▍    | 633M/1.13G [00:01&lt;00:01, 436MB/s]
- 58%|█████▊    | 675M/1.13G [00:01&lt;00:01, 425MB/s]
- 62%|██████▏   | 716M/1.13G [00:01&lt;00:01, 414MB/s]
- 65%|██████▌   | 758M/1.13G [00:01&lt;00:00, 423MB/s]
- 69%|██████▉   | 801M/1.13G [00:01&lt;00:00, 430MB/s]
- 73%|███████▎  | 844M/1.13G [00:02&lt;00:00, 435MB/s]
- 76%|███████▋  | 887M/1.13G [00:02&lt;00:00, 440MB/s]
- 80%|███████▉  | 929M/1.13G [00:02&lt;00:00, 407MB/s]
- 83%|████████▎ | 969M/1.13G [00:02&lt;00:00, 411MB/s]
- 87%|████████▋ | 0.98G/1.13G [00:02&lt;00:00, 412MB/s]
- 90%|█████████ | 1.02G/1.13G [00:02&lt;00:00, 407MB/s]
- 94%|█████████▎| 1.06G/1.13G [00:02&lt;00:00, 407MB/s]
- 97%|█████████▋| 1.10G/1.13G [00:02&lt;00:00, 417MB/s]
-100%|██████████| 1.13G/1.13G [00:02&lt;00:00, 423MB/s]
+  1%|          | 12.5M/1.13G [00:00&lt;00:09, 131MB/s]
+  2%|▏         | 26.0M/1.13G [00:00&lt;00:08, 137MB/s]
+  5%|▌         | 62.5M/1.13G [00:00&lt;00:04, 249MB/s]
+  9%|▊         | 99.4M/1.13G [00:00&lt;00:03, 303MB/s]
+ 12%|█▏        | 136M/1.13G [00:00&lt;00:03, 333MB/s]
+ 15%|█▍        | 174M/1.13G [00:00&lt;00:02, 354MB/s]
+ 18%|█▊        | 213M/1.13G [00:00&lt;00:02, 370MB/s]
+ 21%|██▏       | 249M/1.13G [00:00&lt;00:02, 374MB/s]
+ 25%|██▍       | 285M/1.13G [00:00&lt;00:02, 373MB/s]
+ 28%|██▊       | 322M/1.13G [00:01&lt;00:02, 377MB/s]
+ 31%|███       | 359M/1.13G [00:01&lt;00:02, 381MB/s]
+ 34%|███▍      | 397M/1.13G [00:01&lt;00:02, 387MB/s]
+ 38%|███▊      | 436M/1.13G [00:01&lt;00:01, 392MB/s]
+ 41%|████      | 474M/1.13G [00:01&lt;00:01, 395MB/s]
+ 44%|████▍     | 513M/1.13G [00:01&lt;00:01, 398MB/s]
+ 48%|████▊     | 552M/1.13G [00:01&lt;00:01, 400MB/s]
+ 51%|█████     | 590M/1.13G [00:01&lt;00:01, 401MB/s]
+ 54%|█████▍    | 629M/1.13G [00:01&lt;00:01, 402MB/s]
+ 57%|█████▋    | 667M/1.13G [00:01&lt;00:01, 403MB/s]
+ 61%|██████    | 706M/1.13G [00:02&lt;00:01, 394MB/s]
+ 64%|██████▍   | 744M/1.13G [00:02&lt;00:01, 343MB/s]
+ 67%|██████▋   | 779M/1.13G [00:02&lt;00:01, 351MB/s]
+ 70%|███████   | 814M/1.13G [00:02&lt;00:01, 334MB/s]
+ 73%|███████▎  | 846M/1.13G [00:02&lt;00:01, 314MB/s]
+ 76%|███████▌  | 884M/1.13G [00:02&lt;00:00, 336MB/s]
+ 79%|███████▉  | 922M/1.13G [00:02&lt;00:00, 354MB/s]
+ 83%|████████▎ | 960M/1.13G [00:02&lt;00:00, 367MB/s]
+ 86%|████████▌ | 999M/1.13G [00:02&lt;00:00, 376MB/s]
+ 89%|████████▉ | 1.01G/1.13G [00:03&lt;00:00, 382MB/s]
+ 92%|█████████▏| 1.05G/1.13G [00:03&lt;00:00, 385MB/s]
+ 96%|█████████▌| 1.09G/1.13G [00:03&lt;00:00, 390MB/s]
+ 99%|█████████▉| 1.12G/1.13G [00:03&lt;00:00, 392MB/s]
+100%|██████████| 1.13G/1.13G [00:03&lt;00:00, 365MB/s]
 </pre></div>
 </div>
 <p>Now let’s define our typical training loop. You should use real images when
@@ -820,7 +825,7 @@ fusing the optimizer into the backward step through the new
 <code class="docutils literal notranslate"><span class="pre">Tensor.register_post_accumulate_grad_hook()</span></code> API and <em>when</em> to apply this
 technique (when gradients memory is significant). Along the way, we also learned
 about memory snapshots, which are generally useful in memory optimization.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 9.290 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 9.665 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-optimizer-step-in-backward-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/dfe0a5e2472fa9d26daaa0f82eefb5b6/optimizer_step_in_backward_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">optimizer_step_in_backward_tutorial.ipynb</span></code></a></p>

@@ -402,7 +402,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Code Transforms with FX</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/fx_conv_bn_fuser.html">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Frontend APIs</span></p>
@@ -440,6 +439,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_conv_bn_fuser.html">Building a Convolution/Batch Norm fuser with torch.compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/compiled_autograd_tutorial.html">Compiled Autograd: Capturing a larger backward graph for <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
@@ -616,27 +616,27 @@ and download both training and validation data splits.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>  0%|          | 0.00/26.4M [00:00&lt;?, ?B/s]
-  0%|          | 65.5k/26.4M [00:00&lt;01:10, 375kB/s]
-  1%|          | 229k/26.4M [00:00&lt;00:37, 704kB/s]
-  4%|▎         | 950k/26.4M [00:00&lt;00:11, 2.26MB/s]
- 15%|█▍        | 3.83M/26.4M [00:00&lt;00:02, 7.85MB/s]
- 38%|███▊      | 9.99M/26.4M [00:00&lt;00:00, 17.6MB/s]
- 61%|██████    | 16.1M/26.4M [00:01&lt;00:00, 23.4MB/s]
- 84%|████████▍ | 22.3M/26.4M [00:01&lt;00:00, 27.3MB/s]
-100%|██████████| 26.4M/26.4M [00:01&lt;00:00, 20.0MB/s]
+  0%|          | 65.5k/26.4M [00:00&lt;01:12, 364kB/s]
+  1%|          | 229k/26.4M [00:00&lt;00:38, 683kB/s]
+  4%|▎         | 950k/26.4M [00:00&lt;00:11, 2.19MB/s]
+ 14%|█▍        | 3.77M/26.4M [00:00&lt;00:03, 7.47MB/s]
+ 37%|███▋      | 9.80M/26.4M [00:00&lt;00:00, 16.8MB/s]
+ 60%|█████▉    | 15.7M/26.4M [00:01&lt;00:00, 22.2MB/s]
+ 83%|████████▎ | 21.9M/26.4M [00:01&lt;00:00, 26.0MB/s]
+100%|██████████| 26.4M/26.4M [00:01&lt;00:00, 19.4MB/s]
 
   0%|          | 0.00/29.5k [00:00&lt;?, ?B/s]
-100%|██████████| 29.5k/29.5k [00:00&lt;00:00, 338kB/s]
+100%|██████████| 29.5k/29.5k [00:00&lt;00:00, 325kB/s]
 
   0%|          | 0.00/4.42M [00:00&lt;?, ?B/s]
-  1%|▏         | 65.5k/4.42M [00:00&lt;00:11, 376kB/s]
-  5%|▌         | 229k/4.42M [00:00&lt;00:05, 709kB/s]
- 21%|██        | 918k/4.42M [00:00&lt;00:01, 2.60MB/s]
- 44%|████▎     | 1.93M/4.42M [00:00&lt;00:00, 4.27MB/s]
-100%|██████████| 4.42M/4.42M [00:00&lt;00:00, 6.30MB/s]
+  1%|▏         | 65.5k/4.42M [00:00&lt;00:12, 360kB/s]
+  5%|▌         | 229k/4.42M [00:00&lt;00:06, 678kB/s]
+ 21%|██        | 918k/4.42M [00:00&lt;00:01, 2.57MB/s]
+ 44%|████▎     | 1.93M/4.42M [00:00&lt;00:00, 4.07MB/s]
+100%|██████████| 4.42M/4.42M [00:00&lt;00:00, 6.06MB/s]
 
   0%|          | 0.00/5.15k [00:00&lt;?, ?B/s]
-100%|██████████| 5.15k/5.15k [00:00&lt;00:00, 46.6MB/s]
+100%|██████████| 5.15k/5.15k [00:00&lt;00:00, 49.4MB/s]
 Training set has 60000 instances
 Validation set has 10000 instances
 </pre></div>
@@ -665,7 +665,7 @@ Validation set has 10000 instances
 <span class="nb">print</span><span class="p">(</span><span class="s1">'  '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">classes</span><span class="p">[</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">labels</span></a><span class="p">[</span><span class="n">j</span><span class="p">]]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)))</span>
 </pre></div>
 </div>
-<img alt="trainingyt" class="sphx-glr-single-img" src="../../_images/sphx_glr_trainingyt_001.png" srcset="../../_images/sphx_glr_trainingyt_001.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Shirt  Shirt  Dress  Coat
+<img alt="trainingyt" class="sphx-glr-single-img" src="../../_images/sphx_glr_trainingyt_001.png" srcset="../../_images/sphx_glr_trainingyt_001.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Ankle Boot  Shirt  Coat  Shirt
 </pre></div>
 </div>
 </div>
@@ -721,16 +721,16 @@ them through the loss function, and examine the result.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'Total loss for this batch: </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">loss</span></a><span class="o">.</span><span class="n">item</span><span class="p">()))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[0.3871, 0.8753, 0.0584, 0.7485, 0.9767, 0.5174, 0.9975, 0.4720, 0.8591,
-         0.8578],
-        [0.4806, 0.6059, 0.3691, 0.0530, 0.2005, 0.5014, 0.8594, 0.9794, 0.4975,
-         0.0801],
-        [0.3056, 0.1164, 0.9187, 0.3434, 0.6876, 0.5983, 0.0019, 0.5771, 0.9980,
-         0.0012],
-        [0.2970, 0.3843, 0.9179, 0.5038, 0.7643, 0.6468, 0.9594, 0.3111, 0.8616,
-         0.8971]])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[0.9393, 0.7026, 0.2008, 0.3062, 0.1572, 0.4896, 0.7014, 0.5225, 0.6014,
+         0.3572],
+        [0.9604, 0.8467, 0.7489, 0.9233, 0.9115, 0.3131, 0.3577, 0.6121, 0.7545,
+         0.5408],
+        [0.6474, 0.8035, 0.4284, 0.4744, 0.6391, 0.7587, 0.4636, 0.9432, 0.2861,
+         0.6369],
+        [0.3740, 0.0284, 0.9950, 0.0195, 0.0684, 0.6437, 0.2254, 0.8007, 0.0968,
+         0.2990]])
 tensor([1, 5, 3, 7])
-Total loss for this batch: 2.398871898651123
+Total loss for this batch: 2.301053524017334
 </pre></div>
 </div>
 </div>
@@ -869,90 +869,90 @@ tab.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>EPOCH 1:
-  batch 1000 loss: 1.764247257500887
-  batch 2000 loss: 0.8569728974401951
-  batch 3000 loss: 0.7123585843369364
-  batch 4000 loss: 0.6572455630078912
-  batch 5000 loss: 0.6201677555111237
-  batch 6000 loss: 0.5735791745767929
-  batch 7000 loss: 0.5521899580492172
-  batch 8000 loss: 0.5642887189780013
-  batch 9000 loss: 0.504384911629837
-  batch 10000 loss: 0.5221002267175354
-  batch 11000 loss: 0.46767861694830937
-  batch 12000 loss: 0.4745196136510931
-  batch 13000 loss: 0.46007403935538604
-  batch 14000 loss: 0.45000558583901146
-  batch 15000 loss: 0.44908716332318727
-LOSS train 0.44908716332318727 valid 0.4550032317638397
+  batch 1000 loss: 1.864518710747361
+  batch 2000 loss: 0.7927443082835526
+  batch 3000 loss: 0.6781200520033017
+  batch 4000 loss: 0.6127909358926117
+  batch 5000 loss: 0.6010143245691434
+  batch 6000 loss: 0.5646262425248278
+  batch 7000 loss: 0.5524338165915106
+  batch 8000 loss: 0.5207418109052815
+  batch 9000 loss: 0.5130576710519381
+  batch 10000 loss: 0.4756341417852527
+  batch 11000 loss: 0.47903063164034393
+  batch 12000 loss: 0.48245135688735175
+  batch 13000 loss: 0.4482050186729757
+  batch 14000 loss: 0.43693011097027923
+  batch 15000 loss: 0.438645085585129
+LOSS train 0.438645085585129 valid 0.4593052864074707
 EPOCH 2:
-  batch 1000 loss: 0.4329011988675338
-  batch 2000 loss: 0.4171029995288118
-  batch 3000 loss: 0.43176665590386254
-  batch 4000 loss: 0.40507558329586757
-  batch 5000 loss: 0.4132146097108489
-  batch 6000 loss: 0.39711125847217044
-  batch 7000 loss: 0.4000640494195977
-  batch 8000 loss: 0.3671263638309902
-  batch 9000 loss: 0.3735593162352452
-  batch 10000 loss: 0.37685054385114924
-  batch 11000 loss: 0.3822887080789078
-  batch 12000 loss: 0.3477740957785063
-  batch 13000 loss: 0.372653712387837
-  batch 14000 loss: 0.3614710367466905
-  batch 15000 loss: 0.36400118121226843
-LOSS train 0.36400118121226843 valid 0.392414927482605
+  batch 1000 loss: 0.4179248483601259
+  batch 2000 loss: 0.4275422152647079
+  batch 3000 loss: 0.39555639160668943
+  batch 4000 loss: 0.39036168476937744
+  batch 5000 loss: 0.3849592615829897
+  batch 6000 loss: 0.3887017041356885
+  batch 7000 loss: 0.38649175077978
+  batch 8000 loss: 0.3752154318515386
+  batch 9000 loss: 0.37355383596895264
+  batch 10000 loss: 0.36797095111734235
+  batch 11000 loss: 0.3710867067769286
+  batch 12000 loss: 0.35495277168491157
+  batch 13000 loss: 0.37153624907189803
+  batch 14000 loss: 0.40004921132244636
+  batch 15000 loss: 0.3627466702448728
+LOSS train 0.3627466702448728 valid 0.37676748633384705
 EPOCH 3:
-  batch 1000 loss: 0.3117467916131427
-  batch 2000 loss: 0.3353060944688623
-  batch 3000 loss: 0.3424663462788158
-  batch 4000 loss: 0.35979792844888286
-  batch 5000 loss: 0.352671616114003
-  batch 6000 loss: 0.3340403167080804
-  batch 7000 loss: 0.34339215391728795
-  batch 8000 loss: 0.3428998611226853
-  batch 9000 loss: 0.3413096206796472
-  batch 10000 loss: 0.3579844678715162
-  batch 11000 loss: 0.3360349089117954
-  batch 12000 loss: 0.34652940508513713
-  batch 13000 loss: 0.32719655224867167
-  batch 14000 loss: 0.33916146739627584
-  batch 15000 loss: 0.3324964274272788
-LOSS train 0.3324964274272788 valid 0.37058207392692566
+  batch 1000 loss: 0.3215451232899941
+  batch 2000 loss: 0.32147515017424305
+  batch 3000 loss: 0.3512066258584091
+  batch 4000 loss: 0.35075259247609936
+  batch 5000 loss: 0.36855945692639214
+  batch 6000 loss: 0.3318682151530593
+  batch 7000 loss: 0.32984103585341656
+  batch 8000 loss: 0.3327218220550276
+  batch 9000 loss: 0.3289532820133609
+  batch 10000 loss: 0.3381889603496529
+  batch 11000 loss: 0.34164986505017075
+  batch 12000 loss: 0.3345198856186762
+  batch 13000 loss: 0.3179091128533255
+  batch 14000 loss: 0.32164547249649966
+  batch 15000 loss: 0.33344891842926155
+LOSS train 0.33344891842926155 valid 0.3440241813659668
 EPOCH 4:
-  batch 1000 loss: 0.29229721523828994
-  batch 2000 loss: 0.30361084493043017
-  batch 3000 loss: 0.3201185543383035
-  batch 4000 loss: 0.32661286530428696
-  batch 5000 loss: 0.3268300393389245
-  batch 6000 loss: 0.312461094375336
-  batch 7000 loss: 0.32185132873561817
-  batch 8000 loss: 0.3340607318514958
-  batch 9000 loss: 0.30089606871094654
-  batch 10000 loss: 0.2917423454949385
-  batch 11000 loss: 0.3176370733754484
-  batch 12000 loss: 0.2910331220295411
-  batch 13000 loss: 0.321350436532477
-  batch 14000 loss: 0.32120386617982877
-  batch 15000 loss: 0.3025007137002321
-LOSS train 0.3025007137002321 valid 0.3467680811882019
+  batch 1000 loss: 0.30977227106475586
+  batch 2000 loss: 0.3068252689057372
+  batch 3000 loss: 0.31597250299438745
+  batch 4000 loss: 0.27057066758445397
+  batch 5000 loss: 0.31761995788666536
+  batch 6000 loss: 0.29509316631492605
+  batch 7000 loss: 0.30317540520225883
+  batch 8000 loss: 0.2990742232721386
+  batch 9000 loss: 0.3135373969287466
+  batch 10000 loss: 0.3198199468999228
+  batch 11000 loss: 0.2952587598796235
+  batch 12000 loss: 0.2983795248938804
+  batch 13000 loss: 0.31236177336689436
+  batch 14000 loss: 0.30283363426123105
+  batch 15000 loss: 0.31815318502466833
+LOSS train 0.31815318502466833 valid 0.3298296332359314
 EPOCH 5:
-  batch 1000 loss: 0.29753813759616604
-  batch 2000 loss: 0.296145352480562
-  batch 3000 loss: 0.2835401774895913
-  batch 4000 loss: 0.28145896068625736
-  batch 5000 loss: 0.30909130807170004
-  batch 6000 loss: 0.28024966874463414
-  batch 7000 loss: 0.29055741073631364
-  batch 8000 loss: 0.28942515044145695
-  batch 9000 loss: 0.2991757063109362
-  batch 10000 loss: 0.30857020689338244
-  batch 11000 loss: 0.2895680431677647
-  batch 12000 loss: 0.299557298302745
-  batch 13000 loss: 0.30233451631586106
-  batch 14000 loss: 0.29855854216548006
-  batch 15000 loss: 0.29802445884764167
-LOSS train 0.29802445884764167 valid 0.33802780508995056
+  batch 1000 loss: 0.2820176870781579
+  batch 2000 loss: 0.28609649759225614
+  batch 3000 loss: 0.31718855552045716
+  batch 4000 loss: 0.2702685001892387
+  batch 5000 loss: 0.2752750509818507
+  batch 6000 loss: 0.2698576636666985
+  batch 7000 loss: 0.3079546444519874
+  batch 8000 loss: 0.28749169463962243
+  batch 9000 loss: 0.2809412576224422
+  batch 10000 loss: 0.28411900806671475
+  batch 11000 loss: 0.2957403764032933
+  batch 12000 loss: 0.26689896109707845
+  batch 13000 loss: 0.28895425898231225
+  batch 14000 loss: 0.2889651124376408
+  batch 15000 loss: 0.29122916413279015
+LOSS train 0.29122916413279015 valid 0.3038538098335266
 </pre></div>
 </div>
 <p>To load a saved version of the model:</p>
@@ -995,7 +995,7 @@ a broad variety of training tasks, including classification in
 different domains, generative adversarial networks, reinforcement
 learning, and more</p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (3 minutes 3.508 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (3 minutes 2.313 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-introyt-trainingyt-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/770632dd3941d2a51b831c52ded57aa2/trainingyt.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">trainingyt.ipynb</span></code></a></p>

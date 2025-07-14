@@ -400,7 +400,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Code Transforms with FX</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/fx_conv_bn_fuser.html">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Frontend APIs</span></p>
@@ -438,6 +437,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_conv_bn_fuser.html">Building a Convolution/Batch Norm fuser with torch.compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/compiled_autograd_tutorial.html">Compiled Autograd: Capturing a larger backward graph for <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
@@ -741,22 +741,22 @@ graph(
         %"mul"&lt;FLOAT,[1]&gt;
     ),
     initializers=(
-        %"model.mlp.0.bias"&lt;FLOAT,[2]&gt;{TorchTensor&lt;FLOAT,[2]&gt;(Parameter containing: tensor([0.2710, 0.5127], requires_grad=True), name='model.mlp.0.bias')},
-        %"model.mlp.1.bias"&lt;FLOAT,[1]&gt;{TorchTensor&lt;FLOAT,[1]&gt;(Parameter containing: tensor([0.3042], requires_grad=True), name='model.mlp.1.bias')}
+        %"model.mlp.0.bias"&lt;FLOAT,[2]&gt;{TorchTensor&lt;FLOAT,[2]&gt;(Parameter containing: tensor([-0.2072,  0.2715], requires_grad=True), name='model.mlp.0.bias')},
+        %"model.mlp.1.bias"&lt;FLOAT,[1]&gt;{TorchTensor&lt;FLOAT,[1]&gt;(Parameter containing: tensor([-0.4039], requires_grad=True), name='model.mlp.1.bias')}
     ),
 ) {
     0 |  # node_Constant_8
-         %"val_0"&lt;FLOAT,[3,2]&gt;{Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.32957256,  0.03816925], [ 0.38610873, -0.39871866], [ 0.19309625, -0.5507255 ]], dtype=float32), name='val_0')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.32957256,  0.03816925], [ 0.38610873, -0.39871866], [ 0.19309625, -0.5507255 ]], dtype=float32), name='val_0')}
+         %"val_0"&lt;FLOAT,[3,2]&gt;{Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.14698535, -0.26641455], [ 0.05658407, -0.1332928 ], [-0.02533199, -0.542111  ]], dtype=float32), name='val_0')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.14698535, -0.26641455], [ 0.05658407, -0.1332928 ], [-0.02533199, -0.542111  ]], dtype=float32), name='val_0')}
     1 |  # node_MatMul_1
-         %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"input_1", %"val_0"{[[0.32957255840301514, 0.0381692536175251], [0.38610872626304626, -0.3987186551094055], [0.19309625029563904, -0.550725519657135]]})
+         %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"input_1", %"val_0"{[[0.14698535203933716, -0.2664145529270172], [0.05658407136797905, -0.1332927942276001], [-0.02533198706805706, -0.5421109795570374]]})
     2 |  # node_Add_2
-         %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"model.mlp.0.bias"{[0.27099528908729553, 0.5127179622650146]})
+         %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"model.mlp.0.bias"{[-0.20722398161888123, 0.2715315818786621]})
     3 |  # node_Constant_9
-         %"val_2"&lt;FLOAT,[2,1]&gt;{Tensor&lt;FLOAT,[2,1]&gt;(array([[ 0.54296327], [-0.36496103]], dtype=float32), name='val_2')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[2,1]&gt;(array([[ 0.54296327], [-0.36496103]], dtype=float32), name='val_2')}
+         %"val_2"&lt;FLOAT,[2,1]&gt;{Tensor&lt;FLOAT,[2,1]&gt;(array([[-0.6837875 ], [-0.06449934]], dtype=float32), name='val_2')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[2,1]&gt;(array([[-0.6837875 ], [-0.06449934]], dtype=float32), name='val_2')}
     4 |  # node_MatMul_4
-         %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2"{[[0.5429632663726807], [-0.36496102809906006]]})
+         %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2"{[[-0.6837875247001648], [-0.06449934095144272]]})
     5 |  # node_Add_5
-         %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"model.mlp.1.bias"{[0.3041920065879822]})
+         %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"model.mlp.1.bias"{[-0.40388262271881104]})
     6 |  # node_Constant_10
          %"convert_element_type_default"&lt;FLOAT,[]&gt;{Tensor&lt;FLOAT,[]&gt;(array(2., dtype=float32), name='convert_element_type_default')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[]&gt;(array(2., dtype=float32), name='convert_element_type_default')}
     7 |  # node_Mul_7
@@ -866,22 +866,22 @@ graph(
         %"getitem"&lt;FLOAT,[1]&gt;
     ),
     initializers=(
-        %"mlp.0.bias"&lt;FLOAT,[2]&gt;{TorchTensor&lt;FLOAT,[2]&gt;(Parameter containing: tensor([0.2710, 0.5127], requires_grad=True), name='mlp.0.bias')},
-        %"mlp.1.bias"&lt;FLOAT,[1]&gt;{TorchTensor&lt;FLOAT,[1]&gt;(Parameter containing: tensor([0.3042], requires_grad=True), name='mlp.1.bias')}
+        %"mlp.0.bias"&lt;FLOAT,[2]&gt;{TorchTensor&lt;FLOAT,[2]&gt;(Parameter containing: tensor([-0.2072,  0.2715], requires_grad=True), name='mlp.0.bias')},
+        %"mlp.1.bias"&lt;FLOAT,[1]&gt;{TorchTensor&lt;FLOAT,[1]&gt;(Parameter containing: tensor([-0.4039], requires_grad=True), name='mlp.1.bias')}
     ),
 ) {
      0 |  # node_Constant_11
-          %"val_0"&lt;FLOAT,[3,2]&gt;{Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.32957256,  0.03816925], [ 0.38610873, -0.39871866], [ 0.19309625, -0.5507255 ]], dtype=float32), name='val_0')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.32957256,  0.03816925], [ 0.38610873, -0.39871866], [ 0.19309625, -0.5507255 ]], dtype=float32), name='val_0')}
+          %"val_0"&lt;FLOAT,[3,2]&gt;{Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.14698535, -0.26641455], [ 0.05658407, -0.1332928 ], [-0.02533199, -0.542111  ]], dtype=float32), name='val_0')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.14698535, -0.26641455], [ 0.05658407, -0.1332928 ], [-0.02533199, -0.542111  ]], dtype=float32), name='val_0')}
      1 |  # node_MatMul_1
-          %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"x", %"val_0"{[[0.32957255840301514, 0.0381692536175251], [0.38610872626304626, -0.3987186551094055], [0.19309625029563904, -0.550725519657135]]})
+          %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"x", %"val_0"{[[0.14698535203933716, -0.2664145529270172], [0.05658407136797905, -0.1332927942276001], [-0.02533198706805706, -0.5421109795570374]]})
      2 |  # node_Add_2
-          %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"mlp.0.bias"{[0.27099528908729553, 0.5127179622650146]})
+          %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"mlp.0.bias"{[-0.20722398161888123, 0.2715315818786621]})
      3 |  # node_Constant_12
-          %"val_2"&lt;FLOAT,[2,1]&gt;{Tensor&lt;FLOAT,[2,1]&gt;(array([[ 0.54296327], [-0.36496103]], dtype=float32), name='val_2')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[2,1]&gt;(array([[ 0.54296327], [-0.36496103]], dtype=float32), name='val_2')}
+          %"val_2"&lt;FLOAT,[2,1]&gt;{Tensor&lt;FLOAT,[2,1]&gt;(array([[-0.6837875 ], [-0.06449934]], dtype=float32), name='val_2')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[2,1]&gt;(array([[-0.6837875 ], [-0.06449934]], dtype=float32), name='val_2')}
      4 |  # node_MatMul_4
-          %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2"{[[0.5429632663726807], [-0.36496102809906006]]})
+          %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2"{[[-0.6837875247001648], [-0.06449934095144272]]})
      5 |  # node_Add_5
-          %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"mlp.1.bias"{[0.3041920065879822]})
+          %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"mlp.1.bias"{[-0.40388262271881104]})
      6 |  # node_ReduceSum_6
           %"sum_1"&lt;FLOAT,[]&gt; ⬅️ ::ReduceSum(%"linear_1") {noop_with_empty_axes=0, keepdims=False}
      7 |  # node_Constant_13
@@ -944,22 +944,22 @@ graph(
         %"getitem"&lt;FLOAT,[1]&gt;
     ),
     initializers=(
-        %"mlp.0.bias"&lt;FLOAT,[2]&gt;{TorchTensor&lt;FLOAT,[2]&gt;(Parameter containing: tensor([0.2710, 0.5127], requires_grad=True), name='mlp.0.bias')},
-        %"mlp.1.bias"&lt;FLOAT,[1]&gt;{TorchTensor&lt;FLOAT,[1]&gt;(Parameter containing: tensor([0.3042], requires_grad=True), name='mlp.1.bias')}
+        %"mlp.0.bias"&lt;FLOAT,[2]&gt;{TorchTensor&lt;FLOAT,[2]&gt;(Parameter containing: tensor([-0.2072,  0.2715], requires_grad=True), name='mlp.0.bias')},
+        %"mlp.1.bias"&lt;FLOAT,[1]&gt;{TorchTensor&lt;FLOAT,[1]&gt;(Parameter containing: tensor([-0.4039], requires_grad=True), name='mlp.1.bias')}
     ),
 ) {
      0 |  # node_Constant_11
-          %"val_0"&lt;FLOAT,[3,2]&gt;{Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.32957256,  0.03816925], [ 0.38610873, -0.39871866], [ 0.19309625, -0.5507255 ]], dtype=float32), name='val_0')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.32957256,  0.03816925], [ 0.38610873, -0.39871866], [ 0.19309625, -0.5507255 ]], dtype=float32), name='val_0')}
+          %"val_0"&lt;FLOAT,[3,2]&gt;{Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.14698535, -0.26641455], [ 0.05658407, -0.1332928 ], [-0.02533199, -0.542111  ]], dtype=float32), name='val_0')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.14698535, -0.26641455], [ 0.05658407, -0.1332928 ], [-0.02533199, -0.542111  ]], dtype=float32), name='val_0')}
      1 |  # node_MatMul_1
-          %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"x", %"val_0"{[[0.32957255840301514, 0.0381692536175251], [0.38610872626304626, -0.3987186551094055], [0.19309625029563904, -0.550725519657135]]})
+          %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"x", %"val_0"{[[0.14698535203933716, -0.2664145529270172], [0.05658407136797905, -0.1332927942276001], [-0.02533198706805706, -0.5421109795570374]]})
      2 |  # node_Add_2
-          %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"mlp.0.bias"{[0.27099528908729553, 0.5127179622650146]})
+          %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"mlp.0.bias"{[-0.20722398161888123, 0.2715315818786621]})
      3 |  # node_Constant_12
-          %"val_2"&lt;FLOAT,[2,1]&gt;{Tensor&lt;FLOAT,[2,1]&gt;(array([[ 0.54296327], [-0.36496103]], dtype=float32), name='val_2')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[2,1]&gt;(array([[ 0.54296327], [-0.36496103]], dtype=float32), name='val_2')}
+          %"val_2"&lt;FLOAT,[2,1]&gt;{Tensor&lt;FLOAT,[2,1]&gt;(array([[-0.6837875 ], [-0.06449934]], dtype=float32), name='val_2')} ⬅️ ::Constant() {value=Tensor&lt;FLOAT,[2,1]&gt;(array([[-0.6837875 ], [-0.06449934]], dtype=float32), name='val_2')}
      4 |  # node_MatMul_4
-          %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2"{[[0.5429632663726807], [-0.36496102809906006]]})
+          %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2"{[[-0.6837875247001648], [-0.06449934095144272]]})
      5 |  # node_Add_5
-          %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"mlp.1.bias"{[0.3041920065879822]})
+          %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"mlp.1.bias"{[-0.40388262271881104]})
      6 |  # node_ReduceSum_6
           %"sum_1"&lt;FLOAT,[]&gt; ⬅️ ::ReduceSum(%"linear_1") {noop_with_empty_axes=0, keepdims=False}
      7 |  # node_Constant_13
@@ -1023,7 +1023,7 @@ sit tight and have fun going through all of them to learn all there is about the
 </div>
 <div class="toctree-wrapper compound">
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 2.433 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 2.457 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-onnx-export-control-flow-model-to-onnx-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/1c5e336a8b06aec51ee1f67538b41344/export_control_flow_model_to_onnx_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">export_control_flow_model_to_onnx_tutorial.ipynb</span></code></a></p>

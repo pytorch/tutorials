@@ -402,7 +402,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Code Transforms with FX</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/fx_conv_bn_fuser.html">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Frontend APIs</span></p>
@@ -440,6 +439,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_conv_bn_fuser.html">Building a Convolution/Batch Norm fuser with torch.compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/compiled_autograd_tutorial.html">Compiled Autograd: Capturing a larger backward graph for <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
@@ -597,29 +597,30 @@ Each example comprises a 28×28 grayscale image and an associated label from one
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>  0%|          | 0.00/26.4M [00:00&lt;?, ?B/s]
-  0%|          | 65.5k/26.4M [00:00&lt;01:10, 376kB/s]
-  1%|          | 229k/26.4M [00:00&lt;00:36, 709kB/s]
-  3%|▎         | 918k/26.4M [00:00&lt;00:09, 2.64MB/s]
-  7%|▋         | 1.93M/26.4M [00:00&lt;00:05, 4.27MB/s]
- 25%|██▍       | 6.55M/26.4M [00:00&lt;00:01, 15.5MB/s]
- 38%|███▊      | 10.1M/26.4M [00:00&lt;00:00, 18.2MB/s]
- 57%|█████▋    | 15.2M/26.4M [00:00&lt;00:00, 26.1MB/s]
- 72%|███████▏  | 19.0M/26.4M [00:01&lt;00:00, 25.7MB/s]
- 91%|█████████▏| 24.2M/26.4M [00:01&lt;00:00, 31.5MB/s]
-100%|██████████| 26.4M/26.4M [00:01&lt;00:00, 20.0MB/s]
+  0%|          | 65.5k/26.4M [00:00&lt;01:13, 361kB/s]
+  1%|          | 197k/26.4M [00:00&lt;00:34, 767kB/s]
+  2%|▏         | 492k/26.4M [00:00&lt;00:20, 1.26MB/s]
+  6%|▌         | 1.64M/26.4M [00:00&lt;00:05, 4.28MB/s]
+ 15%|█▍        | 3.83M/26.4M [00:00&lt;00:02, 7.92MB/s]
+ 34%|███▍      | 8.98M/26.4M [00:00&lt;00:00, 19.1MB/s]
+ 48%|████▊     | 12.8M/26.4M [00:01&lt;00:00, 20.4MB/s]
+ 66%|██████▋   | 17.5M/26.4M [00:01&lt;00:00, 27.0MB/s]
+ 82%|████████▏ | 21.7M/26.4M [00:01&lt;00:00, 29.8MB/s]
+ 94%|█████████▍| 24.9M/26.4M [00:01&lt;00:00, 26.7MB/s]
+100%|██████████| 26.4M/26.4M [00:01&lt;00:00, 19.2MB/s]
 
   0%|          | 0.00/29.5k [00:00&lt;?, ?B/s]
-100%|██████████| 29.5k/29.5k [00:00&lt;00:00, 337kB/s]
+100%|██████████| 29.5k/29.5k [00:00&lt;00:00, 323kB/s]
 
   0%|          | 0.00/4.42M [00:00&lt;?, ?B/s]
-  1%|▏         | 65.5k/4.42M [00:00&lt;00:12, 358kB/s]
-  5%|▌         | 229k/4.42M [00:00&lt;00:06, 677kB/s]
- 21%|██▏       | 950k/4.42M [00:00&lt;00:01, 2.17MB/s]
- 81%|████████  | 3.57M/4.42M [00:00&lt;00:00, 8.50MB/s]
-100%|██████████| 4.42M/4.42M [00:00&lt;00:00, 6.03MB/s]
+  1%|▏         | 65.5k/4.42M [00:00&lt;00:12, 362kB/s]
+  5%|▌         | 229k/4.42M [00:00&lt;00:06, 681kB/s]
+ 21%|██        | 918k/4.42M [00:00&lt;00:01, 2.58MB/s]
+ 44%|████▎     | 1.93M/4.42M [00:00&lt;00:00, 4.10MB/s]
+100%|██████████| 4.42M/4.42M [00:00&lt;00:00, 6.09MB/s]
 
   0%|          | 0.00/5.15k [00:00&lt;?, ?B/s]
-100%|██████████| 5.15k/5.15k [00:00&lt;00:00, 60.7MB/s]
+100%|██████████| 5.15k/5.15k [00:00&lt;00:00, 49.2MB/s]
 </pre></div>
 </div>
 </div>
@@ -651,7 +652,7 @@ We use <code class="docutils literal notranslate"><span class="pre">matplotlib</
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="Trouser, Pullover, Ankle Boot, T-Shirt, Sneaker, Sneaker, Trouser, T-Shirt, Shirt" class="sphx-glr-single-img" src="../../_images/sphx_glr_data_tutorial_001.png" srcset="../../_images/sphx_glr_data_tutorial_001.png"/><hr class="docutils"/>
+<img alt="Coat, Coat, Trouser, Shirt, Sneaker, Bag, Bag, Pullover, Bag" class="sphx-glr-single-img" src="../../_images/sphx_glr_data_tutorial_001.png" srcset="../../_images/sphx_glr_data_tutorial_001.png"/><hr class="docutils"/>
 </div>
 <div class="section" id="creating-a-custom-dataset-for-your-files">
 <h2>Creating a Custom Dataset for your files<a class="headerlink" href="#creating-a-custom-dataset-for-your-files" title="Permalink to this heading">¶</a></h2>
@@ -765,7 +766,7 @@ the data loading order, take a look at <a class="reference external" href="https
 </div>
 <img alt="data tutorial" class="sphx-glr-single-img" src="../../_images/sphx_glr_data_tutorial_002.png" srcset="../../_images/sphx_glr_data_tutorial_002.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Feature batch shape: torch.Size([64, 1, 28, 28])
 Labels batch shape: torch.Size([64])
-Label: 1
+Label: 5
 </pre></div>
 </div>
 <hr class="docutils"/>
@@ -775,7 +776,7 @@ Label: 1
 <ul class="simple">
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/data.html">torch.utils.data API</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 4.869 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 4.966 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-basics-data-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/36608d2d57f623ba3a623e0c947a8c3e/data_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">data_tutorial.ipynb</span></code></a></p>

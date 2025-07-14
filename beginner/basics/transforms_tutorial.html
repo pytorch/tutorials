@@ -402,7 +402,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Code Transforms with FX</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intermediate/fx_conv_bn_fuser.html">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Frontend APIs</span></p>
@@ -440,6 +439,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/torch_compile_conv_bn_fuser.html">Building a Convolution/Batch Norm fuser with torch.compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/compiled_autograd_tutorial.html">Compiled Autograd: Capturing a larger backward graph for <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
@@ -572,27 +572,27 @@ To make these transformations, we use <code class="docutils literal notranslate"
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>  0%|          | 0.00/26.4M [00:00&lt;?, ?B/s]
-  0%|          | 65.5k/26.4M [00:00&lt;01:11, 367kB/s]
-  1%|          | 229k/26.4M [00:00&lt;00:37, 692kB/s]
-  4%|▎         | 950k/26.4M [00:00&lt;00:11, 2.22MB/s]
- 15%|█▍        | 3.83M/26.4M [00:00&lt;00:02, 7.71MB/s]
- 38%|███▊      | 10.1M/26.4M [00:00&lt;00:00, 17.5MB/s]
- 61%|██████    | 16.0M/26.4M [00:01&lt;00:00, 22.8MB/s]
- 84%|████████▍ | 22.2M/26.4M [00:01&lt;00:00, 26.6MB/s]
-100%|██████████| 26.4M/26.4M [00:01&lt;00:00, 19.6MB/s]
+  0%|          | 65.5k/26.4M [00:00&lt;01:12, 364kB/s]
+  1%|          | 229k/26.4M [00:00&lt;00:38, 684kB/s]
+  4%|▎         | 950k/26.4M [00:00&lt;00:11, 2.19MB/s]
+ 15%|█▍        | 3.83M/26.4M [00:00&lt;00:02, 7.62MB/s]
+ 38%|███▊      | 9.93M/26.4M [00:00&lt;00:00, 17.0MB/s]
+ 61%|██████    | 16.1M/26.4M [00:01&lt;00:00, 22.7MB/s]
+ 83%|████████▎ | 21.9M/26.4M [00:01&lt;00:00, 25.8MB/s]
+100%|██████████| 26.4M/26.4M [00:01&lt;00:00, 19.4MB/s]
 
   0%|          | 0.00/29.5k [00:00&lt;?, ?B/s]
-100%|██████████| 29.5k/29.5k [00:00&lt;00:00, 339kB/s]
+100%|██████████| 29.5k/29.5k [00:00&lt;00:00, 327kB/s]
 
   0%|          | 0.00/4.42M [00:00&lt;?, ?B/s]
-  1%|▏         | 65.5k/4.42M [00:00&lt;00:12, 359kB/s]
-  5%|▌         | 229k/4.42M [00:00&lt;00:06, 676kB/s]
- 21%|██▏       | 950k/4.42M [00:00&lt;00:01, 2.17MB/s]
- 87%|████████▋ | 3.83M/4.42M [00:00&lt;00:00, 7.54MB/s]
-100%|██████████| 4.42M/4.42M [00:00&lt;00:00, 6.04MB/s]
+  1%|▏         | 65.5k/4.42M [00:00&lt;00:12, 362kB/s]
+  5%|▌         | 229k/4.42M [00:00&lt;00:06, 680kB/s]
+ 21%|██▏       | 950k/4.42M [00:00&lt;00:01, 2.19MB/s]
+ 87%|████████▋ | 3.83M/4.42M [00:00&lt;00:00, 7.61MB/s]
+100%|██████████| 4.42M/4.42M [00:00&lt;00:00, 6.09MB/s]
 
   0%|          | 0.00/5.15k [00:00&lt;?, ?B/s]
-100%|██████████| 5.15k/5.15k [00:00&lt;00:00, 55.5MB/s]
+100%|██████████| 5.15k/5.15k [00:00&lt;00:00, 52.9MB/s]
 </pre></div>
 </div>
 <div class="section" id="totensor">
@@ -618,7 +618,7 @@ It first creates a zero tensor of size 10 (the number of labels in our dataset) 
 <ul class="simple">
 <li><p><a class="reference external" href="https://pytorch.org/vision/stable/transforms.html">torchvision.transforms API</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 4.321 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 4.377 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-basics-transforms-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/9bdb71ef4a637dc36fb461904ccb7056/transforms_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">transforms_tutorial.ipynb</span></code></a></p>

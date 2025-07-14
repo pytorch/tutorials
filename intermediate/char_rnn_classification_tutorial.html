@@ -400,7 +400,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Code Transforms with FX</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="fx_conv_bn_fuser.html">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Frontend APIs</span></p>
@@ -438,6 +437,7 @@
 <li class="toctree-l1"><a class="reference internal" href="nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="torch_compile_conv_bn_fuser.html">Building a Convolution/Batch Norm fuser with torch.compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="compiled_autograd_tutorial.html">Compiled Autograd: Capturing a larger backward graph for <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
@@ -745,7 +745,7 @@ to hold our dataset. Each Dataset needs to implement three functions: <code clas
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>loaded 20074 items of data
-example = (tensor([5], device='cuda:0'), tensor([[[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+example = (tensor([4], device='cuda:0'), tensor([[[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0.]],
@@ -849,10 +849,10 @@ we use a helper function, <code class="docutils literal notranslate"><span class
 <span class="nb">print</span><span class="p">(</span><span class="n">label_from_output</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a><span class="p">,</span> <span class="n">alldata</span><span class="o">.</span><span class="n">labels_uniq</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-2.8224, -2.8336, -3.0347, -2.9054, -2.9794, -2.7910, -2.8424, -2.8771,
-         -3.0074, -2.8645, -2.7989, -2.9455, -2.9123, -2.9930, -2.8496, -2.9069,
-         -2.8571, -2.8504]], device='cuda:0', grad_fn=&lt;LogSoftmaxBackward0&gt;)
-('Arabic', 5)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-2.8712, -2.9622, -3.0247, -2.8720, -3.0030, -2.8114, -2.9102, -2.8450,
+         -2.9172, -2.8975, -2.8165, -2.7839, -2.9673, -2.8464, -2.9421, -2.9190,
+         -2.7638, -2.9188]], device='cuda:0', grad_fn=&lt;LogSoftmaxBackward0&gt;)
+('German', 16)
 </pre></div>
 </div>
 </div>
@@ -924,12 +924,12 @@ example is reduced to speed up the build. You can get better results with differ
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>training on data set with n = 17063
-5 (19%):         average batch loss = 0.8811821838897939
-10 (37%):        average batch loss = 0.6912459492855778
-15 (56%):        average batch loss = 0.5757060415952312
-20 (74%):        average batch loss = 0.49310757876511185
-25 (93%):        average batch loss = 0.43275260361953233
-training took 339.88645219802856s
+5 (19%):         average batch loss = 0.8894672539139015
+10 (37%):        average batch loss = 0.6967209944927052
+15 (56%):        average batch loss = 0.5789359906148608
+20 (74%):        average batch loss = 0.4921297017086304
+25 (93%):        average batch loss = 0.43179818143246146
+training took 340.6287040710449s
 </pre></div>
 </div>
 </div>
@@ -1019,7 +1019,7 @@ English (perhaps because of overlap with other languages).</p>
 </ul>
 </li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (5 minutes 46.225 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (5 minutes 46.765 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-char-rnn-classification-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/13b143c2380f4768d9432d808ad50799/char_rnn_classification_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">char_rnn_classification_tutorial.ipynb</span></code></a></p>

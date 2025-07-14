@@ -400,7 +400,6 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Code Transforms with FX</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="fx_conv_bn_fuser.html">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Frontend APIs</span></p>
@@ -438,6 +437,7 @@
 <li class="toctree-l1"><a class="reference internal" href="nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="torch_compile_conv_bn_fuser.html">Building a Convolution/Batch Norm fuser with torch.compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="compiled_autograd_tutorial.html">Compiled Autograd: Capturing a larger backward graph for <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
@@ -787,7 +787,7 @@ Counting words...
 Counted words:
 fra 4601
 eng 2991
-['il est frais emoulu de l universite', 'he s fresh out of college']
+['j ai ans', 'i am years old']
 </pre></div>
 </div>
 </div>
@@ -1262,22 +1262,22 @@ Counting words...
 Counted words:
 fra 4601
 eng 2991
-0m 32s (- 8m 8s) (5 6%) 1.5486
-1m 4s (- 7m 33s) (10 12%) 0.6951
-1m 37s (- 7m 0s) (15 18%) 0.3603
-2m 9s (- 6m 27s) (20 25%) 0.2014
-2m 41s (- 5m 55s) (25 31%) 0.1261
-3m 12s (- 5m 21s) (30 37%) 0.0885
-3m 44s (- 4m 48s) (35 43%) 0.0676
-4m 15s (- 4m 15s) (40 50%) 0.0556
-4m 46s (- 3m 42s) (45 56%) 0.0477
-5m 17s (- 3m 10s) (50 62%) 0.0423
-5m 49s (- 2m 38s) (55 68%) 0.0387
-6m 20s (- 2m 6s) (60 75%) 0.0361
-6m 52s (- 1m 35s) (65 81%) 0.0338
-7m 23s (- 1m 3s) (70 87%) 0.0325
-7m 54s (- 0m 31s) (75 93%) 0.0309
-8m 25s (- 0m 0s) (80 100%) 0.0299
+0m 31s (- 7m 54s) (5 6%) 1.5576
+1m 3s (- 7m 21s) (10 12%) 0.6973
+1m 34s (- 6m 48s) (15 18%) 0.3636
+2m 5s (- 6m 16s) (20 25%) 0.2023
+2m 36s (- 5m 43s) (25 31%) 0.1258
+3m 6s (- 5m 10s) (30 37%) 0.0883
+3m 36s (- 4m 38s) (35 43%) 0.0680
+4m 6s (- 4m 6s) (40 50%) 0.0556
+4m 36s (- 3m 35s) (45 56%) 0.0480
+5m 6s (- 3m 4s) (50 62%) 0.0420
+5m 37s (- 2m 33s) (55 68%) 0.0392
+6m 7s (- 2m 2s) (60 75%) 0.0359
+6m 37s (- 1m 31s) (65 81%) 0.0340
+7m 7s (- 1m 1s) (70 87%) 0.0323
+7m 39s (- 0m 30s) (75 93%) 0.0311
+8m 10s (- 0m 0s) (80 100%) 0.0303
 </pre></div>
 </div>
 <p>Set dropout layers to <code class="docutils literal notranslate"><span class="pre">eval</span></code> mode</p>
@@ -1286,45 +1286,45 @@ eng 2991
 <span class="n">evaluateRandomly</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&gt; c est un gros mangeur
-= he is a big eater
-&lt; he is a big eater &lt;EOS&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&gt; je suis satisfait de tout
+= i m satisfied with everything
+&lt; i m satisfied with everything everything everything &lt;EOS&gt;
 
-&gt; tu vas beaucoup me manquer
-= i m going to miss you a lot
-&lt; i m going to miss you a lot to miss
+&gt; il est professeur d anglais a leeds
+= he is a professor of english at leeds
+&lt; he is a professor of english at leeds &lt;EOS&gt;
 
-&gt; vous etes grande
-= you re big
-&lt; you are big &lt;EOS&gt;
+&gt; c est un membre du comite
+= he is a member of the committee
+&lt; he is a member of the committee &lt;EOS&gt;
 
-&gt; c est un beau gosse
-= he s a hunk
-&lt; he s a hunk &lt;EOS&gt;
+&gt; tu tires avantage de sa faiblesse
+= you re taking advantage of her weakness
+&lt; you re taking advantage of her weakness &lt;EOS&gt;
 
-&gt; nous faisons beaucoup de choses
-= we re getting a lot of things done
-&lt; we re getting a lot of things done with languages
+&gt; nous sommes frere et s ur
+= we are brother and sister
+&lt; we are brother and sister &lt;EOS&gt;
 
-&gt; vous vous amusez n est ce pas ?
-= you re enjoying yourselves aren t you ?
-&lt; you re enjoying yourself aren t you ? &lt;EOS&gt;
+&gt; je vous en supplie
+= i m begging you
+&lt; i m begging you in you &lt;EOS&gt;
 
-&gt; nous etudions le chinois
-= we re studying chinese
-&lt; we re studying chinese &lt;EOS&gt;
+&gt; je suis convaincu que tom est serieux
+= i m pretty sure tom s serious
+&lt; i m pretty sure tom s serious &lt;EOS&gt;
 
-&gt; vous etes bon
-= you re good
-&lt; you are good at good &lt;EOS&gt;
+&gt; je suis en bas
+= i m downstairs
+&lt; i m downstairs to blame &lt;EOS&gt;
 
-&gt; cela me preoccupe
-= i m concerned about it
-&lt; i m concerned about that worried about it up to
+&gt; elle est gentille
+= she s nice
+&lt; she is kind of cute &lt;EOS&gt;
 
-&gt; nous ne plaisantons pas
-= we re not kidding
-&lt; we re not kidding &lt;EOS&gt;
+&gt; il est encore assis sur le banc
+= he is still sitting on the bench
+&lt; he is still sitting on the bench &lt;EOS&gt;
 </pre></div>
 </div>
 <div class="section" id="visualizing-attention">
@@ -1387,7 +1387,7 @@ set_ticklabels() should only be used with a fixed number of ticks, i.e. after se
 set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
 
 input = je suis trop fatigue pour conduire
-output = i am too tired to drive a place &lt;EOS&gt;
+output = i m too tired to drive a lot &lt;EOS&gt;
 /var/lib/workspace/intermediate_source/seq2seq_translation_tutorial.py:827: UserWarning:
 
 set_ticklabels() should only be used with a fixed number of ticks, i.e. after set_ticks() or using a FixedLocator.
@@ -1444,7 +1444,7 @@ this:</p>
 </ul>
 </li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (8 minutes 34.248 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (8 minutes 19.227 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-seq2seq-translation-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/032d653a4f5a9c1ec32b9fc7c989ffe1/seq2seq_translation_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">seq2seq_translation_tutorial.ipynb</span></code></a></p>

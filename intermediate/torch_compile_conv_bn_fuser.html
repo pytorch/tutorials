@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>(beta) Building a Convolution/Batch Norm fuser in FX — PyTorch Tutorials 2.7.0+cu126 documentation</title>
+<title>Building a Convolution/Batch Norm fuser with torch.compile — PyTorch Tutorials 2.7.0+cu126 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
@@ -24,8 +24,8 @@
 <link href="../_static/css/custom2.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
-<link href="fx_profiling_tutorial.html" rel="next" title="(beta) Building a Simple CPU Performance Profiler with FX"/>
-<link href="../beginner/hta_trace_diff_tutorial.html" rel="prev" title="Trace Diff using Holistic Trace Analysis"/>
+<link href="compiled_autograd_tutorial.html" rel="next" title="Compiled Autograd: Capturing a larger backward graph for torch.compile"/>
+<link href="torch_compile_tutorial.html" rel="prev" title="Introduction to torch.compile"/>
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -401,8 +401,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../beginner/hta_trace_diff_tutorial.html">Trace Diff using Holistic Trace Analysis</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Code Transforms with FX</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Frontend APIs</span></p>
@@ -431,7 +430,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../advanced/privateuseone.html">Facilitating New Backend Integration by PrivateUse1</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Model Optimization</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../beginner/profiler.html">Profiling your PyTorch Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tensorboard_profiler_tutorial.html">PyTorch Profiler With TensorBoard</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/hyperparameter_tuning_tutorial.html">Hyperparameter tuning with Ray Tune</a></li>
@@ -440,6 +439,7 @@
 <li class="toctree-l1"><a class="reference internal" href="nvfuser_intro_tutorial.html">Getting Started - Accelerate Your Scripts with nvFuser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ax_multiobjective_nas_tutorial.html">Multi-Objective NAS with Ax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Building a Convolution/Batch Norm fuser with torch.compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="compiled_autograd_tutorial.html">Compiled Autograd: Capturing a larger backward graph for <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaled_dot_product_attention_tutorial.html">(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)</a></li>
@@ -494,9 +494,9 @@
           
         </a> &gt;
       </li>
-<li>(beta) Building a Convolution/Batch Norm fuser in FX</li>
+<li>Building a Convolution/Batch Norm fuser with torch.compile</li>
 <li class="pytorch-breadcrumbs-aside">
-<a href="../_sources/intermediate/fx_conv_bn_fuser.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
+<a href="../_sources/intermediate/torch_compile_conv_bn_fuser.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
 </li>
 </ul>
 </div>
@@ -508,7 +508,7 @@
 <section class="pytorch-content-wrap" data-toggle="wy-nav-shift" id="pytorch-content-wrap">
 <div class="pytorch-content-left">
 <div class="pytorch-call-to-action-links">
-<div id="tutorial-type">intermediate/fx_conv_bn_fuser</div>
+<div id="tutorial-type">intermediate/torch_compile_conv_bn_fuser</div>
 <div id="google-colab-link">
 <img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
 <div class="call-to-action-desktop-view">Run in Google Colab</div>
@@ -533,28 +533,51 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="sphx-glr-download-link-note admonition note">
 <p class="admonition-title">Note</p>
-<p><a class="reference internal" href="#sphx-glr-download-intermediate-fx-conv-bn-fuser-py"><span class="std std-ref">Go to the end</span></a>
+<p><a class="reference internal" href="#sphx-glr-download-intermediate-torch-compile-conv-bn-fuser-py"><span class="std std-ref">Go to the end</span></a>
 to download the full example code.</p>
 </div>
-<div class="sphx-glr-example-title section" id="beta-building-a-convolution-batch-norm-fuser-in-fx">
-<span id="sphx-glr-intermediate-fx-conv-bn-fuser-py"></span><h1>(beta) Building a Convolution/Batch Norm fuser in FX<a class="headerlink" href="#beta-building-a-convolution-batch-norm-fuser-in-fx" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Mar 04, 2021 | Last Updated: Jan 16, 2024 | Last Verified: Nov 05, 2024</p>
-<p><strong>Author</strong>: <a class="reference external" href="https://github.com/chillee">Horace He</a></p>
-<p>In this tutorial, we are going to use FX, a toolkit for composable function
-transformations of PyTorch, to do the following:</p>
-<ol class="arabic simple">
-<li><p>Find patterns of conv/batch norm in the data dependencies.</p></li>
-<li><p>For the patterns found in 1), fold the batch norm statistics into the convolution weights.</p></li>
-</ol>
-<p>Note that this optimization only works for models in inference mode (i.e. <cite>mode.eval()</cite>)</p>
-<p>We will be building the fuser that exists here:
-<a class="reference external" href="https://github.com/pytorch/pytorch/blob/orig/release/1.8/torch/fx/experimental/fuser.py">https://github.com/pytorch/pytorch/blob/orig/release/1.8/torch/fx/experimental/fuser.py</a></p>
+<div class="sphx-glr-example-title section" id="building-a-convolution-batch-norm-fuser-with-torch-compile">
+<span id="sphx-glr-intermediate-torch-compile-conv-bn-fuser-py"></span><h1>Building a Convolution/Batch Norm fuser with torch.compile<a class="headerlink" href="#building-a-convolution-batch-norm-fuser-with-torch-compile" title="Permalink to this heading">¶</a></h1>
+<p><strong>Author:</strong> <a class="reference external" href="https://github.com/chillee">Horace He</a>, <a class="reference external" href="https://github.com/yf225">Will Feng</a></p>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-2 sd-row-cols-xs-2 sd-row-cols-sm-2 sd-row-cols-md-2 sd-row-cols-lg-2 docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm card-prerequisites docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+<svg aria-hidden="true" class="sd-octicon sd-octicon-mortar-board" height="1.0em" version="1.1" viewbox="0 0 16 16" width="1.0em"><path d="M7.693 1.066a.75.75 0 01.614 0l7.25 3.25a.75.75 0 010 1.368L13 6.831v2.794c0 1.024-.81 1.749-1.66 2.173-.893.447-2.075.702-3.34.702-.278 0-.55-.012-.816-.036a.75.75 0 01.133-1.494c.22.02.45.03.683.03 1.082 0 2.025-.221 2.67-.543.69-.345.83-.682.83-.832V7.503L8.307 8.934a.75.75 0 01-.614 0L4 7.28v1.663c.296.105.575.275.812.512.438.438.688 1.059.688 1.796v3a.75.75 0 01-.75.75h-3a.75.75 0 01-.75-.75v-3c0-.737.25-1.358.688-1.796.237-.237.516-.407.812-.512V6.606L.443 5.684a.75.75 0 010-1.368l7.25-3.25zM2.583 5L8 7.428 13.416 5 8 2.572 2.583 5zM2.5 11.25c0-.388.125-.611.25-.735a.704.704 0 01.5-.203c.19 0 .37.071.5.203.125.124.25.347.25.735v2.25H2.5v-2.25z" fill-rule="evenodd"></path></svg> What you will learn</div>
+<ul class="simple">
+<li><p class="sd-card-text">How to register custom fusion patterns with torch.compile’s pattern matcher</p></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm card-prerequisites docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+<svg aria-hidden="true" class="sd-octicon sd-octicon-list-unordered" height="1.0em" version="1.1" viewbox="0 0 16 16" width="1.0em"><path d="M2 4a1 1 0 100-2 1 1 0 000 2zm3.75-1.5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zm0 5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zm0 5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zM3 8a1 1 0 11-2 0 1 1 0 012 0zm-1 6a1 1 0 100-2 1 1 0 000 2z" fill-rule="evenodd"></path></svg> Prerequisites</div>
+<ul class="simple">
+<li><p class="sd-card-text">PyTorch v2.7.0</p></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This optimization only works for models in inference mode (i.e. <code class="docutils literal notranslate"><span class="pre">model.eval()</span></code>).
+However, torch.compile’s pattern matching system works for both training and inference.</p>
+</div>
 <p>First, let’s get some imports out of the way (we will be using all
 of these later in the code).</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Iterable</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">torch.fx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">fx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+
+<span class="n">device</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda"</span> <span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>For this tutorial, we are going to create a model consisting of convolutions
@@ -588,8 +611,7 @@ the conv/batch norm patterns are hidden within Sequentials and one of the
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">M</span><span class="p">()</span>
-
+<span class="n">model</span> <span class="o">=</span> <span class="n">M</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -597,19 +619,18 @@ the conv/batch norm patterns are hidden within Sequentials and one of the
 <h2>Fusing Convolution with Batch Norm<a class="headerlink" href="#fusing-convolution-with-batch-norm" title="Permalink to this heading">¶</a></h2>
 <p>One of the primary challenges with trying to automatically fuse convolution
 and batch norm in PyTorch is that PyTorch does not provide an easy way of
-accessing the computational graph. FX resolves this problem by symbolically
-tracing the actual operations called, so that we can track the computations
-through the <cite>forward</cite> call, nested within Sequential modules, or wrapped in
-an user-defined module.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">traced_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-fx sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/fx.html#torch.fx.symbolic_trace" title="torch.fx.symbolic_trace"><span class="n">torch</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">symbolic_trace</span></a><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">traced_model</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+accessing the computational graph. torch.compile resolves this problem by
+capturing the computational graph during compilation, allowing us to apply
+pattern-based optimizations across the entire model, including operations
+nested within Sequential modules or wrapped in custom modules.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch._inductor.pattern_matcher</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch._inductor.pattern_matcher</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_replacement</span>
 </pre></div>
 </div>
-<p>This gives us a graph representation of our model. Note that both the modules
-hidden within the sequential as well as the wrapped Module have been inlined
-into the graph. This is the default level of abstraction, but it can be
-configured by the pass writer. More information can be found at the FX
-overview <a class="reference external" href="https://pytorch.org/docs/master/fx.html#module-torch.fx">https://pytorch.org/docs/master/fx.html#module-torch.fx</a></p>
+<p>torch.compile will capture a graph representation of our model. During
+compilation, modules hidden within Sequential containers and wrapped
+modules are all inlined into the graph, making them available for
+pattern matching and optimization.</p>
 </div>
 <div class="section" id="id1">
 <h2>Fusing Convolution with Batch Norm<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
@@ -652,76 +673,73 @@ clarity purposes.</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="fx-fusion-pass">
-<h2>FX Fusion Pass<a class="headerlink" href="#fx-fusion-pass" title="Permalink to this heading">¶</a></h2>
-<p>Now that we have our computational graph as well as a method for fusing
-convolution and batch norm, all that remains is to iterate over the FX graph
-and apply the desired fusions.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_parent_name</span><span class="p">(</span><span class="n">target</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Splits a ``qualname`` into parent path and last atom.</span>
-<span class="sd">    For example, `foo.bar.baz` -&gt; (`foo.bar`, `baz`)</span>
-<span class="sd">    """</span>
-    <span class="o">*</span><span class="n">parent</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">'.'</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">parent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">parent</span> <span class="k">else</span> <span class="s1">''</span><span class="p">,</span> <span class="n">name</span>
+<div class="section" id="pattern-matching-with-torch-compile">
+<h2>Pattern Matching with torch.compile<a class="headerlink" href="#pattern-matching-with-torch-compile" title="Permalink to this heading">¶</a></h2>
+<p>Now that we have our fusion logic, we need to register a pattern that
+torch.compile’s pattern matcher will recognize and replace during
+compilation.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define the pattern we want to match: conv2d followed by batch_norm</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">conv_bn_pattern</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">conv_weight</span><span class="p">,</span> <span class="n">conv_bias</span><span class="p">,</span> <span class="n">bn_mean</span><span class="p">,</span> <span class="n">bn_var</span><span class="p">,</span> <span class="n">bn_weight</span><span class="p">,</span> <span class="n">bn_bias</span><span class="p">):</span>
+    <span class="n">conv_out</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.conv2d.html#torch.nn.functional.conv2d" title="torch.nn.functional.conv2d"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">conv2d</span></a><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">conv_weight</span><span class="p">,</span> <span class="n">conv_bias</span><span class="p">)</span>
+    <span class="n">bn_out</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.batch_norm.html#torch.nn.functional.batch_norm" title="torch.nn.functional.batch_norm"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">batch_norm</span></a><span class="p">(</span>
+        <span class="n">conv_out</span><span class="p">,</span> <span class="n">bn_mean</span><span class="p">,</span> <span class="n">bn_var</span><span class="p">,</span> <span class="n">bn_weight</span><span class="p">,</span> <span class="n">bn_bias</span><span class="p">,</span>
+        <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-5</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">bn_out</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">replace_node_module</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch-fx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/fx.html#torch.fx.Node" title="torch.fx.Node"><span class="n">fx</span><span class="o">.</span><span class="n">Node</span></a><span class="p">,</span> <span class="n">modules</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">new_module</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-    <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="nb">str</span><span class="p">))</span>
-    <span class="n">parent_name</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">_parent_name</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
-    <span class="nb">setattr</span><span class="p">(</span><span class="n">modules</span><span class="p">[</span><span class="n">parent_name</span><span class="p">],</span> <span class="n">name</span><span class="p">,</span> <span class="n">new_module</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">conv_bn_replacement</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">conv_weight</span><span class="p">,</span> <span class="n">conv_bias</span><span class="p">,</span> <span class="n">bn_mean</span><span class="p">,</span> <span class="n">bn_var</span><span class="p">,</span> <span class="n">bn_weight</span><span class="p">,</span> <span class="n">bn_bias</span><span class="p">):</span>
+    <span class="n">fused_weight</span><span class="p">,</span> <span class="n">fused_bias</span> <span class="o">=</span> <span class="n">fuse_conv_bn_weights</span><span class="p">(</span>
+        <span class="n">conv_weight</span><span class="p">,</span> <span class="n">conv_bias</span><span class="p">,</span> <span class="n">bn_mean</span><span class="p">,</span> <span class="n">bn_var</span><span class="p">,</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">bn_weight</span><span class="p">,</span> <span class="n">bn_bias</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.conv2d.html#torch.nn.functional.conv2d" title="torch.nn.functional.conv2d"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">conv2d</span></a><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">fused_weight</span><span class="p">,</span> <span class="n">fused_bias</span><span class="p">)</span>
 
+<span class="c1"># Example inputs are needed to trace the pattern functions.</span>
+<span class="c1"># The inputs should match the function signatures of conv_bn_pattern and conv_bn_replacement.</span>
+<span class="c1"># These are used to trace the pattern functions to create the match template.</span>
+<span class="c1"># IMPORTANT: The pattern matcher is shape-agnostic! The specific shapes you use here</span>
+<span class="c1"># don't limit what shapes will be matched - any valid conv2d-&gt;batch_norm sequence</span>
+<span class="c1"># will be matched regardless of channels, kernel size, or spatial dimensions.</span>
+<span class="c1"># - x: input tensor (batch_size, channels, height, width)</span>
+<span class="c1"># - conv_weight: (out_channels, in_channels, kernel_h, kernel_w)</span>
+<span class="c1"># - conv_bias: (out_channels,)</span>
+<span class="c1"># - bn_mean, bn_var, bn_weight, bn_bias: all have shape (num_features,) matching out_channels</span>
+<span class="n">example_inputs</span> <span class="o">=</span> <span class="p">[</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>  <span class="c1"># x: input tensor</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>  <span class="c1"># conv_weight: 1 output channel, 1 input channel, 1x1 kernel</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>           <span class="c1"># conv_bias: 1 output channel</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>           <span class="c1"># bn_mean: batch norm running mean</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>           <span class="c1"># bn_var: batch norm running variance</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>           <span class="c1"># bn_weight: batch norm weight (gamma)</span>
+    <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>           <span class="c1"># bn_bias: batch norm bias (beta)</span>
+<span class="p">]</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">fuse</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">)</span> <span class="o">-&gt;</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">:</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-    <span class="c1"># The first step of most FX passes is to symbolically trace our model to</span>
-    <span class="c1"># obtain a `GraphModule`. This is a representation of our original model</span>
-    <span class="c1"># that is functionally identical to our original model, except that we now</span>
-    <span class="c1"># also have a graph representation of our forward pass.</span>
-    <span class="n">fx_model</span><span class="p">:</span> <a class="sphx-glr-backref-module-torch-fx sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/fx.html#torch.fx.GraphModule" title="torch.fx.GraphModule"><span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-fx sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/fx.html#torch.fx.symbolic_trace" title="torch.fx.symbolic_trace"><span class="n">fx</span><span class="o">.</span><span class="n">symbolic_trace</span></a><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-    <span class="n">modules</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">fx_model</span><span class="o">.</span><span class="n">named_modules</span><span class="p">())</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch._inductor.pattern_matcher</span><span class="w"> </span><span class="kn">import</span> <span class="n">PatternMatcherPass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch._inductor</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
 
-    <span class="c1"># The primary representation for working with FX are the `Graph` and the</span>
-    <span class="c1"># `Node`. Each `GraphModule` has a `Graph` associated with it - this</span>
-    <span class="c1"># `Graph` is also what generates `GraphModule.code`.</span>
-    <span class="c1"># The `Graph` itself is represented as a list of `Node` objects. Thus, to</span>
-    <span class="c1"># iterate through all of the operations in our graph, we iterate over each</span>
-    <span class="c1"># `Node` in our `Graph`.</span>
-    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">fx_model</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
-        <span class="c1"># The FX IR contains several types of nodes, which generally represent</span>
-        <span class="c1"># call sites to modules, functions, or methods. The type of node is</span>
-        <span class="c1"># determined by `Node.op`.</span>
-        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">op</span> <span class="o">!=</span> <span class="s1">'call_module'</span><span class="p">:</span> <span class="c1"># If our current node isn't calling a Module then we can ignore it.</span>
-            <span class="k">continue</span>
-        <span class="c1"># For call sites, `Node.target` represents the module/function/method</span>
-        <span class="c1"># that's being called. Here, we check `Node.target` to see if it's a</span>
-        <span class="c1"># batch norm module, and then check `Node.args[0].target` to see if the</span>
-        <span class="c1"># input `Node` is a convolution.</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">modules</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">target</span><span class="p">])</span> <span class="ow">is</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html#torch.nn.BatchNorm2d" title="torch.nn.BatchNorm2d"><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span></a> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">modules</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">target</span><span class="p">])</span> <span class="ow">is</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="torch.nn.Conv2d"><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span></a><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">users</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># Output of conv is used by other nodes</span>
-                <span class="k">continue</span>
-            <span class="n">conv</span> <span class="o">=</span> <span class="n">modules</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">target</span><span class="p">]</span>
-            <span class="n">bn</span> <span class="o">=</span> <span class="n">modules</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">target</span><span class="p">]</span>
-            <span class="n">fused_conv</span> <span class="o">=</span> <span class="n">fuse_conv_bn_eval</span><span class="p">(</span><span class="n">conv</span><span class="p">,</span> <span class="n">bn</span><span class="p">)</span>
-            <span class="n">replace_node_module</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">modules</span><span class="p">,</span> <span class="n">fused_conv</span><span class="p">)</span>
-            <span class="c1"># As we've folded the batch nor into the conv, we need to replace all uses</span>
-            <span class="c1"># of the batch norm with the conv.</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">replace_all_uses_with</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="c1"># Now that all uses of the batch norm have been replaced, we can</span>
-            <span class="c1"># safely remove the batch norm.</span>
-            <span class="n">fx_model</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">erase_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-    <span class="n">fx_model</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">lint</span><span class="p">()</span>
-    <span class="c1"># After we've modified our graph, we need to recompile our graph in order</span>
-    <span class="c1"># to keep the generated code in sync.</span>
-    <span class="n">fx_model</span><span class="o">.</span><span class="n">recompile</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">fx_model</span>
+<span class="c1"># Create a pattern matcher pass and register our pattern</span>
+<span class="n">patterns</span> <span class="o">=</span> <span class="n">PatternMatcherPass</span><span class="p">()</span>
+
+<span class="n">register_replacement</span><span class="p">(</span>
+    <span class="n">conv_bn_pattern</span><span class="p">,</span>
+    <span class="n">conv_bn_replacement</span><span class="p">,</span>
+    <span class="n">example_inputs</span><span class="p">,</span>
+    <span class="n">pm</span><span class="o">.</span><span class="n">fwd_only</span><span class="p">,</span>
+    <span class="n">patterns</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Create a custom pass function that applies our patterns</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">conv_bn_fusion_pass</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">patterns</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+
+<span class="c1"># Set our custom pass in the config</span>
+<span class="n">config</span><span class="o">.</span><span class="n">post_grad_custom_post_pass</span> <span class="o">=</span> <span class="n">conv_bn_fusion_pass</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>We make some simplifications here for demonstration purposes, such as only
-matching 2D convolutions. View
-<a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/torch/fx/experimental/fuser.py">https://github.com/pytorch/pytorch/blob/master/torch/fx/experimental/fuser.py</a>
-for a more usable pass.</p>
+matching 2D convolutions. The pattern matcher in torch.compile
+can handle more complex patterns.</p>
 </div>
 </div>
 <div class="section" id="testing-out-our-fusion-pass">
@@ -729,10 +747,43 @@ for a more usable pass.</p>
 <p>We can now run this fusion pass on our initial toy model and verify that our
 results are identical. In addition, we can print out the code for our fused
 model and verify that there are no more batch norms.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">fused_model</span> <span class="o">=</span> <span class="n">fuse</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">fused_model</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
-<span class="n">inp</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-<a class="sphx-glr-backref-module-torch-testing sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/testing.html#torch.testing.assert_allclose" title="torch.testing.assert_allclose"><span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span></a><span class="p">(</span><span class="n">fused_model</span><span class="p">(</span><span class="n">inp</span><span class="p">),</span> <span class="n">model</span><span class="p">(</span><span class="n">inp</span><span class="p">))</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch._dynamo.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">counters</span>
+
+<span class="c1"># Clear the counters before compilation</span>
+<span class="n">counters</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+<span class="c1"># Ensure pattern matcher is enabled</span>
+<span class="n">config</span><span class="o">.</span><span class="n">pattern_matcher</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="n">fused_model</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">"inductor"</span><span class="p">)</span>
+<span class="n">inp</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+<span class="c1"># Run the model to trigger compilation and pattern matching</span>
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">fused_model</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+    <a class="sphx-glr-backref-module-torch-testing sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/testing.html#torch.testing.assert_close" title="torch.testing.assert_close"><span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span></a><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+
+<span class="c1"># Check how many patterns were matched</span>
+<span class="k">assert</span> <span class="n">counters</span><span class="p">[</span><span class="s1">'inductor'</span><span class="p">][</span><span class="s1">'pattern_matcher_count'</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">"Expected 3 conv-bn patterns to be matched"</span>
+
+<span class="c1"># Create a model with different shapes than our example_inputs</span>
+<span class="n">test_model_diff_shape</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential" title="torch.nn.Sequential"><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span></a><span class="p">(</span>
+    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="torch.nn.Conv2d"><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span></a><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html#torch.nn.BatchNorm2d" title="torch.nn.BatchNorm2d"><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span></a><span class="p">(</span><span class="mi">16</span><span class="p">),</span>
+    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.ReLU.html#torch.nn.ReLU" title="torch.nn.ReLU"><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span></a><span class="p">(),</span>
+    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="torch.nn.Conv2d"><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span></a><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
+    <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html#torch.nn.BatchNorm2d" title="torch.nn.BatchNorm2d"><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span></a><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
+<span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="n">counters</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+<span class="n">compiled_diff_shape</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">test_model_diff_shape</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">"inductor"</span><span class="p">)</span>
+<span class="n">test_input_diff_shape</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
+    <span class="n">compiled_diff_shape</span><span class="p">(</span><span class="n">test_input_diff_shape</span><span class="p">)</span>
+
+<span class="c1"># Check how many patterns were matched</span>
+<span class="k">assert</span> <span class="n">counters</span><span class="p">[</span><span class="s1">'inductor'</span><span class="p">][</span><span class="s1">'pattern_matcher_count'</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"Expected 2 conv-bn patterns to be matched"</span>
 </pre></div>
 </div>
 </div>
@@ -743,55 +794,52 @@ this pass improves inference performance.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torchvision.models</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">models</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
-<span class="n">rn18</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchvision-models sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.resnet18" title="torchvision.models.resnet18"><span class="n">models</span><span class="o">.</span><span class="n">resnet18</span></a><span class="p">()</span>
+<span class="n">rn18</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torchvision-models sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.resnet18" title="torchvision.models.resnet18"><span class="n">models</span><span class="o">.</span><span class="n">resnet18</span></a><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 <span class="n">rn18</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
-<span class="n">inp</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
+<span class="n">inp</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 <span class="n">output</span> <span class="o">=</span> <span class="n">rn18</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">benchmark</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">iters</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
-        <span class="n">model</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
-    <span class="n">begin</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
-        <span class="n">model</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">begin</span><span class="p">)</span>
+    <span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+            <span class="n">model</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+        <span class="n">begin</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
+            <span class="n">model</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">begin</span><span class="p">)</span>
 
-<span class="n">fused_rn18</span> <span class="o">=</span> <span class="n">fuse</span><span class="p">(</span><span class="n">rn18</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Unfused time: "</span><span class="p">,</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">rn18</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Fused time: "</span><span class="p">,</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">fused_rn18</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>As we previously saw, the output of our FX transformation is
-(“torchscriptable”) PyTorch code, we can easily <code class="docutils literal notranslate"><span class="pre">jit.script</span></code> the output to try
-and increase our performance even more. In this way, our FX model
-transformation composes with TorchScript with no issues.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">jit_rn18</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-jit sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.jit.script.html#torch.jit.script" title="torch.jit.script"><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span></a><span class="p">(</span><span class="n">fused_rn18</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"jit time: "</span><span class="p">,</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">jit_rn18</span><span class="p">))</span>
+<span class="c1"># Benchmark original model</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Original model time: "</span><span class="p">,</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">rn18</span><span class="p">))</span>
+
+<span class="c1"># Compile with our custom pattern</span>
+<span class="n">compiled_with_pattern_matching</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">rn18</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">"inductor"</span><span class="p">)</span>
+
+<span class="c1"># Benchmark compiled model</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">torch.compile (with conv-bn pattern matching and other fusions): "</span><span class="p">,</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">compiled_with_pattern_matching</span><span class="p">))</span>
 
 
 <span class="c1">############</span>
 <span class="c1"># Conclusion</span>
 <span class="c1"># ----------</span>
-<span class="c1"># As we can see, using FX we can easily write static graph transformations on</span>
-<span class="c1"># PyTorch code.</span>
+<span class="c1"># As we can see, torch.compile provides a powerful way to implement</span>
+<span class="c1"># graph transformations and optimizations through pattern matching.</span>
+<span class="c1"># By registering custom patterns, we can extend torch.compile's</span>
+<span class="c1"># optimization capabilities to handle domain-specific transformations.</span>
 <span class="c1">#</span>
-<span class="c1"># Since FX is still in beta, we would be happy to hear any</span>
-<span class="c1"># feedback you have about using it. Please feel free to use the</span>
-<span class="c1"># PyTorch Forums (https://discuss.pytorch.org/) and the issue tracker</span>
-<span class="c1"># (https://github.com/pytorch/pytorch/issues) to provide any feedback</span>
-<span class="c1"># you might have.</span>
+<span class="c1"># The conv-bn fusion demonstrated here is just one example of what's</span>
+<span class="c1"># possible with torch.compile's pattern matching system.</span>
 </pre></div>
 </div>
-<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-fx-conv-bn-fuser-py">
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-torch-compile-conv-bn-fuser-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
-<p><a class="reference download internal" download="" href="../_downloads/a22e5922e71fe39ad848a64968a5570e/fx_conv_bn_fuser.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">fx_conv_bn_fuser.ipynb</span></code></a></p>
+<p><a class="reference download internal" download="" href="../_downloads/0f07da1cd37d6cff0aa8a34f53cf282d/torch_compile_conv_bn_fuser.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">torch_compile_conv_bn_fuser.ipynb</span></code></a></p>
 </div>
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
-<p><a class="reference download internal" download="" href="../_downloads/a8a58591f09624693bd748be066141fd/fx_conv_bn_fuser.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">fx_conv_bn_fuser.py</span></code></a></p>
+<p><a class="reference download internal" download="" href="../_downloads/ca219776ab5f53cd5d489866f364e11b/torch_compile_conv_bn_fuser.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">torch_compile_conv_bn_fuser.py</span></code></a></p>
 </div>
 <div class="sphx-glr-download sphx-glr-download-zip docutils container">
-<p><a class="reference download internal" download="" href="../_downloads/3ccba9140ee6b66c01d01b2fca05ab3b/fx_conv_bn_fuser.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">fx_conv_bn_fuser.zip</span></code></a></p>
+<p><a class="reference download internal" download="" href="../_downloads/a90154adcde8725e10cc04b1de415a58/torch_compile_conv_bn_fuser.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">torch_compile_conv_bn_fuser.zip</span></code></a></p>
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
@@ -801,8 +849,8 @@ transformation composes with TorchScript with no issues.</p>
 </div>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a accesskey="n" class="btn btn-neutral float-right" href="fx_profiling_tutorial.html" rel="next" title="(beta) Building a Simple CPU Performance Profiler with FX">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
-<a accesskey="p" class="btn btn-neutral" href="../beginner/hta_trace_diff_tutorial.html" rel="prev" title="Trace Diff using Holistic Trace Analysis"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
+<a accesskey="n" class="btn btn-neutral float-right" href="compiled_autograd_tutorial.html" rel="next" title="Compiled Autograd: Capturing a larger backward graph for torch.compile">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="p" class="btn btn-neutral" href="torch_compile_tutorial.html" rel="prev" title="Introduction to torch.compile"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
 </div>
 <hr class="rating-hr hr-top"/>
 <div class="rating-container">
@@ -839,10 +887,10 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">(beta) Building a Convolution/Batch Norm fuser in FX</a><ul>
+<li><a class="reference internal" href="#">Building a Convolution/Batch Norm fuser with torch.compile</a><ul>
 <li><a class="reference internal" href="#fusing-convolution-with-batch-norm">Fusing Convolution with Batch Norm</a></li>
 <li><a class="reference internal" href="#id1">Fusing Convolution with Batch Norm</a></li>
-<li><a class="reference internal" href="#fx-fusion-pass">FX Fusion Pass</a></li>
+<li><a class="reference internal" href="#pattern-matching-with-torch-compile">Pattern Matching with torch.compile</a></li>
 <li><a class="reference internal" href="#testing-out-our-fusion-pass">Testing out our Fusion Pass</a></li>
 <li><a class="reference internal" href="#benchmarking-our-fusion-on-resnet18">Benchmarking our Fusion on ResNet18</a></li>
 </ul>
@@ -1056,8 +1104,8 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <div class="cookie-banner-wrapper">
 <div class="container">
 <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
-<img class="close-button" src="../_static/images/pytorch-x.svg"/>
-</div>
+<img class="close-button" src="../_static/images/pytorch-x.svg">
+</img></div>
 </div>
 <!-- End Footer -->
 <!-- Begin Mobile Menu -->
