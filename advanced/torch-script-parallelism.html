@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Dynamic Parallelism in TorchScript — PyTorch Tutorials 2.7.0+cu126 documentation</title>
+<title>&lt;no title&gt; — PyTorch Tutorials 2.7.0+cu126 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
@@ -390,8 +390,6 @@
 <p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/onnx/intro_onnx.html">Introduction to ONNX</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cpp_export.html">Loading a TorchScript Model in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/realtime_rpi.html">Real Time Inference on Raspberry Pi 4 (30 fps!)</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Profiling PyTorch</span></p>
@@ -405,14 +403,13 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Frontend APIs</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/memory_format_tutorial.html">Channels Last Memory Format in PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/forward_ad_usage.html">Forward-mode Automatic Differentiation (Beta)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/jacobians_hessians.html">Jacobians, Hessians, hvp, vhp, and more: composing function transforms</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ensembling.html">Model ensembling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/per_sample_grads.html">Per-sample-gradients</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_autograd.html">Autograd in C++ Frontend</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Extending PyTorch</span></p>
@@ -423,8 +420,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/custom_function_double_backward_tutorial.html">Double Backward with Custom Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/custom_function_conv_bn_tutorial.html">Fusing Convolution and Batch Norm using Custom Function</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
-<li class="toctree-l1"><a class="reference internal" href="torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dispatcher.html">Registering a Dispatched Operator in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extend_dispatcher.html">Extending dispatcher for a new backend in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="privateuseone.html">Facilitating New Backend Integration by PrivateUse1</a></li>
@@ -494,7 +489,7 @@
           
         </a> &gt;
       </li>
-<li>Dynamic Parallelism in TorchScript</li>
+<li>&lt;no title&gt;</li>
 <li class="pytorch-breadcrumbs-aside">
 <a href="../_sources/advanced/torch-script-parallelism.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
 </li>
@@ -510,10 +505,10 @@
 <div class="pytorch-call-to-action-links">
 <div id="tutorial-type">advanced/torch-script-parallelism</div>
 <div id="google-colab-link">
-<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg">
 <div class="call-to-action-desktop-view">Run in Google Colab</div>
 <div class="call-to-action-mobile-view">Colab</div>
-</div>
+</img></div>
 <div id="download-notebook-link">
 <img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
 <div class="call-to-action-desktop-view">Download Notebook</div>
@@ -531,260 +526,10 @@
 <div class="rst-content">
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
-<div class="section" id="dynamic-parallelism-in-torchscript">
-<h1>Dynamic Parallelism in TorchScript<a class="headerlink" href="#dynamic-parallelism-in-torchscript" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Jul 28, 2020 | Last Updated: Dec 02, 2024 | Last Verified: Nov 05, 2024</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>TorchScript is no longer in active development.</p>
-</div>
-<p>In this tutorial, we introduce the syntax for doing <em>dynamic inter-op parallelism</em>
-in TorchScript. This parallelism has the following properties:</p>
-<ul class="simple">
-<li><p>dynamic - The number of parallel tasks created and their workload can depend on the control flow of the program.</p></li>
-<li><p>inter-op - The parallelism is concerned with running TorchScript program fragments in parallel. This is distinct from <em>intra-op parallelism</em>, which is concerned with splitting up individual operators and running subsets of the operator’s work in parallel.</p></li>
-</ul>
-<div class="section" id="basic-syntax">
-<h2>Basic Syntax<a class="headerlink" href="#basic-syntax" title="Permalink to this heading">¶</a></h2>
-<p>The two important APIs for dynamic parallelism are:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">torch.jit.fork(fn</span> <span class="pre">:</span> <span class="pre">Callable[...,</span> <span class="pre">T],</span> <span class="pre">*args,</span> <span class="pre">**kwargs)</span> <span class="pre">-&gt;</span> <span class="pre">torch.jit.Future[T]</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">torch.jit.wait(fut</span> <span class="pre">:</span> <span class="pre">torch.jit.Future[T])</span> <span class="pre">-&gt;</span> <span class="pre">T</span></code></p></li>
-</ul>
-<p>A good way to demonstrate how these work is by way of an example:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">neg</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-<span class="nd">@torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">example</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="c1"># Call `foo` using parallelism:</span>
-    <span class="c1"># First, we "fork" off a task. This task will run `foo` with argument `x`</span>
-    <span class="n">future</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">fork</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-
-    <span class="c1"># Call `foo` normally</span>
-    <span class="n">x_normal</span> <span class="o">=</span> <span class="n">foo</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-    <span class="c1"># Second, we "wait" on the task. Since the task may be running in</span>
-    <span class="c1"># parallel, we have to "wait" for its result to become available.</span>
-    <span class="c1"># Notice that by having lines of code between the "fork()" and "wait()"</span>
-    <span class="c1"># call for a given Future, we can overlap computations so that they</span>
-    <span class="c1"># run in parallel.</span>
-    <span class="n">x_parallel</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">future</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">x_normal</span><span class="p">,</span> <span class="n">x_parallel</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">example</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span> <span class="c1"># (-1., -1.)</span>
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">fork()</span></code> takes the callable <code class="docutils literal notranslate"><span class="pre">fn</span></code> and arguments to that callable <code class="docutils literal notranslate"><span class="pre">args</span></code>
-and <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> and creates an asynchronous task for the execution of <code class="docutils literal notranslate"><span class="pre">fn</span></code>.
-<code class="docutils literal notranslate"><span class="pre">fn</span></code> can be a function, method, or Module instance. <code class="docutils literal notranslate"><span class="pre">fork()</span></code> returns a
-reference to the value of the result of this execution, called a <code class="docutils literal notranslate"><span class="pre">Future</span></code>.
-Because <code class="docutils literal notranslate"><span class="pre">fork</span></code> returns immediately after creating the async task, <code class="docutils literal notranslate"><span class="pre">fn</span></code> may
-not have been executed by the time the line of code after the <code class="docutils literal notranslate"><span class="pre">fork()</span></code> call
-is executed. Thus, <code class="docutils literal notranslate"><span class="pre">wait()</span></code> is used to wait for the async task to complete
-and return the value.</p>
-<p>These constructs can be used to overlap the execution of statements within a
-function (shown in the worked example section) or be composed with other language
-constructs like loops:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">neg</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-<span class="nd">@torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">example</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">futures</span> <span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">Future</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
-        <span class="n">futures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">fork</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
-
-    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">futures</span><span class="p">:</span>
-        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">future</span><span class="p">))</span>
-
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">results</span><span class="p">))</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">example</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">([])))</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>When we initialized an empty list of Futures, we needed to add an explicit
-type annotation to <code class="docutils literal notranslate"><span class="pre">futures</span></code>. In TorchScript, empty containers default
-to assuming they contain Tensor values, so we annotate the list constructor
-# as being of type <code class="docutils literal notranslate"><span class="pre">List[torch.jit.Future[torch.Tensor]]</span></code></p>
-</div>
-<p>This example uses <code class="docutils literal notranslate"><span class="pre">fork()</span></code> to launch 100 instances of the function <code class="docutils literal notranslate"><span class="pre">foo</span></code>,
-waits on the 100 tasks to complete, then sums the results, returning <code class="docutils literal notranslate"><span class="pre">-100.0</span></code>.</p>
-</div>
-<div class="section" id="applied-example-ensemble-of-bidirectional-lstms">
-<h2>Applied Example: Ensemble of Bidirectional LSTMs<a class="headerlink" href="#applied-example-ensemble-of-bidirectional-lstms" title="Permalink to this heading">¶</a></h2>
-<p>Let’s try to apply parallelism to a more realistic example and see what sort
-of performance we can get out of it. First, let’s define the baseline model: an
-ensemble of bidirectional LSTM layers.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span><span class="o">,</span><span class="w"> </span><span class="nn">time</span>
-
-<span class="c1"># In RNN parlance, the dimensions we care about are:</span>
-<span class="c1"># # of time-steps (T)</span>
-<span class="c1"># Batch size (B)</span>
-<span class="c1"># Hidden size/number of "channels" (C)</span>
-<span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">1024</span>
-
-<span class="c1"># A module that defines a single "bidirectional LSTM". This is simply two</span>
-<span class="c1"># LSTMs applied to the same sequence, but one in reverse</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">BidirectionalRecurrentLSTM</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cell_f</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">input_size</span><span class="o">=</span><span class="n">C</span><span class="p">,</span> <span class="n">hidden_size</span><span class="o">=</span><span class="n">C</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cell_b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">input_size</span><span class="o">=</span><span class="n">C</span><span class="p">,</span> <span class="n">hidden_size</span><span class="o">=</span><span class="n">C</span><span class="p">)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span> <span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-        <span class="c1"># Forward layer</span>
-        <span class="n">output_f</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell_f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-        <span class="c1"># Backward layer. Flip input in the time dimension (dim 0), apply the</span>
-        <span class="c1"># layer, then flip the outputs in the time dimension</span>
-        <span class="n">x_rev</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">output_b</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell_b</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-        <span class="n">output_b_rev</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">output_b</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">output_f</span><span class="p">,</span> <span class="n">output_b_rev</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-
-
-<span class="c1"># An "ensemble" of `BidirectionalRecurrentLSTM` modules. The modules in the</span>
-<span class="c1"># ensemble are run one-by-one on the same input then their results are</span>
-<span class="c1"># stacked and summed together, returning the combined result.</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">LSTMEnsemble</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_models</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_models</span> <span class="o">=</span> <span class="n">n_models</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">models</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([</span>
-            <span class="n">BidirectionalRecurrentLSTM</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_models</span><span class="p">)])</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span> <span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">:</span>
-            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
-<span class="c1"># For a head-to-head comparison to what we're going to do with fork/wait, let's</span>
-<span class="c1"># instantiate the model and compile it with TorchScript</span>
-<span class="n">ens</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">LSTMEnsemble</span><span class="p">(</span><span class="n">n_models</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
-
-<span class="c1"># Normally you would pull this input out of an embedding table, but for the</span>
-<span class="c1"># purpose of this demo let's just use random data.</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
-
-<span class="c1"># Let's run the model once to warm up things like the memory allocator</span>
-<span class="n">ens</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
-
-<span class="c1"># Let's see how fast it runs!</span>
-<span class="n">s</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">ens</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'Inference took'</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">s</span><span class="p">,</span> <span class="s1">' seconds'</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>On my machine, this network runs in <code class="docutils literal notranslate"><span class="pre">2.05</span></code> seconds. We can do a lot better!</p>
-</div>
-<div class="section" id="parallelizing-forward-and-backward-layers">
-<h2>Parallelizing Forward and Backward Layers<a class="headerlink" href="#parallelizing-forward-and-backward-layers" title="Permalink to this heading">¶</a></h2>
-<p>A very simple thing we can do is parallelize the forward and backward layers
-within <code class="docutils literal notranslate"><span class="pre">BidirectionalRecurrentLSTM</span></code>. For this, the structure of the computation
-is static, so we don’t actually even need any loops. Let’s rewrite the <code class="docutils literal notranslate"><span class="pre">forward</span></code>
-method of <code class="docutils literal notranslate"><span class="pre">BidirectionalRecurrentLSTM</span></code> like so:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span> <span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="c1"># Forward layer - fork() so this can run in parallel to the backward</span>
-    <span class="c1"># layer</span>
-    <span class="n">future_f</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">fork</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_f</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-
-    <span class="c1"># Backward layer. Flip input in the time dimension (dim 0), apply the</span>
-    <span class="c1"># layer, then flip the outputs in the time dimension</span>
-    <span class="n">x_rev</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">output_b</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell_b</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-    <span class="n">output_b_rev</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">output_b</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-
-    <span class="c1"># Retrieve the output from the forward layer. Note this needs to happen</span>
-    <span class="c1"># *after* the stuff we want to parallelize with</span>
-    <span class="n">output_f</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">future_f</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">output_f</span><span class="p">,</span> <span class="n">output_b_rev</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>In this example, <code class="docutils literal notranslate"><span class="pre">forward()</span></code> delegates execution of <code class="docutils literal notranslate"><span class="pre">cell_f</span></code> to another thread,
-while it continues to execute <code class="docutils literal notranslate"><span class="pre">cell_b</span></code>. This causes the execution of both the
-cells to be overlapped with each other.</p>
-<p>Running the script again with this simple modification yields a runtime of
-<code class="docutils literal notranslate"><span class="pre">1.71</span></code> seconds for an improvement of <code class="docutils literal notranslate"><span class="pre">17%</span></code>!</p>
-</div>
-<div class="section" id="aside-visualizing-parallelism">
-<h2>Aside: Visualizing Parallelism<a class="headerlink" href="#aside-visualizing-parallelism" title="Permalink to this heading">¶</a></h2>
-<p>We’re not done optimizing our model but it’s worth introducing the tooling we
-have for visualizing performance. One important tool is the <a class="reference external" href="https://pytorch.org/docs/stable/autograd.html#profiler">PyTorch profiler</a>.</p>
-<p>Let’s use the profiler along with the Chrome trace export functionality to
-visualize the performance of our parallelized model:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">()</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
-    <span class="n">ens</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="n">prof</span><span class="o">.</span><span class="n">export_chrome_trace</span><span class="p">(</span><span class="s1">'parallel.json'</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>This snippet of code will write out a file named <code class="docutils literal notranslate"><span class="pre">parallel.json</span></code>. If you
-navigate Google Chrome to <code class="docutils literal notranslate"><span class="pre">chrome://tracing</span></code>, click the <code class="docutils literal notranslate"><span class="pre">Load</span></code> button, and
-load in that JSON file, you should see a timeline like the following:</p>
-<img alt="https://i.imgur.com/rm5hdG9.png" src="https://i.imgur.com/rm5hdG9.png"/>
-<p>The horizontal axis of the timeline represents time and the vertical axis
-represents threads of execution. As we can see, we are running two <code class="docutils literal notranslate"><span class="pre">lstm</span></code>
-instances at a time. This is the result of our hard work parallelizing the
-bidirectional layers!</p>
-</div>
-<div class="section" id="parallelizing-models-in-the-ensemble">
-<h2>Parallelizing Models in the Ensemble<a class="headerlink" href="#parallelizing-models-in-the-ensemble" title="Permalink to this heading">¶</a></h2>
-<p>You may have noticed that there is a further parallelization opportunity in our
-code: we can also run the models contained in <code class="docutils literal notranslate"><span class="pre">LSTMEnsemble</span></code> in parallel with
-each other. The way to do that is simple enough, this is how we should change
-the <code class="docutils literal notranslate"><span class="pre">forward</span></code> method of <code class="docutils literal notranslate"><span class="pre">LSTMEnsemble</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span> <span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="c1"># Launch tasks for each model</span>
-    <span class="n">futures</span> <span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">Future</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">:</span>
-        <span class="n">futures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">fork</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
-
-    <span class="c1"># Collect the results from the launched tasks</span>
-    <span class="n">results</span> <span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">futures</span><span class="p">:</span>
-        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">future</span><span class="p">))</span>
-
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Or, if you value brevity, we can use list comprehensions:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span> <span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">fork</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">]</span>
-    <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">fut</span><span class="p">)</span> <span class="k">for</span> <span class="n">fut</span> <span class="ow">in</span> <span class="n">futures</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Like described in the intro, we’ve used loops to fork off tasks for each of the
-models in our ensemble. We’ve then used another loop to wait for all of the
-tasks to be completed. This provides even more overlap of computation.</p>
-<p>With this small update, the script runs in <code class="docutils literal notranslate"><span class="pre">1.4</span></code> seconds, for a total speedup
-of <code class="docutils literal notranslate"><span class="pre">32%</span></code>! Pretty good for two lines of code.</p>
-<p>We can also use the Chrome tracer again to see where’s going on:</p>
-<img alt="https://i.imgur.com/kA0gyQm.png" src="https://i.imgur.com/kA0gyQm.png"/>
-<p>We can now see that all <code class="docutils literal notranslate"><span class="pre">LSTM</span></code> instances are being run fully in parallel.</p>
-</div>
-<div class="section" id="conclusion">
-<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
-<p>In this tutorial, we learned about <code class="docutils literal notranslate"><span class="pre">fork()</span></code> and <code class="docutils literal notranslate"><span class="pre">wait()</span></code>, the basic APIs
-for doing dynamic, inter-op parallelism in TorchScript. We saw a few typical
-usage patterns for using these functions to parallelize the execution of
-functions, methods, or <code class="docutils literal notranslate"><span class="pre">Modules</span></code> in TorchScript code. Finally, we worked through
-an example of optimizing a model using this technique and explored the performance
-measurement and visualization tooling available in PyTorch.</p>
-</div>
+<p>TorchScript is deprecated, please use
+<a class="reference external" href="https://docs.pytorch.org/tutorials/intermediate/torch_export_tutorial.html">torch.export</a> instead.</p>
 </div>
 </article>
 </div>
@@ -804,7 +549,7 @@ measurement and visualization tooling available in PyTorch.</p>
 <i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
 </div>
 </div>
-<hr class="rating-hr hr-bottom"/>
+<hr class="rating-hr hr-bottom">
 <div role="contentinfo">
 <p>
         © Copyright 2024, PyTorch.
@@ -814,7 +559,7 @@ measurement and visualization tooling available in PyTorch.</p>
 <div>
         Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
       </div>
-</footer>
+</hr></footer>
 </div>
 <script>
 if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.indexOf("/prototype/prototype_index")< 1))
@@ -827,16 +572,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-content-right" id="pytorch-content-right">
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
-<ul>
-<li><a class="reference internal" href="#">Dynamic Parallelism in TorchScript</a><ul>
-<li><a class="reference internal" href="#basic-syntax">Basic Syntax</a></li>
-<li><a class="reference internal" href="#applied-example-ensemble-of-bidirectional-lstms">Applied Example: Ensemble of Bidirectional LSTMs</a></li>
-<li><a class="reference internal" href="#parallelizing-forward-and-backward-layers">Parallelizing Forward and Backward Layers</a></li>
-<li><a class="reference internal" href="#aside-visualizing-parallelism">Aside: Visualizing Parallelism</a></li>
-<li><a class="reference internal" href="#parallelizing-models-in-the-ensemble">Parallelizing Models in the Ensemble</a></li>
-<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
-</ul>
-</li>
+<ul class="simple">
 </ul>
 </div>
 </div>
@@ -954,12 +690,12 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
-  &amp;noscript=1" width="1"/>
-</noscript>
+  &amp;noscript=1" width="1">
+</img></noscript>
 <script type="text/javascript">
   var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Backends', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Profiling PyTorch', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Edge with ExecuTorch', 'Recommendation Systems', 'Multimodality'];
 </script>
-<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1"/>
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1">
 <!-- Begin Footer -->
 <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
 <div class="container">
@@ -1046,8 +782,8 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <div class="cookie-banner-wrapper">
 <div class="container">
 <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
-<img class="close-button" src="../_static/images/pytorch-x.svg">
-</img></div>
+<img class="close-button" src="../_static/images/pytorch-x.svg"/>
+</div>
 </div>
 <!-- End Footer -->
 <!-- Begin Mobile Menu -->
@@ -1197,5 +933,5 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
       });
     })
   </script>
-</body>
+</img></body>
 </html>

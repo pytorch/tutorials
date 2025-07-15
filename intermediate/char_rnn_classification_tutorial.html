@@ -388,8 +388,6 @@
 <p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/onnx/intro_onnx.html">Introduction to ONNX</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="realtime_rpi.html">Real Time Inference on Raspberry Pi 4 (30 fps!)</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Profiling PyTorch</span></p>
@@ -410,7 +408,6 @@
 <li class="toctree-l1"><a class="reference internal" href="ensembling.html">Model ensembling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="per_sample_grads.html">Per-sample-gradients</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Extending PyTorch</span></p>
@@ -421,8 +418,6 @@
 <li class="toctree-l1"><a class="reference internal" href="custom_function_double_backward_tutorial.html">Double Backward with Custom Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_function_conv_bn_tutorial.html">Fusing Convolution and Batch Norm using Custom Function</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/dispatcher.html">Registering a Dispatched Operator in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/extend_dispatcher.html">Extending dispatcher for a new backend in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/privateuseone.html">Facilitating New Backend Integration by PrivateUse1</a></li>
@@ -745,7 +740,7 @@ to hold our dataset. Each Dataset needs to implement three functions: <code clas
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>loaded 20074 items of data
-example = (tensor([4], device='cuda:0'), tensor([[[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+example = (tensor([15], device='cuda:0'), tensor([[[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
           0., 0., 0., 0., 0., 0., 0.]],
@@ -849,10 +844,10 @@ we use a helper function, <code class="docutils literal notranslate"><span class
 <span class="nb">print</span><span class="p">(</span><span class="n">label_from_output</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a><span class="p">,</span> <span class="n">alldata</span><span class="o">.</span><span class="n">labels_uniq</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-2.8712, -2.9622, -3.0247, -2.8720, -3.0030, -2.8114, -2.9102, -2.8450,
-         -2.9172, -2.8975, -2.8165, -2.7839, -2.9673, -2.8464, -2.9421, -2.9190,
-         -2.7638, -2.9188]], device='cuda:0', grad_fn=&lt;LogSoftmaxBackward0&gt;)
-('German', 16)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-2.9758, -2.8328, -2.7830, -2.8697, -2.9039, -2.9201, -3.0200, -2.9606,
+         -3.0113, -2.8277, -3.0152, -2.7759, -2.7642, -3.0032, -2.8769, -2.8476,
+         -2.8439, -2.8580]], device='cuda:0', grad_fn=&lt;LogSoftmaxBackward0&gt;)
+('Korean', 12)
 </pre></div>
 </div>
 </div>
@@ -924,12 +919,12 @@ example is reduced to speed up the build. You can get better results with differ
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>training on data set with n = 17063
-5 (19%):         average batch loss = 0.8894672539139015
-10 (37%):        average batch loss = 0.6967209944927052
-15 (56%):        average batch loss = 0.5789359906148608
-20 (74%):        average batch loss = 0.4921297017086304
-25 (93%):        average batch loss = 0.43179818143246146
-training took 340.6287040710449s
+5 (19%):         average batch loss = 0.8953779632004786
+10 (37%):        average batch loss = 0.6930570608329194
+15 (56%):        average batch loss = 0.5772040072274801
+20 (74%):        average batch loss = 0.49647736599191616
+25 (93%):        average batch loss = 0.4397504093744908
+training took 335.3562262058258s
 </pre></div>
 </div>
 </div>
@@ -1019,7 +1014,7 @@ English (perhaps because of overlap with other languages).</p>
 </ul>
 </li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (5 minutes 46.765 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (5 minutes 41.637 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-char-rnn-classification-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/13b143c2380f4768d9432d808ad50799/char_rnn_classification_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">char_rnn_classification_tutorial.ipynb</span></code></a></p>

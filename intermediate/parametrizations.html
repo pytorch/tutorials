@@ -390,8 +390,6 @@
 <p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/onnx/intro_onnx.html">Introduction to ONNX</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="realtime_rpi.html">Real Time Inference on Raspberry Pi 4 (30 fps!)</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Profiling PyTorch</span></p>
@@ -412,7 +410,6 @@
 <li class="toctree-l1"><a class="reference internal" href="ensembling.html">Model ensembling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="per_sample_grads.html">Per-sample-gradients</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Extending PyTorch</span></p>
@@ -423,8 +420,6 @@
 <li class="toctree-l1"><a class="reference internal" href="custom_function_double_backward_tutorial.html">Double Backward with Custom Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_function_conv_bn_tutorial.html">Fusing Convolution and Batch Norm using Custom Function</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/dispatcher.html">Registering a Dispatched Operator in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/extend_dispatcher.html">Extending dispatcher for a new backend in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/privateuseone.html">Facilitating New Backend Integration by PrivateUse1</a></li>
@@ -587,9 +582,9 @@ to copy the upper-triangular part of the matrix into its lower-triangular part</
 <span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">A</span></a><span class="p">)</span>                       <span class="c1"># Quick visual check</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[0.5459, 0.3508, 0.9409],
-        [0.3508, 0.9493, 0.5918],
-        [0.9409, 0.5918, 0.3802]])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[0.0690, 0.2680, 0.9435],
+        [0.2680, 0.2662, 0.7366],
+        [0.9435, 0.7366, 0.1120]])
 </pre></div>
 </div>
 <p>We can then use this idea to implement a linear layer with symmetric weights</p>
@@ -653,9 +648,9 @@ symmetric layer by doing</p>
 <span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">A</span></a><span class="p">)</span>                       <span class="c1"># Quick visual check</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[ 0.5455, -0.0732,  0.1200],
-        [-0.0732, -0.4417, -0.1738],
-        [ 0.1200, -0.1738,  0.4400]], grad_fn=&lt;AddBackward0&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[ 0.1289, -0.4947,  0.4320],
+        [-0.4947, -0.4759,  0.2353],
+        [ 0.4320,  0.2353,  0.5772]], grad_fn=&lt;AddBackward0&gt;)
 </pre></div>
 </div>
 <p>We can do the same thing with any other layer. For example, we can create a CNN with
@@ -675,12 +670,12 @@ reversed into the lower-triangular part</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">cnn</span><span class="o">.</span><span class="n">weight</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[ 0.0000,  0.0702, -0.0584],
-        [-0.0702,  0.0000, -0.1036],
-        [ 0.0584,  0.1036,  0.0000]], grad_fn=&lt;SelectBackward0&gt;)
-tensor([[ 0.0000, -0.1178,  0.0647],
-        [ 0.1178,  0.0000, -0.1112],
-        [-0.0647,  0.1112,  0.0000]], grad_fn=&lt;SelectBackward0&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[ 0.0000, -0.1389, -0.0086],
+        [ 0.1389,  0.0000, -0.1170],
+        [ 0.0086,  0.1170,  0.0000]], grad_fn=&lt;SelectBackward0&gt;)
+tensor([[ 0.0000,  0.0607, -0.0687],
+        [-0.0607,  0.0000,  0.0199],
+        [ 0.0687, -0.0199,  0.0000]], grad_fn=&lt;SelectBackward0&gt;)
 </pre></div>
 </div>
 </div>
@@ -751,10 +746,10 @@ parameter <code class="docutils literal notranslate"><span class="pre">weight</s
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>{'bias': Parameter containing:
-tensor([ 0.3795, -0.3876,  0.5508], requires_grad=True), 'parametrizations.weight.original': Parameter containing:
-tensor([[-0.5312, -0.5294, -0.4647],
-        [ 0.4621,  0.2021,  0.3426],
-        [-0.0401,  0.5291,  0.1026]], requires_grad=True)}
+tensor([-0.5259, -0.3635,  0.1553], requires_grad=True), 'parametrizations.weight.original': Parameter containing:
+tensor([[-0.2025,  0.4889, -0.0708],
+        [ 0.3787,  0.4590, -0.4608],
+        [-0.2222, -0.4864,  0.1201]], requires_grad=True)}
 </pre></div>
 </div>
 <p>It now sits under <code class="docutils literal notranslate"><span class="pre">layer.parametrizations.weight.original</span></code></p>
@@ -762,9 +757,9 @@ tensor([[-0.5312, -0.5294, -0.4647],
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Parameter containing:
-tensor([[-0.5312, -0.5294, -0.4647],
-        [ 0.4621,  0.2021,  0.3426],
-        [-0.0401,  0.5291,  0.1026]], requires_grad=True)
+tensor([[-0.2025,  0.4889, -0.0708],
+        [ 0.3787,  0.4590, -0.4608],
+        [-0.2222, -0.4864,  0.1201]], requires_grad=True)
 </pre></div>
 </div>
 <p>Besides these three small differences, the parametrization is doing exactly the same
@@ -840,7 +835,7 @@ orthogonal weights</p>
 <span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.dist.html#torch.dist" title="torch.dist"><span class="n">torch</span><span class="o">.</span><span class="n">dist</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span><span class="o">.</span><span class="n">T</span></a> <span class="o">@</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.eye.html#torch.eye" title="torch.eye"><span class="n">torch</span><span class="o">.</span><span class="n">eye</span></a><span class="p">(</span><span class="mi">3</span><span class="p">)))</span>  <span class="c1"># X is orthogonal</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(8.4294e-08, grad_fn=&lt;DistBackward0&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(1.5233e-07, grad_fn=&lt;DistBackward0&gt;)
 </pre></div>
 </div>
 <p>This may also be used to prune a parametrized module, or to reuse parametrizations. For example,
@@ -865,8 +860,8 @@ Using these two facts, we may reuse the parametrizations before to our advantage
 <span class="nb">print</span><span class="p">((</span><a class="sphx-glr-backref-module-torch-linalg sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.linalg.eigvalsh.html#torch.linalg.eigvalsh" title="torch.linalg.eigvalsh"><span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvalsh</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span></a><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>  <span class="c1"># X is positive definite</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(2.5288e-07, grad_fn=&lt;DistBackward0&gt;)
-tensor(4.7122e-08, grad_fn=&lt;DistBackward0&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(6.0781e-06, grad_fn=&lt;DistBackward0&gt;)
+tensor(2.1073e-08, grad_fn=&lt;DistBackward0&gt;)
 tensor(True)
 </pre></div>
 </div>
@@ -933,7 +928,7 @@ To see this, let’s upgrade the Cayley parametrization to also support being in
 <span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.dist.html#torch.dist" title="torch.dist"><span class="n">torch</span><span class="o">.</span><span class="n">dist</span></a><span class="p">(</span><span class="n">layer_orthogonal</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">X</span></a><span class="p">))</span>  <span class="c1"># layer_orthogonal.weight == X</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.9823, grad_fn=&lt;DistBackward0&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.4773, grad_fn=&lt;DistBackward0&gt;)
 </pre></div>
 </div>
 <p>This initialization step can be written more succinctly as</p>
@@ -973,16 +968,16 @@ that tensor will be, in fact, pruned</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Initialization matrix:
-tensor([[0.1144, 0.3738, 0.7935],
-        [0.9745, 0.0287, 0.2860],
-        [0.6121, 0.1434, 0.9324],
-        [0.0543, 0.2594, 0.4006]])
+tensor([[0.0709, 0.1623, 0.1045],
+        [0.7281, 0.6316, 0.9904],
+        [0.9002, 0.2952, 0.1826],
+        [0.9022, 0.1823, 0.1823]])
 
 Initialized weight:
-tensor([[0.1144, 0.3738, 0.7935],
-        [0.9745, 0.0287, 0.0000],
-        [0.6121, 0.1434, 0.9324],
-        [0.0543, 0.2594, 0.4006]], grad_fn=&lt;MulBackward0&gt;)
+tensor([[0.0709, 0.1623, 0.0000],
+        [0.7281, 0.6316, 0.0000],
+        [0.9002, 0.2952, 0.0000],
+        [0.9022, 0.1823, 0.1823]], grad_fn=&lt;MulBackward0&gt;)
 </pre></div>
 </div>
 </div>
@@ -1007,9 +1002,9 @@ by using <code class="docutils literal notranslate"><span class="pre">parametriz
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before:
 Linear(in_features=3, out_features=3, bias=True)
 Parameter containing:
-tensor([[ 0.1182, -0.4338,  0.0006],
-        [-0.0348,  0.2818, -0.4437],
-        [ 0.2314, -0.0389,  0.1352]], requires_grad=True)
+tensor([[-0.4685, -0.5749,  0.3806],
+        [ 0.3807, -0.4479,  0.2961],
+        [ 0.2667, -0.1530, -0.2922]], requires_grad=True)
 
 Parametrized:
 ParametrizedLinear(
@@ -1020,16 +1015,16 @@ ParametrizedLinear(
     )
   )
 )
-tensor([[ 0.0000, -0.4338,  0.0006],
-        [ 0.4338,  0.0000, -0.4437],
-        [-0.0006,  0.4437,  0.0000]], grad_fn=&lt;SubBackward0&gt;)
+tensor([[ 0.0000, -0.5749,  0.3806],
+        [ 0.5749,  0.0000,  0.2961],
+        [-0.3806, -0.2961,  0.0000]], grad_fn=&lt;SubBackward0&gt;)
 
 After. Weight has skew-symmetric values but it is unconstrained:
 Linear(in_features=3, out_features=3, bias=True)
 Parameter containing:
-tensor([[ 0.0000, -0.4338,  0.0006],
-        [ 0.4338,  0.0000, -0.4437],
-        [-0.0006,  0.4437,  0.0000]], requires_grad=True)
+tensor([[ 0.0000, -0.5749,  0.3806],
+        [ 0.5749,  0.0000,  0.2961],
+        [-0.3806, -0.2961,  0.0000]], requires_grad=True)
 </pre></div>
 </div>
 <p>When removing a parametrization, we may choose to leave the original parameter (i.e. that in
@@ -1052,9 +1047,9 @@ the flag <code class="docutils literal notranslate"><span class="pre">leave_para
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before:
 Linear(in_features=3, out_features=3, bias=True)
 Parameter containing:
-tensor([[ 0.3515, -0.4923, -0.1533],
-        [ 0.1431, -0.4931, -0.0390],
-        [ 0.1115, -0.4082,  0.3114]], requires_grad=True)
+tensor([[ 0.3796, -0.4188,  0.3090],
+        [ 0.2020, -0.2685,  0.3277],
+        [-0.4448, -0.3656, -0.0932]], requires_grad=True)
 
 Parametrized:
 ParametrizedLinear(
@@ -1065,15 +1060,15 @@ ParametrizedLinear(
     )
   )
 )
-tensor([[ 0.0000, -0.4923, -0.1533],
-        [ 0.4923,  0.0000, -0.0390],
-        [ 0.1533,  0.0390,  0.0000]], grad_fn=&lt;SubBackward0&gt;)
+tensor([[ 0.0000, -0.4188,  0.3090],
+        [ 0.4188,  0.0000,  0.3277],
+        [-0.3090, -0.3277,  0.0000]], grad_fn=&lt;SubBackward0&gt;)
 
 After. Same as Before:
 Linear(in_features=3, out_features=3, bias=True)
 Parameter containing:
-tensor([[ 0.0000, -0.4923, -0.1533],
-        [ 0.0000,  0.0000, -0.0390],
+tensor([[ 0.0000, -0.4188,  0.3090],
+        [ 0.0000,  0.0000,  0.3277],
         [ 0.0000,  0.0000,  0.0000]], requires_grad=True)
 </pre></div>
 </div>

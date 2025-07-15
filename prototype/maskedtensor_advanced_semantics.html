@@ -388,8 +388,6 @@
 <p class="caption" role="heading"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/onnx/intro_onnx.html">Introduction to ONNX</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/realtime_rpi.html">Real Time Inference on Raspberry Pi 4 (30 fps!)</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Profiling PyTorch</span></p>
@@ -410,7 +408,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ensembling.html">Model ensembling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/per_sample_grads.html">Per-sample-gradients</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Extending PyTorch</span></p>
@@ -421,8 +418,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/custom_function_double_backward_tutorial.html">Double Backward with Custom Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/custom_function_conv_bn_tutorial.html">Fusing Convolution and Batch Norm using Custom Function</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/dispatcher.html">Registering a Dispatched Operator in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/extend_dispatcher.html">Extending dispatcher for a new backend in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/privateuseone.html">Facilitating New Backend Integration by PrivateUse1</a></li>
@@ -654,15 +649,15 @@ to motivate our strict requirements around matching masks from above.</p>
         [ 4.,  5.,  6.,  7.],
         [ 8.,  9., 10., 11.]])
 mask:
- tensor([[ True, False,  True, False],
-        [False,  True, False, False],
-        [False,  True, False, False]])
+ tensor([[False,  True, False,  True],
+        [False, False, False, False],
+        [False,  True,  True,  True]])
 mt:
  MaskedTensor(
   [
-    [  0.0000,       --,   2.0000,       --],
-    [      --,   5.0000,       --,       --],
-    [      --,   9.0000,       --,       --]
+    [      --,   1.0000,       --,   3.0000],
+    [      --,       --,       --,       --],
+    [      --,   9.0000,  10.0000,  11.0000]
   ]
 )
 </pre></div>
@@ -677,23 +672,23 @@ mt:
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>torch.sum:
  MaskedTensor(
-  [  2.0000,   5.0000,   9.0000]
+  [  4.0000,       --,  30.0000]
 )
 torch.mean:
  MaskedTensor(
-  [  1.0000,   5.0000,   9.0000]
+  [  2.0000,       --,  10.0000]
 )
 torch.prod:
  MaskedTensor(
-  [  0.0000,   5.0000,   9.0000]
+  [  3.0000,       --, 990.0000]
 )
 torch.amin:
  MaskedTensor(
-  [  0.0000,   5.0000,   9.0000]
+  [  1.0000,       --,   9.0000]
 )
 torch.amax:
  MaskedTensor(
-  [  2.0000,   5.0000,   9.0000]
+  [  3.0000,       --,  11.0000]
 )
 </pre></div>
 </div>
