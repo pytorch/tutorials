@@ -22,7 +22,7 @@ sudo apt-get install -y pandoc
 #Install PyTorch Nightly for test.
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
 # Install 2.5 to merge all 2.4 PRs - uncomment to install nightly binaries (update the version as needed).
-sudo pip uninstall -y fbgemm-gpu torchrec
+#sudo pip uninstall -y fbgemm-gpu torchrec
 sudo pip uninstall -y torch torchvision torchaudio torchtext torchdata torchrl tensordict
 pip3 install torch==2.8.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu126
 pip3 install torchrl==0.9.1 tensordict==0.9.1
