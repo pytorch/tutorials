@@ -342,7 +342,8 @@ stoch_policy = Seq(
 # will return a new instance of the LSTM (with shared weights) that will
 # assume that the input data is sequential in nature.
 #
-policy = Seq(feature, lstm.set_recurrent_mode(True), mlp, qval)
+lstm = torch.nn.LSTM(input_size, hidden_size, num_layers, default_recurrent_mode=True)
+policy = Seq(feature, lstm, mlp, qval)
 
 ######################################################################
 # Because we still have a couple of uninitialized parameters we should
