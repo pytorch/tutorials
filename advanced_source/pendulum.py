@@ -100,7 +100,7 @@ from tensordict import TensorDict, TensorDictBase
 from tensordict.nn import TensorDictModule
 from torch import nn
 
-from torchrl.data import BoundedTensorSpec, CompositeSpec, UnboundedContinuousTensorSpec
+from torchrl.data import Bounded, Composite, Unbounded
 from torchrl.envs import (
     CatTensors,
     EnvBase,
@@ -403,14 +403,14 @@ def _reset(self, tensordict):
 
 def _make_spec(self, td_params):
     # Under the hood, this will populate self.output_spec["observation"]
-    self.observation_spec = CompositeSpec(
-        th=BoundedTensorSpec(
+    self.observation_spec = Composite(
+        th=Bounded(
             low=-torch.pi,
             high=torch.pi,
             shape=(),
             dtype=torch.float32,
         ),
-        thdot=BoundedTensorSpec(
+        thdot=Bounded(
             low=-td_params["params", "max_speed"],
             high=td_params["params", "max_speed"],
             shape=(),
@@ -426,24 +426,26 @@ def _make_spec(self, td_params):
     self.state_spec = self.observation_spec.clone()
     # action-spec will be automatically wrapped in input_spec when
     # `self.action_spec = spec` will be called supported
-    self.action_spec = BoundedTensorSpec(
+    self.action_spec = Bounded(
         low=-td_params["params", "max_torque"],
         high=td_params["params", "max_torque"],
         shape=(1,),
         dtype=torch.float32,
     )
-    self.reward_spec = UnboundedContinuousTensorSpec(shape=(*td_params.shape, 1))
+    self.reward_spec = Unbounded(shape=(*td_params.shape, 1))
 
 
 def make_composite_from_td(td):
     # custom function to convert a ``tensordict`` in a similar spec structure
     # of unbounded values.
-    composite = CompositeSpec(
+    composite = Composite(
         {
-            key: make_composite_from_td(tensor)
-            if isinstance(tensor, TensorDictBase)
-            else UnboundedContinuousTensorSpec(
-                dtype=tensor.dtype, device=tensor.device, shape=tensor.shape
+            key: (
+                make_composite_from_td(tensor)
+                if isinstance(tensor, TensorDictBase)
+                else Unbounded(
+                    dtype=tensor.dtype, device=tensor.device, shape=tensor.shape
+                )
             )
             for key, tensor in td.items()
         },
@@ -687,7 +689,7 @@ class SinTransform(Transform):
     # is of type ``Composite``
     @_apply_to_composite
     def transform_observation_spec(self, observation_spec):
-        return BoundedTensorSpec(
+        return Bounded(
             low=-1,
             high=1,
             shape=observation_spec.shape,
@@ -711,7 +713,7 @@ class CosTransform(Transform):
     # is of type ``Composite``
     @_apply_to_composite
     def transform_observation_spec(self, observation_spec):
-        return BoundedTensorSpec(
+        return Bounded(
             low=-1,
             high=1,
             shape=observation_spec.shape,
