@@ -79,6 +79,7 @@ loss.backward()  # back propagate the 'average' gradient of this mini-batch
 #   pass to get an individual (per-sample) gradient.
 
 def compute_grad(sample, target):
+    model.zero_grad()
     sample = sample.unsqueeze(0)  # prepend batch dimension for processing
     target = target.unsqueeze(0)
 
