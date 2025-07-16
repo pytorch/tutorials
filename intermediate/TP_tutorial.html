@@ -527,7 +527,7 @@
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="section" id="large-scale-transformer-model-training-with-tensor-parallel-tp">
-<h1>Large Scale Transformer model training with Tensor Parallel (TP)<a class="headerlink" href="#large-scale-transformer-model-training-with-tensor-parallel-tp" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Apr 19, 2024 | Last Updated: Aug 19, 2024 | Last Verified: Nov 05, 2024</p>
+<h1>Large Scale Transformer model training with Tensor Parallel (TP)<a class="headerlink" href="#large-scale-transformer-model-training-with-tensor-parallel-tp" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Apr 19, 2024 | Last Updated: Jul 15, 2025 | Last Verified: Nov 05, 2024</p>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/wanchaol">Wanchao Liang</a>, <a class="reference external" href="https://github.com/tianyu-l">Tianyu Liu</a></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -798,7 +798,7 @@ In practice, we usually apply Tensor Parallel within each host, and apply Fully 
 <p>This 2-D parallelism pattern can be easily expressed via a 2-D DeviceMesh, and we just need pass each “sub” DeviceMesh to each individual parallelism APIs:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.device_mesh</span><span class="w"> </span><span class="kn">import</span> <span class="n">init_device_mesh</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.tensor.parallel</span><span class="w"> </span><span class="kn">import</span> <span class="n">ColwiseParallel</span><span class="p">,</span> <span class="n">RowwiseParallel</span><span class="p">,</span> <span class="n">parallelize_module</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.fsdp</span><span class="w"> </span><span class="kn">import</span> <span class="n">FullyShardedDataParallel</span> <span class="k">as</span> <span class="n">FSDP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.fsdp</span><span class="w"> </span><span class="kn">import</span> <span class="n">fully_shard</span>
 
 <span class="c1"># i.e. 2-D mesh is [dp, tp], training on 64 GPUs that performs 8 way DP and 8 way TP</span>
 <span class="n">mesh_2d</span> <span class="o">=</span> <span class="n">init_device_mesh</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
@@ -812,7 +812,7 @@ In practice, we usually apply Tensor Parallel within each host, and apply Fully 
 <span class="c1"># apply Tensor Parallel intra-host on tp_mesh</span>
 <span class="n">model_tp</span> <span class="o">=</span> <span class="n">parallelize_module</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">tp_mesh</span><span class="p">,</span> <span class="n">tp_plan</span><span class="p">)</span>
 <span class="c1"># apply FSDP inter-host on dp_mesh</span>
-<span class="n">model_2d</span> <span class="o">=</span> <span class="n">FSDP</span><span class="p">(</span><span class="n">model_tp</span><span class="p">,</span> <span class="n">device_mesh</span><span class="o">=</span><span class="n">dp_mesh</span><span class="p">,</span> <span class="n">use_orig_params</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">model_2d</span> <span class="o">=</span> <span class="n">fully_shard</span><span class="p">(</span><span class="n">model_tp</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="n">dp_mesh</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This would allow us to easily apply Tensor Parallel within each host (intra-host) and apply FSDP across hosts (inter-hosts), with <strong>0-code changes</strong> to the Llama model.
