@@ -168,22 +168,16 @@ ft_per_sample_grads = ft_compute_sample_grad(params, buffers, data, targets)
 # we can double check that the results using ``grad`` and ``vmap`` match the
 # results of hand processing each one individually:
 
-for name, ft_per_sample_grad in ft_per_sample_grads.items():
-    # Find the corresponding manually computed gradient.
-    idx = list(model.named_parameters()).index((name, model.get_parameter(name)))
-    per_sample_grad = per_sample_grads[idx]
+# Get the parameter names in the same order as per_sample_grads
+param_names = list(params.keys())
 
-    # Check if shapes match
-    if per_sample_grad.shape != ft_per_sample_grad.shape:
-        print(f"Shape mismatch for {name}: {per_sample_grad.shape} vs {ft_per_sample_grad.shape}")
-        # Reshape if needed (sometimes functional API returns different shape)
-        if per_sample_grad.numel() == ft_per_sample_grad.numel():
-            ft_per_sample_grad = ft_per_sample_grad.view(per_sample_grad.shape)
-
-    # Use a higher tolerance for comparison
-    assert torch.allclose(per_sample_grad, ft_per_sample_grad, atol=2e-2, rtol=2e-2), \
-        f"Mismatch in {name}: max diff {(per_sample_grad - ft_per_sample_grad).abs().max().item()}"
-
+# Compare gradients for each parameter
+for i, name in enumerate(param_names):
+    per_sample_grad = per_sample_grads[i]
+    ft_per_sample_grad = ft_per_sample_grads[name]
+    
+    assert torch.allclose(per_sample_grad, ft_per_sample_grad, atol=3e-3, rtol=1e-5), \
+        f"Gradients don't match for {name}: max diff = {(per_sample_grad - ft_per_sample_grad).abs().max()}"
 
 ######################################################################
 # A quick note: there are limitations around what types of functions can be
