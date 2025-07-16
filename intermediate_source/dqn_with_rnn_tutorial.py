@@ -238,7 +238,6 @@ lstm = LSTMModule(
     device=device,
     in_key="embed",
     out_key="embed",
-    default_recurrent_mode=True,
 )
 
 ######################################################################
@@ -343,7 +342,7 @@ stoch_policy = Seq(
 # will return a new instance of the LSTM (with shared weights) that will
 # assume that the input data is sequential in nature.
 #
-policy = Seq(feature, lstm, mlp, qval)
+policy = Seq(feature, lstm.set_recurrent_mode(True), mlp, qval)
 
 ######################################################################
 # Because we still have a couple of uninitialized parameters we should
