@@ -248,7 +248,7 @@ Welcome to PyTorch Tutorials
 .. ONNX
 
 .. customcarditem::
-   :header: (optional) Exporting a PyTorch model to ONNX using TorchDynamo backend and Running it using ONNX Runtime
+   :header: Exporting a PyTorch model to ONNX using TorchDynamo backend and Running it using ONNX Runtime
    :card_description: Build a image classifier model in PyTorch and convert it to ONNX before deploying it with ONNX Runtime.
    :image: _static/img/thumbnails/cropped/Exporting-PyTorch-Models-to-ONNX-Graphs.png
    :link: beginner/onnx/export_simple_model_to_onnx_tutorial.html
@@ -329,13 +329,6 @@ Welcome to PyTorch Tutorials
    :tags: Production,TorchScript
 
 .. customcarditem::
-   :header: (optional) Exporting a PyTorch Model to ONNX using TorchScript backend and Running it using ONNX Runtime
-   :card_description:  Convert a model defined in PyTorch into the ONNX format and then run it with ONNX Runtime.
-   :image: _static/img/thumbnails/cropped/optional-Exporting-a-Model-from-PyTorch-to-ONNX-and-Running-it-using-ONNX-Runtime.png
-   :link: advanced/super_resolution_with_onnxruntime.html
-   :tags: Production,ONNX
-
-.. customcarditem::
    :header: Profiling PyTorch
    :card_description: Learn how to profile a PyTorch application
    :link: beginner/profiler.html
@@ -354,13 +347,6 @@ Welcome to PyTorch Tutorials
    :tags: Profiling
 
 .. Code Transformations with FX
-
-.. customcarditem::
-   :header: Building a Convolution/Batch Norm fuser in FX
-   :card_description: Build a simple FX pass that fuses batch norm into convolution to improve performance during inference.
-   :image: _static/img/thumbnails/cropped/Deploying-PyTorch-in-Python-via-a-REST-API-with-Flask.png
-   :link: intermediate/fx_conv_bn_fuser.html
-   :tags: FX
 
 .. customcarditem::
    :header: Building a Simple Performance Profiler with FX
@@ -588,6 +574,13 @@ Welcome to PyTorch Tutorials
    :card_description: Speed up your models with minimal code changes using torch.compile, the latest PyTorch compiler solution.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/torch_compile_tutorial.html
+   :tags: Model-Optimization
+
+.. customcarditem::
+   :header: Building a Convolution/Batch Norm fuser in torch.compile
+   :card_description: Build a simple pattern matcher pass that fuses batch norm into convolution to improve performance during inference.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torch_compile_conv_bn_fuser.html
    :tags: Model-Optimization
 
 .. customcarditem::
@@ -939,7 +932,6 @@ Additional Resources
    beginner/onnx/intro_onnx
    beginner/Intro_to_TorchScript_tutorial
    advanced/cpp_export
-   advanced/super_resolution_with_onnxruntime
    intermediate/realtime_rpi
 
 .. toctree::
@@ -958,7 +950,6 @@ Additional Resources
    :hidden:
    :caption: Code Transforms with FX
 
-   intermediate/fx_conv_bn_fuser
    intermediate/fx_profiling_tutorial
 
 .. toctree::
@@ -1009,6 +1000,7 @@ Additional Resources
    intermediate/nvfuser_intro_tutorial
    intermediate/ax_multiobjective_nas_tutorial
    intermediate/torch_compile_tutorial
+   intermediate/torch_compile_conv_bn_fuser
    intermediate/compiled_autograd_tutorial
    intermediate/inductor_debug_cpu
    intermediate/scaled_dot_product_attention_tutorial
