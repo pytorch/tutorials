@@ -16,6 +16,9 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 sudo apt-get update
 sudo apt-get install -y pandoc
 
+# Upgrade ca-certificates to avoid SSL errors
+sudo apt-get upgrade -y ca-certificates
+
 # NS: Path to python runtime should already be part of docker container
 # export PATH=/opt/conda/bin:$PATH
 
