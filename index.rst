@@ -977,6 +977,7 @@ Additional Resources
    advanced/custom_ops_landing_page
    advanced/python_custom_ops
    advanced/cpp_custom_ops
+   advanced/cpp_custom_ops_sycl
    intermediate/custom_function_double_backward_tutorial
    intermediate/custom_function_conv_bn_tutorial
    advanced/cpp_extension
