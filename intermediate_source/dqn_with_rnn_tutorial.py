@@ -344,8 +344,7 @@ stoch_policy = Seq(
 #
 from torchrl.modules import set_recurrent_mode
 
-with set_recurrent_mode(True):
-    policy = Seq(feature, lstm, mlp, qval)
+policy = Seq(feature, lstm, mlp, qval)
 
 ######################################################################
 # Because we still have a couple of uninitialized parameters we should
@@ -428,7 +427,8 @@ for i, data in enumerate(collector):
     rb.extend(data.unsqueeze(0).to_tensordict().cpu())
     for _ in range(utd):
         s = rb.sample().to(device, non_blocking=True)
-        loss_vals = loss_fn(s)
+        with set_recurrent_mode(True):
+            loss_vals = loss_fn(s)
         loss_vals["loss"].backward()
         optim.step()
         optim.zero_grad()
