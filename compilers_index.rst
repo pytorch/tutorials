@@ -41,10 +41,10 @@ control, as well as third-party backend solutions.
    :tags: Model-Optimization,torch.compile
 
 .. customcarditem::
-   :header: Compiled Autograd: Capturing a larger backward graph for ``torch.compile``
+   :header: Compiled Autograd: Capturing a larger backward graph for torch.compile
    :card_description: Learn how to use compiled autograd to capture a larger backward graph.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: intermediate/compiled_autograd_tutorial
+   :link: intermediate/compiled_autograd_tutorial.html
    :tags: Model-Optimization,CUDA,torch.compile
 
 .. customcarditem::
@@ -55,7 +55,7 @@ control, as well as third-party backend solutions.
    :tags: Model-Optimization,torch.compile
 
 .. customcarditem::
-   :header: Dynamic Compilation Control with ``torch.compiler.set_stance``
+   :header: Dynamic Compilation Control with torch.compiler.set_stance
    :card_description: Learn how to use torch.compiler.set_stance
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: recipes/torch_compiler_set_stance_tutorial.html
