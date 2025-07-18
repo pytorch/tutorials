@@ -525,7 +525,7 @@
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="section" id="getting-started-with-devicemesh">
-<h1>Getting Started with DeviceMesh<a class="headerlink" href="#getting-started-with-devicemesh" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Jan 24, 2024 | Last Updated: Feb 24, 2025 | Last Verified: Nov 05, 2024</p>
+<h1>Getting Started with DeviceMesh<a class="headerlink" href="#getting-started-with-devicemesh" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Jan 24, 2024 | Last Updated: Jul 18, 2025 | Last Verified: Nov 05, 2024</p>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/wz337">Iris Zhang</a>, <a class="reference external" href="https://github.com/wanchaol">Wanchao Liang</a></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -628,7 +628,7 @@ users would not need to manually create and manage shard group and replicate gro
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.device_mesh</span><span class="w"> </span><span class="kn">import</span> <span class="n">init_device_mesh</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.fsdp</span><span class="w"> </span><span class="kn">import</span> <span class="n">FullyShardedDataParallel</span> <span class="k">as</span> <span class="n">FSDP</span><span class="p">,</span> <span class="n">ShardingStrategy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.fsdp</span><span class="w"> </span><span class="kn">import</span> <span class="n">fully_shard</span> <span class="k">as</span> <span class="n">FSDP</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">ToyModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -643,9 +643,9 @@ users would not need to manually create and manage shard group and replicate gro
 
 
 <span class="c1"># HSDP: MeshShape(2, 4)</span>
-<span class="n">mesh_2d</span> <span class="o">=</span> <span class="n">init_device_mesh</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">mesh_2d</span> <span class="o">=</span> <span class="n">init_device_mesh</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">mesh_dim_names</span><span class="o">=</span><span class="p">(</span><span class="s2">"dp_replicate"</span><span class="p">,</span> <span class="s2">"dp_shard"</span><span class="p">))</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">FSDP</span><span class="p">(</span>
-    <span class="n">ToyModel</span><span class="p">(),</span> <span class="n">device_mesh</span><span class="o">=</span><span class="n">mesh_2d</span><span class="p">,</span> <span class="n">sharding_strategy</span><span class="o">=</span><span class="n">ShardingStrategy</span><span class="o">.</span><span class="n">HYBRID_SHARD</span>
+    <span class="n">ToyModel</span><span class="p">(),</span> <span class="n">device_mesh</span><span class="o">=</span><span class="n">mesh_2d</span>
 <span class="p">)</span>
 </pre></div>
 </div>
