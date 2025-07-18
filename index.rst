@@ -315,20 +315,6 @@ Welcome to PyTorch Tutorials
 .. Deploying PyTorch Models in Production
 
 .. customcarditem::
-   :header: Introduction to TorchScript
-   :card_description: Introduction to TorchScript, an intermediate representation of a PyTorch model (subclass of nn.Module) that can then be run in a high-performance environment such as C++.
-   :image: _static/img/thumbnails/cropped/Introduction-to-TorchScript.png
-   :link: beginner/Intro_to_TorchScript_tutorial.html
-   :tags: Production,TorchScript
-
-.. customcarditem::
-   :header: Loading a TorchScript Model in C++
-   :card_description:  Learn how PyTorch provides to go from an existing Python model to a serialized representation that can be loaded and executed purely from C++, with no dependency on Python.
-   :image: _static/img/thumbnails/cropped/Loading-a-TorchScript-Model-in-Cpp.png
-   :link: advanced/cpp_export.html
-   :tags: Production,TorchScript
-
-.. customcarditem::
    :header: Profiling PyTorch
    :card_description: Learn how to profile a PyTorch application
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
@@ -406,34 +392,6 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/cpp_extension.html
    :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
-
-.. customcarditem::
-   :header: Extending TorchScript with Custom C++ Operators
-   :card_description: Implement a custom TorchScript operator in C++, how to build it into a shared library, how to use it in Python to define TorchScript models and lastly how to load it into a C++ application for inference workloads.
-   :image: _static/img/thumbnails/cropped/Extending-TorchScript-with-Custom-Cpp-Operators.png
-   :link: advanced/torch_script_custom_ops.html
-   :tags: Extending-PyTorch,Frontend-APIs,TorchScript,C++
-
-.. customcarditem::
-   :header: Extending TorchScript with Custom C++ Classes
-   :card_description: This is a continuation of the custom operator tutorial, and introduces the API we’ve built for binding C++ classes into TorchScript and Python simultaneously.
-   :image: _static/img/thumbnails/cropped/Extending-TorchScript-with-Custom-Cpp-Classes.png
-   :link: advanced/torch_script_custom_classes.html
-   :tags: Extending-PyTorch,Frontend-APIs,TorchScript,C++
-
-.. customcarditem::
-   :header: Dynamic Parallelism in TorchScript
-   :card_description: This tutorial introduces the syntax for doing *dynamic inter-op parallelism* in TorchScript.
-   :image: _static/img/thumbnails/cropped/TorchScript-Parallelism.jpg
-   :link: advanced/torch-script-parallelism.html
-   :tags: Frontend-APIs,TorchScript,C++
-
-.. customcarditem::
-   :header: Real Time Inference on Raspberry Pi 4
-   :card_description: This tutorial covers how to run quantized and fused models on a Raspberry Pi 4 at 30 fps.
-   :image: _static/img/thumbnails/cropped/realtime_rpi.png
-   :link: intermediate/realtime_rpi.html
-   :tags: TorchScript,Model-Optimization,Image/Video,Quantization
 
 .. customcarditem::
    :header: Autograd in C++ Frontend
