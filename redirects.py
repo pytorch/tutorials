@@ -3,6 +3,7 @@ redirects = {
     "beginner/ptcheat.html": "../index.html",
     "beginner/deploy_seq2seq_hybrid_frontend_tutorial.html": "../index.html",
     "recipes/bundled_inputs.html": "../index.html",
+    "advanced/super_resolution_with_onnxruntime.html": "../index.html",
     "intermediate/torchserve_with_ipex.html": "../index.html",
     "intermediate/torchserve_with_ipex_2.html": "../index.html",
     "recipes/torchserve_vertexai_tutorial.html": "../index.html",
@@ -28,4 +29,7 @@ redirects = {
     "receipes/fuse.html": "../index.html",
     "receipes/quantization.html": "../index.html",
     "receipes/receipes/dynamic_quantization.html": "../index.html",
+    "advanced/torch_script_custom_classes": "../index.html",
+    "beginner/Intro_to_TorchScript_tutorial.html": "../index.html",
+    "prototype/torchscript_freezing.html": "../index.html",
 }
