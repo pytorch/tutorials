@@ -30,6 +30,10 @@ Integrating custom C++ and/or CUDA code with PyTorch
 
 Please see :ref:`cpp-custom-ops-tutorial`.
 
+.. note::
+
+  ``SYCL`` serves as the backend programming language for Intel GPUs. Integrate custom Sycl code refer to :ref:`cpp-custom-ops-tutorial-sycl`.
+
 You may wish to author a custom operator from C++ (as opposed to Python) if:
 
 - you have custom C++ and/or CUDA code.
