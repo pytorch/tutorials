@@ -101,8 +101,6 @@ in a separate ``TORCH_LIBRARY_IMPL`` block:
 
 .. code-block:: cpp
 
-  // Copyright (c) 2025 Intel Corporation
-
   #include <c10/xpu/XPUStream.h>
   #include <sycl/sycl.hpp>
   #include <ATen/Operators.h>
