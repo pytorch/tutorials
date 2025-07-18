@@ -527,7 +527,7 @@
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="section" id="large-scale-transformer-model-training-with-tensor-parallel-tp">
-<h1>Large Scale Transformer model training with Tensor Parallel (TP)<a class="headerlink" href="#large-scale-transformer-model-training-with-tensor-parallel-tp" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Apr 19, 2024 | Last Updated: Jul 15, 2025 | Last Verified: Nov 05, 2024</p>
+<h1>Large Scale Transformer model training with Tensor Parallel (TP)<a class="headerlink" href="#large-scale-transformer-model-training-with-tensor-parallel-tp" title="Permalink to this heading">¶</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Apr 19, 2024 | Last Updated: Jul 18, 2025 | Last Verified: Nov 05, 2024</p>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/wanchaol">Wanchao Liang</a>, <a class="reference external" href="https://github.com/tianyu-l">Tianyu Liu</a></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -631,9 +631,9 @@ q/k/v projection and row-wise sharding for the <code class="docutils literal not
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">layer_tp_plan</span> <span class="o">=</span> <span class="p">{</span>
     <span class="c1"># by default ColwiseParallel input layouts is replicated</span>
     <span class="c1"># and RowwiseParallel output layouts is replicated</span>
-    <span class="s2">"attention.wq"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(),</span>
-    <span class="s2">"attention.wk"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(),</span>
-    <span class="s2">"attention.wv"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(),</span>
+    <span class="s2">"attention.wq"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(</span><span class="n">use_local_output</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+    <span class="s2">"attention.wk"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(</span><span class="n">use_local_output</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+    <span class="s2">"attention.wv"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(</span><span class="n">use_local_output</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
     <span class="s2">"attention.wo"</span><span class="p">:</span> <span class="n">RowwiseParallel</span><span class="p">(),</span>
     <span class="s2">"feed_forward.w1"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(),</span>
     <span class="s2">"feed_forward.w2"</span><span class="p">:</span> <span class="n">RowwiseParallel</span><span class="p">(),</span>
@@ -643,15 +643,10 @@ q/k/v projection and row-wise sharding for the <code class="docutils literal not
 </div>
 <p>This is almost the <code class="docutils literal notranslate"><span class="pre">layer_tp_plan</span></code> we need to apply Tensor Parallelism to the <code class="docutils literal notranslate"><span class="pre">TransformerBlock</span></code>. However, one thing we should be aware is that when sharding the linear layer column-wise, the output of the linear layers would become sharded on the last tensor dimension, and the row-wise sharding linear layer directly accepts an input that shards on the last dimension.
 If there are any more tensor operations (such as view operations) between the column-wise linear and the row-wise linear, we would need to adjust the relevant shape related ops to sharded shape.</p>
-<p>For the Llama model, in the attention layer there are couple of view operations that are shape related. In particular, column-wise parallel for <code class="docutils literal notranslate"><span class="pre">wq</span></code>/ <code class="docutils literal notranslate"><span class="pre">wk</span></code>/ <code class="docutils literal notranslate"><span class="pre">wv</span></code> linear layers, the activation tensor is sharded on the <code class="docutils literal notranslate"><span class="pre">num_heads</span></code> dimension, so we would need to adjust the <code class="docutils literal notranslate"><span class="pre">num_heads</span></code> to local <code class="docutils literal notranslate"><span class="pre">num_heads</span></code>.</p>
+<p>For the Llama model, in the attention layer, there are several view operations related to shape. Specifically, for column-wise parallelism in the <code class="docutils literal notranslate"><span class="pre">wq</span></code>/<code class="docutils literal notranslate"><span class="pre">wk</span></code>/<code class="docutils literal notranslate"><span class="pre">wv</span></code> linear layers, the activation tensor is sharded on the <code class="docutils literal notranslate"><span class="pre">num_heads</span></code> dimension. To manage the difference between global and local <code class="docutils literal notranslate"><span class="pre">num_heads</span></code>, we should set <code class="docutils literal notranslate"><span class="pre">use_local_output=False</span></code> to ensure the output is a DTensor. Unlike a regular tensor, a DTensor is aware of the parallelism plans and will automatically handle changes in the <code class="docutils literal notranslate"><span class="pre">num_heads</span></code> dimension.</p>
 <p>Finally, we need to call <code class="docutils literal notranslate"><span class="pre">parallelize_module</span></code> API to make the plan for each <code class="docutils literal notranslate"><span class="pre">TransformerBlock</span></code> effective. Under the hood, it distributes the model parameters inside <code class="docutils literal notranslate"><span class="pre">Attention</span></code> and <code class="docutils literal notranslate"><span class="pre">FeedForward</span></code> layers to DTensors, and registers communication hooks for model inputs and outputs (before and after each module respectively), if necessary:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">layer_id</span><span class="p">,</span> <span class="n">transformer_block</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">):</span>
     <span class="n">layer_tp_plan</span> <span class="o">=</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span>  <span class="c1"># i.e. the plan we just generated</span>
-
-    <span class="c1"># Adjust attention module to use the local number of heads</span>
-    <span class="n">attn_layer</span> <span class="o">=</span> <span class="n">transformer_block</span><span class="o">.</span><span class="n">attention</span>
-    <span class="n">attn_layer</span><span class="o">.</span><span class="n">n_heads</span> <span class="o">=</span> <span class="n">attn_layer</span><span class="o">.</span><span class="n">n_heads</span> <span class="o">//</span> <span class="n">tp_mesh</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
-    <span class="n">attn_layer</span><span class="o">.</span><span class="n">n_kv_heads</span> <span class="o">=</span> <span class="n">attn_layer</span><span class="o">.</span><span class="n">n_kv_heads</span> <span class="o">//</span> <span class="n">tp_mesh</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
 
     <span class="n">parallelize_module</span><span class="p">(</span>
         <span class="n">module</span><span class="o">=</span><span class="n">transformer_block</span><span class="p">,</span>
@@ -707,12 +702,12 @@ Following the code example earlier, the code below demonstrates how we apply Seq
     <span class="c1"># to represent the input/output tensors sharded on the sequence dimension</span>
     <span class="s2">"attention_norm"</span><span class="p">:</span> <span class="n">SequenceParallel</span><span class="p">(),</span>
     <span class="s2">"attention"</span><span class="p">:</span> <span class="n">PrepareModuleInput</span><span class="p">(</span>
-        <span class="n">input_layouts</span><span class="o">=</span><span class="p">(</span><span class="n">Shard</span><span class="p">(</span><span class="mi">1</span><span class="p">),),</span>
-        <span class="n">desired_input_layouts</span><span class="o">=</span><span class="p">(</span><span class="n">Replicate</span><span class="p">(),),</span>
+        <span class="n">input_layouts</span><span class="o">=</span><span class="p">(</span><span class="n">Shard</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">Replicate</span><span class="p">()),</span>
+        <span class="n">desired_input_layouts</span><span class="o">=</span><span class="p">(</span><span class="n">Replicate</span><span class="p">(),</span> <span class="n">Replicate</span><span class="p">()),</span>
     <span class="p">),</span>
-    <span class="s2">"attention.wq"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(),</span>
-    <span class="s2">"attention.wk"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(),</span>
-    <span class="s2">"attention.wv"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(),</span>
+    <span class="s2">"attention.wq"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(</span><span class="n">use_local_output</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+    <span class="s2">"attention.wk"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(</span><span class="n">use_local_output</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+    <span class="s2">"attention.wv"</span><span class="p">:</span> <span class="n">ColwiseParallel</span><span class="p">(</span><span class="n">use_local_output</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
     <span class="s2">"attention.wo"</span><span class="p">:</span> <span class="n">RowwiseParallel</span><span class="p">(</span><span class="n">output_layouts</span><span class="o">=</span><span class="n">Shard</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
     <span class="s2">"ffn_norm"</span><span class="p">:</span> <span class="n">SequenceParallel</span><span class="p">(),</span>
     <span class="s2">"feed_forward"</span><span class="p">:</span> <span class="n">PrepareModuleInput</span><span class="p">(</span>
