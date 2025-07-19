@@ -176,6 +176,7 @@ sphinx_gallery_conf = {
     "filename_pattern": re.compile(SPHINX_SHOULD_RUN),
     "promote_jupyter_magic": True,
     "backreferences_dir": None,
+    "write_computation_times": True,
     "download_all_examples": False,
     "show_signature": False,
     "first_notebook_cell": (
