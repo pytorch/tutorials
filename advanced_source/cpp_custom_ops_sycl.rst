@@ -222,7 +222,7 @@ Create ``sycl_extension/__init__.py`` file to make the package importable:
       "ops",
   ]
 
-Testing sycl extension operator
+Testing SYCL extension operator
 -------------------
 
 Use simple test to verify that the operator works correctly.
