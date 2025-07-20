@@ -1,4 +1,4 @@
-Getting Started with Fully Sharded Data Parallel(FSDP)
+[Deprecated] Getting Started with Fully Sharded Data Parallel (FSDP)
 ======================================================
 
 **Author**: `Hamid Shojanazeri <https://github.com/HamidShojanazeri>`__, `Yanli Zhao <https://github.com/zhaojuanmao>`__, `Shen Li <https://mrshenli.github.io/>`__
