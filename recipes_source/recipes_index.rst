@@ -1,5 +1,5 @@
 Recipes
----------------------------------------------
+========
 
 Recipes are bite-sized, actionable examples of
 how to use specific PyTorch features, different
@@ -339,6 +339,7 @@ from our full-length tutorials.
 .. Page TOC
 .. -----------------------------------------
 .. toctree::
+   :maxdepth: 2
    :hidden:
 
    /recipes/recipes/defining_a_neural_network

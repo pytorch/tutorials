@@ -1,5 +1,6 @@
 Unstable
---------
+========
+
 API unstable features are not available as part of binary distributions
 like PyPI or Conda (except maybe behind run-time flags). To test these
 features we would, depending on the feature, recommend building PyTorch
@@ -162,6 +163,7 @@ decide if we want to upgrade the level of commitment or to fail fast.
 .. -----------------------------------------
 
 .. toctree::
+   :maxdepth: 2
    :hidden:
 
    /prototype/context_parallel
