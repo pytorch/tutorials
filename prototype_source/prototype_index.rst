@@ -14,10 +14,7 @@ decide if we want to upgrade the level of commitment or to fail fast.
 
 .. raw:: html
 
-        </div>
-    </div>
-
-    <div id="tutorial-cards-container">
+   <div id="tutorial-cards-container">
 
     <nav class="navbar navbar-expand-lg navbar-light tutorials-nav col-12">
         <div class="tutorial-tags-container">
@@ -159,16 +156,6 @@ decide if we want to upgrade the level of commitment or to fail fast.
    :tags: GPUDirect-Storage
 
 .. End of tutorial card section
-
-.. raw:: html
-
-    </div>
-
-    <div class="pagination d-flex justify-content-center"></div>
-
-    </div>
-
-    </div>
 
 .. -----------------------------------------
 .. Page TOC
