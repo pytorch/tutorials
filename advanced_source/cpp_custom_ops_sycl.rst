@@ -89,7 +89,7 @@ Using ``sycl_extension`` is as straightforward as writing the following ``setup.
 
 Defining the custom op and adding backend implementations
 ---------------------------------------------------------
-First, let's write a Sycl function that computes ``mymuladd``:
+First, let's write a SYCL function that computes ``mymuladd``:
 
 In order to use this from PyTorch’s Python frontend, we need to register it
 as a PyTorch operator using the ``TORCH_LIBRARY`` API. This will automatically
