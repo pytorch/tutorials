@@ -169,7 +169,7 @@ in a separate ``TORCH_LIBRARY_IMPL`` block:
   }
 
   // ==================================================
-  // Register Sycl Implementations to Torch Library
+  // Register SYCL Implementations to Torch Library
   // ==================================================
   TORCH_LIBRARY_IMPL(sycl_extension, XPU, m) {
       m.impl("mymuladd", &mymuladd_xpu);
