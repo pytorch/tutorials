@@ -78,7 +78,7 @@ When deciding what parallelism techniques to choose for your model, use these co
 
    * See also: `Getting Started with FSDP2 <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__
 
-#. Use `Tensor Parallel (TP) <https://pytorch.org/docs/stable/distributed.tensor.parallel.html>`__ and/or `Pipeline Parallel (PP) <https://pytorch.org/docs/main/distributed.pipelining.html>`__ if you reach scaling limitations with FSDP.
+#. Use `Tensor Parallel (TP) <https://pytorch.org/docs/stable/distributed.tensor.parallel.html>`__ and/or `Pipeline Parallel (PP) <https://pytorch.org/docs/main/distributed.pipelining.html>`__ if you reach scaling limitations with FSDP2.
 
    * Try our `Tensor Parallelism Tutorial <https://pytorch.org/tutorials/intermediate/TP_tutorial.html>`__
 
