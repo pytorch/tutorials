@@ -1,6 +1,6 @@
 PyTorch Distributed Overview
 ============================
-**Author**: `Will Constable <https://github.com/wconstab/>`_
+**Author**: `Will Constable <https://github.com/wconstab/>`_, `Wei Feng <https://github.com/weifengpy>`_
 
 .. note::
    |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/main/beginner_source/dist_overview.rst>`__.
@@ -26,7 +26,7 @@ Parallelism APIs
 These Parallelism Modules offer high-level functionality and compose with existing models:
 
 - `Distributed Data-Parallel (DDP) <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`__
-- `Fully Sharded Data-Parallel Training (FSDP) <https://pytorch.org/docs/stable/fsdp.html>`__
+- `Fully Sharded Data-Parallel Training (FSDP2) <https://pytorch.org/docs/stable/distributed.fsdp.fully_shard.html>`__
 - `Tensor Parallel (TP) <https://pytorch.org/docs/stable/distributed.tensor.parallel.html>`__
 - `Pipeline Parallel (PP) <https://pytorch.org/docs/main/distributed.pipelining.html>`__
 
@@ -74,9 +74,9 @@ When deciding what parallelism techniques to choose for your model, use these co
 
    * See also: `Getting Started with Distributed Data Parallel <../intermediate/ddp_tutorial.html>`__
 
-#. Use `FullyShardedDataParallel (FSDP) <https://pytorch.org/docs/stable/fsdp.html>`__ when your model cannot fit on one GPU.
+#. Use `FullyShardedDataParallel (FSDP2) <https://pytorch.org/docs/stable/distributed.fsdp.fully_shard.html>`__ when your model cannot fit on one GPU.
 
-   * See also: `Getting Started with FSDP <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__
+   * See also: `Getting Started with FSDP2 <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__
 
 #. Use `Tensor Parallel (TP) <https://pytorch.org/docs/stable/distributed.tensor.parallel.html>`__ and/or `Pipeline Parallel (PP) <https://pytorch.org/docs/main/distributed.pipelining.html>`__ if you reach scaling limitations with FSDP.
 
