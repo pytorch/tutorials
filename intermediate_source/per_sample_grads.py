@@ -168,23 +168,8 @@ ft_per_sample_grads = ft_compute_sample_grad(params, buffers, data, targets)
 # we can double check that the results using ``grad`` and ``vmap`` match the
 # results of hand processing each one individually:
 
-# Get the parameter names in the same order as per_sample_grads
-
-for name, ft_per_sample_grad in ft_per_sample_grads.items():
-    # Find the corresponding manually computed gradient
-    idx = list(model.named_parameters()).index((name, model.get_parameter(name)))
-    per_sample_grad = per_sample_grads[idx]
-
-    # Check if shapes match and reshape if needed
-    if per_sample_grad.shape != ft_per_sample_grad.shape and per_sample_grad.numel() == ft_per_sample_grad.numel():
-        ft_per_sample_grad = ft_per_sample_grad.view(per_sample_grad.shape)
-    
-    # Print differences instead of asserting
-    max_diff = (per_sample_grad - ft_per_sample_grad).abs().max().item()
-    print(f"Parameter {name}: max difference = {max_diff}")
-    
-    # Optional: still assert for very large differences that might indicate real problems
-    assert max_diff < 0.5, f"Extremely large difference in {name}: {max_diff}"
+for per_sample_grad, ft_per_sample_grad in zip(per_sample_grads, ft_per_sample_grads.values()):
+    assert torch.allclose(per_sample_grad, ft_per_sample_grad, atol=3e-3, rtol=1e-5)
 
 ######################################################################
 # A quick note: there are limitations around what types of functions can be
