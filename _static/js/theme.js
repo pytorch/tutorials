@@ -248,9 +248,6 @@ document.addEventListener('DOMContentLoaded', function() {
       $(".sphx-glr-footer, .sphx-glr-download").hide();
       $(".sphx-glr-signature").hide();
 
-      // show the sphnx-glr-timing
-      $(".sphx-glr-timing").show();
-
   } else {
       $(".pytorch-call-to-action-links").hide();
   }
