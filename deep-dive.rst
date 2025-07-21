@@ -34,6 +34,7 @@ and speed.
    :header: Profiling PyTorch
    :card_description: Learn how to profile a PyTorch application
    :link: beginner/profiler.html
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
    :tags: Profiling
 
 .. customcarditem::

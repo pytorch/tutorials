@@ -1,13 +1,13 @@
 Recipes
----------------------------------------------
-Recipes are bite-sized, actionable examples of how to use specific PyTorch features, different from our full-length tutorials.
+========
+
+Recipes are bite-sized, actionable examples of
+how to use specific PyTorch features, different
+from our full-length tutorials.
 
 .. raw:: html
 
-        </div>
-    </div>
-
-    <div id="tutorial-cards-container">
+   <div id="tutorial-cards-container">
 
     <nav class="navbar navbar-expand-lg navbar-light tutorials-nav col-12">
         <div class="tutorial-tags-container">
@@ -335,20 +335,11 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 
 .. End of tutorial card section
 
-.. raw:: html
-
-    </div>
-
-    <div class="pagination d-flex justify-content-center"></div>
-
-    </div>
-
-    </div>
-
 .. -----------------------------------------
 .. Page TOC
 .. -----------------------------------------
 .. toctree::
+   :maxdepth: 2
    :hidden:
 
    /recipes/recipes/defining_a_neural_network
