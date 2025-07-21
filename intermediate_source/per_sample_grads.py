@@ -168,7 +168,36 @@ ft_per_sample_grads = ft_compute_sample_grad(params, buffers, data, targets)
 # we can double check that the results using ``grad`` and ``vmap`` match the
 # results of hand processing each one individually:
 
-for per_sample_grad, ft_per_sample_grad in zip(per_sample_grads, ft_per_sample_grads.values()):
+for i, (per_sample_grad, ft_per_sample_grad) in enumerate(
+    zip(per_sample_grads, ft_per_sample_grads.values())
+):
+    is_close = torch.allclose(per_sample_grad, ft_per_sample_grad, atol=3e-3, rtol=1e-5)
+    if not is_close:
+        # Calculate and print the maximum absolute difference
+        abs_diff = (per_sample_grad - ft_per_sample_grad).abs()
+        max_diff = abs_diff.max().item()
+        mean_diff = abs_diff.mean().item()
+        print(f"Gradient {i} mismatch:")
+        print(f"  Max absolute difference: {max_diff}")
+        print(f"  Mean absolute difference: {mean_diff}")
+        print(f"  Shape of tensors: {per_sample_grad.shape}")
+        # Print a sample of values from both tensors where the difference is largest
+        max_idx = abs_diff.argmax().item()
+        flat_idx = max_idx
+        if len(abs_diff.shape) > 1:
+            # Convert flat index to multi-dimensional index
+            indices = []
+            temp_shape = abs_diff.shape
+            for dim in reversed(temp_shape):
+                indices.insert(0, flat_idx % dim)
+                flat_idx //= dim
+            print(f"  Max difference at index: {indices}")
+            print(f"  Manual gradient value: {per_sample_grad[tuple(indices)].item()}")
+            print(
+                f"  Functional gradient value: {ft_per_sample_grad[tuple(indices)].item()}"
+            )
+
+    # Keep the original assertion
     assert torch.allclose(per_sample_grad, ft_per_sample_grad, atol=3e-3, rtol=1e-5)
 
 ######################################################################
