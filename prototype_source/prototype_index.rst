@@ -41,7 +41,7 @@ decide if we want to upgrade the level of commitment or to fail fast.
 .. customcarditem::
    :header: (prototype) Accelerating BERT with semi-structured (2:4) sparsity
    :card_description: Prune BERT to be 2:4 sparse and accelerate for inference.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: prototype/semi_structured_sparse.html
    :tags: Model-Optimiziation
 
