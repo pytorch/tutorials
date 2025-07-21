@@ -1,5 +1,6 @@
 Unstable
---------
+========
+
 API unstable features are not available as part of binary distributions
 like PyPI or Conda (except maybe behind run-time flags). To test these
 features we would, depending on the feature, recommend building PyTorch
@@ -14,10 +15,7 @@ decide if we want to upgrade the level of commitment or to fail fast.
 
 .. raw:: html
 
-        </div>
-    </div>
-
-    <div id="tutorial-cards-container">
+   <div id="tutorial-cards-container">
 
     <nav class="navbar navbar-expand-lg navbar-light tutorials-nav col-12">
         <div class="tutorial-tags-container">
@@ -43,7 +41,7 @@ decide if we want to upgrade the level of commitment or to fail fast.
 .. customcarditem::
    :header: (prototype) Accelerating BERT with semi-structured (2:4) sparsity
    :card_description: Prune BERT to be 2:4 sparse and accelerate for inference.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: prototype/semi_structured_sparse.html
    :tags: Model-Optimiziation
 
@@ -160,21 +158,12 @@ decide if we want to upgrade the level of commitment or to fail fast.
 
 .. End of tutorial card section
 
-.. raw:: html
-
-    </div>
-
-    <div class="pagination d-flex justify-content-center"></div>
-
-    </div>
-
-    </div>
-
 .. -----------------------------------------
 .. Page TOC
 .. -----------------------------------------
 
 .. toctree::
+   :maxdepth: 2
    :hidden:
 
    /prototype/context_parallel

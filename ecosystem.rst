@@ -54,7 +54,7 @@ to production deployment.
    :card_description: This tutorial covers how to run quantized and fused models on a Raspberry Pi 4 at 30 fps.
    :image: _static/img/thumbnails/cropped/realtime_rpi.png
    :link: intermediate/realtime_rpi.html
-   :tags: TorchScript,Model-Optimization,Image/Video,Quantization,Ecosystem
+   :tags: Model-Optimization,Image/Video,Quantization,Ecosystem
 
 .. End of tutorial card section
 .. -----------------------------------------
