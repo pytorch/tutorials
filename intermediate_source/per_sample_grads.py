@@ -168,6 +168,36 @@ ft_per_sample_grads = ft_compute_sample_grad(params, buffers, data, targets)
 # we can double check that the results using ``grad`` and ``vmap`` match the
 # results of hand processing each one individually:
 
+# Create a float64 baseline for more precise comparison
+def compute_grad_fp64(sample, target):
+    # Convert to float64 for higher precision
+    sample_fp64 = sample.to(torch.float64)
+    target_fp64 = target
+
+    # Create a float64 version of the model
+    model_fp64 = SimpleCNN().to(device=device)
+    # Copy parameters from original model to float64 model
+    with torch.no_grad():
+        for param_fp32, param_fp64 in zip(model.parameters(), model_fp64.parameters()):
+            param_fp64.copy_(param_fp32.to(torch.float64))
+
+    sample_fp64 = sample_fp64.unsqueeze(0)  # prepend batch dimension
+    target_fp64 = target_fp64.unsqueeze(0)
+
+    prediction = model_fp64(sample_fp64)
+    loss = loss_fn(prediction, target_fp64)
+
+    return torch.autograd.grad(loss, list(model_fp64.parameters()))
+
+
+def compute_fp64_baseline(data, targets, indices):
+    """Compute float64 gradient for a specific sample"""
+    # Only compute for the sample with the largest difference to save computation
+    i = indices[0]  # Sample index
+    sample_grad = compute_grad_fp64(data[i], targets[i])
+    return sample_grad
+
+
 for i, (per_sample_grad, ft_per_sample_grad) in enumerate(
     zip(per_sample_grads, ft_per_sample_grads.values())
 ):
@@ -181,7 +211,8 @@ for i, (per_sample_grad, ft_per_sample_grad) in enumerate(
         print(f"  Max absolute difference: {max_diff}")
         print(f"  Mean absolute difference: {mean_diff}")
         print(f"  Shape of tensors: {per_sample_grad.shape}")
-        # Print a sample of values from both tensors where the difference is largest
+
+        # Find the location of maximum difference
         max_idx = abs_diff.argmax().item()
         flat_idx = max_idx
         if len(abs_diff.shape) > 1:
@@ -196,6 +227,30 @@ for i, (per_sample_grad, ft_per_sample_grad) in enumerate(
             print(
                 f"  Functional gradient value: {ft_per_sample_grad[tuple(indices)].item()}"
             )
+
+            # Compute float64 baseline for the sample with the largest difference
+            print("\nComputing float64 baseline for comparison...")
+            try:
+                fp64_grads = compute_fp64_baseline(data, targets, indices)
+                fp64_value = fp64_grads[i][
+                    tuple(indices[1:])
+                ].item()  # Skip batch dimension
+                print(f"  Float64 baseline value: {fp64_value}")
+
+                # Compare both methods against float64 baseline
+                manual_diff = abs(per_sample_grad[tuple(indices)].item() - fp64_value)
+                functional_diff = abs(
+                    ft_per_sample_grad[tuple(indices)].item() - fp64_value
+                )
+                print(f"  Manual method vs float64 difference: {manual_diff}")
+                print(f"  Functional method vs float64 difference: {functional_diff}")
+
+                if manual_diff < functional_diff:
+                    print("  Manual method is closer to float64 baseline")
+                else:
+                    print("  Functional method is closer to float64 baseline")
+            except Exception as e:
+                print(f"  Error computing float64 baseline: {e}")
 
     # Keep the original assertion
     assert torch.allclose(per_sample_grad, ft_per_sample_grad, atol=3e-3, rtol=1e-5)
