@@ -4,7 +4,7 @@ Getting Started with Fully Sharded Data Parallel (FSDP2)
 **Author**: `Wei Feng <https://github.com/weifengpy>`__, `Will Constable <https://github.com/wconstab>`__, `Yifan Mao <https://github.com/mori360>`__
 
 .. note::
-   |edit| Check out the code in this tutorial from `pytorch/examples <https://github.com/pytorch/examples/tree/main/distributed/FSDP2>`_. FSDP1 will be deprecated. The old tutorial can be found `here <https://docs.pytorch.org/tutorials/intermediate/FSDP1_tutorial.html>`_.
+   |edit| Check out the code in this tutorial from `pytorch/examples <https://github.com/pytorch/examples/tree/main/distributed/FSDP2>`_. FSDP1 is deprecated. FSDP1 tutorials are archived in `[1] <https://docs.pytorch.org/tutorials/intermediate/FSDP1_tutorial.html>`_ and `[2] <https://docs.pytorch.org/tutorials/intermediate/FSDP_advanced_tutorial.html>`_
 
 How FSDP2 works
 --------------
