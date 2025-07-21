@@ -174,12 +174,10 @@ def compute_grad_fp64(sample, target):
     sample_fp64 = sample.to(torch.float64)
     target_fp64 = target
 
-    # Create a float64 version of the model
-    model_fp64 = SimpleCNN().to(device=device)
-    # Copy parameters from original model to float64 model
-    with torch.no_grad():
-        for param_fp32, param_fp64 in zip(model.parameters(), model_fp64.parameters()):
-            param_fp64.copy_(param_fp32.to(torch.float64))
+    # Create a float64 version of the model and explicitly convert it to float64
+    model_fp64 = SimpleCNN().to(device=device).to(torch.float64)
+
+    # No need to manually copy parameters as the model is already in float64
 
     sample_fp64 = sample_fp64.unsqueeze(0)  # prepend batch dimension
     target_fp64 = target_fp64.unsqueeze(0)
@@ -254,7 +252,6 @@ for i, (per_sample_grad, ft_per_sample_grad) in enumerate(
 
     # Keep the original assertion
     assert torch.allclose(per_sample_grad, ft_per_sample_grad, atol=3e-3, rtol=1e-5)
-
 ######################################################################
 # A quick note: there are limitations around what types of functions can be
 # transformed by ``vmap``. The best functions to transform are ones that are pure
