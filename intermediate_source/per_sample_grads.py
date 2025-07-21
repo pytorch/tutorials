@@ -52,7 +52,7 @@ def loss_fn(predictions, targets):
 # Let’s generate a batch of dummy data and pretend that we’re working with an MNIST dataset.
 # The dummy images are 28 by 28 and we use a minibatch of size 64.
 
-device = 'cpu'
+device = 'cuda'
 
 num_models = 10
 batch_size = 64
