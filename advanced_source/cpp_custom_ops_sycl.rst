@@ -30,7 +30,7 @@ Follow the structure to create a custom SYCL operator:
 .. code-block:: text
 
   sycl_example/
-  ├── setup.py 
+  ├── setup.py
   ├── sycl_extension
   │   ├── __init__.py
   │   ├── muladd.sycl
@@ -40,7 +40,7 @@ Follow the structure to create a custom SYCL operator:
 Setting up the Build System
 ---------------------------
 
-If you need to compile **SYCL** code (for example, ``.sycl`` files), use `torch.utils.cpp_extension.SyclExtension <https://docs.pytorch.org/docs/stable/cpp_extension.html#torch.utils.cpp_extension.SyclExtension>`_. 
+If you need to compile **SYCL** code (for example, ``.sycl`` files), use `torch.utils.cpp_extension.SyclExtension <https://docs.pytorch.org/docs/stable/cpp_extension.html#torch.utils.cpp_extension.SyclExtension>`_.
 The setup process is very similar to C++/CUDA, except the compilation arguments need to be adjusted for SYCL.
 
 Using ``sycl_extension`` is as straightforward as writing the following ``setup.py``:
@@ -174,7 +174,7 @@ in a separate ``TORCH_LIBRARY_IMPL`` block:
   TORCH_LIBRARY_IMPL(sycl_extension, XPU, m) {
       m.impl("mymuladd", &mymuladd_xpu);
   }
-  
+
   } // namespace sycl_extension
 
 
@@ -185,7 +185,7 @@ Create a Python Interface
 Create a Python interface for our operator in the ``sycl_extension/ops.py`` file:
 
 .. code-block:: python
-  
+
   import torch
   from torch import Tensor
   __all__ = ["mymuladd"]
