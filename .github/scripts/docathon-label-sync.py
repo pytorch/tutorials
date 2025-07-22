@@ -30,7 +30,7 @@ def main():
     # if the issue has a docathon label, add all labels from the issue to the PR.
     if not docathon_label_present:
         print("The 'docathon-h1-2025' label is not present in the issue.")
-        return    
+        return
     pull_request_labels = pull_request.get_labels()
     issue_label_names = [label.name for label in issue_labels]
     labels_to_add = [label for label in issue_label_names if label not in pull_request_labels]
@@ -39,8 +39,8 @@ def main():
         return
     pull_request.add_to_labels(*labels_to_add)
     print("Labels added to the pull request!")
-        
 
-           
+
+
 if __name__  == "__main__":
     main()
