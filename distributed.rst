@@ -18,7 +18,7 @@ PyTorch with each method having their advantages in certain use cases:
 * `Remote Procedure Call (RPC) distributed training <#learn-rpc>`__
 * `Custom Extensions <#custom-extensions>`__
 
-Read more about these options in `Distributed Overview <../beginner/dist_overview.html>`__.
+Read more about these options in `Distributed Overview <https://docs.pytorch.org/tutorials/beginner/dist_overview.html?utm_source=distr_landing>`__.
 
 .. _learn-ddp:
 
