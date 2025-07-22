@@ -667,13 +667,6 @@ Welcome to PyTorch Tutorials
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
-   :header: Advanced Model Training with Fully Sharded Data Parallel (FSDP1)
-   :card_description: Explore advanced model training with Fully Sharded Data Parallel package.
-   :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
-   :link: intermediate/FSDP_advanced_tutorial.html
-   :tags: Parallel-and-Distributed-Training
-
-.. customcarditem::
    :header: Introduction to Libuv TCPStore Backend
    :card_description: TCPStore now uses a new server backend for faster connection and better scalability.
    :image: _static/img/thumbnails/cropped/Introduction-to-Libuv-Backend-TCPStore.png
