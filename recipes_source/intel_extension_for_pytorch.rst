@@ -41,11 +41,11 @@ Intel® Extension for PyTorch* shares most of features for CPU and GPU.
   these optimizations will be landed in PyTorch master through PRs that are
   being submitted and reviewed. Auto Mixed Precision (AMP) with both BFloat16
   and Float16 have been enabled for Intel discrete GPUs.
-- **Graph Optimization:** To optimize performance further with torchscript,
-  Intel® Extension for PyTorch* supports fusion of frequently used operator
-  patterns, like Conv2D+ReLU, Linear+ReLU, etc. The benefit of the fusions are
-  delivered to users in a transparent fashion. Detailed fusion patterns
-  supported can be found `here <https://github.com/intel/intel-extension-for-pytorch>`_.
+- **Graph Optimization:** To optimize performance further, Intel® Extension for
+  PyTorch* supports fusion of frequently used operator patterns, like Conv2D+ReLU,
+  Linear+ReLU, etc. The benefit of the fusions are delivered to users in a transparent
+  fashion. Detailed fusion patterns supported can be found
+  `here <https://github.com/intel/intel-extension-for-pytorch>`_.
   The graph optimization will be up-streamed to PyTorch with the introduction
   of oneDNN Graph API.
 - **Operator Optimization:** Intel® Extension for PyTorch* also optimizes
@@ -186,8 +186,8 @@ BFloat16
         'optimizer_state_dict': optimizer.state_dict(),
         }, 'checkpoint.pth')
 
-Inference - Imperative Mode
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Inference
+~~~~~~~~~
 
 Float32
 ^^^^^^^
@@ -232,67 +232,6 @@ BFloat16
 
    with torch.no_grad():
      with torch.cpu.amp.autocast():
-       model(data)
-
-Inference - TorchScript Mode
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-TorchScript mode makes graph optimization possible, hence improves
-performance for some topologies. Intel® Extension for PyTorch* enables most
-commonly used operator pattern fusion, and users can get the performance
-benefit without additional code changes.
-
-Float32
-^^^^^^^
-
-.. code:: python3
-
-   import torch
-   import torchvision.models as models
-
-   model = models.resnet50(pretrained=True)
-   model.eval()
-   data = torch.rand(1, 3, 224, 224)
-
-   #################### code changes ####################
-   import intel_extension_for_pytorch as ipex
-   model = ipex.optimize(model)
-   ######################################################
-
-   with torch.no_grad():
-     d = torch.rand(1, 3, 224, 224)
-     model = torch.jit.trace(model, d)
-     model = torch.jit.freeze(model)
-
-     model(data)
-
-BFloat16
-^^^^^^^^
-
-.. code:: python3
-
-   import torch
-   from transformers import BertModel
-
-   model = BertModel.from_pretrained(args.model_name)
-   model.eval()
-
-   vocab_size = model.config.vocab_size
-   batch_size = 1
-   seq_length = 512
-   data = torch.randint(vocab_size, size=[batch_size, seq_length])
-
-   #################### code changes ####################
-   import intel_extension_for_pytorch as ipex
-   model = ipex.optimize(model, dtype=torch.bfloat16)
-   ######################################################
-
-   with torch.no_grad():
-     with torch.cpu.amp.autocast():
-       d = torch.randint(vocab_size, size=[batch_size, seq_length])
-       model = torch.jit.trace(model, (d,), check_trace=False, strict=False)
-       model = torch.jit.freeze(model)
-
        model(data)
 
 Examples -- GPU
@@ -420,8 +359,8 @@ BFloat16
         'optimizer_state_dict': optimizer.state_dict(),
         }, 'checkpoint.pth')
 
-Inference - Imperative Mode
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Inference
+~~~~~~~~~
 
 Float32
 ^^^^^^^
@@ -508,121 +447,6 @@ Float16
      ################################# code changes ######################################
      with torch.xpu.amp.autocast(enabled=True, dtype=torch.float16, cache_enabled=False):
      ################################# code changes ######################################
-       model(data)
-
-Inference - TorchScript Mode
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-TorchScript mode makes graph optimization possible, hence improves
-performance for some topologies. Intel® Extension for PyTorch* enables most
-commonly used operator pattern fusion, and users can get the performance
-benefit without additional code changes.
-
-Float32
-^^^^^^^
-
-.. code:: python3
-
-   import torch
-   from transformers import BertModel
-   ############# code changes ###############
-   import intel_extension_for_pytorch as ipex
-   ############# code changes ###############
-
-   model = BertModel.from_pretrained(args.model_name)
-   model.eval()
-
-   vocab_size = model.config.vocab_size
-   batch_size = 1
-   seq_length = 512
-   data = torch.randint(vocab_size, size=[batch_size, seq_length])
-
-   #################### code changes ################
-   model = model.to("xpu")
-   data = data.to("xpu")
-   model = ipex.optimize(model, dtype=torch.float32)
-   #################### code changes ################
-
-   with torch.no_grad():
-     d = torch.randint(vocab_size, size=[batch_size, seq_length])
-     ##### code changes #####
-     d = d.to("xpu")
-     ##### code changes #####
-     model = torch.jit.trace(model, (d,), check_trace=False, strict=False)
-     model = torch.jit.freeze(model)
-
-     model(data)
-
-BFloat16
-^^^^^^^^
-
-.. code:: python3
-
-   import torch
-   from transformers import BertModel
-   ############# code changes ###############
-   import intel_extension_for_pytorch as ipex
-   ############# code changes ###############
-
-   model = BertModel.from_pretrained(args.model_name)
-   model.eval()
-
-   vocab_size = model.config.vocab_size
-   batch_size = 1
-   seq_length = 512
-   data = torch.randint(vocab_size, size=[batch_size, seq_length])
-
-   #################### code changes #################
-   model = model.to("xpu")
-   data = data.to("xpu")
-   model = ipex.optimize(model, dtype=torch.bfloat16)
-   #################### code changes #################
-
-   with torch.no_grad():
-     d = torch.randint(vocab_size, size=[batch_size, seq_length])
-     ################################# code changes ######################################
-     d = d.to("xpu")
-     with torch.xpu.amp.autocast(enabled=True, dtype=torch.bfloat16, cache_enabled=False):
-     ################################# code changes ######################################
-       model = torch.jit.trace(model, (d,), check_trace=False, strict=False)
-       model = torch.jit.freeze(model)
-
-       model(data)
-
-Float16
-^^^^^^^
-
-.. code:: python3
-
-   import torch
-   from transformers import BertModel
-   ############# code changes ###############
-   import intel_extension_for_pytorch as ipex
-   ############# code changes ###############
-
-   model = BertModel.from_pretrained(args.model_name)
-   model.eval()
-
-   vocab_size = model.config.vocab_size
-   batch_size = 1
-   seq_length = 512
-   data = torch.randint(vocab_size, size=[batch_size, seq_length])
-
-   #################### code changes ################
-   model = model.to("xpu")
-   data = data.to("xpu")
-   model = ipex.optimize(model, dtype=torch.float16)
-   #################### code changes ################
-
-   with torch.no_grad():
-     d = torch.randint(vocab_size, size=[batch_size, seq_length])
-     ################################# code changes ######################################
-     d = d.to("xpu")
-     with torch.xpu.amp.autocast(enabled=True, dtype=torch.float16, cache_enabled=False):
-     ################################# code changes ######################################
-       model = torch.jit.trace(model, (d,), check_trace=False, strict=False)
-       model = torch.jit.freeze(model)
-
        model(data)
 
 C++ (CPU only)
@@ -657,10 +481,11 @@ once C++ dynamic library of Intel® Extension for PyTorch* is linked.
        }
        std::vector<torch::jit::IValue> inputs;
        // make sure input data are converted to channels last format
-       inputs.push_back(torch::ones({1, 3, 224, 224}).to(c10::MemoryFormat::ChannelsLast));
+       inputs.push_back(torch::rand({1, 3, 224, 224});
 
        at::Tensor output = module.forward(inputs).toTensor();
-
+       std::cout << output.slice(/*dim=*/1, /*start=*/0, /*end=*/5) << std::endl;
+       std::cout << "Execution finished" << std::endl;
        return 0;
    }
 
@@ -676,7 +501,7 @@ once C++ dynamic library of Intel® Extension for PyTorch* is linked.
    add_executable(example-app example-app.cpp)
    target_link_libraries(example-app "${TORCH_LIBRARIES}")
 
-   set_property(TARGET example-app PROPERTY CXX_STANDARD 14)
+   set_property(TARGET example-app PROPERTY CXX_STANDARD 17)
 
 **Command for compilation**
 
@@ -691,31 +516,20 @@ into the binary. This can be verified with the Linux command `ldd`.
 ::
 
    $ cmake -DCMAKE_PREFIX_PATH=/workspace/libtorch ..
-   -- The C compiler identification is GNU 9.3.0
-   -- The CXX compiler identification is GNU 9.3.0
-   -- Check for working C compiler: /usr/bin/cc
-   -- Check for working C compiler: /usr/bin/cc -- works
+   -- The C compiler identification is GNU XX.X.X
+   -- The CXX compiler identification is GNU XX.X.X
    -- Detecting C compiler ABI info
    -- Detecting C compiler ABI info - done
+   -- Check for working C compiler: /usr/bin/cc - skipped
    -- Detecting C compile features
    -- Detecting C compile features - done
-   -- Check for working CXX compiler: /usr/bin/c++
-   -- Check for working CXX compiler: /usr/bin/c++ -- works
    -- Detecting CXX compiler ABI info
    -- Detecting CXX compiler ABI info - done
+   -- Check for working CXX compiler: /usr/bin/c++ - skipped
    -- Detecting CXX compile features
    -- Detecting CXX compile features - done
-   -- Looking for pthread.h
-   -- Looking for pthread.h - found
-   -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
-   -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
-   -- Looking for pthread_create in pthreads
-   -- Looking for pthread_create in pthreads - not found
-   -- Looking for pthread_create in pthread
-   -- Looking for pthread_create in pthread - found
-   -- Found Threads: TRUE
    -- Found Torch: /workspace/libtorch/lib/libtorch.so
-   -- Found INTEL_EXT_PT_CPU: TRUE
+   -- Found IPEX: /workspace/libtorch/lib/libintel-ext-pt-cpu.so
    -- Configuring done
    -- Generating done
    -- Build files have been written to: /workspace/build
@@ -726,18 +540,6 @@ into the binary. This can be verified with the Linux command `ldd`.
            libc10.so => /workspace/libtorch/lib/libc10.so (0x00007f3cf985a000)
            libintel-ext-pt-cpu.so => /workspace/libtorch/lib/libintel-ext-pt-cpu.so (0x00007f3cf70fc000)
            libtorch_cpu.so => /workspace/libtorch/lib/libtorch_cpu.so (0x00007f3ce16ac000)
-           ...
-           libdnnl_graph.so.0 => /workspace/libtorch/lib/libdnnl_graph.so.0 (0x00007f3cde954000)
-           ...
-
-Model Zoo (CPU only)
---------------------
-
-Use cases that had already been optimized by Intel engineers are available at
-`Model Zoo for Intel® Architecture <https://github.com/IntelAI/models/>`_ (with
-the branch name in format of `pytorch-r<version>-models`). Many PyTorch use
-cases for benchmarking are also available on the GitHub page. You can get
-performance benefits out-of-the-box by simply running scripts in the Model Zoo.
 
 Tutorials
 ---------
