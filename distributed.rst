@@ -1,5 +1,5 @@
-Distributed and Parallel Training Tutorials
-===========================================
+Distributed
+===========
 
 Distributed training is a model training paradigm that involves
 spreading training workload across multiple worker nodes, therefore
@@ -12,13 +12,13 @@ There are a few ways you can perform distributed training in
 PyTorch with each method having their advantages in certain use cases:
 
 * `DistributedDataParallel (DDP) <#learn-ddp>`__
-* `Fully Sharded Data Parallel (FSDP) <#learn-fsdp>`__
+* `Fully Sharded Data Parallel (FSDP2) <#learn-fsdp>`__
 * `Tensor Parallel (TP) <#learn-tp>`__
 * `Device Mesh <#device-mesh>`__
 * `Remote Procedure Call (RPC) distributed training <#learn-rpc>`__
 * `Custom Extensions <#custom-extensions>`__
 
-Read more about these options in `Distributed Overview <../beginner/dist_overview.html>`__.
+Read more about these options in `Distributed Overview <https://docs.pytorch.org/tutorials/beginner/dist_overview.html?utm_source=distr_landing>`__.
 
 .. _learn-ddp:
 
@@ -60,28 +60,18 @@ Learn DDP
 
 .. _learn-fsdp:
 
-Learn FSDP
+Learn FSDP2
 ----------
 
 .. grid:: 3
 
      .. grid-item-card:: :octicon:`file-code;1em`
-        Getting Started with FSDP
+        Getting Started with FSDP2
         :link: https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html?utm_source=distr_landing&utm_medium=FSDP_getting_started
         :link-type: url
 
         This tutorial demonstrates how you can perform distributed training
-        with FSDP on a MNIST dataset.
-        +++
-        :octicon:`code;1em` Code
-
-     .. grid-item-card:: :octicon:`file-code;1em`
-        FSDP Advanced
-        :link: https://pytorch.org/tutorials/intermediate/FSDP_advanced_tutorial.html?utm_source=distr_landing&utm_medium=FSDP_advanced
-        :link-type: url
-
-        In this tutorial, you will learn how to fine-tune a HuggingFace (HF) T5
-        model with FSDP for text summarization.
+        with FSDP2 on a transformer model
         +++
         :octicon:`code;1em` Code
 
@@ -186,3 +176,22 @@ Custom Extensions
         cpp extensions.
         +++
         :octicon:`code;1em` Code
+
+.. toctree::
+   :hidden:
+   :maxdepth: 2
+
+   beginner/dist_overview
+   beginner/ddp_series_intro
+   intermediate/ddp_tutorial
+   intermediate/dist_tuto
+   intermediate/FSDP_tutorial
+   intermediate/TCPStore_libuv_backend
+   intermediate/TP_tutorial
+   intermediate/pipelining_tutorial
+   intermediate/process_group_cpp_extension_tutorial
+   intermediate/rpc_tutorial
+   intermediate/rpc_param_server_tutorial
+   intermediate/rpc_async_execution
+   advanced/rpc_ddp_tutorial
+   advanced/generic_join
