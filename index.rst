@@ -843,10 +843,10 @@ Additional Resources
    :maxdepth: 1
    :hidden:
 
-   recipes/recipes_index
+   recipes_index
 
 .. toctree::
    :maxdepth: 1
    :hidden:
 
-   prototype/prototype_index
+   unstable_index
