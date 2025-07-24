@@ -1318,7 +1318,7 @@ document.write(`
 <div id="searchbox"></div>
 <article class="bd-article">
 <section id="intel-extension-for-pytorch">
-<h1>Intel® Extension for PyTorch*<a class="headerlink" href="#intel-extension-for-pytorch" title="Link to this heading">#</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Nov 09, 2021 | Last Updated: Jul 25, 2024 | Last Verified: Nov 05, 2024</p>
+<h1>Intel® Extension for PyTorch*<a class="headerlink" href="#intel-extension-for-pytorch" title="Link to this heading">#</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Nov 09, 2021 | Last Updated: Jul 24, 2025 | Last Verified: Nov 05, 2024</p>
 <p>Intel® Extension for PyTorch* extends PyTorch* with up-to-date features
 optimizations for an extra performance boost on Intel hardware. Optimizations
 take advantage of AVX-512 Vector Neural Network Instructions (AVX512 VNNI) and
@@ -1357,11 +1357,11 @@ for PyTorch*, and partially upstreamed to PyTorch master branch. Most of
 these optimizations will be landed in PyTorch master through PRs that are
 being submitted and reviewed. Auto Mixed Precision (AMP) with both BFloat16
 and Float16 have been enabled for Intel discrete GPUs.</p></li>
-<li><p><strong>Graph Optimization:</strong> To optimize performance further with torchscript,
-Intel® Extension for PyTorch* supports fusion of frequently used operator
-patterns, like Conv2D+ReLU, Linear+ReLU, etc. The benefit of the fusions are
-delivered to users in a transparent fashion. Detailed fusion patterns
-supported can be found <a class="reference external" href="https://github.com/intel/intel-extension-for-pytorch">here</a>.
+<li><p><strong>Graph Optimization:</strong> To optimize performance further, Intel® Extension for
+PyTorch* supports fusion of frequently used operator patterns, like Conv2D+ReLU,
+Linear+ReLU, etc. The benefit of the fusions are delivered to users in a transparent
+fashion. Detailed fusion patterns supported can be found
+<a class="reference external" href="https://github.com/intel/intel-extension-for-pytorch">here</a>.
 The graph optimization will be up-streamed to PyTorch with the introduction
 of oneDNN Graph API.</p></li>
 <li><p><strong>Operator Optimization:</strong> Intel® Extension for PyTorch* also optimizes
@@ -1495,8 +1495,8 @@ highlighted.</p>
 </div>
 </section>
 </section>
-<section id="inference-imperative-mode">
-<h3>Inference - Imperative Mode<a class="headerlink" href="#inference-imperative-mode" title="Link to this heading">#</a></h3>
+<section id="inference">
+<h3>Inference<a class="headerlink" href="#inference" title="Link to this heading">#</a></h3>
 <section id="id1">
 <h4>Float32<a class="headerlink" href="#id1" title="Link to this heading">#</a></h4>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
@@ -1541,64 +1541,6 @@ highlighted.</p>
 </div>
 </section>
 </section>
-<section id="inference-torchscript-mode">
-<h3>Inference - TorchScript Mode<a class="headerlink" href="#inference-torchscript-mode" title="Link to this heading">#</a></h3>
-<p>TorchScript mode makes graph optimization possible, hence improves
-performance for some topologies. Intel® Extension for PyTorch* enables most
-commonly used operator pattern fusion, and users can get the performance
-benefit without additional code changes.</p>
-<section id="id3">
-<h4>Float32<a class="headerlink" href="#id3" title="Link to this heading">#</a></h4>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">torchvision.models</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">models</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">resnet50</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
-
-<span class="c1">#################### code changes ####################</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">intel_extension_for_pytorch</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ipex</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">ipex</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="c1">######################################################</span>
-
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-  <span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
-  <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
-  <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">freeze</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-
-  <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="id4">
-<h4>BFloat16<a class="headerlink" href="#id4" title="Link to this heading">#</a></h4>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">BertModel</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">BertModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-
-<span class="n">vocab_size</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">vocab_size</span>
-<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">seq_length</span> <span class="o">=</span> <span class="mi">512</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_length</span><span class="p">])</span>
-
-<span class="c1">#################### code changes ####################</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">intel_extension_for_pytorch</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ipex</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">ipex</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">)</span>
-<span class="c1">######################################################</span>
-
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-  <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cpu</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_length</span><span class="p">])</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">d</span><span class="p">,),</span> <span class="n">check_trace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">freeze</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-
-    <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-</section>
 </section>
 <section id="examples-gpu">
 <h2>Examples – GPU<a class="headerlink" href="#examples-gpu" title="Link to this heading">#</a></h2>
@@ -1606,10 +1548,10 @@ benefit without additional code changes.</p>
 Extension for PyTorch*</p>
 <p>The code changes that are required for Intel® Extension for PyTorch* are
 highlighted with comments in a line above.</p>
-<section id="id5">
-<h3>Training<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
-<section id="id6">
-<h4>Float32<a class="headerlink" href="#id6" title="Link to this heading">#</a></h4>
+<section id="id3">
+<h3>Training<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<section id="id4">
+<h4>Float32<a class="headerlink" href="#id4" title="Link to this heading">#</a></h4>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torchvision</span>
 <span class="c1">############# code changes ###############</span>
@@ -1663,8 +1605,8 @@ highlighted with comments in a line above.</p>
 </pre></div>
 </div>
 </section>
-<section id="id7">
-<h4>BFloat16<a class="headerlink" href="#id7" title="Link to this heading">#</a></h4>
+<section id="id5">
+<h4>BFloat16<a class="headerlink" href="#id5" title="Link to this heading">#</a></h4>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torchvision</span>
 <span class="c1">############# code changes ###############</span>
@@ -1720,10 +1662,10 @@ highlighted with comments in a line above.</p>
 </div>
 </section>
 </section>
-<section id="id8">
-<h3>Inference - Imperative Mode<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
-<section id="id9">
-<h4>Float32<a class="headerlink" href="#id9" title="Link to this heading">#</a></h4>
+<section id="id6">
+<h3>Inference<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
+<section id="id7">
+<h4>Float32<a class="headerlink" href="#id7" title="Link to this heading">#</a></h4>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torchvision.models</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">models</span>
 <span class="c1">############# code changes ###############</span>
@@ -1748,8 +1690,8 @@ highlighted with comments in a line above.</p>
 </pre></div>
 </div>
 </section>
-<section id="id10">
-<h4>BFloat16<a class="headerlink" href="#id10" title="Link to this heading">#</a></h4>
+<section id="id8">
+<h4>BFloat16<a class="headerlink" href="#id8" title="Link to this heading">#</a></h4>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torchvision.models</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">models</span>
 <span class="c1">############# code changes ###############</span>
@@ -1807,117 +1749,6 @@ highlighted with comments in a line above.</p>
 </div>
 </section>
 </section>
-<section id="id11">
-<h3>Inference - TorchScript Mode<a class="headerlink" href="#id11" title="Link to this heading">#</a></h3>
-<p>TorchScript mode makes graph optimization possible, hence improves
-performance for some topologies. Intel® Extension for PyTorch* enables most
-commonly used operator pattern fusion, and users can get the performance
-benefit without additional code changes.</p>
-<section id="id12">
-<h4>Float32<a class="headerlink" href="#id12" title="Link to this heading">#</a></h4>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">BertModel</span>
-<span class="c1">############# code changes ###############</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">intel_extension_for_pytorch</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ipex</span>
-<span class="c1">############# code changes ###############</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">BertModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-
-<span class="n">vocab_size</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">vocab_size</span>
-<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">seq_length</span> <span class="o">=</span> <span class="mi">512</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_length</span><span class="p">])</span>
-
-<span class="c1">#################### code changes ################</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"xpu"</span><span class="p">)</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"xpu"</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">ipex</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-<span class="c1">#################### code changes ################</span>
-
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-  <span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_length</span><span class="p">])</span>
-  <span class="c1">##### code changes #####</span>
-  <span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"xpu"</span><span class="p">)</span>
-  <span class="c1">##### code changes #####</span>
-  <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">d</span><span class="p">,),</span> <span class="n">check_trace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-  <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">freeze</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-
-  <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="id13">
-<h4>BFloat16<a class="headerlink" href="#id13" title="Link to this heading">#</a></h4>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">BertModel</span>
-<span class="c1">############# code changes ###############</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">intel_extension_for_pytorch</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ipex</span>
-<span class="c1">############# code changes ###############</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">BertModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-
-<span class="n">vocab_size</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">vocab_size</span>
-<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">seq_length</span> <span class="o">=</span> <span class="mi">512</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_length</span><span class="p">])</span>
-
-<span class="c1">#################### code changes #################</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"xpu"</span><span class="p">)</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"xpu"</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">ipex</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">)</span>
-<span class="c1">#################### code changes #################</span>
-
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-  <span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_length</span><span class="p">])</span>
-  <span class="c1">################################# code changes ######################################</span>
-  <span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"xpu"</span><span class="p">)</span>
-  <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">xpu</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">,</span> <span class="n">cache_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-  <span class="c1">################################# code changes ######################################</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">d</span><span class="p">,),</span> <span class="n">check_trace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">freeze</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-
-    <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="id14">
-<h4>Float16<a class="headerlink" href="#id14" title="Link to this heading">#</a></h4>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">BertModel</span>
-<span class="c1">############# code changes ###############</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">intel_extension_for_pytorch</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ipex</span>
-<span class="c1">############# code changes ###############</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">BertModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-
-<span class="n">vocab_size</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">vocab_size</span>
-<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">seq_length</span> <span class="o">=</span> <span class="mi">512</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_length</span><span class="p">])</span>
-
-<span class="c1">#################### code changes ################</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"xpu"</span><span class="p">)</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"xpu"</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">ipex</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
-<span class="c1">#################### code changes ################</span>
-
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-  <span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">[</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_length</span><span class="p">])</span>
-  <span class="c1">################################# code changes ######################################</span>
-  <span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"xpu"</span><span class="p">)</span>
-  <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">xpu</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">,</span> <span class="n">cache_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-  <span class="c1">################################# code changes ######################################</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">d</span><span class="p">,),</span> <span class="n">check_trace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">freeze</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-
-    <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-</section>
 <section id="c-cpu-only">
 <h3>C++ (CPU only)<a class="headerlink" href="#c-cpu-only" title="Link to this heading">#</a></h3>
 <p>To work with libtorch, C++ library of PyTorch, Intel® Extension for PyTorch*
@@ -1945,10 +1776,11 @@ once C++ dynamic library of Intel® Extension for PyTorch* is linked.</p>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">IValue</span><span class="o">&gt;</span><span class="w"> </span><span class="n">inputs</span><span class="p">;</span>
 <span class="w">    </span><span class="c1">// make sure input data are converted to channels last format</span>
-<span class="w">    </span><span class="n">inputs</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">ones</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">224</span><span class="p">,</span><span class="w"> </span><span class="mi">224</span><span class="p">}).</span><span class="n">to</span><span class="p">(</span><span class="n">c10</span><span class="o">::</span><span class="n">MemoryFormat</span><span class="o">::</span><span class="n">ChannelsLast</span><span class="p">));</span>
+<span class="w">    </span><span class="n">inputs</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">rand</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">224</span><span class="p">,</span><span class="w"> </span><span class="mi">224</span><span class="p">});</span>
 
 <span class="w">    </span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">module</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">).</span><span class="n">toTensor</span><span class="p">();</span>
-
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">slice</span><span class="p">(</span><span class="cm">/*dim=*/</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="cm">/*start=*/</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="cm">/*end=*/</span><span class="mi">5</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"Execution finished"</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
@@ -1962,7 +1794,7 @@ once C++ dynamic library of Intel® Extension for PyTorch* is linked.</p>
 <span class="n">add_executable</span><span class="p">(</span><span class="n">example</span><span class="o">-</span><span class="n">app</span> <span class="n">example</span><span class="o">-</span><span class="n">app</span><span class="o">.</span><span class="n">cpp</span><span class="p">)</span>
 <span class="n">target_link_libraries</span><span class="p">(</span><span class="n">example</span><span class="o">-</span><span class="n">app</span> <span class="s2">"$</span><span class="si">{TORCH_LIBRARIES}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="n">set_property</span><span class="p">(</span><span class="n">TARGET</span> <span class="n">example</span><span class="o">-</span><span class="n">app</span> <span class="n">PROPERTY</span> <span class="n">CXX_STANDARD</span> <span class="mi">14</span><span class="p">)</span>
+<span class="n">set_property</span><span class="p">(</span><span class="n">TARGET</span> <span class="n">example</span><span class="o">-</span><span class="n">app</span> <span class="n">PROPERTY</span> <span class="n">CXX_STANDARD</span> <span class="mi">17</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Command for compilation</strong></p>
@@ -1973,31 +1805,20 @@ $ make
 <p>If <cite>Found INTEL_EXT_PT_CPU</cite> is shown as <cite>TRUE</cite>, the extension had been linked
 into the binary. This can be verified with the Linux command <cite>ldd</cite>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cmake -DCMAKE_PREFIX_PATH=/workspace/libtorch ..
--- The C compiler identification is GNU 9.3.0
--- The CXX compiler identification is GNU 9.3.0
--- Check for working C compiler: /usr/bin/cc
--- Check for working C compiler: /usr/bin/cc -- works
+-- The C compiler identification is GNU XX.X.X
+-- The CXX compiler identification is GNU XX.X.X
 -- Detecting C compiler ABI info
 -- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
 -- Detecting C compile features
 -- Detecting C compile features - done
--- Check for working CXX compiler: /usr/bin/c++
--- Check for working CXX compiler: /usr/bin/c++ -- works
 -- Detecting CXX compiler ABI info
 -- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
 -- Detecting CXX compile features
 -- Detecting CXX compile features - done
--- Looking for pthread.h
--- Looking for pthread.h - found
--- Performing Test CMAKE_HAVE_LIBC_PTHREAD
--- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
--- Looking for pthread_create in pthreads
--- Looking for pthread_create in pthreads - not found
--- Looking for pthread_create in pthread
--- Looking for pthread_create in pthread - found
--- Found Threads: TRUE
 -- Found Torch: /workspace/libtorch/lib/libtorch.so
--- Found INTEL_EXT_PT_CPU: TRUE
+-- Found IPEX: /workspace/libtorch/lib/libintel-ext-pt-cpu.so
 -- Configuring done
 -- Generating done
 -- Build files have been written to: /workspace/build
@@ -2008,20 +1829,9 @@ $ ldd example-app
         libc10.so =&gt; /workspace/libtorch/lib/libc10.so (0x00007f3cf985a000)
         libintel-ext-pt-cpu.so =&gt; /workspace/libtorch/lib/libintel-ext-pt-cpu.so (0x00007f3cf70fc000)
         libtorch_cpu.so =&gt; /workspace/libtorch/lib/libtorch_cpu.so (0x00007f3ce16ac000)
-        ...
-        libdnnl_graph.so.0 =&gt; /workspace/libtorch/lib/libdnnl_graph.so.0 (0x00007f3cde954000)
-        ...
 </pre></div>
 </div>
 </section>
-</section>
-<section id="model-zoo-cpu-only">
-<h2>Model Zoo (CPU only)<a class="headerlink" href="#model-zoo-cpu-only" title="Link to this heading">#</a></h2>
-<p>Use cases that had already been optimized by Intel engineers are available at
-<a class="reference external" href="https://github.com/IntelAI/models/">Model Zoo for Intel® Architecture</a> (with
-the branch name in format of <cite>pytorch-r&lt;version&gt;-models</cite>). Many PyTorch use
-cases for benchmarking are also available on the GitHub page. You can get
-performance benefits out-of-the-box by simply running scripts in the Model Zoo.</p>
 </section>
 <section id="tutorials">
 <h2>Tutorials<a class="headerlink" href="#tutorials" title="Link to this heading">#</a></h2>
@@ -2092,40 +1902,28 @@ for PyTorch* Documentation:</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#bfloat16">BFloat16</a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inference-imperative-mode">Inference - Imperative Mode</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inference">Inference</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Float32</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">BFloat16</a></li>
-</ul>
-</li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inference-torchscript-mode">Inference - TorchScript Mode</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Float32</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">BFloat16</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples-gpu">Examples – GPU</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Training</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Float32</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">BFloat16</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Training</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Float32</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">BFloat16</a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Inference - Imperative Mode</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Float32</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">BFloat16</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Inference</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Float32</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">BFloat16</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#float16">Float16</a></li>
-</ul>
-</li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">Inference - TorchScript Mode</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">Float32</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">BFloat16</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">Float16</a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c-cpu-only">C++ (CPU only)</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-zoo-cpu-only">Model Zoo (CPU only)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tutorials">Tutorials</a></li>
 </ul>
 </nav></div>
@@ -2271,7 +2069,7 @@ for PyTorch* Documentation:</p>
          },
          "datePublished": "",
          "dateModified": "",
-         "articleBody": "Intel® Extension for PyTorch*# Intel® Extension for PyTorch* extends PyTorch* with up-to-date features optimizations for an extra performance boost on Intel hardware. Optimizations take advantage of AVX-512 Vector Neural Network Instructions (AVX512 VNNI) and Intel® Advanced Matrix Extensions (Intel® AMX) on Intel CPUs as well as Intel Xe Matrix Extensions (XMX) AI engines on Intel discrete GPUs. Moreover, through PyTorch* xpu device, Intel® Extension for PyTorch* provides easy GPU acceleration for Intel discrete GPUs with PyTorch*. Intel® Extension for PyTorch* has been released as an open–source project at Github. Source code for CPU is available at main branch. Source code for GPU is available at xpu-main branch. Features# Intel® Extension for PyTorch* shares most of features for CPU and GPU. Ease-of-use Python API: Intel® Extension for PyTorch* provides simple frontend Python APIs and utilities for users to get performance optimizations such as graph optimization and operator optimization with minor code changes. Typically, only 2 to 3 clauses are required to be added to the original code. Channels Last: Comparing to the default NCHW memory format, channels_last (NHWC) memory format could further accelerate convolutional neural networks. In Intel® Extension for PyTorch*, NHWC memory format has been enabled for most key CPU operators, though not all of them have been merged to PyTorch master branch yet. They are expected to be fully landed in PyTorch upstream soon. Auto Mixed Precision (AMP): Low precision data type BFloat16 has been natively supported on the 3rd Generation Xeon scalable Servers (aka Cooper Lake) with AVX512 instruction set and will be supported on the next generation of Intel® Xeon® Scalable Processors with Intel® Advanced Matrix Extensions (Intel® AMX) instruction set with further boosted performance. The support of Auto Mixed Precision (AMP) with BFloat16 for CPU and BFloat16 optimization of operators have been massively enabled in Intel® Extension for PyTorch*, and partially upstreamed to PyTorch master branch. Most of these optimizations will be landed in PyTorch master through PRs that are being submitted and reviewed. Auto Mixed Precision (AMP) with both BFloat16 and Float16 have been enabled for Intel discrete GPUs. Graph Optimization: To optimize performance further with torchscript, Intel® Extension for PyTorch* supports fusion of frequently used operator patterns, like Conv2D+ReLU, Linear+ReLU, etc. The benefit of the fusions are delivered to users in a transparent fashion. Detailed fusion patterns supported can be found here. The graph optimization will be up-streamed to PyTorch with the introduction of oneDNN Graph API. Operator Optimization: Intel® Extension for PyTorch* also optimizes operators and implements several customized operators for performance. A few ATen operators are replaced by their optimized counterparts in Intel® Extension for PyTorch* via ATen registration mechanism. Moreover, some customized..."
+         "articleBody": "Intel® Extension for PyTorch*# Intel® Extension for PyTorch* extends PyTorch* with up-to-date features optimizations for an extra performance boost on Intel hardware. Optimizations take advantage of AVX-512 Vector Neural Network Instructions (AVX512 VNNI) and Intel® Advanced Matrix Extensions (Intel® AMX) on Intel CPUs as well as Intel Xe Matrix Extensions (XMX) AI engines on Intel discrete GPUs. Moreover, through PyTorch* xpu device, Intel® Extension for PyTorch* provides easy GPU acceleration for Intel discrete GPUs with PyTorch*. Intel® Extension for PyTorch* has been released as an open–source project at Github. Source code for CPU is available at main branch. Source code for GPU is available at xpu-main branch. Features# Intel® Extension for PyTorch* shares most of features for CPU and GPU. Ease-of-use Python API: Intel® Extension for PyTorch* provides simple frontend Python APIs and utilities for users to get performance optimizations such as graph optimization and operator optimization with minor code changes. Typically, only 2 to 3 clauses are required to be added to the original code. Channels Last: Comparing to the default NCHW memory format, channels_last (NHWC) memory format could further accelerate convolutional neural networks. In Intel® Extension for PyTorch*, NHWC memory format has been enabled for most key CPU operators, though not all of them have been merged to PyTorch master branch yet. They are expected to be fully landed in PyTorch upstream soon. Auto Mixed Precision (AMP): Low precision data type BFloat16 has been natively supported on the 3rd Generation Xeon scalable Servers (aka Cooper Lake) with AVX512 instruction set and will be supported on the next generation of Intel® Xeon® Scalable Processors with Intel® Advanced Matrix Extensions (Intel® AMX) instruction set with further boosted performance. The support of Auto Mixed Precision (AMP) with BFloat16 for CPU and BFloat16 optimization of operators have been massively enabled in Intel® Extension for PyTorch*, and partially upstreamed to PyTorch master branch. Most of these optimizations will be landed in PyTorch master through PRs that are being submitted and reviewed. Auto Mixed Precision (AMP) with both BFloat16 and Float16 have been enabled for Intel discrete GPUs. Graph Optimization: To optimize performance further, Intel® Extension for PyTorch* supports fusion of frequently used operator patterns, like Conv2D+ReLU, Linear+ReLU, etc. The benefit of the fusions are delivered to users in a transparent fashion. Detailed fusion patterns supported can be found here. The graph optimization will be up-streamed to PyTorch with the introduction of oneDNN Graph API. Operator Optimization: Intel® Extension for PyTorch* also optimizes operators and implements several customized operators for performance. A few ATen operators are replaced by their optimized counterparts in Intel® Extension for PyTorch* via ATen registration mechanism. Moreover, some customized operators are im..."
        }
    </script>
 </body>
