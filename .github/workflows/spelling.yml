@@ -17,7 +17,7 @@ jobs:
           script: |
             let skipCheck = false;
             let changedFiles = [];
-            
+
             if (context.eventName === 'pull_request') {
               // Check for skip label
               const { data: labels } = await github.rest.issues.listLabelsOnIssue({
@@ -26,7 +26,7 @@ jobs:
                 issue_number: context.issue.number
               });
               skipCheck = labels.some(label => label.name === 'skip-spell-check');
-              
+
               if (!skipCheck) {
                 // Get changed files in PR
                 const { data: files } = await github.rest.pulls.listFiles({
@@ -34,7 +34,7 @@ jobs:
                   repo: context.repo.repo,
                   pull_number: context.issue.number
                 });
-                
+
                 changedFiles = files
                   .filter(file => file.filename.match(/\.(py|rst|md)$/))
                   .map(file => file.filename);
@@ -43,7 +43,7 @@ jobs:
               // For push events, we'll still need to use git diff
               // We'll handle this after checkout
             }
-            
+
             core.setOutput('skip', skipCheck.toString());
             core.setOutput('files', changedFiles.join('\n'));
             core.setOutput('is-pr', (context.eventName === 'pull_request').toString());
@@ -73,7 +73,7 @@ jobs:
           else
             FILES="${{ steps.push-files.outputs.files }}"
           fi
-          
+
           if [ -z "$FILES" ]; then
             echo "skip=true" >> $GITHUB_OUTPUT
             echo "No relevant files changed (*.py, *.rst, *.md), skipping spell check"
@@ -110,7 +110,7 @@ jobs:
           else
             mapfile -t FILES <<< "${{ steps.push-files.outputs.files }}"
           fi
-          
+
           # Check each file individually
           FINAL_EXIT_CODE=0
           SPELLCHECK_LOG=""

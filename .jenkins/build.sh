@@ -152,11 +152,11 @@ elif [[ "${JOB_TYPE}" == "manager" ]]; then
   if [[ "$COMMIT_SOURCE" == "refs/heads/master" || "$COMMIT_SOURCE" == "refs/heads/main" ]]; then
     git clone https://github.com/pytorch/tutorials.git -b gh-pages gh-pages
     # Clean up directories that contain tutorials
-    
+
     for dir in beginner intermediate prototype recipes advanced distributed vision text audio; do
       rm -rf "gh-pages/$dir"
     done
-    
+
     cp -r docs/* gh-pages/
     pushd gh-pages
     # DANGER! DO NOT REMOVE THE `set +x` SETTING HERE!

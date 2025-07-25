@@ -5,7 +5,7 @@ import re
 """
 This post-processing script needs to run after the .ipynb files are
 generated. The script removes extraneous ```{=html} syntax from the
-admonitions and splits the cells that have video iframe into a 
+admonitions and splits the cells that have video iframe into a
 separate code cell that can be run to load the video directly
 in the notebook. This script is included in build.sh.
 """
@@ -36,7 +36,7 @@ def process_video_cell(notebook_path):
                 before_html_block = match.group(1)
                 code_block = match.group(2)
 
-                # Add a comment to run the cell to display the video 
+                # Add a comment to run the cell to display the video
                 code_block = "# Run this cell to load the video\n" + code_block
                 # Create a new code cell
                 new_code_cell = nbf.v4.new_code_cell(source=code_block)
