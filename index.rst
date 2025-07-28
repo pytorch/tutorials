@@ -769,7 +769,7 @@ Additional Resources
 .. customcalloutitem::
    :header: PyTorch Cheat Sheet
    :description: Quick overview to essential PyTorch elements.
-   :button_link: beginner/ptcheat.html
+   :button_link: https://www.mad.tf.fau.de/files/2019/07/pytorch-cheatsheet-en.pdf
    :button_text: Open
 
 .. customcalloutitem::
