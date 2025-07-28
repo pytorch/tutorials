@@ -1371,337 +1371,138 @@ document.write(`
 <div id="searchbox"></div>
 <article class="bd-article">
 <section id="ease-of-use-quantization-for-pytorch-with-intel-neural-compressor">
-<h1>Ease-of-use quantization for PyTorch with Intel® Neural Compressor<a class="headerlink" href="#ease-of-use-quantization-for-pytorch-with-intel-neural-compressor" title="Link to this heading">#</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Jan 11, 2022 | Last Updated: Aug 27, 2024 | Last Verified: Not Verified</p>
+<h1>Ease-of-use quantization for PyTorch with Intel® Neural Compressor<a class="headerlink" href="#ease-of-use-quantization-for-pytorch-with-intel-neural-compressor" title="Link to this heading">#</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Jan 11, 2022 | Last Updated: Jul 28, 2025 | Last Verified: Not Verified</p>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
-<p>Most deep learning applications are using 32-bits of floating-point precision
-for inference. But low precision data types, especially int8, are getting more
-focus due to significant performance boost. One of the essential concerns on
-adopting low precision is how to easily mitigate the possible accuracy loss
-and reach predefined accuracy requirement.</p>
-<p>Intel® Neural Compressor aims to address the aforementioned concern by extending
-PyTorch with accuracy-driven automatic tuning strategies to help user quickly find
-out the best quantized model on Intel hardware, including Intel Deep Learning
-Boost (<a class="reference external" href="https://www.intel.com/content/www/us/en/artificial-intelligence/deep-learning-boost.html">Intel DL Boost</a>)
-and Intel Advanced Matrix Extensions (<a class="reference external" href="https://www.intel.com/content/www/us/en/develop/documentation/cpp-compiler-developer-guide-and-reference/top/compiler-reference/intrinsics/intrinsics-for-amx-instructions/intrinsics-for-amx-tile-instructions.html">Intel AMX</a>).</p>
-<p>Intel® Neural Compressor has been released as an open-source project
-at <a class="reference external" href="https://github.com/intel/neural-compressor">Github</a>.</p>
+<p>Most deep learning applications are using 32-bits of floating-point precision for inference. But low precision data types, such as fp8, are getting more focus due to significant performance boost. A key concern in adopting low precision is mitigating accuracy loss while meeting predefined requirements.</p>
+<p>Intel® Neural Compressor aims to address the aforementioned concern by extending PyTorch with accuracy-driven automatic tuning strategies to help user quickly find out the best quantized model on Intel hardware.</p>
+<p>Intel® Neural Compressor is an open-source project at <a class="reference external" href="https://github.com/intel/neural-compressor">Github</a>.</p>
 </section>
 <section id="features">
 <h2>Features<a class="headerlink" href="#features" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p><strong>Ease-of-use Python API:</strong> Intel® Neural Compressor provides simple frontend
-Python APIs and utilities for users to do neural network compression with few
-line code changes.
-Typically, only 5 to 6 clauses are required to be added to the original code.</p></li>
-<li><p><strong>Quantization:</strong> Intel® Neural Compressor supports accuracy-driven automatic
-tuning process on post-training static quantization, post-training dynamic
-quantization, and quantization-aware training on PyTorch fx graph mode and
-eager model.</p></li>
+<li><p><strong>Ease-of-use API:</strong> Intel® Neural Compressor is re-using the PyTorch <code class="docutils literal notranslate"><span class="pre">prepare</span></code>, <code class="docutils literal notranslate"><span class="pre">convert</span></code> API for user usage.</p></li>
+<li><p><strong>Accuracy-driven Tuning:</strong> Intel® Neural Compressor supports accuracy-driven automatic tuning process, provides <code class="docutils literal notranslate"><span class="pre">autotune</span></code> API for user usage.</p></li>
+<li><p><strong>Kinds of Quantization:</strong> Intel® Neural Compressor supports a variety of quantization methods, including classic INT8 quantization, weight-only quantization and the popular FP8 quantization. Neural compressor also provides the latest research in simulation work, such as MX data type emulation quantization. For more details, please refer to <a class="reference external" href="https://github.com/intel/neural-compressor/blob/master/docs/source/3x/PyTorch.md#supported-matrix">Supported Matrix</a>.</p></li>
 </ul>
-<p><em>This tutorial mainly focuses on the quantization part. As for how to use Intel®
-Neural Compressor to do pruning and distillation, please refer to corresponding
-documents in the Intel® Neural Compressor github repo.</em></p>
 </section>
 <section id="getting-started">
 <h2>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">#</a></h2>
 <section id="installation">
 <h3>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># install stable version from pip</span>
-pip<span class="w"> </span>install<span class="w"> </span>neural-compressor
-
-<span class="c1"># install nightly version from pip</span>
-pip<span class="w"> </span>install<span class="w"> </span>-i<span class="w"> </span>https://test.pypi.org/simple/<span class="w"> </span>neural-compressor
-
-<span class="c1"># install stable version from from conda</span>
-conda<span class="w"> </span>install<span class="w"> </span>neural-compressor<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>-c<span class="w"> </span>intel
+pip<span class="w"> </span>install<span class="w"> </span>neural-compressor-pt
 </pre></div>
 </div>
-<p><em>Supported python versions are 3.6 or 3.7 or 3.8 or 3.9</em></p>
+<p><strong>Note</strong>: Neural Compressor provides automatic accelerator detection, including HPU, Intel GPU, CUDA, and CPU. To specify the target device, <code class="docutils literal notranslate"><span class="pre">INC_TARGET_DEVICE</span></code> is suggested, e.g., <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">INC_TARGET_DEVICE=cpu</span></code>.</p>
 </section>
-<section id="usages">
-<h3>Usages<a class="headerlink" href="#usages" title="Link to this heading">#</a></h3>
-<p>Minor code changes are required for users to get started with Intel® Neural Compressor
-quantization API. Both PyTorch fx graph mode and eager mode are supported.</p>
-<p>Intel® Neural Compressor takes a FP32 model and a yaml configuration file as inputs.
-To construct the quantization process, users can either specify the below settings via
-the yaml configuration file or python APIs:</p>
-<ol class="arabic simple">
-<li><p>Calibration Dataloader (Needed for static quantization)</p></li>
-<li><p>Evaluation Dataloader</p></li>
-<li><p>Evaluation Metric</p></li>
-</ol>
-<p>Intel® Neural Compressor supports some popular dataloaders and evaluation metrics. For
-how to configure them in yaml configuration file, user could refer to <a class="reference external" href="https://github.com/intel/neural-compressor/blob/master/docs/dataset.md">Built-in Datasets</a>.</p>
-<p>If users want to use a self-developed dataloader or evaluation metric, Intel® Neural
-Compressor supports this by the registration of customized dataloader/metric using python code.</p>
-<p>For the yaml configuration file format please refer to <a class="reference external" href="https://github.com/intel/neural-compressor/blob/master/neural_compressor/template/ptq.yaml">yaml template</a>.</p>
-<p>The code changes that are required for <em>Intel® Neural Compressor</em> are highlighted with
-comments in the line above.</p>
-<section id="model">
-<h4>Model<a class="headerlink" href="#model" title="Link to this heading">#</a></h4>
-<p>In this tutorial, the LeNet model is used to demonstrate how to deal with <em>Intel® Neural Compressor</em>.</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># main.py</span>
+<section id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h3>
+<p>This section shows examples of kinds of quantization with Intel® Neural compressor</p>
+<section id="fp8-quantization">
+<h4>FP8 Quantization<a class="headerlink" href="#fp8-quantization" title="Link to this heading">#</a></h4>
+<p><strong>FP8 Quantization</strong> is supported by Intel® Gaudi®2&amp;3 AI Accelerator (HPU). To prepare the environment, please refer to <a class="reference external" href="https://docs.habana.ai/en/latest/index.html">Intel® Gaudi® Documentation</a>.</p>
+<p>Run the example,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># FP8 Quantization Example</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">neural_compressor.torch.quantization</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">FP8Config</span><span class="p">,</span>
+    <span class="n">prepare</span><span class="p">,</span>
+    <span class="n">convert</span><span class="p">,</span>
+<span class="p">)</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torchvision.models</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">models</span>
 
-<span class="c1"># LeNet Model definition</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">Net</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Net</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv2_drop</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout2d</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc1_drop</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="c1"># Load a pre-trained ResNet18 model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">()</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2_drop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="mi">2</span><span class="p">))</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">320</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc1</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc1_drop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># Configure FP8 quantization</span>
+<span class="n">qconfig</span> <span class="o">=</span> <span class="n">FP8Config</span><span class="p">(</span><span class="n">fp8_config</span><span class="o">=</span><span class="s2">"E4M3"</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">prepare</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">qconfig</span><span class="p">)</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">'./lenet_mnist_model.pth'</span><span class="p">,</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>The pretrained model weight <cite>lenet_mnist_model.pth</cite> comes from
-<a class="reference external" href="https://drive.google.com/drive/folders/1fn83DF14tWmit0RTKWRhPq5uVXt73e0h?usp=sharing">here</a>.</p>
-</section>
-<section id="accuracy-driven-quantization">
-<h4>Accuracy driven quantization<a class="headerlink" href="#accuracy-driven-quantization" title="Link to this heading">#</a></h4>
-<p>Intel® Neural Compressor supports accuracy-driven automatic tuning to generate the optimal
-int8 model which meets a predefined accuracy goal.</p>
-<p>Below is an example of how to quantize a simple network on PyTorch
-<a class="reference external" href="https://pytorch.org/docs/stable/fx.html">FX graph mode</a> by auto-tuning.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># conf.yaml</span>
-<span class="nt">model</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LeNet</span>
-<span class="w">    </span><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pytorch_fx</span>
+<span class="c1"># Perform calibration (replace with actual calibration data)</span>
+<span class="n">calibration_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"hpu"</span><span class="p">)</span>
+<span class="n">model</span><span class="p">(</span><span class="n">calibration_data</span><span class="p">)</span>
 
-<span class="nt">evaluation</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">accuracy</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">metric</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">topk</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="c1"># Convert the model to FP8</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
-<span class="nt">tuning</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">accuracy_criterion</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">relative</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.01</span>
-</pre></div>
-</div>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># main.py</span>
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">torchvision</span><span class="w"> </span><span class="kn">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">transforms</span>
-<span class="n">test_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
-    <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s1">'./data'</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                   <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
-                       <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
-                   <span class="p">])),</span>
-    <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-<span class="c1"># launch code for Intel® Neural Compressor</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">neural_compressor.experimental</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantization</span>
-<span class="n">quantizer</span> <span class="o">=</span> <span class="n">Quantization</span><span class="p">(</span><span class="s2">"./conf.yaml"</span><span class="p">)</span>
-<span class="n">quantizer</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
-<span class="n">quantizer</span><span class="o">.</span><span class="n">calib_dataloader</span> <span class="o">=</span> <span class="n">test_loader</span>
-<span class="n">quantizer</span><span class="o">.</span><span class="n">eval_dataloader</span> <span class="o">=</span> <span class="n">test_loader</span>
-<span class="n">q_model</span> <span class="o">=</span> <span class="n">quantizer</span><span class="p">()</span>
-<span class="n">q_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">'./output'</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>In the <cite>conf.yaml</cite> file, the built-in metric <cite>top1</cite> of Intel® Neural Compressor is specified as
-the evaluation method, and <cite>1%</cite> relative accuracy loss is set as the accuracy target for auto-tuning.
-Intel® Neural Compressor will traverse all possible quantization config combinations on per-op level
-to find out the optimal int8 model that reaches the predefined accuracy target.</p>
-<p>Besides those built-in metrics, Intel® Neural Compressor also supports customized metric through
-python code:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># conf.yaml</span>
-<span class="nt">model</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LeNet</span>
-<span class="w">    </span><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pytorch_fx</span>
-
-<span class="nt">tuning</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">accuracy_criterion</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">relative</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.01</span>
-</pre></div>
-</div>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># main.py</span>
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">torchvision</span><span class="w"> </span><span class="kn">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">transforms</span>
-<span class="n">test_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
-    <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s1">'./data'</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                   <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
-                       <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
-                   <span class="p">])),</span>
-    <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-<span class="c1"># define a customized metric</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">Top1Metric</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">correct</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-        <span class="n">pred</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">correct</span> <span class="o">+=</span> <span class="n">pred</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">view_as</span><span class="p">(</span><span class="n">pred</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">correct</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="mf">100.</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">correct</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span>
-
-<span class="c1"># launch code for Intel® Neural Compressor</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">neural_compressor.experimental</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantization</span>
-<span class="n">quantizer</span> <span class="o">=</span> <span class="n">Quantization</span><span class="p">(</span><span class="s2">"./conf.yaml"</span><span class="p">)</span>
-<span class="n">quantizer</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
-<span class="n">quantizer</span><span class="o">.</span><span class="n">calib_dataloader</span> <span class="o">=</span> <span class="n">test_loader</span>
-<span class="n">quantizer</span><span class="o">.</span><span class="n">eval_dataloader</span> <span class="o">=</span> <span class="n">test_loader</span>
-<span class="n">quantizer</span><span class="o">.</span><span class="n">metric</span> <span class="o">=</span> <span class="n">Top1Metric</span><span class="p">()</span>
-<span class="n">q_model</span> <span class="o">=</span> <span class="n">quantizer</span><span class="p">()</span>
-<span class="n">q_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">'./output'</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>In the above example, a <cite>class</cite> which contains <cite>update()</cite> and <cite>result()</cite> function is implemented
-to record per mini-batch result and calculate final accuracy at the end.</p>
-</section>
-<section id="quantization-aware-training">
-<h4>Quantization aware training<a class="headerlink" href="#quantization-aware-training" title="Link to this heading">#</a></h4>
-<p>Besides post-training static quantization and post-training dynamic quantization, Intel® Neural
-Compressor supports quantization-aware training with an accuracy-driven automatic tuning mechanism.</p>
-<p>Below is an example of how to do quantization aware training on a simple network on PyTorch
-<a class="reference external" href="https://pytorch.org/docs/stable/fx.html">FX graph mode</a>.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># conf.yaml</span>
-<span class="nt">model</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LeNet</span>
-<span class="w">    </span><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pytorch_fx</span>
-
-<span class="nt">quantization</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">approach</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quant_aware_training</span>
-
-<span class="nt">evaluation</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">accuracy</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">metric</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">topk</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
-
-<span class="nt">tuning</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">accuracy_criterion</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">relative</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.01</span>
-</pre></div>
-</div>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># main.py</span>
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">torchvision</span><span class="w"> </span><span class="kn">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">transforms</span>
-<span class="n">train_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
-    <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s1">'./data'</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                   <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
-                       <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
-                       <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">((</span><span class="mf">0.1307</span><span class="p">,),</span> <span class="p">(</span><span class="mf">0.3081</span><span class="p">,))</span>
-                   <span class="p">])),</span>
-    <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">test_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
-    <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s1">'./data'</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                   <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
-                       <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
-                       <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">((</span><span class="mf">0.1307</span><span class="p">,),</span> <span class="p">(</span><span class="mf">0.3081</span><span class="p">,))</span>
-                   <span class="p">])),</span>
-    <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">torch.optim</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optim</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">training_func</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
-            <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-            <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">nll_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-            <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">'Train Epoch: </span><span class="si">{}</span><span class="s1"> [</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1"> (</span><span class="si">{:.0f}</span><span class="s1">%)]</span><span class="se">\t</span><span class="s1">Loss: </span><span class="si">{:.6f}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                  <span class="n">epoch</span><span class="p">,</span> <span class="n">batch_idx</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">),</span>
-                  <span class="mf">100.</span> <span class="o">*</span> <span class="n">batch_idx</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">),</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()))</span>
-
-<span class="c1"># launch code for Intel® Neural Compressor</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">neural_compressor.experimental</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantization</span>
-<span class="n">quantizer</span> <span class="o">=</span> <span class="n">Quantization</span><span class="p">(</span><span class="s2">"./conf.yaml"</span><span class="p">)</span>
-<span class="n">quantizer</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
-<span class="n">quantizer</span><span class="o">.</span><span class="n">q_func</span> <span class="o">=</span> <span class="n">training_func</span>
-<span class="n">quantizer</span><span class="o">.</span><span class="n">eval_dataloader</span> <span class="o">=</span> <span class="n">test_loader</span>
-<span class="n">q_model</span> <span class="o">=</span> <span class="n">quantizer</span><span class="p">()</span>
-<span class="n">q_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">'./output'</span><span class="p">)</span>
+<span class="c1"># Perform inference</span>
+<span class="n">input_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"hpu"</span><span class="p">)</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">input_data</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
-<section id="performance-only-quantization">
-<h4>Performance only quantization<a class="headerlink" href="#performance-only-quantization" title="Link to this heading">#</a></h4>
-<p>Intel® Neural Compressor supports directly yielding int8 model with dummy dataset for the
-performance benchmarking purpose.</p>
-<p>Below is an example of how to quantize a simple network on PyTorch
-<a class="reference external" href="https://pytorch.org/docs/stable/fx.html">FX graph mode</a> with a dummy dataset.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># conf.yaml</span>
-<span class="nt">model</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lenet</span>
-<span class="w">    </span><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pytorch_fx</span>
-</pre></div>
-</div>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># main.py</span>
-<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<section id="weight-only-quantization">
+<h4>Weight-only Quantization<a class="headerlink" href="#weight-only-quantization" title="Link to this heading">#</a></h4>
+<p><strong>Weight-only Quantization</strong> is also supported on Intel® Gaudi®2&amp;3 AI Accelerator. The quantized model could be loaded as below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">neural_compressor.torch.quantization</span><span class="w"> </span><span class="kn">import</span> <span class="n">load</span>
 
-<span class="c1"># launch code for Intel® Neural Compressor</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">neural_compressor.experimental</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantization</span><span class="p">,</span> <span class="n">common</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">neural_compressor.experimental.data.datasets.dummy_dataset</span><span class="w"> </span><span class="kn">import</span> <span class="n">DummyDataset</span>
-<span class="n">quantizer</span> <span class="o">=</span> <span class="n">Quantization</span><span class="p">(</span><span class="s2">"./conf.yaml"</span><span class="p">)</span>
-<span class="n">quantizer</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
-<span class="n">quantizer</span><span class="o">.</span><span class="n">calib_dataloader</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">DummyDataset</span><span class="p">([(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">)]))</span>
-<span class="n">q_model</span> <span class="o">=</span> <span class="n">quantizer</span><span class="p">()</span>
-<span class="n">q_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">'./output'</span><span class="p">)</span>
+<span class="c1"># The model name comes from HuggingFace Model Hub.</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="s2">"TheBloke/Llama-2-7B-GPTQ"</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span>
+    <span class="n">model_name_or_path</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">"huggingface"</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="s2">"hpu"</span><span class="p">,</span>
+    <span class="n">torch_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Note:</strong> Intel Neural Compressor will convert the model format from auto-gptq to hpu format on the first load and save hpu_model.safetensors to the local cache directory for the next load. So it may take a while to load for the first time.</p>
+</section>
+<section id="static-quantization-with-pt2e-backend">
+<h4>Static Quantization with PT2E Backend<a class="headerlink" href="#static-quantization-with-pt2e-backend" title="Link to this heading">#</a></h4>
+<p>The PT2E path uses <code class="docutils literal notranslate"><span class="pre">torch.dynamo</span></code> to capture the eager model into an FX graph model, and then inserts the observers and Q/QD pairs on it. Finally it uses the <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> to perform the pattern matching and replace the Q/DQ pairs with optimized quantized operators.</p>
+<p>There are four steps to perform W8A8 static quantization with PT2E backend: <code class="docutils literal notranslate"><span class="pre">export</span></code>, <code class="docutils literal notranslate"><span class="pre">prepare</span></code>, <code class="docutils literal notranslate"><span class="pre">convert</span></code> and <code class="docutils literal notranslate"><span class="pre">compile</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">neural_compressor.torch.export</span><span class="w"> </span><span class="kn">import</span> <span class="n">export</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">neural_compressor.torch.quantization</span><span class="w"> </span><span class="kn">import</span> <span class="n">StaticQuantConfig</span><span class="p">,</span> <span class="n">prepare</span><span class="p">,</span> <span class="n">convert</span>
+
+<span class="c1"># Prepare the float model and example inputs for export model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">UserFloatModel</span><span class="p">()</span>
+<span class="n">example_inputs</span> <span class="o">=</span> <span class="o">...</span>
+
+<span class="c1"># Export eager model into FX graph model</span>
+<span class="n">exported_model</span> <span class="o">=</span> <span class="n">export</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">example_inputs</span><span class="o">=</span><span class="n">example_inputs</span><span class="p">)</span>
+<span class="c1"># Quantize the model</span>
+<span class="n">quant_config</span> <span class="o">=</span> <span class="n">StaticQuantConfig</span><span class="p">()</span>
+<span class="n">prepared_model</span> <span class="o">=</span> <span class="n">prepare</span><span class="p">(</span><span class="n">exported_model</span><span class="p">,</span> <span class="n">quant_config</span><span class="o">=</span><span class="n">quant_config</span><span class="p">)</span>
+<span class="c1"># Calibrate</span>
+<span class="n">run_fn</span><span class="p">(</span><span class="n">prepared_model</span><span class="p">)</span>
+<span class="n">q_model</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span><span class="n">prepared_model</span><span class="p">)</span>
+<span class="c1"># Compile the quantized model and replace the Q/DQ pattern with Q-operator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch._inductor</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+
+<span class="n">config</span><span class="o">.</span><span class="n">freezing</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">opt_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">q_model</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
-</section>
-<section id="quantization-outputs">
-<h3>Quantization outputs<a class="headerlink" href="#quantization-outputs" title="Link to this heading">#</a></h3>
-<p>Users could know how many ops get quantized from log printed by Intel® Neural Compressor
-like below:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|********</span><span class="n">Mixed</span> <span class="n">Precision</span> <span class="n">Statistics</span><span class="o">*******|</span>
-<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">+------------------------+--------+-------+</span>
-<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|</span>        <span class="n">Op</span> <span class="n">Type</span>         <span class="o">|</span> <span class="n">Total</span>  <span class="o">|</span>  <span class="n">INT8</span> <span class="o">|</span>
-<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">+------------------------+--------+-------+</span>
-<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|</span>  <span class="n">quantize_per_tensor</span>   <span class="o">|</span>   <span class="mi">2</span>    <span class="o">|</span>   <span class="mi">2</span>   <span class="o">|</span>
-<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|</span>         <span class="n">Conv2d</span>         <span class="o">|</span>   <span class="mi">2</span>    <span class="o">|</span>   <span class="mi">2</span>   <span class="o">|</span>
-<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|</span>       <span class="n">max_pool2d</span>       <span class="o">|</span>   <span class="mi">1</span>    <span class="o">|</span>   <span class="mi">1</span>   <span class="o">|</span>
-<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|</span>          <span class="n">relu</span>          <span class="o">|</span>   <span class="mi">1</span>    <span class="o">|</span>   <span class="mi">1</span>   <span class="o">|</span>
-<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|</span>       <span class="n">dequantize</span>       <span class="o">|</span>   <span class="mi">2</span>    <span class="o">|</span>   <span class="mi">2</span>   <span class="o">|</span>
-<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|</span>       <span class="n">LinearReLU</span>       <span class="o">|</span>   <span class="mi">1</span>    <span class="o">|</span>   <span class="mi">1</span>   <span class="o">|</span>
-<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|</span>         <span class="n">Linear</span>         <span class="o">|</span>   <span class="mi">1</span>    <span class="o">|</span>   <span class="mi">1</span>   <span class="o">|</span>
-<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">+------------------------+--------+-------+</span>
+<section id="accuracy-driven-tuning">
+<h4>Accuracy-driven Tuning<a class="headerlink" href="#accuracy-driven-tuning" title="Link to this heading">#</a></h4>
+<p>To leverage accuracy-driven automatic tuning, a specified tuning space is necessary. The <code class="docutils literal notranslate"><span class="pre">autotune</span></code> iterates the tuning space and applies the configuration on given high-precision model then records and compares its evaluation result with the baseline. The tuning process stops when meeting the exit policy.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">neural_compressor.torch.quantization</span><span class="w"> </span><span class="kn">import</span> <span class="n">RTNConfig</span><span class="p">,</span> <span class="n">TuningConfig</span><span class="p">,</span> <span class="n">autotune</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">eval_fn</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">return</span> <span class="o">...</span>
+
+
+<span class="n">tune_config</span> <span class="o">=</span> <span class="n">TuningConfig</span><span class="p">(</span>
+    <span class="n">config_set</span><span class="o">=</span><span class="n">RTNConfig</span><span class="p">(</span><span class="n">use_sym</span><span class="o">=</span><span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">],</span> <span class="n">group_size</span><span class="o">=</span><span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">128</span><span class="p">]),</span>
+    <span class="n">tolerable_loss</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">max_trials</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">q_model</span> <span class="o">=</span> <span class="n">autotune</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">tune_config</span><span class="o">=</span><span class="n">tune_config</span><span class="p">,</span> <span class="n">eval_fn</span><span class="o">=</span><span class="n">eval_fn</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The quantized model will be generated under <cite>./output</cite> directory, in which there are two files:
-1. best_configure.yaml
-2. best_model_weights.pt</p>
-<p>The first file contains the quantization configurations of each op, the second file contains
-int8 weights and zero point and scale info of activations.</p>
 </section>
-<section id="deployment">
-<h3>Deployment<a class="headerlink" href="#deployment" title="Link to this heading">#</a></h3>
-<p>Users could use the below code to load quantized model and then do inference or performance benchmark.</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">neural_compressor.utils.pytorch</span><span class="w"> </span><span class="kn">import</span> <span class="n">load</span>
-<span class="n">int8_model</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="s1">'./output'</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
-</pre></div>
-</div>
 </section>
 </section>
 <section id="tutorials">
 <h2>Tutorials<a class="headerlink" href="#tutorials" title="Link to this heading">#</a></h2>
-<p>Please visit <a class="reference external" href="https://github.com/intel/neural-compressor">Intel® Neural Compressor Github repo</a>
-for more tutorials.</p>
+<p>More detailed tutorials are available in the official Intel® Neural Compressor <a class="reference external" href="https://intel.github.io/neural-compressor/latest/docs/source/Welcome.html">doc</a>.</p>
 </section>
 </section>
 </article>
@@ -1787,15 +1588,13 @@ for more tutorials.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#features">Features</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-started">Getting Started</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#usages">Usages</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#model">Model</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#accuracy-driven-quantization">Accuracy driven quantization</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#quantization-aware-training">Quantization aware training</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#performance-only-quantization">Performance only quantization</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#fp8-quantization">FP8 Quantization</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#weight-only-quantization">Weight-only Quantization</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#static-quantization-with-pt2e-backend">Static Quantization with PT2E Backend</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#accuracy-driven-tuning">Accuracy-driven Tuning</a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#quantization-outputs">Quantization outputs</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deployment">Deployment</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tutorials">Tutorials</a></li>
@@ -1943,7 +1742,7 @@ for more tutorials.</p>
          },
          "datePublished": "",
          "dateModified": "",
-         "articleBody": "Ease-of-use quantization for PyTorch with Intel® Neural Compressor# Overview# Most deep learning applications are using 32-bits of floating-point precision for inference. But low precision data types, especially int8, are getting more focus due to significant performance boost. One of the essential concerns on adopting low precision is how to easily mitigate the possible accuracy loss and reach predefined accuracy requirement. Intel® Neural Compressor aims to address the aforementioned concern by extending PyTorch with accuracy-driven automatic tuning strategies to help user quickly find out the best quantized model on Intel hardware, including Intel Deep Learning Boost (Intel DL Boost) and Intel Advanced Matrix Extensions (Intel AMX). Intel® Neural Compressor has been released as an open-source project at Github. Features# Ease-of-use Python API: Intel® Neural Compressor provides simple frontend Python APIs and utilities for users to do neural network compression with few line code changes. Typically, only 5 to 6 clauses are required to be added to the original code. Quantization: Intel® Neural Compressor supports accuracy-driven automatic tuning process on post-training static quantization, post-training dynamic quantization, and quantization-aware training on PyTorch fx graph mode and eager model. This tutorial mainly focuses on the quantization part. As for how to use Intel® Neural Compressor to do pruning and distillation, please refer to corresponding documents in the Intel® Neural Compressor github repo. Getting Started# Installation# # install stable version from pip pip install neural-compressor # install nightly version from pip pip install -i https://test.pypi.org/simple/ neural-compressor # install stable version from from conda conda install neural-compressor -c conda-forge -c intel Supported python versions are 3.6 or 3.7 or 3.8 or 3.9 Usages# Minor code changes are required for users to get started with Intel® Neural Compressor quantization API. Both PyTorch fx graph mode and eager mode are supported. Intel® Neural Compressor takes a FP32 model and a yaml configuration file as inputs. To construct the quantization process, users can either specify the below settings via the yaml configuration file or python APIs: Calibration Dataloader (Needed for static quantization) Evaluation Dataloader Evaluation Metric Intel® Neural Compressor supports some popular dataloaders and evaluation metrics. For how to configure them in yaml configuration file, user could refer to Built-in Datasets. If users want to use a self-developed dataloader or evaluation metric, Intel® Neural Compressor supports this by the registration of customized dataloader/metric using python code. For the yaml configuration file format please refer to yaml template. The code changes that are required for Intel® Neural Compressor are highlighted with comments in the line above. Model# In this tutorial, the LeNet model is used to demonstrate how to deal with Intel® Neura..."
+         "articleBody": "Ease-of-use quantization for PyTorch with Intel® Neural Compressor# Overview# Most deep learning applications are using 32-bits of floating-point precision for inference. But low precision data types, such as fp8, are getting more focus due to significant performance boost. A key concern in adopting low precision is mitigating accuracy loss while meeting predefined requirements. Intel® Neural Compressor aims to address the aforementioned concern by extending PyTorch with accuracy-driven automatic tuning strategies to help user quickly find out the best quantized model on Intel hardware. Intel® Neural Compressor is an open-source project at Github. Features# Ease-of-use API: Intel® Neural Compressor is re-using the PyTorch prepare, convert API for user usage. Accuracy-driven Tuning: Intel® Neural Compressor supports accuracy-driven automatic tuning process, provides autotune API for user usage. Kinds of Quantization: Intel® Neural Compressor supports a variety of quantization methods, including classic INT8 quantization, weight-only quantization and the popular FP8 quantization. Neural compressor also provides the latest research in simulation work, such as MX data type emulation quantization. For more details, please refer to Supported Matrix. Getting Started# Installation# # install stable version from pip pip install neural-compressor-pt Note: Neural Compressor provides automatic accelerator detection, including HPU, Intel GPU, CUDA, and CPU. To specify the target device, INC_TARGET_DEVICE is suggested, e.g., export INC_TARGET_DEVICE=cpu. Examples# This section shows examples of kinds of quantization with Intel® Neural compressor FP8 Quantization# FP8 Quantization is supported by Intel® Gaudi®2&amp;3 AI Accelerator (HPU). To prepare the environment, please refer to Intel® Gaudi® Documentation. Run the example, # FP8 Quantization Example from neural_compressor.torch.quantization import ( FP8Config, prepare, convert, ) import torch import torchvision.models as models # Load a pre-trained ResNet18 model model = models.resnet18() # Configure FP8 quantization qconfig = FP8Config(fp8_config=&#34;E4M3&#34;) model = prepare(model, qconfig) # Perform calibration (replace with actual calibration data) calibration_data = torch.randn(1, 3, 224, 224).to(&#34;hpu&#34;) model(calibration_data) # Convert the model to FP8 model = convert(model) # Perform inference input_data = torch.randn(1, 3, 224, 224).to(&#34;hpu&#34;) output = model(input_data).to(&#34;cpu&#34;) print(output) Weight-only Quantization# Weight-only Quantization is also supported on Intel® Gaudi®2&amp;3 AI Accelerator. The quantized model could be loaded as below. from neural_compressor.torch.quantization import load # The model name comes from HuggingFace Model Hub. model_name = &#34;TheBloke/Llama-2-7B-GPTQ&#34; model = load( model_name_or_path=model_name, format=&#34;huggingface&#34;, device=&#34;hpu&#34;, torch_dtype=torch.bfloat16, ) Note: Intel Neural Compressor will convert the model format from auto-gptq to hpu format on the first load and save ..."
        }
    </script>
 </body>
