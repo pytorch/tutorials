@@ -135,7 +135,7 @@ There are four steps to perform W8A8 static quantization with PT2E backend: ``ex
 Accuracy-driven Tuning
 ^^^^^^^^^^^^^^^^^^^^^^
 
-To leverage accuracy-driven automatic tuning, a specified tuning space is necessary. The ``autotune`` iterates the tuning space and applies the configuration on given high-precision model then records and compares its evaluation result with the baseline. The tuning process stops when meeting the exit policy. 
+To leverage accuracy-driven automatic tuning, a specified tuning space is necessary. The ``autotune`` iterates the tuning space and applies the configuration on given high-precision model then records and compares its evaluation result with the baseline. The tuning process stops when meeting the exit policy.
 
 
 .. code-block:: python
