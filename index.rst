@@ -767,18 +767,6 @@ Additional Resources
    :button_text: Check Out Examples
 
 .. customcalloutitem::
-   :header: PyTorch Cheat Sheet
-   :description: Quick overview to essential PyTorch elements.
-   :button_link: beginner/ptcheat.html
-   :button_text: Open
-
-.. customcalloutitem::
-   :header: Tutorials on GitHub
-   :description: Access PyTorch Tutorials from GitHub.
-   :button_link: https://github.com/pytorch/tutorials
-   :button_text: Go To GitHub
-
-.. customcalloutitem::
    :header: Run Tutorials on Google Colab
    :description: Learn how to copy tutorial data into Google Drive so that you can run tutorials on Google Colab.
    :button_link: beginner/colab.html
