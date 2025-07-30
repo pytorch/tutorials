@@ -38,6 +38,7 @@ NOT_RUN = [
     "recipes_source/recipes/Captum_Recipe",
     "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
     "advanced_source/semi_structured_sparse", # reenable after 3303 is fixed.
+    "intermediate_source/torchrec_intro_tutorial.py", #failing with 2.8 reenable after 3498
 ]
 
 def tutorial_source_dirs() -> List[Path]:
