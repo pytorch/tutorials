@@ -24,7 +24,7 @@ NOT_RUN = [
     "intermediate_source/torch_compile_conv_bn_fuser",
     "intermediate_source/_torch_export_nightly_tutorial",  # does not work on release
     "advanced_source/usb_semisup_learn", # fails with CUDA OOM error, should try on a different worker
-    "ustable_source/gpu_direct_storage", # requires specific filesystem + GPUDirect Storage to be set up
+    "unstable_source/gpu_direct_storage", # requires specific filesystem + GPUDirect Storage to be set up
     "recipes_source/recipes/tensorboard_with_pytorch",
     "recipes_source/recipes/what_is_state_dict",
     "recipes_source/recipes/profiler_recipe",
