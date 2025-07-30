@@ -18,28 +18,17 @@ NOT_RUN = [
     "beginner_source/examples_nn/polynomial_module",
     "beginner_source/examples_nn/dynamic_net",
     "beginner_source/examples_nn/polynomial_optim",
-    "beginner_source/former_torchies/autograd_tutorial_old",
-    "beginner_source/former_torchies/tensor_tutorial_old",
     "beginner_source/examples_autograd/polynomial_autograd",
     "beginner_source/examples_autograd/polynomial_custom_function",
     "intermediate_source/mnist_train_nas",  # used by ax_multiobjective_nas_tutorial.py
     "intermediate_source/torch_compile_conv_bn_fuser",
     "intermediate_source/_torch_export_nightly_tutorial",  # does not work on release
     "advanced_source/usb_semisup_learn", # fails with CUDA OOM error, should try on a different worker
-    "prototype_source/fx_graph_mode_ptq_dynamic",
-    "prototype_source/vmap_recipe",
-    "prototype_source/torchscript_freezing",
-    "prototype_source/nestedtensor",
-    "prototype_source/gpu_direct_storage", # requires specific filesystem + GPUDirect Storage to be set up
-    "recipes_source/recipes/saving_and_loading_models_for_inference",
-    "recipes_source/recipes/saving_multiple_models_in_one_file",
+    "ustable_source/gpu_direct_storage", # requires specific filesystem + GPUDirect Storage to be set up
     "recipes_source/recipes/tensorboard_with_pytorch",
     "recipes_source/recipes/what_is_state_dict",
     "recipes_source/recipes/profiler_recipe",
-    "recipes_source/recipes/save_load_across_devices",
     "recipes_source/recipes/warmstarting_model_using_parameters_from_a_different_model",
-    "recipes_source/recipes/dynamic_quantization",
-    "recipes_source/recipes/saving_and_loading_a_general_checkpoint",
     "recipes_source/recipes/benchmark",
     "recipes_source/recipes/tuning_guide",
     "recipes_source/recipes/zeroing_out_gradients",
@@ -47,7 +36,6 @@ NOT_RUN = [
     "recipes_source/recipes/timer_quick_start",
     "recipes_source/recipes/amp_recipe",
     "recipes_source/recipes/Captum_Recipe",
-    "intermediate_source/text_to_speech_with_torchaudio",
     "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
     "advanced_source/semi_structured_sparse", # reenable after 3303 is fixed.
 ]
