@@ -1,13 +1,13 @@
-PyTorch Recipes
----------------------------------------------
-Recipes are bite-sized, actionable examples of how to use specific PyTorch features, different from our full-length tutorials.
+Recipes
+========
+
+Recipes are bite-sized, actionable examples of
+how to use specific PyTorch features, different
+from our full-length tutorials.
 
 .. raw:: html
 
-        </div>
-    </div>
-
-    <div id="tutorial-cards-container">
+   <div id="tutorial-cards-container">
 
     <nav class="navbar navbar-expand-lg navbar-light tutorials-nav col-12">
         <div class="tutorial-tags-container">
@@ -44,40 +44,12 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/what_is_state_dict.html
    :tags: Basics
 
-.. customcarditem::
-   :header: Saving and loading models for inference in PyTorch
-   :card_description: Learn about the two approaches for saving and loading models for inference in PyTorch - via the state_dict and via the entire model.
-   :image: ../_static/img/thumbnails/cropped/saving-and-loading-models-for-inference.PNG
-   :link: ../recipes/recipes/saving_and_loading_models_for_inference.html
-   :tags: Basics
-
-
-.. customcarditem::
-   :header: Saving and loading a general checkpoint in PyTorch
-   :card_description: Saving and loading a general checkpoint model for inference or resuming training can be helpful for picking up where you last left off. In this recipe, explore how to save and load multiple checkpoints.
-   :image: ../_static/img/thumbnails/cropped/saving-and-loading-general-checkpoint.PNG
-   :link: ../recipes/recipes/saving_and_loading_a_general_checkpoint.html
-   :tags: Basics
-
-.. customcarditem::
-   :header: Saving and loading multiple models in one file using PyTorch
-   :card_description: In this recipe, learn how saving and loading multiple models can be helpful for reusing models that you have previously trained.
-   :image: ../_static/img/thumbnails/cropped/saving-multiple-models.PNG
-   :link: ../recipes/recipes/saving_multiple_models_in_one_file.html
-   :tags: Basics
 
 .. customcarditem::
    :header: Warmstarting model using parameters from a different model in PyTorch
    :card_description: Learn how warmstarting the training process by partially loading a model or loading a partial model can help your model converge much faster than training from scratch.
    :image: ../_static/img/thumbnails/cropped/warmstarting-models.PNG
    :link: ../recipes/recipes/warmstarting_model_using_parameters_from_a_different_model.html
-   :tags: Basics
-
-.. customcarditem::
-   :header: Saving and loading models across devices in PyTorch
-   :card_description: Learn how saving and loading models across devices (CPUs and GPUs) is relatively straightforward using PyTorch.
-   :image: ../_static/img/thumbnails/cropped/saving-and-loading-models-across-devices.PNG
-   :link: ../recipes/recipes/save_load_across_devices.html
    :tags: Basics
 
 .. customcarditem::
@@ -186,64 +158,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :image: ../_static/img/thumbnails/tensorboard_scalars.png
    :link: ../recipes/recipes/tensorboard_with_pytorch.html
    :tags: Visualization,TensorBoard
-
-.. Production Development
-
-.. customcarditem::
-   :header: TorchScript for Deployment
-   :card_description: Learn how to export your trained model in TorchScript format and how to load your TorchScript model in C++ and do inference.
-   :image: ../_static/img/thumbnails/cropped/torchscript_overview.png
-   :link: ../recipes/torchscript_inference.html
-   :tags: TorchScript
-
-.. customcarditem::
-   :header: PyTorch Mobile Performance Recipes
-   :card_description: List of recipes for performance optimizations for using PyTorch on Mobile (Android and iOS).
-   :image: ../_static/img/thumbnails/cropped/mobile.png
-   :link: ../recipes/mobile_perf.html
-   :tags: Mobile,Model-Optimization
-
-.. customcarditem::
-   :header: Making Android Native Application That Uses PyTorch Android Prebuilt Libraries
-   :card_description: Learn how to make Android application from the scratch that uses LibTorch C++ API and uses TorchScript model with custom C++ operator.
-   :image: ../_static/img/thumbnails/cropped/android.png
-   :link: ../recipes/android_native_app_with_custom_op.html
-   :tags: Mobile
-
-.. customcarditem::
-  :header: Script and Optimize for Mobile
-  :card_description: Learn how to convert the model to TorchScipt and (optional) optimize it for mobile apps.
-  :image: ../_static/img/thumbnails/cropped/mobile.png
-  :link: ../recipes/script_optimized.html
-  :tags: Mobile
-
-.. customcarditem::
-  :header: Model Preparation for iOS Recipe
-  :card_description: Learn how to add the model in an iOS project and use PyTorch pod for iOS.
-  :image: ../_static/img/thumbnails/cropped/ios.png
-  :link: ../recipes/model_preparation_ios.html
-  :tags: Mobile
-
-.. customcarditem::
-  :header: Model Preparation for Android Recipe
-  :card_description: Learn how to add the model in an Android project and use the PyTorch library for Android.
-  :image: ../_static/img/thumbnails/cropped/android.png
-  :link: ../recipes/model_preparation_android.html
-  :tags: Mobile
-
-.. customcarditem::
-   :header: Mobile Interpreter Workflow in Android and iOS
-   :card_description: Learn how to use the mobile interpreter on iOS and Andriod devices.
-   :image: ../_static/img/thumbnails/cropped/mobile.png
-   :link: ../recipes/mobile_interpreter.html
-   :tags: Mobile
-
-.. customcarditem::
-   :header: Profiling PyTorch RPC-Based Workloads
-   :card_description: How to use the PyTorch profiler to profile RPC-based workloads.
-   :image: ../_static/img/thumbnails/cropped/profile.png
-   :link: ../recipes/distributed_rpc_profiling.html
-   :tags: Production
 
 .. Automatic Mixed Precision
 
@@ -399,13 +313,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :tags: Distributed-Training
 
 .. customcarditem::
-   :header: Distributed Optimizer with TorchScript support
-   :card_description: How to enable TorchScript support for Distributed Optimizer.
-   :image: ../_static/img/thumbnails/cropped/profiler.png
-   :link: ../recipes/distributed_optim_torchscript.html
-   :tags: Distributed-Training,TorchScript
-
-.. customcarditem::
    :header: Getting Started with Distributed Checkpoint (DCP)
    :card_description: Learn how to checkpoint distributed models with Distributed Checkpoint package.
    :image: ../_static/img/thumbnails/cropped/Getting-Started-with-DCP.png
@@ -428,30 +335,17 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 
 .. End of tutorial card section
 
-.. raw:: html
-
-    </div>
-
-    <div class="pagination d-flex justify-content-center"></div>
-
-    </div>
-
-    </div>
-
 .. -----------------------------------------
 .. Page TOC
 .. -----------------------------------------
 .. toctree::
+   :maxdepth: 2
    :hidden:
 
    /recipes/recipes/defining_a_neural_network
    /recipes/torch_logs
    /recipes/recipes/what_is_state_dict
-   /recipes/recipes/saving_and_loading_models_for_inference
-   /recipes/recipes/saving_and_loading_a_general_checkpoint
-   /recipes/recipes/saving_multiple_models_in_one_file
    /recipes/recipes/warmstarting_model_using_parameters_from_a_different_model
-   /recipes/recipes/save_load_across_devices
    /recipes/recipes/zeroing_out_gradients
    /recipes/recipes/profiler_recipe
    /recipes/recipes/profile_with_itt
@@ -463,12 +357,29 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/xeon_run_cpu
    /recipes/recipes/intel_extension_for_pytorch
    /recipes/compiling_optimizer
+   /recipes/recipes/timer_quick_start
    /recipes/torch_compile_backend_ipex
-   /recipes/torchscript_inference
-   /recipes/distributed_rpc_profiling
    /recipes/zero_redundancy_optimizer
    /recipes/cuda_rpc
-   /recipes/distributed_optim_torchscript
-   /recipes/mobile_interpreter
    /recipes/distributed_comm_debug_mode
    /recipes/torch_export_challenges_solutions
+   /recipes/recipes/benchmark
+   /recipes/recipes/module_load_state_dict_tips
+   /recipes/recipes/reasoning_about_shapes
+   /recipes/recipes/swap_tensors
+   /recipes/torch_export_aoti_python
+   /recipes/recipes/tensorboard_with_pytorch
+   /recipes/inference_tuning_on_aws_graviton
+   /recipes/amx
+   /recipes/torch_compile_torch_function_modes
+   /recipes/compiling_optimizer_lr_scheduler
+   /recipes/foreach_map
+   /recipes/torch_compile_user_defined_triton_kernel_tutorial
+   /recipes/torch_compile_caching_tutorial
+   /recipes/torch_compile_caching_configuration_tutorial
+   /recipes/regional_compilation
+   /recipes/intel_extension_for_pytorch.html
+   /recipes/intel_neural_compressor_for_pytorch
+   /recipes/distributed_device_mesh
+   /recipes/distributed_checkpoint_recipe
+   /recipes/distributed_async_checkpoint_recipe

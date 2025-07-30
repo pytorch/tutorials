@@ -31,7 +31,7 @@ jobs:
               issue_number: context.issue.number
             });
             return labels.data.some(label => label.name === 'skip-link-check');
-          
+
       - name: Check Links
         if: steps.skip-label.outputs.result == 'false'
         uses: lycheeverse/lychee-action@v1
@@ -39,7 +39,7 @@ jobs:
           args: --accept=200,403,429 --base . --verbose --no-progress ${{ steps.changed-files.outputs.all_changed_files }}
           token: ${{ secrets.CUSTOM_TOKEN }}
           fail: true
-          
+
       - name: Skip Message
         if: steps.skip-label.outputs.result == 'true'
         run: echo "Link check was skipped due to the presence of the 'skip-link-check' label."
@@ -48,7 +48,7 @@ jobs:
       - name: No Files to Check
         if: steps.skip-label.outputs.result == 'false' && steps.changed-files.outputs.any_changed == 'true'
         run: echo "No relevant files were changed in this PR that require link checking."
-      
+
       - name: Suggestions
         if: failure()
         run: |
