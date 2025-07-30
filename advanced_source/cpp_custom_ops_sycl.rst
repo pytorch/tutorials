@@ -23,7 +23,7 @@ Custom SYCL Operators
 
 PyTorch offers a large library of operators that work on Tensors (e.g. torch.add, torch.sum, etc).
 However, you may wish to bring a new custom operator to PyTorch. This tutorial demonstrates the
-blessed path to authoring a custom operator written in SYCL. Tutorials for C++ and CUDA operators are available in the :ref:`cpp-custom-ops-tutorial`.
+best path to authoring a custom operator written in SYCL. Tutorials for C++ and CUDA operators are available in the :ref:`cpp-custom-ops-tutorial`.
 
 Follow the structure to create a custom SYCL operator:
 
