@@ -4,6 +4,9 @@ Welcome to PyTorch Tutorials
 **What's new in PyTorch tutorials?**
 
 * `Integrating Custom Operators with Sycl for Intel GPU <https://pytorch.org/tutorials/advanced/cpp_custom_ops_sycl.html>`__
+* `Supporting Custom C++ Classes in torch.compile/torch.export <https://docs.pytorch.org/tutorials/advanced/custom_class_pt2.html>`__
+* `Accelerating ``torch.save`` and ``torch.load`` with GPUDirect Storage <https://docs.pytorch.org/tutorials/prototype/gpu_direct_storage.html>`__
+* `Getting Started with Fully Sharded Data Parallel (FSDP2) <https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__
 
 .. raw:: html
 
