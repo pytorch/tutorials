@@ -233,6 +233,7 @@ html_theme_options = {
     "navbar_start": ["pytorch_version"],
     "navbar_center": "navbar-nav",
     "display_version": True,
+    "pytorch_project": "tutorials",
 }
 
 theme_variables = pytorch_sphinx_theme2.get_theme_variables()
