@@ -71,8 +71,6 @@ There are three types of tutorial content that we host on
   reStructuredText files. The build system only converts them into HTML;
   the code in them does not run on build. These tutorials are easier to
   create and maintain but they do not provide an interactive experience.
-  An example is the [Dynamic Quantization
-  tutorial](https://pytorch.org/tutorials/recipes/recipes/dynamic_quantization.html).
 
 * **Recipes** are tutorials that provide bite-sized, actionable
   examples of how to use specific features, which differentiates them
