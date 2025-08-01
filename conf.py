@@ -202,7 +202,6 @@ sitemap_url_scheme = "{link}"
 html_theme_options = {
     "navigation_with_keys": False,
     "analytics_id": "GTM-T8XT4PS",
-    "pytorch_project": "tutorials",
     "logo": {
         "text": "",
     },
@@ -248,7 +247,7 @@ html_context = {
     "github_version": "main",
     "doc_path": ".",
     "library_links": theme_variables.get("library_links", []),
-    "pytorch_project": "tutorials",
+    #"pytorch_project": "tutorials",
 }
 
 
