@@ -470,9 +470,10 @@ Communication Backends
 
 One of the most elegant aspects of ``torch.distributed`` is its ability
 to abstract and build on top of different backends. As mentioned before,
-there are multiple backends implemented in PyTorch.
-Some of the most popular ones are Gloo, NCCL, and MPI.
-They each have different specifications and tradeoffs, depending
+there are multiple backends implemented in PyTorch. These backends can be easily selected
+using the `Accelerator API <https://pytorch.org/docs/stable/torch.html#accelerators>`__,
+which provides a interface for working with different accelerator types. 
+Some of the most popular backends are Gloo, NCCL, and MPI. They each have different specifications and tradeoffs, depending
 on the desired use case. A comparative table of supported functions can
 be found
 `here <https://pytorch.org/docs/stable/distributed.html#module-torch.distributed>`__.
@@ -492,12 +493,13 @@ distributed SGD example does not work if you put ``model`` on the GPU.
 In order to use multiple GPUs, let us also make the following
 modifications:
 
-1.  Use ``device = torch.device("cuda:{}".format(rank))``
-2. ``model = Net()`` :math:`\rightarrow` ``model = Net().to(device)``
-3.  Use ``data, target = data.to(device), target.to(device)``
+1. Use Accelerator API ``device_type = torch.accelerator.current_accelerator()``
+2. Use ``torch.device(f"{device_type}:{rank}")``
+3. ``model = Net()`` :math:`\rightarrow` ``model = Net().to(device)``
+4.  Use ``data, target = data.to(device), target.to(device)``
 
-With the above modifications, our model is now training on two GPUs and
-you can monitor their utilization with ``watch nvidia-smi``.
+With these modifications, your model will now train across two GPUs. 
+You can monitor GPU utilization using ``watch nvidia-smi`` if you are running on NVIDIA hardware.
 
 **MPI Backend**
 
@@ -553,6 +555,7 @@ more <https://www.open-mpi.org/faq/?category=running#mpirun-hostfile>`__)
 Doing so, you should obtain the same familiar output as with the other
 communication backends.
 
+
 **NCCL Backend**
 
 The `NCCL backend <https://github.com/nvidia/nccl>`__ provides an
@@ -560,6 +563,14 @@ optimized implementation of collective operations against CUDA
 tensors. If you only use CUDA tensors for your collective operations,
 consider using this backend for the best in class performance. The
 NCCL backend is included in the pre-built binaries with CUDA support.
+
+**XCCL Backend**
+
+The `XCCL backend` offers an optimized implementation of collective operations for XPU tensors. 
+If your workload uses only XPU tensors for collective operations, 
+this backend provides best-in-class performance. 
+The XCCL backend is included in the pre-built binaries with XPU support.
+
 
 Initialization Methods
 ~~~~~~~~~~~~~~~~~~~~~~
