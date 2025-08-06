@@ -24,7 +24,7 @@ Welcome to PyTorch Tutorials
 .. customcalloutitem::
    :description: Bite-size, ready-to-deploy PyTorch code examples.
    :header: PyTorch Recipes
-   :button_link: recipes/recipes_index.html
+   :button_link: recipes_index.html
    :button_text: Explore Recipes
 
 .. End of callout item section
