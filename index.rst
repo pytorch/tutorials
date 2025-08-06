@@ -6,7 +6,7 @@ Welcome to PyTorch Tutorials
 * `Utilizing Torch Function modes with torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_torch_function_modes.html>`__
 * `Context Parallel Tutorial <https://pytorch.org/tutorials/prototype/context_parallel.html>`__
 * `(beta) Explicit horizontal fusion with foreach_map and torch.compile <https://pytorch.org/tutorials/recipes/foreach_map.html>`__
-* Updated `Inductor Windows CPU Tutorial <https://pytorch.org/tutorials/prototype/inductor_windows.html>`__
+* Updated `Inductor Windows CPU Tutorial <https://pytorch.org/tutorials/unstable/inductor_windows.html>`__
 
 .. raw:: html
 
