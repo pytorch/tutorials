@@ -13,6 +13,7 @@ redirects = {
     "intermediate/dynamic_quantization_bert_tutorial.html": "../index.html",
     "intermediate/quantized_transfer_learning_tutorial.html": "../index.html",
     "prototype/graph_mode_dynamic_bert_tutorial.html": "../index.html",
+    "prototype/flight_recorder_tutorial.html": "https://docs.pytorch.org/tutorials/unstable/flight_recorder_tutorial.html"
     "prototype/fx_graph_mode_ptq_dynamic.html": "../index.html",
     "prototype/fx_graph_mode_ptq_static.html": "../index.html",
     "prototype/fx_graph_mode_quant_guide.html": "../index.html",
