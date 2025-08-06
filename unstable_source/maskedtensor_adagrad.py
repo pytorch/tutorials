@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-(Prototype) Efficiently writing "sparse" semantics for Adagrad with MaskedTensor
+Efficiently writing "sparse" semantics for Adagrad with MaskedTensor
 ================================================================================
 """
 
