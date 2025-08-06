@@ -12,7 +12,7 @@ DATA_DIR = REPO_BASE_DIR / "_data"
 BEGINNER_DATA_DIR = REPO_BASE_DIR / "beginner_source" / "data"
 INTERMEDIATE_DATA_DIR = REPO_BASE_DIR / "intermediate_source" / "data"
 ADVANCED_DATA_DIR = REPO_BASE_DIR / "advanced_source" / "data"
-PROTOTYPE_DATA_DIR = REPO_BASE_DIR / "prototype_source" / "data"
+PROTOTYPE_DATA_DIR = REPO_BASE_DIR / "unstable_source" / "data"
 FILES_TO_RUN = os.getenv("FILES_TO_RUN")
 
 
@@ -106,7 +106,7 @@ def download_lenet_mnist() -> None:
                          )
 
 def download_gpu_quantization_torchao() -> None:
-    # Download SAM model checkpoint for prototype_source/gpu_quantization_torchao_tutorial.py
+    # Download SAM model checkpoint unstable_source/gpu_quantization_torchao_tutorial.py
     download_url_to_file("https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth",
                          prefix=PROTOTYPE_DATA_DIR,
                          dst="sam_vit_h_4b8939.pth",

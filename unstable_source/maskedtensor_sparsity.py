@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-(Prototype) MaskedTensor Sparsity
+MaskedTensor Sparsity
 =================================
 """
 

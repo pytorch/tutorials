@@ -19,6 +19,7 @@ redirects = {
     "prototype/backend_config_tutorial.html": "../index.html",
     "prototype/numeric_suite_tutorial.html": "../index.html",
     "prototype/quantization_in_pytorch_2_0_export_tutorial.html": "../index.html",
+    "prototype/inductor_windows.html": "https://pytorch.org/tutorials/unstable/inductor_windows.html",
     "prototype/pt2e_quant_ptq.html": "https://docs.pytorch.org/ao/main/tutorials_source/pt2e_quant_ptq.html",
     "prototype/pt2e_quant_qat.html": "https://docs.pytorch.org/ao/main/tutorials_source/pt2e_quant_qat.html",
     "prototype/pt2e_quantizer.html": "https://docs.pytorch.org/ao/main/tutorials_source/pt2e_quantizer.html",
