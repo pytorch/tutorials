@@ -20,7 +20,7 @@ NOT_RUN = [
     "beginner_source/examples_nn/polynomial_optim",
     "beginner_source/examples_autograd/polynomial_autograd",
     "beginner_source/examples_autograd/polynomial_custom_function",
-    "intermediate_source/dqn_with_rnn_tutorial.py", #not working on 2.8 release reenable after 3514
+    "intermediate_source/dqn_with_rnn_tutorial", #not working on 2.8 release reenable after 3514
     "intermediate_source/mnist_train_nas",  # used by ax_multiobjective_nas_tutorial.py
     "intermediate_source/torch_compile_conv_bn_fuser",
     "intermediate_source/_torch_export_nightly_tutorial",  # does not work on release
