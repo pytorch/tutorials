@@ -6,7 +6,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta content="2025-03-05T23:36:14+00:00" property="article:modified_time"/>
-<title>Export a model with control flow to ONNX — PyTorch Tutorials 2.7.0+cu126 documentation</title>
+<title>Export a model with control flow to ONNX — PyTorch Tutorials 2.8.0+cu128 documentation</title>
 <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
@@ -34,7 +34,7 @@
 <link as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
 <link as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
 <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../../_static/documentation_options.js?v=07b0cd76"></script>
+<script src="../../_static/documentation_options.js?v=bffbcef7"></script>
 <script src="../../_static/doctools.js?v=888ff710"></script>
 <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
 <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -115,7 +115,7 @@
    fbq('track', 'PageView');
 </script>
 <script>
-   document.documentElement.setAttribute('data-version', 'v2.7.0+cu126');
+   document.documentElement.setAttribute('data-version', 'v2.8.0+cu128');
  </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView&amp;noscript=1" width="1"/>
@@ -501,7 +501,7 @@
 </button>
 <div class="navbar-header-items__start">
 <div class="navbar-item">
-<a class="version" href="../../index.html">v2.7.0+cu126</a>
+<a class="version" href="../../index.html">v2.8.0+cu128</a>
 </div>
 </div>
 <div class="navbar-header-items">
@@ -926,9 +926,22 @@ process. If the export unexpectedly succeeds, an <code class="docutils literal n
     ne: "b8[]" = torch.ops.aten.ne.Scalar(sum_1, 0);  sum_1 = None
     item: "Sym(Eq(u0, 1))" = torch.ops.aten.item.default(ne);  ne = item = None
 
+
+
+
+def forward(self, arg0_1: "f32[2, 3]", arg1_1: "f32[2]", arg2_1: "f32[1, 2]", arg3_1: "f32[1]", arg4_1: "f32[3]"):
+     # File: /usr/local/lib/python3.10/dist-packages/torch/nn/modules/linear.py:125 in forward, code: return F.linear(input, self.weight, self.bias)
+    linear: "f32[2]" = torch.ops.aten.linear.default(arg4_1, arg0_1, arg1_1);  arg4_1 = arg0_1 = arg1_1 = None
+    linear_1: "f32[1]" = torch.ops.aten.linear.default(linear, arg2_1, arg3_1);  linear = arg2_1 = arg3_1 = None
+
+     # File: /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:56 in forward, code: if x.sum():
+    sum_1: "f32[]" = torch.ops.aten.sum.default(linear_1);  linear_1 = None
+    ne: "b8[]" = torch.ops.aten.ne.Scalar(sum_1, 0);  sum_1 = None
+    item: "Sym(Eq(u0, 1))" = torch.ops.aten.item.default(ne);  ne = item = None
+
 Could not guard on data-dependent expression Eq(u0, 1) (unhinted: Eq(u0, 1)).  (Size-like symbols: none)
 
-Caused by: (_export/non_strict_utils.py:683 in __torch_function__)
+Caused by: (_export/non_strict_utils.py:1051 in __torch_function__)
 For more information, run with TORCH_LOGS="dynamic"
 For extended logs when we create symbols, also add TORCHDYNAMO_EXTENDED_DEBUG_CREATE_SYMBOL="u0"
 If you suspect the guard was triggered from C++, add TORCHDYNAMO_EXTENDED_DEBUG_CPP=1
@@ -939,6 +952,9 @@ For C++ stack trace, run with TORCHDYNAMO_EXTENDED_DEBUG_CPP=1
 The following call raised this error:
   File "/var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py", line 56, in forward
     if x.sum():
+
+
+The error above occurred when calling torch.export.export. If you would like to view some more information about this error, and get a list of all other errors that may occur in your export call, you can replace your `export()` call with `draft_export()`.
 </pre></div>
 </div>
 </section>
@@ -956,6 +972,18 @@ the original model logic due to the limitations of tracing.</p>
 
 
 
+def forward(self, arg0_1: "f32[2, 3]", arg1_1: "f32[2]", arg2_1: "f32[1, 2]", arg3_1: "f32[1]", arg4_1: "f32[3]"):
+     # File: /usr/local/lib/python3.10/dist-packages/torch/nn/modules/linear.py:125 in forward, code: return F.linear(input, self.weight, self.bias)
+    linear: "f32[2]" = torch.ops.aten.linear.default(arg4_1, arg0_1, arg1_1);  arg4_1 = arg0_1 = arg1_1 = None
+    linear_1: "f32[1]" = torch.ops.aten.linear.default(linear, arg2_1, arg3_1);  linear = arg2_1 = arg3_1 = None
+
+     # File: /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:56 in forward, code: if x.sum():
+    sum_1: "f32[]" = torch.ops.aten.sum.default(linear_1);  linear_1 = None
+    ne: "b8[]" = torch.ops.aten.ne.Scalar(sum_1, 0);  sum_1 = None
+    item: "Sym(Eq(u0, 1))" = torch.ops.aten.item.default(ne);  ne = item = None
+
+
+
 
 def forward(self, arg0_1: "f32[2, 3]", arg1_1: "f32[2]", arg2_1: "f32[1, 2]", arg3_1: "f32[1]", arg4_1: "f32[3]"):
      # File: /usr/local/lib/python3.10/dist-packages/torch/nn/modules/linear.py:125 in forward, code: return F.linear(input, self.weight, self.bias)
@@ -968,7 +996,17 @@ def forward(self, arg0_1: "f32[2, 3]", arg1_1: "f32[2]", arg2_1: "f32[1, 2]", ar
     item: "Sym(Eq(u0, 1))" = torch.ops.aten.item.default(ne);  ne = item = None
 
 [torch.onnx] Obtain model graph for `ModelWithControlFlowTest([...]` with `torch.export.export(..., strict=False)`... ❌
-[torch.onnx] Obtain model graph for `ModelWithControlFlowTest([...]` with `torch.export.export`...
+[torch.onnx] Obtain model graph for `ModelWithControlFlowTest([...]` with `torch.export.export(..., strict=True)`...
+class GraphModule(torch.nn.Module):
+    def forward(self, L_x_: "f32[3][1]cpu"):
+        l_x_ = L_x_
+
+         # File: /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:71 in forward, code: out = self.mlp(x)
+        l__self___mlp_0: "f32[2][1]cpu" = self.L__self___mlp_0(l_x_);  l_x_ = None
+        l__self___mlp_1: "f32[1][1]cpu" = self.L__self___mlp_1(l__self___mlp_0);  l__self___mlp_0 = None
+
+         # File: /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:56 in forward, code: if x.sum():
+        sum_1: "f32[][]cpu" = l__self___mlp_1.sum();  l__self___mlp_1 = sum_1 = None
 
 class GraphModule(torch.nn.Module):
     def forward(self, L_x_: "f32[3][1]cpu"):
@@ -981,46 +1019,39 @@ class GraphModule(torch.nn.Module):
          # File: /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:56 in forward, code: if x.sum():
         sum_1: "f32[][]cpu" = l__self___mlp_1.sum();  l__self___mlp_1 = sum_1 = None
 
+[torch.onnx] Obtain model graph for `ModelWithControlFlowTest([...]` with `torch.export.export(..., strict=True)`... ❌
+[torch.onnx] Obtain model graph for `ModelWithControlFlowTest([...]` with `torch.export draft_export`...
+[torch.onnx] Draft Export report:
 
-class GraphModule(torch.nn.Module):
-    def forward(self, L_x_: "f32[3][1]cpu"):
-        l_x_ = L_x_
+###################################################################################################
+WARNING: 1 issue(s) found during export, and it was not able to soundly produce a graph.
+Please follow the instructions to fix the errors.
+###################################################################################################
 
-         # File: /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:71 in forward, code: out = self.mlp(x)
-        l__self___mlp_0: "f32[2][1]cpu" = self.L__self___mlp_0(l_x_);  l_x_ = None
-        l__self___mlp_1: "f32[1][1]cpu" = self.L__self___mlp_1(l__self___mlp_0);  l__self___mlp_0 = None
+1. Data dependent error.
+    When exporting, we were unable to evaluate the value of `Eq(u0, 1)`.
+    This was encountered 1 times.
+    This occurred at the following user stacktrace:
+        File /usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py, lineno 1773, in _wrapped_call_impl
+        File /usr/local/lib/python3.10/dist-packages/torch/nn/modules/module.py, lineno 1784, in _call_impl
+            if x.sum():
 
-         # File: /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:56 in forward, code: if x.sum():
-        sum_1: "f32[][]cpu" = l__self___mlp_1.sum();  l__self___mlp_1 = sum_1 = None
+        Locals:
+            x: ['Tensor(shape: torch.Size([1]), stride: (1,), storage_offset: 0)']
+
+    And the following framework stacktrace:
+        File /usr/local/lib/python3.10/dist-packages/torch/fx/experimental/proxy_tensor.py, lineno 1360, in __torch_function__
+        File /usr/local/lib/python3.10/dist-packages/torch/fx/experimental/proxy_tensor.py, lineno 1407, in __torch_function__
+            return func(*args, **kwargs)
+
+    As a result, it was specialized to a constant (e.g. `1` in the 1st occurrence), and asserts were inserted into the graph.
+
+    Please add `torch._check(...)` to the original code to assert this data-dependent assumption.
+    Please refer to https://docs.google.com/document/d/1kZ_BbB3JnoLbUZleDT6635dHs88ZVYId8jT-yTFgf3A/edit#heading=h.boi2xurpqa0o for more details.
 
 
-class GraphModule(torch.nn.Module):
-    def forward(self, L_x_: "f32[3][1]cpu"):
-        l_x_ = L_x_
-
-         # File: /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:71 in forward, code: out = self.mlp(x)
-        l__self___mlp_0: "f32[2][1]cpu" = self.L__self___mlp_0(l_x_);  l_x_ = None
-        l__self___mlp_1: "f32[1][1]cpu" = self.L__self___mlp_1(l__self___mlp_0);  l__self___mlp_0 = None
-
-         # File: /var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:56 in forward, code: if x.sum():
-        sum_1: "f32[][]cpu" = l__self___mlp_1.sum();  l__self___mlp_1 = sum_1 = None
-
-[torch.onnx] Obtain model graph for `ModelWithControlFlowTest([...]` with `torch.export.export`... ❌
-[torch.onnx] Obtain model graph for `ModelWithControlFlowTest([...]` with Torch Script...
-/var/lib/workspace/beginner_source/onnx/export_control_flow_model_to_onnx_tutorial.py:56: TracerWarning:
-
-Converting a tensor to a Python boolean might cause the trace to be incorrect. We can't record the data flow of Python values, so this value will be treated as a constant in the future. This means that the trace might not generalize to other inputs!
-
-[torch.onnx] Obtain model graph for `ModelWithControlFlowTest([...]` with Torch Script... ✅
+[torch.onnx] Obtain model graph for `ModelWithControlFlowTest([...]` with `torch.export draft_export`... ✅
 [torch.onnx] Run decomposition...
-/usr/local/lib/python3.10/dist-packages/torch/export/_unlift.py:81: UserWarning:
-
-Attempted to insert a get_attr Node with no underlying reference in the owning GraphModule! Call GraphModule.add_submodule to add the necessary submodule, GraphModule.add_parameter to add the necessary Parameter, or nn.Module.register_buffer to add the necessary buffer
-
-/usr/local/lib/python3.10/dist-packages/torch/fx/graph.py:1772: UserWarning:
-
-Node lifted_tensor_6 target lifted_tensor_6 lifted_tensor_6 of  does not reference an nn.Module, nn.Parameter, or buffer, which is what 'get_attr' Nodes typically target
-
 [torch.onnx] Run decomposition... ✅
 [torch.onnx] Translate the graph into ONNX...
 [torch.onnx] Translate the graph into ONNX... ✅
@@ -1028,36 +1059,36 @@ Node lifted_tensor_6 target lifted_tensor_6 lifted_tensor_6 of  does not referen
     ir_version=10,
     opset_imports={'': 18},
     producer_name='pytorch',
-    producer_version='2.7.0+cu126',
+    producer_version='2.8.0+cu128',
     domain=None,
     model_version=None,
 &gt;
 graph(
     name=main_graph,
     inputs=(
-        %"input_1"&lt;FLOAT,[3]&gt;
+        %"x"&lt;FLOAT,[3]&gt;
     ),
     outputs=(
         %"mul"&lt;FLOAT,[1]&gt;
     ),
     initializers=(
-        %"model.mlp.0.bias"&lt;FLOAT,[2]&gt;{TorchTensor&lt;FLOAT,[2]&gt;(Parameter containing: tensor([-0.4305,  0.3665], requires_grad=True), name='model.mlp.0.bias')},
-        %"model.mlp.1.bias"&lt;FLOAT,[1]&gt;{TorchTensor&lt;FLOAT,[1]&gt;(Parameter containing: tensor([0.0465], requires_grad=True), name='model.mlp.1.bias')},
-        %"val_0"&lt;FLOAT,[3,2]&gt;{Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.13390912,  0.06435812], [-0.25047785,  0.06952932], [-0.54379046,  0.06196987]], dtype=float32), name='val_0')},
-        %"val_2"&lt;FLOAT,[2,1]&gt;{Tensor&lt;FLOAT,[2,1]&gt;(array([[-0.36925122], [ 0.03637256]], dtype=float32), name='val_2')},
-        %"convert_element_type_default"&lt;FLOAT,[]&gt;{Tensor&lt;FLOAT,[]&gt;(array(2., dtype=float32), name='convert_element_type_default')}
+        %"mlp.0.bias"&lt;FLOAT,[2]&gt;{TorchTensor&lt;FLOAT,[2]&gt;(Parameter containing: tensor([0.0916, 0.4457], requires_grad=True), name='mlp.0.bias')},
+        %"mlp.1.bias"&lt;FLOAT,[1]&gt;{TorchTensor&lt;FLOAT,[1]&gt;(Parameter containing: tensor([-0.0854], requires_grad=True), name='mlp.1.bias')},
+        %"val_0"&lt;FLOAT,[3,2]&gt;{Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.21516356,  0.10768887], [-0.47109675,  0.35138535], [ 0.02968623, -0.39527616]], dtype=float32), name='val_0')},
+        %"val_2"&lt;FLOAT,[2,1]&gt;{Tensor&lt;FLOAT,[2,1]&gt;(array([[0.4751627 ], [0.37399757]], dtype=float32), name='val_2')},
+        %"scalar_tensor_default"&lt;FLOAT,[]&gt;{Tensor&lt;FLOAT,[]&gt;(array(2., dtype=float32), name='scalar_tensor_default')}
     ),
 ) {
     0 |  # node_MatMul_1
-         %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"input_1", %"val_0"{[[0.13390912115573883, 0.06435811519622803], [-0.2504778504371643, 0.06952932476997375], [-0.5437904596328735, 0.06196987256407738]]})
-    1 |  # node_Add_2
-         %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"model.mlp.0.bias"{[-0.43052101135253906, 0.3664553165435791]})
-    2 |  # node_MatMul_4
-         %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2"{[[-0.36925122141838074], [0.03637256100773811]]})
-    3 |  # node_Add_5
-         %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"model.mlp.1.bias"{[0.04650634899735451]})
-    4 |  # node_Mul_7
-         %"mul"&lt;FLOAT,[1]&gt; ⬅️ ::Mul(%"linear_1", %"convert_element_type_default"{2.0})
+         %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"x", %"val_0"{[[0.21516355872154236, 0.10768887400627136], [-0.4710967540740967, 0.35138535499572754], [0.029686233028769493, -0.39527615904808044]]})
+    1 |  # node_linear
+         %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"mlp.0.bias"{[0.09163615107536316, 0.4457355737686157]})
+    2 |  # node_MatMul_3
+         %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2"{[[0.47516271471977234], [0.3739975690841675]]})
+    3 |  # node_linear_1
+         %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"mlp.1.bias"{[-0.08543958514928818]})
+    4 |  # node_mul
+         %"mul"&lt;FLOAT,[1]&gt; ⬅️ ::Mul(%"linear_1", %"scalar_tensor_default"{2.0})
     return %"mul"&lt;FLOAT,[1]&gt;
 }
 </pre></div>
@@ -1108,30 +1139,40 @@ mlp.2 &lt;class '__main__.ForwardWithControlFlowTest'&gt;
             linear: "f32[2]" = torch.ops.aten.linear.default(x, p_mlp_0_weight, p_mlp_0_bias);  x = p_mlp_0_weight = p_mlp_0_bias = None
             linear_1: "f32[1]" = torch.ops.aten.linear.default(linear, p_mlp_1_weight, p_mlp_1_bias);  linear = p_mlp_1_weight = p_mlp_1_bias = None
 
-             # File: /usr/local/lib/python3.10/dist-packages/torch/nn/modules/container.py:240 in forward, code: input = module(input)
+             # File: /usr/local/lib/python3.10/dist-packages/torch/nn/modules/container.py:244 in forward, code: input = module(input)
             sum_1: "f32[]" = torch.ops.aten.sum.default(linear_1)
             gt: "b8[]" = torch.ops.aten.gt.Scalar(sum_1, 0);  sum_1 = None
 
-             # File: &lt;eval_with_key&gt;.30:9 in forward, code: cond = torch.ops.higher_order.cond(l_args_0_, cond_true_0, cond_false_0, [l_args_3_0_]);  l_args_0_ = cond_true_0 = cond_false_0 = l_args_3_0_ = None
+             # File: &lt;eval_with_key&gt;.25:9 in forward, code: cond = torch.ops.higher_order.cond(l_args_0_, cond_true_0, cond_false_0, (l_args_3_0_,));  l_args_0_ = cond_true_0 = cond_false_0 = l_args_3_0_ = None
             true_graph_0 = self.true_graph_0
             false_graph_0 = self.false_graph_0
-            cond = torch.ops.higher_order.cond(gt, true_graph_0, false_graph_0, [linear_1]);  gt = true_graph_0 = false_graph_0 = linear_1 = None
+            cond = torch.ops.higher_order.cond(gt, true_graph_0, false_graph_0, (linear_1,));  gt = true_graph_0 = false_graph_0 = linear_1 = None
             getitem: "f32[1]" = cond[0];  cond = None
             return (getitem,)
 
         class true_graph_0(torch.nn.Module):
             def forward(self, linear_1: "f32[1]"):
-                 # File: &lt;eval_with_key&gt;.25:6 in forward, code: mul = l_args_3_0__1.mul(2);  l_args_3_0__1 = None
+                 # File: &lt;eval_with_key&gt;.22:6 in forward, code: mul = l_args_3_0__1.mul(2);  l_args_3_0__1 = None
                 mul: "f32[1]" = torch.ops.aten.mul.Tensor(linear_1, 2);  linear_1 = None
                 return (mul,)
 
         class false_graph_0(torch.nn.Module):
             def forward(self, linear_1: "f32[1]"):
-                 # File: &lt;eval_with_key&gt;.26:6 in forward, code: neg = l_args_3_0__1.neg();  l_args_3_0__1 = None
+                 # File: &lt;eval_with_key&gt;.23:6 in forward, code: neg = l_args_3_0__1.neg();  l_args_3_0__1 = None
                 neg: "f32[1]" = torch.ops.aten.neg.default(linear_1);  linear_1 = None
                 return (neg,)
 
-Graph signature: ExportGraphSignature(input_specs=[InputSpec(kind=&lt;InputKind.PARAMETER: 2&gt;, arg=TensorArgument(name='p_mlp_0_weight'), target='mlp.0.weight', persistent=None), InputSpec(kind=&lt;InputKind.PARAMETER: 2&gt;, arg=TensorArgument(name='p_mlp_0_bias'), target='mlp.0.bias', persistent=None), InputSpec(kind=&lt;InputKind.PARAMETER: 2&gt;, arg=TensorArgument(name='p_mlp_1_weight'), target='mlp.1.weight', persistent=None), InputSpec(kind=&lt;InputKind.PARAMETER: 2&gt;, arg=TensorArgument(name='p_mlp_1_bias'), target='mlp.1.bias', persistent=None), InputSpec(kind=&lt;InputKind.USER_INPUT: 1&gt;, arg=TensorArgument(name='x'), target=None, persistent=None)], output_specs=[OutputSpec(kind=&lt;OutputKind.USER_OUTPUT: 1&gt;, arg=TensorArgument(name='getitem'), target=None)])
+Graph signature:
+    # inputs
+    p_mlp_0_weight: PARAMETER target='mlp.0.weight'
+    p_mlp_0_bias: PARAMETER target='mlp.0.bias'
+    p_mlp_1_weight: PARAMETER target='mlp.1.weight'
+    p_mlp_1_bias: PARAMETER target='mlp.1.bias'
+    x: USER_INPUT
+
+    # outputs
+    getitem: USER_OUTPUT
+
 Range constraints: {}
 </pre></div>
 </div>
@@ -1150,7 +1191,7 @@ Range constraints: {}
     ir_version=10,
     opset_imports={'': 18},
     producer_name='pytorch',
-    producer_version='2.7.0+cu126',
+    producer_version='2.8.0+cu128',
     domain=None,
     model_version=None,
 &gt;
@@ -1163,27 +1204,27 @@ graph(
         %"getitem"&lt;FLOAT,[1]&gt;
     ),
     initializers=(
-        %"mlp.0.bias"&lt;FLOAT,[2]&gt;{TorchTensor&lt;FLOAT,[2]&gt;(Parameter containing: tensor([-0.4305,  0.3665], requires_grad=True), name='mlp.0.bias')},
-        %"mlp.1.bias"&lt;FLOAT,[1]&gt;{TorchTensor&lt;FLOAT,[1]&gt;(Parameter containing: tensor([0.0465], requires_grad=True), name='mlp.1.bias')},
-        %"val_0"&lt;FLOAT,[3,2]&gt;{Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.13390912,  0.06435812], [-0.25047785,  0.06952932], [-0.54379046,  0.06196987]], dtype=float32), name='val_0')},
-        %"val_2"&lt;FLOAT,[2,1]&gt;{Tensor&lt;FLOAT,[2,1]&gt;(array([[-0.36925122], [ 0.03637256]], dtype=float32), name='val_2')},
+        %"mlp.0.bias"&lt;FLOAT,[2]&gt;{TorchTensor&lt;FLOAT,[2]&gt;(Parameter containing: tensor([0.0916, 0.4457], requires_grad=True), name='mlp.0.bias')},
+        %"mlp.1.bias"&lt;FLOAT,[1]&gt;{TorchTensor&lt;FLOAT,[1]&gt;(Parameter containing: tensor([-0.0854], requires_grad=True), name='mlp.1.bias')},
+        %"val_0"&lt;FLOAT,[3,2]&gt;{Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.21516356,  0.10768887], [-0.47109675,  0.35138535], [ 0.02968623, -0.39527616]], dtype=float32), name='val_0')},
+        %"val_2"&lt;FLOAT,[2,1]&gt;{Tensor&lt;FLOAT,[2,1]&gt;(array([[0.4751627 ], [0.37399757]], dtype=float32), name='val_2')},
         %"scalar_tensor_default"&lt;FLOAT,[]&gt;{Tensor&lt;FLOAT,[]&gt;(array(0., dtype=float32), name='scalar_tensor_default')},
         %"scalar_tensor_default_2"&lt;FLOAT,[]&gt;{Tensor&lt;FLOAT,[]&gt;(array(2., dtype=float32), name='scalar_tensor_default_2')}
     ),
 ) {
     0 |  # node_MatMul_1
-         %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"x", %"val_0"{[[0.13390912115573883, 0.06435811519622803], [-0.2504778504371643, 0.06952932476997375], [-0.5437904596328735, 0.06196987256407738]]})
-    1 |  # node_Add_2
-         %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"mlp.0.bias"{[-0.43052101135253906, 0.3664553165435791]})
-    2 |  # node_MatMul_4
-         %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2"{[[-0.36925122141838074], [0.03637256100773811]]})
-    3 |  # node_Add_5
-         %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"mlp.1.bias"{[0.04650634899735451]})
-    4 |  # node_ReduceSum_6
+         %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"x", %"val_0"{[[0.21516355872154236, 0.10768887400627136], [-0.4710967540740967, 0.35138535499572754], [0.029686233028769493, -0.39527615904808044]]})
+    1 |  # node_linear
+         %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"mlp.0.bias"{[0.09163615107536316, 0.4457355737686157]})
+    2 |  # node_MatMul_3
+         %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2"{[[0.47516271471977234], [0.3739975690841675]]})
+    3 |  # node_linear_1
+         %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"mlp.1.bias"{[-0.08543958514928818]})
+    4 |  # node_sum_1
          %"sum_1"&lt;FLOAT,[]&gt; ⬅️ ::ReduceSum(%"linear_1") {noop_with_empty_axes=0, keepdims=False}
-    5 |  # node_Greater_9
+    5 |  # node_gt
          %"gt"&lt;BOOL,[]&gt; ⬅️ ::Greater(%"sum_1", %"scalar_tensor_default"{0.0})
-    6 |  # node_If_10
+    6 |  # node_cond__0
          %"getitem"&lt;FLOAT,[1]&gt; ⬅️ ::If(%"gt") {then_branch=
              graph(
                  name=true_graph_0,
@@ -1194,7 +1235,7 @@ graph(
                      %"mul_true_graph_0"&lt;FLOAT,[1]&gt;
                  ),
              ) {
-                 0 |  # node_Mul_2
+                 0 |  # node_mul
                       %"mul_true_graph_0"&lt;FLOAT,[1]&gt; ⬅️ ::Mul(%"linear_1", %"scalar_tensor_default_2"{2.0})
                  return %"mul_true_graph_0"&lt;FLOAT,[1]&gt;
              }, else_branch=
@@ -1207,7 +1248,7 @@ graph(
                      %"neg_false_graph_0"&lt;FLOAT,[1]&gt;
                  ),
              ) {
-                 0 |  # node_Neg_0
+                 0 |  # node_neg
                       %"neg_false_graph_0"&lt;FLOAT,[1]&gt; ⬅️ ::Neg(%"linear_1")
                  return %"neg_false_graph_0"&lt;FLOAT,[1]&gt;
              }}
@@ -1224,7 +1265,7 @@ graph(
     ir_version=10,
     opset_imports={'': 18},
     producer_name='pytorch',
-    producer_version='2.7.0+cu126',
+    producer_version='2.8.0+cu128',
     domain=None,
     model_version=None,
 &gt;
@@ -1237,27 +1278,27 @@ graph(
         %"getitem"&lt;FLOAT,[1]&gt;
     ),
     initializers=(
-        %"mlp.0.bias"&lt;FLOAT,[2]&gt;{TorchTensor&lt;FLOAT,[2]&gt;(Parameter containing: tensor([-0.4305,  0.3665], requires_grad=True), name='mlp.0.bias')},
-        %"mlp.1.bias"&lt;FLOAT,[1]&gt;{TorchTensor&lt;FLOAT,[1]&gt;(Parameter containing: tensor([0.0465], requires_grad=True), name='mlp.1.bias')},
-        %"val_0"&lt;FLOAT,[3,2]&gt;{Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.13390912,  0.06435812], [-0.25047785,  0.06952932], [-0.54379046,  0.06196987]], dtype=float32), name='val_0')},
-        %"val_2"&lt;FLOAT,[2,1]&gt;{Tensor&lt;FLOAT,[2,1]&gt;(array([[-0.36925122], [ 0.03637256]], dtype=float32), name='val_2')},
+        %"mlp.0.bias"&lt;FLOAT,[2]&gt;{TorchTensor&lt;FLOAT,[2]&gt;(Parameter containing: tensor([0.0916, 0.4457], requires_grad=True), name='mlp.0.bias')},
+        %"mlp.1.bias"&lt;FLOAT,[1]&gt;{TorchTensor&lt;FLOAT,[1]&gt;(Parameter containing: tensor([-0.0854], requires_grad=True), name='mlp.1.bias')},
+        %"val_0"&lt;FLOAT,[3,2]&gt;{Tensor&lt;FLOAT,[3,2]&gt;(array([[ 0.21516356,  0.10768887], [-0.47109675,  0.35138535], [ 0.02968623, -0.39527616]], dtype=float32), name='val_0')},
+        %"val_2"&lt;FLOAT,[2,1]&gt;{Tensor&lt;FLOAT,[2,1]&gt;(array([[0.4751627 ], [0.37399757]], dtype=float32), name='val_2')},
         %"scalar_tensor_default"&lt;FLOAT,[]&gt;{Tensor&lt;FLOAT,[]&gt;(array(0., dtype=float32), name='scalar_tensor_default')},
         %"scalar_tensor_default_2"&lt;FLOAT,[]&gt;{Tensor&lt;FLOAT,[]&gt;(array(2., dtype=float32), name='scalar_tensor_default_2')}
     ),
 ) {
     0 |  # node_MatMul_1
-         %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"x", %"val_0"{[[0.13390912115573883, 0.06435811519622803], [-0.2504778504371643, 0.06952932476997375], [-0.5437904596328735, 0.06196987256407738]]})
-    1 |  # node_Add_2
-         %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"mlp.0.bias"{[-0.43052101135253906, 0.3664553165435791]})
-    2 |  # node_MatMul_4
-         %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2"{[[-0.36925122141838074], [0.03637256100773811]]})
-    3 |  # node_Add_5
-         %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"mlp.1.bias"{[0.04650634899735451]})
-    4 |  # node_ReduceSum_6
+         %"val_1"&lt;FLOAT,[2]&gt; ⬅️ ::MatMul(%"x", %"val_0"{[[0.21516355872154236, 0.10768887400627136], [-0.4710967540740967, 0.35138535499572754], [0.029686233028769493, -0.39527615904808044]]})
+    1 |  # node_linear
+         %"linear"&lt;FLOAT,[2]&gt; ⬅️ ::Add(%"val_1", %"mlp.0.bias"{[0.09163615107536316, 0.4457355737686157]})
+    2 |  # node_MatMul_3
+         %"val_3"&lt;FLOAT,[1]&gt; ⬅️ ::MatMul(%"linear", %"val_2"{[[0.47516271471977234], [0.3739975690841675]]})
+    3 |  # node_linear_1
+         %"linear_1"&lt;FLOAT,[1]&gt; ⬅️ ::Add(%"val_3", %"mlp.1.bias"{[-0.08543958514928818]})
+    4 |  # node_sum_1
          %"sum_1"&lt;FLOAT,[]&gt; ⬅️ ::ReduceSum(%"linear_1") {noop_with_empty_axes=0, keepdims=False}
-    5 |  # node_Greater_9
+    5 |  # node_gt
          %"gt"&lt;BOOL,[]&gt; ⬅️ ::Greater(%"sum_1", %"scalar_tensor_default"{0.0})
-    6 |  # node_If_10
+    6 |  # node_cond__0
          %"getitem"&lt;FLOAT,[1]&gt; ⬅️ ::If(%"gt") {then_branch=
              graph(
                  name=true_graph_0,
@@ -1268,7 +1309,7 @@ graph(
                      %"mul_true_graph_0"&lt;FLOAT,[1]&gt;
                  ),
              ) {
-                 0 |  # node_Mul_2
+                 0 |  # node_mul
                       %"mul_true_graph_0"&lt;FLOAT,[1]&gt; ⬅️ ::Mul(%"linear_1", %"scalar_tensor_default_2"{2.0})
                  return %"mul_true_graph_0"&lt;FLOAT,[1]&gt;
              }, else_branch=
@@ -1281,7 +1322,7 @@ graph(
                      %"neg_false_graph_0"&lt;FLOAT,[1]&gt;
                  ),
              ) {
-                 0 |  # node_Neg_0
+                 0 |  # node_neg
                       %"neg_false_graph_0"&lt;FLOAT,[1]&gt; ⬅️ ::Neg(%"linear_1")
                  return %"neg_false_graph_0"&lt;FLOAT,[1]&gt;
              }}
@@ -1312,7 +1353,7 @@ sit tight and have fun going through all of them to learn all there is about the
 </div>
 <div class="toctree-wrapper compound">
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 2.428 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 2.835 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-onnx-export-control-flow-model-to-onnx-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/1c5e336a8b06aec51ee1f67538b41344/export_control_flow_model_to_onnx_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">export_control_flow_model_to_onnx_tutorial.ipynb</span></code></a></p>

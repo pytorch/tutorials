@@ -6,7 +6,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta content="2023-10-02T22:33:03+00:00" property="article:modified_time"/>
-<title>How to save memory by fusing the optimizer step into the backward pass — PyTorch Tutorials 2.7.0+cu126 documentation</title>
+<title>How to save memory by fusing the optimizer step into the backward pass — PyTorch Tutorials 2.8.0+cu128 documentation</title>
 <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
@@ -34,7 +34,7 @@
 <link as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
 <link as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
 <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../_static/documentation_options.js?v=07b0cd76"></script>
+<script src="../_static/documentation_options.js?v=bffbcef7"></script>
 <script src="../_static/doctools.js?v=888ff710"></script>
 <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
 <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -113,7 +113,7 @@
    fbq('track', 'PageView');
 </script>
 <script>
-   document.documentElement.setAttribute('data-version', 'v2.7.0+cu126');
+   document.documentElement.setAttribute('data-version', 'v2.8.0+cu128');
  </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView&amp;noscript=1" width="1"/>
@@ -499,7 +499,7 @@
 </button>
 <div class="navbar-header-items__start">
 <div class="navbar-item">
-<a class="version" href="../index.html">v2.7.0+cu126</a>
+<a class="version" href="../index.html">v2.8.0+cu128</a>
 </div>
 </div>
 <div class="navbar-header-items">
@@ -816,35 +816,44 @@ but, again, feel free to substitute with your own optimizer.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading: "https://download.pytorch.org/models/vit_l_16-852ce7e3.pth" to /var/lib/ci-user/.cache/torch/hub/checkpoints/vit_l_16-852ce7e3.pth
 
   0%|          | 0.00/1.13G [00:00&lt;?, ?B/s]
-  4%|▎         | 41.5M/1.13G [00:00&lt;00:02, 434MB/s]
-  7%|▋         | 83.6M/1.13G [00:00&lt;00:02, 438MB/s]
- 11%|█         | 126M/1.13G [00:00&lt;00:02, 408MB/s]
- 14%|█▍        | 165M/1.13G [00:00&lt;00:02, 410MB/s]
- 18%|█▊        | 204M/1.13G [00:00&lt;00:02, 408MB/s]
- 21%|██        | 246M/1.13G [00:00&lt;00:02, 417MB/s]
- 25%|██▍       | 289M/1.13G [00:00&lt;00:02, 428MB/s]
- 28%|██▊       | 330M/1.13G [00:00&lt;00:02, 394MB/s]
- 32%|███▏      | 370M/1.13G [00:00&lt;00:02, 403MB/s]
- 35%|███▌      | 409M/1.13G [00:01&lt;00:01, 399MB/s]
- 39%|███▊      | 448M/1.13G [00:01&lt;00:01, 399MB/s]
- 42%|████▏     | 490M/1.13G [00:01&lt;00:01, 413MB/s]
- 46%|████▌     | 530M/1.13G [00:01&lt;00:01, 415MB/s]
- 49%|████▉     | 570M/1.13G [00:01&lt;00:01, 411MB/s]
- 53%|█████▎    | 613M/1.13G [00:01&lt;00:01, 422MB/s]
- 56%|█████▋    | 653M/1.13G [00:01&lt;00:01, 418MB/s]
- 60%|█████▉    | 696M/1.13G [00:01&lt;00:01, 426MB/s]
- 63%|██████▎   | 736M/1.13G [00:01&lt;00:01, 395MB/s]
- 67%|██████▋   | 776M/1.13G [00:01&lt;00:01, 399MB/s]
- 70%|███████   | 814M/1.13G [00:02&lt;00:01, 344MB/s]
- 73%|███████▎  | 851M/1.13G [00:02&lt;00:00, 356MB/s]
- 77%|███████▋  | 891M/1.13G [00:02&lt;00:00, 372MB/s]
- 80%|████████  | 932M/1.13G [00:02&lt;00:00, 388MB/s]
- 84%|████████▍ | 975M/1.13G [00:02&lt;00:00, 405MB/s]
- 88%|████████▊ | 0.99G/1.13G [00:02&lt;00:00, 417MB/s]
- 91%|█████████ | 1.03G/1.13G [00:02&lt;00:00, 422MB/s]
- 95%|█████████▍| 1.07G/1.13G [00:02&lt;00:00, 417MB/s]
- 98%|█████████▊| 1.11G/1.13G [00:02&lt;00:00, 406MB/s]
-100%|██████████| 1.13G/1.13G [00:03&lt;00:00, 403MB/s]
+  2%|▏         | 29.0M/1.13G [00:00&lt;00:03, 304MB/s]
+  5%|▌         | 59.0M/1.13G [00:00&lt;00:03, 309MB/s]
+  8%|▊         | 88.6M/1.13G [00:00&lt;00:05, 224MB/s]
+ 10%|▉         | 112M/1.13G [00:00&lt;00:04, 223MB/s]
+ 12%|█▏        | 137M/1.13G [00:00&lt;00:04, 236MB/s]
+ 14%|█▍        | 168M/1.13G [00:00&lt;00:03, 261MB/s]
+ 18%|█▊        | 204M/1.13G [00:00&lt;00:03, 296MB/s]
+ 20%|██        | 233M/1.13G [00:00&lt;00:03, 290MB/s]
+ 23%|██▎       | 261M/1.13G [00:01&lt;00:03, 283MB/s]
+ 25%|██▍       | 289M/1.13G [00:01&lt;00:03, 238MB/s]
+ 27%|██▋       | 318M/1.13G [00:01&lt;00:03, 256MB/s]
+ 30%|██▉       | 343M/1.13G [00:01&lt;00:03, 239MB/s]
+ 32%|███▏      | 373M/1.13G [00:01&lt;00:03, 256MB/s]
+ 35%|███▌      | 407M/1.13G [00:01&lt;00:02, 283MB/s]
+ 38%|███▊      | 446M/1.13G [00:01&lt;00:02, 317MB/s]
+ 41%|████      | 477M/1.13G [00:01&lt;00:02, 321MB/s]
+ 44%|████▍     | 509M/1.13G [00:01&lt;00:02, 313MB/s]
+ 47%|████▋     | 540M/1.13G [00:02&lt;00:02, 318MB/s]
+ 49%|████▉     | 574M/1.13G [00:02&lt;00:01, 327MB/s]
+ 52%|█████▏    | 605M/1.13G [00:02&lt;00:01, 307MB/s]
+ 55%|█████▍    | 635M/1.13G [00:02&lt;00:01, 287MB/s]
+ 57%|█████▋    | 664M/1.13G [00:02&lt;00:01, 291MB/s]
+ 60%|█████▉    | 692M/1.13G [00:02&lt;00:01, 257MB/s]
+ 62%|██████▏   | 723M/1.13G [00:02&lt;00:01, 273MB/s]
+ 65%|██████▍   | 754M/1.13G [00:02&lt;00:01, 287MB/s]
+ 67%|██████▋   | 782M/1.13G [00:02&lt;00:01, 289MB/s]
+ 70%|███████   | 816M/1.13G [00:03&lt;00:01, 306MB/s]
+ 73%|███████▎  | 849M/1.13G [00:03&lt;00:01, 317MB/s]
+ 76%|███████▌  | 880M/1.13G [00:03&lt;00:00, 319MB/s]
+ 78%|███████▊  | 910M/1.13G [00:03&lt;00:00, 305MB/s]
+ 81%|████████  | 940M/1.13G [00:03&lt;00:00, 256MB/s]
+ 84%|████████▎ | 972M/1.13G [00:03&lt;00:00, 276MB/s]
+ 87%|████████▋ | 0.99G/1.13G [00:03&lt;00:00, 309MB/s]
+ 90%|████████▉ | 1.02G/1.13G [00:03&lt;00:00, 307MB/s]
+ 92%|█████████▏| 1.05G/1.13G [00:03&lt;00:00, 315MB/s]
+ 95%|█████████▌| 1.08G/1.13G [00:04&lt;00:00, 329MB/s]
+ 98%|█████████▊| 1.12G/1.13G [00:04&lt;00:00, 338MB/s]
+100%|██████████| 1.13G/1.13G [00:04&lt;00:00, 291MB/s]
 </pre></div>
 </div>
 <p>Now let’s define our typical training loop. You should use real images when
@@ -1067,7 +1076,7 @@ fusing the optimizer into the backward step through the new
 <code class="docutils literal notranslate"><span class="pre">Tensor.register_post_accumulate_grad_hook()</span></code> API and <em>when</em> to apply this
 technique (when gradients memory is significant). Along the way, we also learned
 about memory snapshots, which are generally useful in memory optimization.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 9.311 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 10.333 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-optimizer-step-in-backward-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/dfe0a5e2472fa9d26daaa0f82eefb5b6/optimizer_step_in_backward_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">optimizer_step_in_backward_tutorial.ipynb</span></code></a></p>
@@ -1279,7 +1288,7 @@ about memory snapshots, which are generally useful in memory optimization.</p>
          },
         "datePublished": "",
          "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. How to save memory by fusing the optimizer step into the backward pass# Hello there! This tutorial aims to showcase one way of reducing the memory footprint of a training loop by reducing the memory taken by the gradients. Say you have a model and you’re interested in ways to optimize memory to avoid Out of Memory (OOM) errors or simply to ooze more out of your GPU. Well, you _might_ be in luck (if gradients take up a portion of your memory and you do not need to do gradient accumulation). We will explore the following: What takes up memory during your training or finetuning loop, How to capture and visualize memory snapshots to determine the bottleneck, The new Tensor.register_post_accumulate_grad_hook(hook) API, and finally, How everything fits together in 10 lines to achieve memory savings. To run this tutorial, you will need: PyTorch 2.1.0 or newer with torchvision 1 CUDA GPU if you’d like to run the memory visualizations locally. Otherwise, this technique would benefit similarly on any device. Let us start by importing the required modules and models. We will use a vision transformer model from torchvision, but feel free to substitute with your own model. We will also use torch.optim.Adam as our optimizer, but, again, feel free to substitute with your own optimizer. import torch from torchvision import models from pickle import dump model = models.vit_l_16(weights=&#39;DEFAULT&#39;).cuda() optimizer = torch.optim.Adam(model.parameters()) Downloading: \&#34;https://download.pytorch.org/models/vit_l_16-852ce7e3.pth\&#34; to /var/lib/ci-user/.cache/torch/hub/checkpoints/vit_l_16-852ce7e3.pth 0%| | 0.00/1.13G [00:00&lt;?, ?B/s] 4%|▎ | 41.5M/1.13G [00:00&lt;00:02, 434MB/s] 7%|▋ | 83.6M/1.13G [00:00&lt;00:02, 438MB/s] 11%|█ | 126M/1.13G [00:00&lt;00:02, 408MB/s] 14%|█▍ | 165M/1.13G [00:00&lt;00:02, 410MB/s] 18%|█▊ | 204M/1.13G [00:00&lt;00:02, 408MB/s] 21%|██ | 246M/1.13G [00:00&lt;00:02, 417MB/s] 25%|██▍ | 289M/1.13G [00:00&lt;00:02, 428MB/s] 28%|██▊ | 330M/1.13G [00:00&lt;00:02, 394MB/s] 32%|███▏ | 370M/1.13G [00:00&lt;00:02, 403MB/s] 35%|███▌ | 409M/1.13G [00:01&lt;00:01, 399MB/s] 39%|███▊ | 448M/1.13G [00:01&lt;00:01, 399MB/s] 42%|████▏ | 490M/1.13G [00:01&lt;00:01, 413MB/s] 46%|████▌ | 530M/1.13G [00:01&lt;00:01, 415MB/s] 49%|████▉ | 570M/1.13G [00:01&lt;00:01, 411MB/s] 53%|█████▎ | 613M/1.13G [00:01&lt;00:01, 422MB/s] 56%|█████▋ | 653M/1.13G [00:01&lt;00:01, 418MB/s] 60%|█████▉ | 696M/1.13G [00:01&lt;00:01, 426MB/s] 63%|██████▎ | 736M/1.13G [00:01&lt;00:01, 395MB/s] 67%|██████▋ | 776M/1.13G [00:01&lt;00:01, 399MB/s] 70%|███████ | 814M/1.13G [00:02&lt;00:01, 344MB/s] 73%|███████▎ | 851M/1.13G [00:02&lt;00:00, 356MB/s] 77%|███████▋ | 891M/1.13G [00:02&lt;00:00, 372MB/s] 80%|████████ | 932M/1.13G [00:02&lt;00:00, 388MB/s] 84%|████████▍ | 975M/1.13G [00:02&lt;00:00, 405MB/s] 88%|████████▊ | 0.99G/1.13G [00:02&lt;00:00, 417MB/s] 91%|█████████ | 1.03G/1.13G [00:02&lt;00:00, 422MB/s] 95%|█████████▍| 1.07G/1.13G [00:02&lt;00:00, 417MB/s] 98%|█████████▊| 1.11G/1.13G [00:02&lt;00:00, 406MB/s] 100%|..."
+         "articleBody": "Note Go to the end to download the full example code. How to save memory by fusing the optimizer step into the backward pass# Hello there! This tutorial aims to showcase one way of reducing the memory footprint of a training loop by reducing the memory taken by the gradients. Say you have a model and you’re interested in ways to optimize memory to avoid Out of Memory (OOM) errors or simply to ooze more out of your GPU. Well, you _might_ be in luck (if gradients take up a portion of your memory and you do not need to do gradient accumulation). We will explore the following: What takes up memory during your training or finetuning loop, How to capture and visualize memory snapshots to determine the bottleneck, The new Tensor.register_post_accumulate_grad_hook(hook) API, and finally, How everything fits together in 10 lines to achieve memory savings. To run this tutorial, you will need: PyTorch 2.1.0 or newer with torchvision 1 CUDA GPU if you’d like to run the memory visualizations locally. Otherwise, this technique would benefit similarly on any device. Let us start by importing the required modules and models. We will use a vision transformer model from torchvision, but feel free to substitute with your own model. We will also use torch.optim.Adam as our optimizer, but, again, feel free to substitute with your own optimizer. import torch from torchvision import models from pickle import dump model = models.vit_l_16(weights=&#39;DEFAULT&#39;).cuda() optimizer = torch.optim.Adam(model.parameters()) Downloading: \&#34;https://download.pytorch.org/models/vit_l_16-852ce7e3.pth\&#34; to /var/lib/ci-user/.cache/torch/hub/checkpoints/vit_l_16-852ce7e3.pth 0%| | 0.00/1.13G [00:00&lt;?, ?B/s] 2%|▏ | 29.0M/1.13G [00:00&lt;00:03, 304MB/s] 5%|▌ | 59.0M/1.13G [00:00&lt;00:03, 309MB/s] 8%|▊ | 88.6M/1.13G [00:00&lt;00:05, 224MB/s] 10%|▉ | 112M/1.13G [00:00&lt;00:04, 223MB/s] 12%|█▏ | 137M/1.13G [00:00&lt;00:04, 236MB/s] 14%|█▍ | 168M/1.13G [00:00&lt;00:03, 261MB/s] 18%|█▊ | 204M/1.13G [00:00&lt;00:03, 296MB/s] 20%|██ | 233M/1.13G [00:00&lt;00:03, 290MB/s] 23%|██▎ | 261M/1.13G [00:01&lt;00:03, 283MB/s] 25%|██▍ | 289M/1.13G [00:01&lt;00:03, 238MB/s] 27%|██▋ | 318M/1.13G [00:01&lt;00:03, 256MB/s] 30%|██▉ | 343M/1.13G [00:01&lt;00:03, 239MB/s] 32%|███▏ | 373M/1.13G [00:01&lt;00:03, 256MB/s] 35%|███▌ | 407M/1.13G [00:01&lt;00:02, 283MB/s] 38%|███▊ | 446M/1.13G [00:01&lt;00:02, 317MB/s] 41%|████ | 477M/1.13G [00:01&lt;00:02, 321MB/s] 44%|████▍ | 509M/1.13G [00:01&lt;00:02, 313MB/s] 47%|████▋ | 540M/1.13G [00:02&lt;00:02, 318MB/s] 49%|████▉ | 574M/1.13G [00:02&lt;00:01, 327MB/s] 52%|█████▏ | 605M/1.13G [00:02&lt;00:01, 307MB/s] 55%|█████▍ | 635M/1.13G [00:02&lt;00:01, 287MB/s] 57%|█████▋ | 664M/1.13G [00:02&lt;00:01, 291MB/s] 60%|█████▉ | 692M/1.13G [00:02&lt;00:01, 257MB/s] 62%|██████▏ | 723M/1.13G [00:02&lt;00:01, 273MB/s] 65%|██████▍ | 754M/1.13G [00:02&lt;00:01, 287MB/s] 67%|██████▋ | 782M/1.13G [00:02&lt;00:01, 289MB/s] 70%|███████ | 816M/1.13G [00:03&lt;00:01, 306MB/s] 73%|███████▎ | 849M/1.13G [00:03&lt;00:01, 317MB/s] 76%|███████▌ | 880M/1.13G [00:03&lt;00:00, 319M..."
        }
    </script>
 </body>

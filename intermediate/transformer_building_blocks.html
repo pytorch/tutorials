@@ -7,7 +7,7 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta content="Learn how to optimize transformer models by replacing nn.Transformer with Nested Tensors and torch.compile() for significant performance gains in PyTorch." name="description"/>
 <meta content="2022-07-20T23:02:43+00:00" property="article:modified_time"/>
-<title>Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile() — PyTorch Tutorials 2.7.0+cu126 documentation</title>
+<title>Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile() — PyTorch Tutorials 2.8.0+cu128 documentation</title>
 <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
@@ -35,7 +35,7 @@
 <link as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
 <link as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
 <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../_static/documentation_options.js?v=07b0cd76"></script>
+<script src="../_static/documentation_options.js?v=bffbcef7"></script>
 <script src="../_static/doctools.js?v=888ff710"></script>
 <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
 <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -114,7 +114,7 @@
    fbq('track', 'PageView');
 </script>
 <script>
-   document.documentElement.setAttribute('data-version', 'v2.7.0+cu126');
+   document.documentElement.setAttribute('data-version', 'v2.8.0+cu128');
  </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView&amp;noscript=1" width="1"/>
@@ -500,7 +500,7 @@
 </button>
 <div class="navbar-header-items__start">
 <div class="navbar-item">
-<a class="version" href="../index.html">v2.7.0+cu126</a>
+<a class="version" href="../index.html">v2.8.0+cu128</a>
 </div>
 </div>
 <div class="navbar-header-items">
@@ -1230,16 +1230,16 @@ the traditional <code class="docutils literal notranslate"><span class="pre">nn.
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total sequence length in nested query 10494, max sequence length 177
-/usr/local/lib/python3.10/dist-packages/torch/_inductor/compile_fx.py:236: UserWarning:
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total sequence length in nested query 10616, max sequence length 126
+/usr/local/lib/python3.10/dist-packages/torch/_inductor/compile_fx.py:282: UserWarning:
 
 TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
 
-padded_time=0.02520, padded_peak_memory=5.43 GB
-nested_time=0.00250, nested_peak_memory=0.86 GB
+padded_time=0.01581, padded_peak_memory=3.61 GB
+nested_time=0.00245, nested_peak_memory=0.70 GB
 Max difference between vanilla and nested result 0.0
-Nested speedup: 10.09
-Nested peak memory reduction 4.57 GB
+Nested speedup: 6.44
+Nested peak memory reduction 2.91 GB
 </pre></div>
 </div>
 <p>For reference, here are some sample outputs on A100:</p>
@@ -1299,12 +1299,12 @@ Nested peak memory reduction 4.57 GB
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>padded_bw_time=1.68446, padded_bw_peak_mem=6.58 GB
-nested_bw_time=0.06594, nested_bw_peak_mem=4.10 GB
-Nested backward speedup: 25.54
-Nested backward peak memory reduction 2.48 GB
-Difference in out_proj.weight.grad 0.000640869140625
-Difference in packed_proj.weight.grad 0.001708984375
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>padded_bw_time=1.49082, padded_bw_peak_mem=4.42 GB
+nested_bw_time=0.06644, nested_bw_peak_mem=2.81 GB
+Nested backward speedup: 22.44
+Nested backward peak memory reduction 1.61 GB
+Difference in out_proj.weight.grad 0.0003032684326171875
+Difference in packed_proj.weight.grad 0.001373291015625
 Difference in out_proj.bias.grad 0.0
 Difference in packed_proj.bias.grad 0.001953125
 </pre></div>
@@ -1370,8 +1370,8 @@ tensors for both query and key/value.</p>
 <span class="n">out</span> <span class="o">=</span> <span class="n">new_mha_layer</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">is_causal</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total sequence length in nested query 10723, max sequence length 113
-Total sequence length in nested key/value 10689, max sequence length 104
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total sequence length in nested query 11042, max sequence length 134
+Total sequence length in nested key/value 10159, max sequence length 94
 </pre></div>
 </div>
 <p>As above, we can compare this against the vanilla compiled <code class="docutils literal notranslate"><span class="pre">nn.MultiheadAttention</span></code>.</p>
@@ -1423,8 +1423,8 @@ Total sequence length in nested key/value 10689, max sequence length 104
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Max difference between vanilla and nested result 0.0
-Nested speedup: 6.72
-Nested peak memory reduction 1.53 GB
+Nested speedup: 6.37
+Nested peak memory reduction 1.49 GB
 </pre></div>
 </div>
 <p>Sample outputs on A100:</p>
@@ -1570,7 +1570,7 @@ which is what we do in the MultiheadAttention layer above.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>InputProjection: 0.032191 s, PackedInputProjection: 0.032034 s, speedup: 1.00x
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>InputProjection: 0.034077 s, PackedInputProjection: 0.033976 s, speedup: 1.00x
 </pre></div>
 </div>
 </section>
@@ -1656,7 +1656,7 @@ Depending on your hardware, you might see different results. On an A100 I see
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>SwiGLUFFN: 0.0009460959997795726 s, PackedSwiGLUFFN: 0.0008415740001055383 s, speedup: 1.12x
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>SwiGLUFFN: 0.0009518459999071638 s, PackedSwiGLUFFN: 0.0008436440000423318 s, speedup: 1.13x
 </pre></div>
 </div>
 </section>
@@ -1680,7 +1680,7 @@ implement various transformer architectures. Some examples include</p>
 provides for writing transformer layers and demonstrated examples how to compose
 them. It is our hope that this tutorial has educated the reader on the ease with
 which flexible and performant transformer layers can be implemented by users of PyTorch.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 52.989 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 53.944 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-transformer-building-blocks-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/e201125c39959609ca168c306995205c/transformer_building_blocks.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">transformer_building_blocks.ipynb</span></code></a></p>
