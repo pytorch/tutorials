@@ -3,10 +3,10 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
-* `Utilizing Torch Function modes with torch.compile <https://pytorch.org/tutorials/recipes/torch_compile_torch_function_modes.html>`__
-* `Context Parallel Tutorial <https://pytorch.org/tutorials/prototype/context_parallel.html>`__
-* `(beta) Explicit horizontal fusion with foreach_map and torch.compile <https://pytorch.org/tutorials/recipes/foreach_map.html>`__
-* Updated `Inductor Windows CPU Tutorial <https://pytorch.org/tutorials/prototype/inductor_windows.html>`__
+* `Integrating Custom Operators with SYCL for Intel GPU <https://pytorch.org/tutorials/advanced/cpp_custom_ops_sycl.html>`__
+* `Supporting Custom C++ Classes in torch.compile/torch.export <https://docs.pytorch.org/tutorials/advanced/custom_class_pt2.html>`__
+* `Accelerating torch.save and torch.load with GPUDirect Storage <https://docs.pytorch.org/tutorials/unstable/gpu_direct_storage.html>`__
+* `Getting Started with Fully Sharded Data Parallel (FSDP2) <https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__
 
 .. raw:: html
 
@@ -24,7 +24,7 @@ Welcome to PyTorch Tutorials
 .. customcalloutitem::
    :description: Bite-size, ready-to-deploy PyTorch code examples.
    :header: PyTorch Recipes
-   :button_link: recipes/recipes_index.html
+   :button_link: recipes_index.html
    :button_text: Explore Recipes
 
 .. End of callout item section
@@ -767,18 +767,6 @@ Additional Resources
    :button_text: Check Out Examples
 
 .. customcalloutitem::
-   :header: PyTorch Cheat Sheet
-   :description: Quick overview to essential PyTorch elements.
-   :button_link: beginner/ptcheat.html
-   :button_text: Open
-
-.. customcalloutitem::
-   :header: Tutorials on GitHub
-   :description: Access PyTorch Tutorials from GitHub.
-   :button_link: https://github.com/pytorch/tutorials
-   :button_text: Go To GitHub
-
-.. customcalloutitem::
    :header: Run Tutorials on Google Colab
    :description: Learn how to copy tutorial data into Google Drive so that you can run tutorials on Google Colab.
    :button_link: beginner/colab.html
@@ -843,10 +831,10 @@ Additional Resources
    :maxdepth: 1
    :hidden:
 
-   recipes/recipes_index
+   recipes_index
 
 .. toctree::
    :maxdepth: 1
    :hidden:
 
-   prototype/prototype_index
+   unstable_index

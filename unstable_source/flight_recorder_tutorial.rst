@@ -1,4 +1,4 @@
-(prototype) Flight Recorder for Debugging Stuck Jobs
+Flight Recorder for Debugging Stuck Jobs
 ====================================================
 **Author**: `Chirag Pandya <https://github.com/c-p-i-o>`_, `Junjie Wang <https://github.com/fduwjj>`_
 

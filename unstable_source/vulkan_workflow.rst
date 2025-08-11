@@ -199,8 +199,6 @@ For Android API to run model on Vulkan backend we have to specify this during mo
 
 In this case, all inputs will be transparently copied from CPU to the Vulkan device, and model will be run on Vulkan device, the output will be copied transparently to CPU.
 
-The example of using Vulkan backend can be found in test application within the PyTorch repository:
-https://github.com/pytorch/pytorch/blob/master/android/test_app/app/src/main/java/org/pytorch/testapp/MainActivity.java#L133
 
 Building android test app with Vulkan
 -------------------------------------
