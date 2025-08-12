@@ -847,7 +847,7 @@ including:</p>
 </ul>
 <p>If you are only interested in performant attention score modifications, please
 check out the <a class="reference external" href="https://pytorch.org/blog/flexattention/">FlexAttention blog</a> that
-contains a <a class="reference external" href="https://github.com/pytorch-labs/attention-gym">gym of masks</a>.</p>
+contains a <a class="reference external" href="https://github.com/meta-pytorch/attention-gym">gym of masks</a>.</p>
 </section>
 <section id="introducing-the-building-blocks">
 <h1>Introducing the Building Blocks<a class="headerlink" href="#introducing-the-building-blocks" title="Link to this heading">#</a></h1>
@@ -1230,16 +1230,16 @@ the traditional <code class="docutils literal notranslate"><span class="pre">nn.
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total sequence length in nested query 10108, max sequence length 114
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total sequence length in nested query 10673, max sequence length 129
 /usr/local/lib/python3.10/dist-packages/torch/_inductor/compile_fx.py:282: UserWarning:
 
 TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
 
-padded_time=0.01466, padded_peak_memory=3.23 GB
-nested_time=0.00239, nested_peak_memory=0.66 GB
+padded_time=0.01870, padded_peak_memory=3.75 GB
+nested_time=0.00250, nested_peak_memory=0.72 GB
 Max difference between vanilla and nested result 0.0
-Nested speedup: 6.13
-Nested peak memory reduction 2.58 GB
+Nested speedup: 7.49
+Nested peak memory reduction 3.03 GB
 </pre></div>
 </div>
 <p>For reference, here are some sample outputs on A100:</p>
@@ -1299,12 +1299,12 @@ Nested peak memory reduction 2.58 GB
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>padded_bw_time=1.54396, padded_bw_peak_mem=3.98 GB
-nested_bw_time=0.06611, nested_bw_peak_mem=2.54 GB
-Nested backward speedup: 23.35
-Nested backward peak memory reduction 1.44 GB
-Difference in out_proj.weight.grad 0.0002899169921875
-Difference in packed_proj.weight.grad 0.001434326171875
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>padded_bw_time=1.51858, padded_bw_peak_mem=4.64 GB
+nested_bw_time=0.06733, nested_bw_peak_mem=2.97 GB
+Nested backward speedup: 22.55
+Nested backward peak memory reduction 1.68 GB
+Difference in out_proj.weight.grad 0.000396728515625
+Difference in packed_proj.weight.grad 0.00164794921875
 Difference in out_proj.bias.grad 0.0
 Difference in packed_proj.bias.grad 0.001953125
 </pre></div>
@@ -1370,8 +1370,8 @@ tensors for both query and key/value.</p>
 <span class="n">out</span> <span class="o">=</span> <span class="n">new_mha_layer</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">is_causal</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total sequence length in nested query 10753, max sequence length 141
-Total sequence length in nested key/value 10332, max sequence length 125
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total sequence length in nested query 9566, max sequence length 122
+Total sequence length in nested key/value 10809, max sequence length 159
 </pre></div>
 </div>
 <p>As above, we can compare this against the vanilla compiled <code class="docutils literal notranslate"><span class="pre">nn.MultiheadAttention</span></code>.</p>
@@ -1422,9 +1422,9 @@ Total sequence length in nested key/value 10332, max sequence length 125
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Max difference between vanilla and nested result 0.0
-Nested speedup: 5.15
-Nested peak memory reduction 1.23 GB
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Max difference between vanilla and nested result 1.3709068298339844e-06
+Nested speedup: 4.46
+Nested peak memory reduction 1.02 GB
 </pre></div>
 </div>
 <p>Sample outputs on A100:</p>
@@ -1454,7 +1454,7 @@ appropriately makes it possible to properly express empty sequences.</p>
 of the <code class="docutils literal notranslate"><span class="pre">MultiheadAttention</span></code> layer that allows for arbitrary modifications
 to the attention score. The example below takes the <code class="docutils literal notranslate"><span class="pre">alibi_mod</span></code>
 that implements <a class="reference external" href="https://arxiv.org/abs/2108.12409">ALiBi</a> from
-<a class="reference external" href="https://github.com/pytorch-labs/attention-gym">attention gym</a> and uses it
+<a class="reference external" href="https://github.com/meta-pytorch/attention-gym">attention gym</a> and uses it
 with nested input tensors.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">torch.nn.attention.flex_attention</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-nn-attention-flex_attention sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/nn.attention.flex_attention.html#torch.nn.attention.flex_attention.flex_attention" title="torch.nn.attention.flex_attention.flex_attention"><span class="n">flex_attention</span></a>
 
@@ -1570,7 +1570,7 @@ which is what we do in the MultiheadAttention layer above.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>InputProjection: 0.030330 s, PackedInputProjection: 0.030233 s, speedup: 1.00x
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>InputProjection: 0.037672 s, PackedInputProjection: 0.036371 s, speedup: 1.04x
 </pre></div>
 </div>
 </section>
@@ -1656,7 +1656,7 @@ Depending on your hardware, you might see different results. On an A100 I see
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>SwiGLUFFN: 0.0009382299999742827 s, PackedSwiGLUFFN: 0.0008510179998211242 s, speedup: 1.10x
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>SwiGLUFFN: 0.0009673940000993753 s, PackedSwiGLUFFN: 0.0008457559999897057 s, speedup: 1.14x
 </pre></div>
 </div>
 </section>
@@ -1668,8 +1668,8 @@ the various performant building blocks such as KV-Caching, Grouped Query Attenti
 etc. Further, there are several good examples of using various performant building blocks to
 implement various transformer architectures. Some examples include</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/pytorch-labs/gpt-fast">gpt-fast</a></p></li>
-<li><p><a class="reference external" href="https://github.com/pytorch-labs/segment-anything-fast">segment-anything-fast</a></p></li>
+<li><p><a class="reference external" href="https://github.com/meta-pytorch/gpt-fast">gpt-fast</a></p></li>
+<li><p><a class="reference external" href="https://github.com/meta-pytorch/segment-anything-fast">segment-anything-fast</a></p></li>
 <li><p><a class="reference external" href="https://github.com/lucidrains/vit-pytorch/blob/73199ab486e0fad9eced2e3350a11681db08b61b/vit_pytorch/na_vit_nested_tensor.py">lucidrains implementation of NaViT with nested tensors</a></p></li>
 <li><p><a class="reference external" href="https://github.com/pytorch/torchtune/blob/a8a64ec6a99a6ea2be4fdaf0cd5797b03a2567cf/torchtune/modules/vision_transformer.py#L16">torchtune’s implementation of VisionTransformer</a></p></li>
 </ul>
@@ -1680,7 +1680,7 @@ implement various transformer architectures. Some examples include</p>
 provides for writing transformer layers and demonstrated examples how to compose
 them. It is our hope that this tutorial has educated the reader on the ease with
 which flexible and performant transformer layers can be implemented by users of PyTorch.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 3.545 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 2.594 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-transformer-building-blocks-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/e201125c39959609ca168c306995205c/transformer_building_blocks.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">transformer_building_blocks.ipynb</span></code></a></p>
