@@ -99,6 +99,13 @@ Welcome to PyTorch Tutorials
    :link: intermediate/pinmem_nonblock.html
    :tags: Getting-Started
 
+.. customcarditem::
+   :header: Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors
+   :card_description: Learn the subtleties of requires_grad, retain_grad, leaf, and non-leaf tensors
+   :image: _static/img/thumbnails/cropped/understanding_leaf_vs_nonleaf.png
+   :link: beginner/understanding_leaf_vs_nonleaf_tutorial.html
+   :tags: Getting-Started
+
 .. Image/Video
 
 .. customcarditem::
