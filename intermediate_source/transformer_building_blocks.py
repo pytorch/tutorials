@@ -157,7 +157,7 @@ contains a `gym of masks <https://github.com/meta-pytorch/attention-gym>`_.
 #   skipped, performance and memory usage improve.
 #
 # We'll demonstrate the above by building upon the ``MultiheadAttention`` layer in the
-# `Nested Tensor tutorial <https://pytorch.org/tutorials/prototype/nestedtensor.html>`_
+# `Nested Tensor tutorial <https://pytorch.org/tutorials/unstable/nestedtensor.html>`_
 # and comparing it to the ``nn.MultiheadAttention`` layer.
 
 import torch
