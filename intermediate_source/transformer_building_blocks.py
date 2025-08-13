@@ -71,7 +71,7 @@ contains a `gym of masks <https://github.com/meta-pytorch/attention-gym>`_.
 # ===============================
 # First, we will briefly introduce the four technologies mentioned in the introduction
 #
-# * `torch.nested <https://pytorch.org/tutorials/prototype/nestedtensor.html>`_
+# * `torch.nested <https://pytorch.org/tutorials/unstable/nestedtensor.html>`_
 #
 # Nested tensors generalize the shape of regular dense tensors, allowing for
 # representation of ragged-sized data with the same tensor UX. In the context of
