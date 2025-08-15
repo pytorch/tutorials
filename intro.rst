@@ -62,3 +62,4 @@ understand PyTorch's core functionality through step-by-step guidance.
    intermediate/nlp_from_scratch_index
    intermediate/tensorboard_tutorial
    intermediate/pinmem_nonblock
+   intermediate/visualizing_gradients_tutorial
