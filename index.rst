@@ -700,14 +700,14 @@ Welcome to PyTorch Tutorials
    :header: Building an ExecuTorch iOS Demo App
    :card_description: Explore how to set up the ExecuTorch iOS Demo App, which uses the MobileNet v3 model to process live camera images leveraging three different backends: XNNPACK, Core ML, and Metal Performance Shaders (MPS).
    :image: _static/img/ExecuTorch-Logo-cropped.svg
-   :link: https://github.com/pytorch-labs/executorch-examples/tree/main/mv3/apple/ExecuTorchDemo
+   :link: https://github.com/meta-pytorch/executorch-examples/tree/main/mv3/apple/ExecuTorchDemo
    :tags: Edge
 
 .. customcarditem::
    :header: Building an ExecuTorch Android Demo App
    :card_description: Learn how to set up the ExecuTorch Android Demo App for image segmentation tasks using the DeepLab v3 model and XNNPACK FP32 backend.
    :image: _static/img/ExecuTorch-Logo-cropped.svg
-   :link: https://github.com/pytorch-labs/executorch-examples/tree/main/dl3/android/DeepLabV3Demo#executorch-android-demo-app
+   :link: https://github.com/meta-pytorch/executorch-examples/tree/main/dl3/android/DeepLabV3Demo#executorch-android-demo-app
    :tags: Edge
 
 .. customcarditem::
