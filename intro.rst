@@ -4,7 +4,7 @@ Intro
 This is a collection of beginner-friendly resources to help you get
 started with PyTorch. These tutorials cover fundamental concepts,
 basic operations, and essential workflows to build a solid foundation
-for your deep learning journey. Perfect for newcomers looking to
+for your deep learning journey. Perfect for newcomers who want to
 understand PyTorch's core functionality through step-by-step guidance.
 
 .. grid:: 2
