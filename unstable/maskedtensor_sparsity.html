@@ -59,8 +59,6 @@
     <link rel="canonical" href="https://pytorch.org/tutorials/unstable/maskedtensor_sparsity.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="MaskedTensor Advanced Semantics" href="maskedtensor_advanced_semantics.html" />
-    <link rel="prev" title="MaskedTensor Overview" href="maskedtensor_overview.html" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -645,13 +643,6 @@
   </a>
 </li>
 
-
-<li class="nav-item current active">
-  <a class="nav-link nav-internal" href="../unstable_index.html">
-    Unstable
-  </a>
-</li>
-
   </ul>
 </nav></div>
       
@@ -836,13 +827,6 @@ document.write(`
   </a>
 </li>
 
-
-<li class="nav-item current active">
-  <a class="nav-link nav-internal" href="../unstable_index.html">
-    Unstable
-  </a>
-</li>
-
   </ul>
 </nav></div>
           
@@ -946,22 +930,7 @@ document.write(`
 <nav class="bd-docs-nav bd-links"
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="context_parallel.html">Introduction to Context Parallel</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flight_recorder_tutorial.html">Flight Recorder for Debugging Stuck Jobs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="inductor_cpp_wrapper_tutorial.html">Inductor C++ Wrapper Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="inductor_windows.html">How to use <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> on Windows CPU/XPU</a></li>
-<li class="toctree-l1"><a class="reference internal" href="vmap_recipe.html">torch.vmap</a></li>
-<li class="toctree-l1"><a class="reference internal" href="vulkan_workflow.html">PyTorch Vulkan Backend User Workflow</a></li>
-<li class="toctree-l1"><a class="reference internal" href="nestedtensor.html">Getting Started with Nested Tensors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="maskedtensor_overview.html">MaskedTensor Overview</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">MaskedTensor Sparsity</a></li>
-<li class="toctree-l1"><a class="reference internal" href="maskedtensor_advanced_semantics.html">MaskedTensor Advanced Semantics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="maskedtensor_adagrad.html">Efficiently writing “sparse” semantics for Adagrad with MaskedTensor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="python_extension_autoload.html">Autoloading Out-of-Tree Extension</a></li>
-<li class="toctree-l1"><a class="reference internal" href="max_autotune_on_CPU_tutorial.html">Using Max-Autotune Compilation on CPU for Better Performance</a></li>
-</ul>
-</div>
+  <div class="bd-toc-item navbar-nav"></div>
 </nav></div>
     </div>
   
@@ -997,9 +966,6 @@ document.write(`
         <i class="fa-solid fa-home"></i>
       </a>
     </li>
-    
-    <li class="breadcrumb-item"><a href="../unstable_index.html" class="nav-link">Unstable</a></li>
-    
     <li class="breadcrumb-item active" aria-current="page">MaskedTensor...</li>
   </ul>
 </nav>
@@ -1041,15 +1007,9 @@ document.write(`
    <!-- Hidden breadcrumb schema for SEO only -->
    <div style="display:none;" itemscope itemtype="https://schema.org/BreadcrumbList">
       
-        <div itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-          <link itemprop="item" href="../unstable_index.html">
-          <meta itemprop="name" content="Unstable">
-          <meta itemprop="position" content="1">
-        </div>
-      
       <div itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
         <meta itemprop="name" content="MaskedTensor Sparsity">
-        <meta itemprop="position" content="2">
+        <meta itemprop="position" content="1">
       </div>
    </div>
 
@@ -1144,7 +1104,42 @@ corresponding values. That is, the following are provided:</p>
 </ol>
 <p>The second method is easier to illustrate so we’ve shown that below, but for more on the first and the nuances behind
 the approach, please read the <a class="reference internal" href="#sparse-coo-appendix"><span class="std std-ref">Sparse COO Appendix</span></a>.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Disable prototype warnings and such</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.masked</span><span class="w"> </span><span class="kn">import</span> <span class="n">masked_tensor</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="c1"># Disable prototype warnings and such</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
+
+<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">values</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span>
+<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">],</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">]])</span>
+<span class="n">mt</span> <span class="o">=</span> <span class="n">masked_tensor</span><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">values</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a><span class="p">)</span>
+<span class="n">sparse_coo_mt</span> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.Tensor.to_sparse_coo.html#torch.Tensor.to_sparse_coo" title="torch.Tensor.to_sparse_coo" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-method"><span class="n">mt</span><span class="o">.</span><span class="n">to_sparse_coo</span></a><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mt</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt (sparse coo):</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sparse_coo_mt</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt data (sparse coo):</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sparse_coo_mt</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>mt:
+ MaskedTensor(
+  [
+    [      --,       --, 3],
+    [      --,       --, 5]
+  ]
+)
+mt (sparse coo):
+ MaskedTensor(
+  [
+    [      --,       --, 3],
+    [      --,       --, 5]
+  ]
+)
+mt data (sparse coo):
+ tensor(indices=tensor([[0, 1],
+                       [2, 2]]),
+       values=tensor([3, 5]),
+       size=(2, 3), nnz=2, layout=torch.sparse_coo)
 </pre></div>
 </div>
 </section>
@@ -1164,12 +1159,42 @@ while <cite>crow_indices[i+1] - crow_indices[i]</cite> indicates the number of s
 </ul>
 <p>Of note, both sparse COO and CSR tensors are in a <a class="reference external" href="https://pytorch.org/docs/stable/index.html">beta</a> state.</p>
 <p>By way of example:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">mt_sparse_csr</span> <span class="o">=</span> <span class="n">mt</span><span class="o">.</span><span class="n">to_sparse_csr</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt (sparse csr):</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mt_sparse_csr</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt data (sparse csr):</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mt_sparse_csr</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>mt (sparse csr):
+ MaskedTensor(
+  [
+    [      --,       --, 3],
+    [      --,       --, 5]
+  ]
+)
+mt data (sparse csr):
+ tensor(crow_indices=tensor([0, 1, 2]),
+       col_indices=tensor([2, 2]),
+       values=tensor([3, 5]), size=(2, 3), nnz=2, layout=torch.sparse_csr)
+</pre></div>
+</div>
 </section>
 <section id="supported-operations">
 <h2>Supported Operations<a class="headerlink" href="#supported-operations" title="Link to this heading">#</a></h2>
 <section id="unary">
 <h3>Unary<a class="headerlink" href="#unary" title="Link to this heading">#</a></h3>
 <p>All <a class="reference external" href="https://pytorch.org/docs/master/masked.html#unary-operators">unary operators</a> are supported, e.g.:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">mt</span><span class="o">.</span><span class="n">sin</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>MaskedTensor(
+  [
+    [      --,       --,   0.1411],
+    [      --,       --,  -0.9589]
+  ]
+)
+</pre></div>
+</div>
 </section>
 <section id="binary">
 <h3>Binary<a class="headerlink" href="#binary" title="Link to this heading">#</a></h3>
@@ -1177,22 +1202,153 @@ while <cite>crow_indices[i+1] - crow_indices[i]</cite> indicates the number of s
 input masks from the two masked tensors must match. For more information on why this decision was made, please
 find our <a class="reference external" href="https://pytorch.org/tutorials/prototype/maskedtensor_advanced_semantics.html">MaskedTensor: Advanced Semantics tutorial</a>.</p>
 <p>Please find an example below:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">i</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+     <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>
+<span class="n">v1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">v2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">]</span>
+<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">m</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>
+
+<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s1</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.sparse_coo_tensor.html#torch.sparse_coo_tensor" title="torch.sparse_coo_tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">sparse_coo_tensor</span></a><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s2</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.sparse_coo_tensor.html#torch.sparse_coo_tensor" title="torch.sparse_coo_tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">sparse_coo_tensor</span></a><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.sparse_coo_tensor.html#torch.sparse_coo_tensor" title="torch.sparse_coo_tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">sparse_coo_tensor</span></a><span class="p">(</span><span class="n">i</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">m</span></a><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+<span class="n">mt1</span> <span class="o">=</span> <span class="n">masked_tensor</span><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s1</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a><span class="p">)</span>
+<span class="n">mt2</span> <span class="o">=</span> <span class="n">masked_tensor</span><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s2</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt1:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mt1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt2:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mt2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>mt1:
+ MaskedTensor(
+  [
+    [      --,       --, 3],
+    [      --,       --, 5]
+  ]
+)
+mt2:
+ MaskedTensor(
+  [
+    [      --,       --, 20],
+    [      --,       --, 40]
+  ]
+)
+</pre></div>
+</div>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;torch.div(mt2, mt1):</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.div.html#torch.div" title="torch.div" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">div</span></a><span class="p">(</span><span class="n">mt2</span><span class="p">,</span> <span class="n">mt1</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;torch.mul(mt1, mt2):</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.mul.html#torch.mul" title="torch.mul" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">mul</span></a><span class="p">(</span><span class="n">mt1</span><span class="p">,</span> <span class="n">mt2</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>torch.div(mt2, mt1):
+ MaskedTensor(
+  [
+    [      --,       --,   6.6667],
+    [      --,       --,   8.0000]
+  ]
+)
+torch.mul(mt1, mt2):
+ MaskedTensor(
+  [
+    [      --,       --, 60],
+    [      --,       --, 200]
+  ]
+)
+</pre></div>
+</div>
 </section>
 <section id="reductions">
 <h3>Reductions<a class="headerlink" href="#reductions" title="Link to this heading">#</a></h3>
 <p>Finally, <a class="reference external" href="https://pytorch.org/docs/master/masked.html#reductions">reductions</a> are supported:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">mt</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>MaskedTensor(
+  [
+    [      --,       --, 3],
+    [      --,       --, 5]
+  ]
+)
+</pre></div>
+</div>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt.sum():</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mt</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt.sum(dim=1):</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mt</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt.amin():</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mt</span><span class="o">.</span><span class="n">amin</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>mt.sum():
+ MaskedTensor(8, True)
+mt.sum(dim=1):
+ MaskedTensor(
+  [3, 5]
+)
+mt.amin():
+ MaskedTensor(3, True)
+</pre></div>
+</div>
 </section>
 <section id="maskedtensor-helper-methods">
 <h3>MaskedTensor Helper Methods<a class="headerlink" href="#maskedtensor-helper-methods" title="Link to this heading">#</a></h3>
 <p>For convenience, <code class="xref py py-class docutils literal notranslate"><span class="pre">MaskedTensor</span></code> has a number of methods to help convert between the different layouts
 and identify the current layout:</p>
 <p>Setup:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">v</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+     <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]]</span>
+<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">m</span></a> <span class="o">=</span> <span class="p">[[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span>
+     <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">]]</span>
+
+<span class="n">mt</span> <span class="o">=</span> <span class="n">masked_tensor</span><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">(</span><span class="n">v</span><span class="p">),</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">m</span></a><span class="p">))</span>
+<span class="n">mt</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>MaskedTensor(
+  [
+    [3,       --,       --],
+    [      --, 4, 5]
+  ]
+)
+</pre></div>
+</div>
 <p><code class="xref py py-meth docutils literal notranslate"><span class="pre">MaskedTensor.to_sparse_coo()</span></code> / <code class="xref py py-meth docutils literal notranslate"><span class="pre">MaskedTensor.to_sparse_csr()</span></code> / <code class="xref py py-meth docutils literal notranslate"><span class="pre">MaskedTensor.to_dense()</span></code>
 to help convert between the different layouts.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">mt_sparse_coo</span> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.Tensor.to_sparse_coo.html#torch.Tensor.to_sparse_coo" title="torch.Tensor.to_sparse_coo" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-method"><span class="n">mt</span><span class="o">.</span><span class="n">to_sparse_coo</span></a><span class="p">()</span>
+<span class="n">mt_sparse_csr</span> <span class="o">=</span> <span class="n">mt</span><span class="o">.</span><span class="n">to_sparse_csr</span><span class="p">()</span>
+<span class="n">mt_dense</span> <span class="o">=</span> <span class="n">mt_sparse_coo</span><span class="o">.</span><span class="n">to_dense</span><span class="p">()</span>
+</pre></div>
+</div>
 <p><code class="xref py py-meth docutils literal notranslate"><span class="pre">MaskedTensor.is_sparse()</span></code> – this will check if the <code class="xref py py-class docutils literal notranslate"><span class="pre">MaskedTensor</span></code>’s layout
 matches any of the supported sparse layouts (currently COO and CSR).</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt_dense.is_sparse: &quot;</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.Tensor.is_sparse.html#torch.Tensor.is_sparse" title="torch.Tensor.is_sparse" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-attribute"><span class="n">mt_dense</span><span class="o">.</span><span class="n">is_sparse</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt_sparse_coo.is_sparse: &quot;</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.Tensor.is_sparse.html#torch.Tensor.is_sparse" title="torch.Tensor.is_sparse" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-attribute"><span class="n">mt_sparse_coo</span><span class="o">.</span><span class="n">is_sparse</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt_sparse_csr.is_sparse: &quot;</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.Tensor.is_sparse.html#torch.Tensor.is_sparse" title="torch.Tensor.is_sparse" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-attribute"><span class="n">mt_sparse_csr</span><span class="o">.</span><span class="n">is_sparse</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>mt_dense.is_sparse:  False
+mt_sparse_coo.is_sparse:  True
+mt_sparse_csr.is_sparse:  True
+</pre></div>
+</div>
 <p><code class="xref py py-meth docutils literal notranslate"><span class="pre">MaskedTensor.is_sparse_coo()</span></code></p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt_dense.is_sparse_coo(): &quot;</span><span class="p">,</span> <span class="n">mt_dense</span><span class="o">.</span><span class="n">is_sparse_coo</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt_sparse_coo.is_sparse_coo: &quot;</span><span class="p">,</span> <span class="n">mt_sparse_coo</span><span class="o">.</span><span class="n">is_sparse_coo</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt_sparse_csr.is_sparse_coo: &quot;</span><span class="p">,</span> <span class="n">mt_sparse_csr</span><span class="o">.</span><span class="n">is_sparse_coo</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>mt_dense.is_sparse_coo():  False
+mt_sparse_coo.is_sparse_coo:  True
+mt_sparse_csr.is_sparse_coo:  False
+</pre></div>
+</div>
 <p><code class="xref py py-meth docutils literal notranslate"><span class="pre">MaskedTensor.is_sparse_csr()</span></code></p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt_dense.is_sparse_csr(): &quot;</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.Tensor.is_sparse_csr.html#torch.Tensor.is_sparse_csr" title="torch.Tensor.is_sparse_csr" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-attribute"><span class="n">mt_dense</span><span class="o">.</span><span class="n">is_sparse_csr</span></a><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt_sparse_coo.is_sparse_csr: &quot;</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.Tensor.is_sparse_csr.html#torch.Tensor.is_sparse_csr" title="torch.Tensor.is_sparse_csr" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-attribute"><span class="n">mt_sparse_coo</span><span class="o">.</span><span class="n">is_sparse_csr</span></a><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt_sparse_csr.is_sparse_csr: &quot;</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.Tensor.is_sparse_csr.html#torch.Tensor.is_sparse_csr" title="torch.Tensor.is_sparse_csr" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-attribute"><span class="n">mt_sparse_csr</span><span class="o">.</span><span class="n">is_sparse_csr</span></a><span class="p">())</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>mt_dense.is_sparse_csr():  False
+mt_sparse_coo.is_sparse_csr:  False
+mt_sparse_csr.is_sparse_csr:  True
+</pre></div>
+</div>
 </section>
 </section>
 <section id="appendix">
@@ -1202,6 +1358,34 @@ matches any of the supported sparse layouts (currently COO and CSR).</p>
 <p>Recall in our <a class="reference internal" href="#sparse-coo-tensors"><span class="std std-ref">original example</span></a>, we created a <code class="xref py py-class docutils literal notranslate"><span class="pre">MaskedTensor</span></code>
 and then converted it to a sparse COO MaskedTensor with <code class="xref py py-meth docutils literal notranslate"><span class="pre">MaskedTensor.to_sparse_coo()</span></code>.</p>
 <p>Alternatively, we can also construct a sparse COO MaskedTensor directly by passing in two sparse COO tensors:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">values</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])</span><span class="o">.</span><span class="n">to_sparse</span><span class="p">()</span>
+<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">],</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">]])</span><span class="o">.</span><span class="n">to_sparse</span><span class="p">()</span>
+<span class="n">mt</span> <span class="o">=</span> <span class="n">masked_tensor</span><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">values</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;values:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">values</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mask:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mt</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>values:
+ tensor(indices=tensor([[0, 1, 1],
+                       [2, 0, 2]]),
+       values=tensor([3, 4, 5]),
+       size=(2, 3), nnz=3, layout=torch.sparse_coo)
+mask:
+ tensor(indices=tensor([[0, 1],
+                       [2, 2]]),
+       values=tensor([True, True]),
+       size=(2, 3), nnz=2, layout=torch.sparse_coo)
+mt:
+ MaskedTensor(
+  [
+    [      --,       --, 3],
+    [      --,       --, 5]
+  ]
+)
+</pre></div>
+</div>
 <p>Instead of using <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.Tensor.to_sparse.html#torch.Tensor.to_sparse" title="(in PyTorch v2.8)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.Tensor.to_sparse()</span></code></a>, we can also create the sparse COO tensors directly,
 which brings us to a warning:</p>
 <div class="admonition warning">
@@ -1211,6 +1395,38 @@ if the user does not specify the indices like in the above example,
 then the 0 values will be “unspecified” by default.</p>
 </div>
 <p>Below, we explicitly specify the 0’s:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">i</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+     <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>
+<span class="n">v</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">m</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>
+<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">values</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.sparse_coo_tensor.html#torch.sparse_coo_tensor" title="torch.sparse_coo_tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">sparse_coo_tensor</span></a><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.sparse_coo_tensor.html#torch.sparse_coo_tensor" title="torch.sparse_coo_tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">sparse_coo_tensor</span></a><span class="p">(</span><span class="n">i</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">m</span></a><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">mt2</span> <span class="o">=</span> <span class="n">masked_tensor</span><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">values</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;values:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">values</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mask:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt2:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mt2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>values:
+ tensor(indices=tensor([[0, 1, 1],
+                       [2, 0, 2]]),
+       values=tensor([3, 4, 5]),
+       size=(2, 3), nnz=3, layout=torch.sparse_coo)
+mask:
+ tensor(indices=tensor([[0, 1, 1],
+                       [2, 0, 2]]),
+       values=tensor([ True, False,  True]),
+       size=(2, 3), nnz=3, layout=torch.sparse_coo)
+mt2:
+ MaskedTensor(
+  [
+    [      --,       --, 3],
+    [      --,       --, 5]
+  ]
+)
+</pre></div>
+</div>
 <p>Note that <code class="docutils literal notranslate"><span class="pre">mt</span></code> and <code class="docutils literal notranslate"><span class="pre">mt2</span></code> look identical on the surface, and in the vast majority of operations, will yield the same
 result. But this brings us to a detail on the implementation:</p>
 <p><code class="docutils literal notranslate"><span class="pre">data</span></code> and <code class="docutils literal notranslate"><span class="pre">mask</span></code> – only for sparse MaskedTensors – can have a different number of elements (<code class="xref py py-func docutils literal notranslate"><span class="pre">nnz()</span></code>)
@@ -1220,11 +1436,54 @@ in <code class="docutils literal notranslate"><span class="pre">data</span></cod
 <p>Therefore, under the hood, the data looks slightly different; <code class="docutils literal notranslate"><span class="pre">mt2</span></code> has the “4” value masked out and <code class="docutils literal notranslate"><span class="pre">mt</span></code>
 is completely without it. Their underlying data has different shapes,
 which would make operations like <code class="docutils literal notranslate"><span class="pre">mt</span> <span class="pre">+</span> <span class="pre">mt2</span></code> invalid.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt data:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mt</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt2 data:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mt2</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>mt data:
+ tensor(indices=tensor([[0, 1],
+                       [2, 2]]),
+       values=tensor([3, 5]),
+       size=(2, 3), nnz=2, layout=torch.sparse_coo)
+mt2 data:
+ tensor(indices=tensor([[0, 1, 1],
+                       [2, 0, 2]]),
+       values=tensor([3, 4, 5]),
+       size=(2, 3), nnz=3, layout=torch.sparse_coo)
+</pre></div>
+</div>
 </section>
 <section id="sparse-csr-construction">
 <span id="sparse-csr-appendix"></span><h3>Sparse CSR Construction<a class="headerlink" href="#sparse-csr-construction" title="Link to this heading">#</a></h3>
 <p>We can also construct a sparse CSR MaskedTensor using sparse CSR tensors,
 and like the example above, this results in a similar treatment under the hood.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">crow_indices</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">col_indices</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">values</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask_values</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>
+
+<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">csr</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.sparse_csr_tensor.html#torch.sparse_csr_tensor" title="torch.sparse_csr_tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">sparse_csr_tensor</span></a><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">crow_indices</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">col_indices</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">values</span></a><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">torch</span><span class="o">.</span><span class="n">double</span></a><span class="p">)</span>
+<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.sparse_csr_tensor.html#torch.sparse_csr_tensor" title="torch.sparse_csr_tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">sparse_csr_tensor</span></a><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">crow_indices</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">col_indices</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask_values</span></a><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">torch</span><span class="o">.</span><span class="n">bool</span></a><span class="p">)</span>
+<span class="n">mt</span> <span class="o">=</span> <span class="n">masked_tensor</span><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">csr</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mt</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mt data:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mt</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>mt:
+ MaskedTensor(
+  [
+    [  1.0000,       --],
+    [      --,   4.0000]
+  ]
+)
+mt data:
+ tensor(crow_indices=tensor([0, 2, 4]),
+       col_indices=tensor([0, 1, 0, 1]),
+       values=tensor([1., 2., 3., 4.]), size=(2, 2), nnz=4,
+       dtype=torch.float64, layout=torch.sparse_csr)
+</pre></div>
+</div>
 </section>
 </section>
 <section id="conclusion">
@@ -1240,10 +1499,7 @@ to invest and continue developing in this direction.</p>
 <p>To continue learning more, you can find our
 <a class="reference external" href="https://pytorch.org/tutorials/prototype/maskedtensor_adagrad.html">Efficiently writing “sparse” semantics for Adagrad with MaskedTensor tutorial</a>
 to see an example of how MaskedTensor can simplify existing workflows with native masking semantics.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># %%%%%%RUNNABLE_CODE_REMOVED%%%%%%</span>
-</pre></div>
-</div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.002 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.041 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-unstable-maskedtensor-sparsity-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/0bfc601b4d08b8eb61463ae0c13808ac/maskedtensor_sparsity.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">maskedtensor_sparsity.ipynb</span></code></a></p>
@@ -1300,24 +1556,6 @@ to see an example of how MaskedTensor can simplify existing workflows with nativ
 </div>
 
 <div class="prev-next-area">
-    <a class="left-prev"
-       href="maskedtensor_overview.html"
-       title="previous page">
-      <i class="fa-solid fa-angle-left"></i>
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">MaskedTensor Overview</p>
-      </div>
-    </a>
-    <a class="right-next"
-       href="maskedtensor_advanced_semantics.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">MaskedTensor Advanced Semantics</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
-    </a>
 </div>
 
 <div class="footer-info">
@@ -1344,24 +1582,6 @@ to see an example of how MaskedTensor can simplify existing workflows with nativ
                 <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
-    <a class="left-prev"
-       href="maskedtensor_overview.html"
-       title="previous page">
-      <i class="fa-solid fa-angle-left"></i>
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">MaskedTensor Overview</p>
-      </div>
-    </a>
-    <a class="right-next"
-       href="maskedtensor_advanced_semantics.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">MaskedTensor Advanced Semantics</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
-    </a>
 </div>
                 </footer>
               
@@ -1595,7 +1815,7 @@ to see an example of how MaskedTensor can simplify existing workflows with nativ
          },
         "datePublished": "",
          "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. MaskedTensor Sparsity# Before working on this tutorial, please make sure to review our MaskedTensor Overview tutorial &lt;https://pytorch.org/tutorials/prototype/maskedtensor_overview.html&gt;. Introduction# Sparsity has been an area of rapid growth and importance within PyTorch; if any sparsity terms are confusing below, please refer to the sparsity tutorial for additional details. Sparse storage formats have been proven to be powerful in a variety of ways. As a primer, the first use case most practitioners think about is when the majority of elements are equal to zero (a high degree of sparsity), but even in cases of lower sparsity, certain formats (e.g. BSR) can take advantage of substructures within a matrix. Note At the moment, MaskedTensor supports COO and CSR tensors with plans to support additional formats (such as BSR and CSC) in the future. If you have any requests for additional formats, please file a feature request here! Principles# When creating a MaskedTensor with sparse tensors, there are a few principles that must be observed: data and mask must have the same storage format, whether that’s torch.strided, torch.sparse_coo, or torch.sparse_csr data and mask must have the same size, indicated by size() Sparse COO tensors# In accordance with Principle #1, a sparse COO MaskedTensor is created by passing in two sparse COO tensors, which can be initialized by any of its constructors, for example torch.sparse_coo_tensor(). As a recap of sparse COO tensors, the COO format stands for “coordinate format”, where the specified elements are stored as tuples of their indices and the corresponding values. That is, the following are provided: indices: array of size (ndim, nse) and dtype torch.int64 values: array of size (nse,) with any integer or floating point dtype where ndim is the dimensionality of the tensor and nse is the number of specified elements. For both sparse COO and CSR tensors, you can construct a MaskedTensor by doing either: masked_tensor(sparse_tensor_data, sparse_tensor_mask) dense_masked_tensor.to_sparse_coo() or dense_masked_tensor.to_sparse_csr() The second method is easier to illustrate so we’ve shown that below, but for more on the first and the nuances behind the approach, please read the Sparse COO Appendix. # Disable prototype warnings and such Sparse CSR tensors# Similarly, MaskedTensor also supports the CSR (Compressed Sparse Row) sparse tensor format. Instead of storing the tuples of the indices like sparse COO tensors, sparse CSR tensors aim to decrease the memory requirements by storing compressed row indices. In particular, a CSR sparse tensor consists of three 1-D tensors: crow_indices: array of compressed row indices with size (size[0] + 1,). This array indicates which row a given entry in values lives in. The last element is the number of specified elements, while crow_indices[i+1] - crow_indices[i] indicates the number of specified elements in row i. col_indi..."
+         "articleBody": "Note Go to the end to download the full example code. MaskedTensor Sparsity# Before working on this tutorial, please make sure to review our MaskedTensor Overview tutorial &lt;https://pytorch.org/tutorials/prototype/maskedtensor_overview.html&gt;. Introduction# Sparsity has been an area of rapid growth and importance within PyTorch; if any sparsity terms are confusing below, please refer to the sparsity tutorial for additional details. Sparse storage formats have been proven to be powerful in a variety of ways. As a primer, the first use case most practitioners think about is when the majority of elements are equal to zero (a high degree of sparsity), but even in cases of lower sparsity, certain formats (e.g. BSR) can take advantage of substructures within a matrix. Note At the moment, MaskedTensor supports COO and CSR tensors with plans to support additional formats (such as BSR and CSC) in the future. If you have any requests for additional formats, please file a feature request here! Principles# When creating a MaskedTensor with sparse tensors, there are a few principles that must be observed: data and mask must have the same storage format, whether that’s torch.strided, torch.sparse_coo, or torch.sparse_csr data and mask must have the same size, indicated by size() Sparse COO tensors# In accordance with Principle #1, a sparse COO MaskedTensor is created by passing in two sparse COO tensors, which can be initialized by any of its constructors, for example torch.sparse_coo_tensor(). As a recap of sparse COO tensors, the COO format stands for “coordinate format”, where the specified elements are stored as tuples of their indices and the corresponding values. That is, the following are provided: indices: array of size (ndim, nse) and dtype torch.int64 values: array of size (nse,) with any integer or floating point dtype where ndim is the dimensionality of the tensor and nse is the number of specified elements. For both sparse COO and CSR tensors, you can construct a MaskedTensor by doing either: masked_tensor(sparse_tensor_data, sparse_tensor_mask) dense_masked_tensor.to_sparse_coo() or dense_masked_tensor.to_sparse_csr() The second method is easier to illustrate so we’ve shown that below, but for more on the first and the nuances behind the approach, please read the Sparse COO Appendix. import torch from torch.masked import masked_tensor import warnings # Disable prototype warnings and such warnings.filterwarnings(action=&#39;ignore&#39;, category=UserWarning) values = torch.tensor([[0, 0, 3], [4, 0, 5]]) mask = torch.tensor([[False, False, True], [False, False, True]]) mt = masked_tensor(values, mask) sparse_coo_mt = mt.to_sparse_coo() print(\&#34;mt:\\n\&#34;, mt) print(\&#34;mt (sparse coo):\\n\&#34;, sparse_coo_mt) print(\&#34;mt data (sparse coo):\\n\&#34;, sparse_coo_mt.get_data()) mt: MaskedTensor( [ [ --, --, 3], [ --, --, 5] ] ) mt (sparse coo): MaskedTensor( [ [ --, --, 3], [ --, --, 5] ] ) mt data (sparse coo): tensor(indices=tensor([[0, 1], [2, 2]]), values=tensor([3, 5]), siz..."
        }
    </script>
 

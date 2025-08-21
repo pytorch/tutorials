@@ -59,8 +59,6 @@
     <link rel="canonical" href="https://pytorch.org/tutorials/unstable/nestedtensor.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="MaskedTensor Overview" href="maskedtensor_overview.html" />
-    <link rel="prev" title="PyTorch Vulkan Backend User Workflow" href="vulkan_workflow.html" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -645,13 +643,6 @@
   </a>
 </li>
 
-
-<li class="nav-item current active">
-  <a class="nav-link nav-internal" href="../unstable_index.html">
-    Unstable
-  </a>
-</li>
-
   </ul>
 </nav></div>
       
@@ -836,13 +827,6 @@ document.write(`
   </a>
 </li>
 
-
-<li class="nav-item current active">
-  <a class="nav-link nav-internal" href="../unstable_index.html">
-    Unstable
-  </a>
-</li>
-
   </ul>
 </nav></div>
           
@@ -946,22 +930,7 @@ document.write(`
 <nav class="bd-docs-nav bd-links"
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="context_parallel.html">Introduction to Context Parallel</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flight_recorder_tutorial.html">Flight Recorder for Debugging Stuck Jobs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="inductor_cpp_wrapper_tutorial.html">Inductor C++ Wrapper Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="inductor_windows.html">How to use <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> on Windows CPU/XPU</a></li>
-<li class="toctree-l1"><a class="reference internal" href="vmap_recipe.html">torch.vmap</a></li>
-<li class="toctree-l1"><a class="reference internal" href="vulkan_workflow.html">PyTorch Vulkan Backend User Workflow</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Getting Started with Nested Tensors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="maskedtensor_overview.html">MaskedTensor Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="maskedtensor_sparsity.html">MaskedTensor Sparsity</a></li>
-<li class="toctree-l1"><a class="reference internal" href="maskedtensor_advanced_semantics.html">MaskedTensor Advanced Semantics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="maskedtensor_adagrad.html">Efficiently writing “sparse” semantics for Adagrad with MaskedTensor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="python_extension_autoload.html">Autoloading Out-of-Tree Extension</a></li>
-<li class="toctree-l1"><a class="reference internal" href="max_autotune_on_CPU_tutorial.html">Using Max-Autotune Compilation on CPU for Better Performance</a></li>
-</ul>
-</div>
+  <div class="bd-toc-item navbar-nav"></div>
 </nav></div>
     </div>
   
@@ -997,9 +966,6 @@ document.write(`
         <i class="fa-solid fa-home"></i>
       </a>
     </li>
-    
-    <li class="breadcrumb-item"><a href="../unstable_index.html" class="nav-link">Unstable</a></li>
-    
     <li class="breadcrumb-item active" aria-current="page">Getting...</li>
   </ul>
 </nav>
@@ -1041,15 +1007,9 @@ document.write(`
    <!-- Hidden breadcrumb schema for SEO only -->
    <div style="display:none;" itemscope itemtype="https://schema.org/BreadcrumbList">
       
-        <div itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-          <link itemprop="item" href="../unstable_index.html">
-          <meta itemprop="name" content="Unstable">
-          <meta itemprop="position" content="1">
-        </div>
-      
       <div itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
         <meta itemprop="name" content="Getting Started with Nested Tensors">
-        <meta itemprop="position" content="2">
+        <meta itemprop="position" content="1">
       </div>
    </div>
 
@@ -1118,81 +1078,17 @@ they are invaluable for building transformers that can efficiently operate on ra
 inputs. Below, we present an implementation of multi-head attention using nested tensors that,
 combined usage of <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>, out-performs operating naively on tensors with padding.</p>
 <p>Nested tensors are currently a prototype feature and are subject to change.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">timeit</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">nn</span>
-
-<a href="https://docs.pytorch.org/docs/stable/generated/torch.manual_seed.html#torch.manual_seed" title="torch.manual_seed" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span></a><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-
-<a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">device</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s1">&#39;cuda&#39;</span> <span class="k">if</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available" class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">()</span> <span class="k">else</span> <span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
 <section id="nested-tensor-initialization">
 <h2>Nested tensor initialization<a class="headerlink" href="#nested-tensor-initialization" title="Link to this heading">#</a></h2>
 <p>From the Python frontend, a nested tensor can be created from a list of tensors.
 We denote nt[i] as the ith tensor component of a nestedtensor.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/nested.html#torch.nested.nested_tensor" title="torch.nested.nested_tensor" class="sphx-glr-backref-module-torch-nested sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">nested</span><span class="o">.</span><span class="n">nested_tensor</span></a><span class="p">([</span><a href="https://docs.pytorch.org/docs/stable/generated/torch.arange.html#torch.arange" title="torch.arange" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">arange</span></a><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
-    <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.arange.html#torch.arange" title="torch.arange" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">arange</span></a><span class="p">(</span><span class="mi">18</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">torch</span><span class="o">.</span><span class="n">float</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">device</span></a><span class="o">=</span><a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">device</span></a><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt</span></a><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.10/dist-packages/torch/nested/__init__.py:250: UserWarning:
-
-The PyTorch API of nested tensors is in prototype stage and will change in the near future. We recommend specifying layout=torch.jagged when constructing a nested tensor, as this layout receives active development, has better operator coverage, and works with torch.compile. (Triggered internally at /pytorch/aten/src/ATen/NestedTensorImpl.cpp:178.)
-
-nt=nested_tensor([
-  tensor([[ 0.,  1.,  2.,  3.,  4.,  5.],
-          [ 6.,  7.,  8.,  9., 10., 11.]], device=&#39;cuda:0&#39;),
-  tensor([[ 0.,  1.,  2.,  3.,  4.,  5.],
-          [ 6.,  7.,  8.,  9., 10., 11.],
-          [12., 13., 14., 15., 16., 17.]], device=&#39;cuda:0&#39;)
-], device=&#39;cuda:0&#39;)
-</pre></div>
-</div>
 <p>By padding every underlying tensor to the same shape,
 a nestedtensor can be converted to a regular tensor.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_out_tensor</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/nested.html#torch.nested.to_padded_tensor" title="torch.nested.to_padded_tensor" class="sphx-glr-backref-module-torch-nested sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">nested</span><span class="o">.</span><span class="n">to_padded_tensor</span></a><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt</span></a><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_out_tensor</span></a><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>padded_out_tensor=tensor([[[ 0.,  1.,  2.,  3.,  4.,  5.],
-         [ 6.,  7.,  8.,  9., 10., 11.],
-         [ 0.,  0.,  0.,  0.,  0.,  0.]],
-
-        [[ 0.,  1.,  2.,  3.,  4.,  5.],
-         [ 6.,  7.,  8.,  9., 10., 11.],
-         [12., 13., 14., 15., 16., 17.]]], device=&#39;cuda:0&#39;)
-</pre></div>
-</div>
 <p>All tensors posses an attribute for determining if they are nested;</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;nt is nested: </span><span class="si">{</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt</span></a><span class="o">.</span><span class="n">is_nested</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;padded_out_tensor is nested: </span><span class="si">{</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_out_tensor</span></a><span class="o">.</span><span class="n">is_nested</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>nt is nested: True
-padded_out_tensor is nested: False
-</pre></div>
-</div>
 <p>It is common to construct nestedtensors from batches of irregularly shaped tensors.
 i.e. dimension 0 is assumed to be the batch dimension.
 Indexing dimension 0 gives back the first underlying tensor component.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;First underlying tensor component:&quot;</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt</span></a><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;last column of 2nd underlying tensor component:&quot;</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt</span></a><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-
-<span class="c1"># When indexing a nestedtensor&#39;s 0th dimension, the result is a regular tensor.</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;First underlying tensor component is nested: </span><span class="si">{</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">is_nested</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>First underlying tensor component:
-tensor([[ 0.,  1.,  2.,  3.,  4.,  5.],
-        [ 6.,  7.,  8.,  9., 10., 11.]], device=&#39;cuda:0&#39;)
-last column of 2nd underlying tensor component:
-tensor([ 5., 11., 17.], device=&#39;cuda:0&#39;)
-First underlying tensor component is nested: False
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># When indexing a nestedtensor&#39;s 0th dimension, the result is a regular tensor.</span>
 </pre></div>
 </div>
 <p>An important note is that slicing in dimension 0 has not been supported yet.
@@ -1217,27 +1113,6 @@ from the remaining dimensions and the number of elements.</p>
 <p>The semantics for nestedtensors are similar, except that -1 no longer infers.
 Instead, it inherits the old size (here 2 for <code class="docutils literal notranslate"><span class="pre">nt[0]</span></code> and 3 for <code class="docutils literal notranslate"><span class="pre">nt[1]</span></code>).
 -1 is the only legal size to specify for a jagged dimension.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt_reshaped</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt</span></a><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt_reshaped</span></a><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>nt_reshaped=nested_tensor([
-  tensor([[[ 0.,  1.,  2.],
-           [ 3.,  4.,  5.]],
-
-          [[ 6.,  7.,  8.],
-           [ 9., 10., 11.]]], device=&#39;cuda:0&#39;),
-  tensor([[[ 0.,  1.,  2.],
-           [ 3.,  4.,  5.]],
-
-          [[ 6.,  7.,  8.],
-           [ 9., 10., 11.]],
-
-          [[12., 13., 14.],
-           [15., 16., 17.]]], device=&#39;cuda:0&#39;)
-], device=&#39;cuda:0&#39;)
-</pre></div>
-</div>
 <p><strong>transpose</strong></p>
 <p>The transpose op is for swapping two dimensions of a tensor.
 Its full semantics can be found
@@ -1245,90 +1120,11 @@ Its full semantics can be found
 Note that for nestedtensors dimension 0 is special;
 it is assumed to be the batch dimension,
 so transposes involving nestedtensor dimension 0 are not supported.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt_transposed</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt_reshaped</span></a><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt_transposed</span></a><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>nt_transposed=nested_tensor([
-  tensor([[[ 0.,  1.,  2.],
-           [ 6.,  7.,  8.]],
-
-          [[ 3.,  4.,  5.],
-           [ 9., 10., 11.]]], device=&#39;cuda:0&#39;),
-  tensor([[[ 0.,  1.,  2.],
-           [ 6.,  7.,  8.],
-           [12., 13., 14.]],
-
-          [[ 3.,  4.,  5.],
-           [ 9., 10., 11.],
-           [15., 16., 17.]]], device=&#39;cuda:0&#39;)
-], device=&#39;cuda:0&#39;)
-</pre></div>
-</div>
 <p><strong>others</strong></p>
 <p>Other operations have the same semantics as for regular tensors.
 Applying the operation on a nestedtensor is equivalent to
 applying the operation to the underlying tensor components,
 with the result being a nestedtensor as well.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt_mm</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/nested.html#torch.nested.nested_tensor" title="torch.nested.nested_tensor" class="sphx-glr-backref-module-torch-nested sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">nested</span><span class="o">.</span><span class="n">nested_tensor</span></a><span class="p">([</span><a href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)),</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">))],</span> <a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">device</span></a><span class="o">=</span><a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">device</span></a><span class="p">)</span>
-<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt3</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.matmul.html#torch.matmul" title="torch.matmul" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">matmul</span></a><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt_transposed</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt_mm</span></a><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Result of Matmul:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt3</span></a><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt4</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.dropout.html#torch.nn.functional.dropout" title="torch.nn.functional.dropout" class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function"><span class="n">F</span><span class="o">.</span><span class="n">dropout</span></a><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt3</span></a><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Result of Dropout:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt4</span></a><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt5</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.softmax.html#torch.nn.functional.softmax" title="torch.nn.functional.softmax" class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function"><span class="n">F</span><span class="o">.</span><span class="n">softmax</span></a><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt4</span></a><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Result of Softmax:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nt5</span></a><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Result of Matmul:
- nested_tensor([
-  tensor([[[  0.7781,   1.7332,   2.5551,  -1.7998],
-           [ -6.3416,   0.6039,   3.3571, -21.6835]],
-
-          [[ -3.0563,   1.1609,  -6.8225,  19.4126],
-           [ -7.3476,  -0.8315, -15.4485,  44.0489]]], device=&#39;cuda:0&#39;),
-  tensor([[[ -0.7215,   3.0998,  -0.2846,   4.7335,   3.6254],
-           [-17.8239,   9.9335,  14.5221,  25.6358,  15.9261],
-           [-34.9263,  16.7672,  29.3289,  46.5381,  28.2268]],
-
-          [[  5.9445,   3.1823,   7.7202, -15.5639,   9.8096],
-           [ 13.5947,   9.8521,  19.5695, -38.9003,  20.3403],
-           [ 21.2450,  16.5219,  31.4188, -62.2367,  30.8710]]], device=&#39;cuda:0&#39;)
-], device=&#39;cuda:0&#39;)
-Result of Dropout:
- nested_tensor([
-  tensor([[[  0.8646,   1.9258,   2.8390,  -1.9998],
-           [ -7.0462,   0.6710,   3.7301, -24.0928]],
-
-          [[ -3.3959,   1.2899,  -7.5805,  21.5696],
-           [ -8.1640,  -0.9239, -17.1650,  48.9432]]], device=&#39;cuda:0&#39;),
-  tensor([[[ -0.8017,   3.4442,  -0.3162,   5.2595,   4.0282],
-           [-19.8043,  11.0372,  16.1357,  28.4842,  17.6957],
-           [-38.8070,  18.6302,   0.0000,  51.7090,  31.3631]],
-
-          [[  6.6050,   3.5359,   8.5781, -17.2933,  10.8996],
-           [ 15.1053,  10.9468,  21.7439, -43.2226,  22.6003],
-           [ 23.6055,  18.3577,  34.9098, -69.1519,  34.3011]]], device=&#39;cuda:0&#39;)
-], device=&#39;cuda:0&#39;)
-Result of Softmax:
- nested_tensor([
-  tensor([[[8.9692e-02, 2.5920e-01, 6.4599e-01, 5.1141e-03],
-           [1.9950e-05, 4.4823e-02, 9.5516e-01, 7.8840e-13]],
-
-          [[1.4375e-11, 1.5583e-09, 2.1892e-13, 1.0000e+00],
-           [1.5800e-25, 2.2030e-22, 1.9480e-29, 1.0000e+00]]], device=&#39;cuda:0&#39;),
-  tensor([[[1.5961e-03, 1.1144e-01, 2.5935e-03, 6.8453e-01, 1.9984e-01],
-           [1.0679e-21, 2.6476e-08, 4.3361e-06, 9.9998e-01, 2.0634e-05],
-           [4.8915e-40, 4.3061e-15, 3.4921e-23, 1.0000e+00, 1.4585e-09]],
-
-          [[1.2264e-02, 5.6982e-04, 8.8210e-02, 5.1257e-13, 8.9896e-01],
-           [3.8999e-04, 6.0961e-06, 2.9797e-01, 1.8180e-29, 7.0163e-01],
-           [7.9792e-06, 4.1963e-08, 6.4764e-01, 0.0000e+00, 3.5236e-01]]],
-         device=&#39;cuda:0&#39;)
-], device=&#39;cuda:0&#39;)
-</pre></div>
-</div>
 </section>
 <section id="why-nested-tensor">
 <h2>Why Nested Tensor<a class="headerlink" href="#why-nested-tensor" title="Link to this heading">#</a></h2>
@@ -1338,26 +1134,6 @@ A common technique for handling varying sequences is to manually pad each data t
 to the same shape in order to form a batch.
 For example, we have 2 sentences with different lengths and a vocabulary
 In order to represent his as single tensor we pad with 0 to the max length in the batch.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">sentences</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;goodbye&quot;</span><span class="p">,</span> <span class="s2">&quot;padding&quot;</span><span class="p">],</span>
-             <span class="p">[</span><span class="s2">&quot;embrace&quot;</span><span class="p">,</span> <span class="s2">&quot;nested&quot;</span><span class="p">,</span> <span class="s2">&quot;tensor&quot;</span><span class="p">]]</span>
-<span class="n">vocabulary</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;goodbye&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;padding&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
-              <span class="s2">&quot;embrace&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s2">&quot;nested&quot;</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">,</span> <span class="s2">&quot;tensor&quot;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">}</span>
-<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_sentences</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-                                 <span class="p">[</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">]])</span>
-<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nested_sentences</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/nested.html#torch.nested.nested_tensor" title="torch.nested.nested_tensor" class="sphx-glr-backref-module-torch-nested sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">nested</span><span class="o">.</span><span class="n">nested_tensor</span></a><span class="p">([</span><a href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">]),</span>
-                                               <a href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">])])</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_sentences</span></a><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nested_sentences</span></a><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>padded_sentences=tensor([[1., 2., 0.],
-        [3., 4., 5.]])
-nested_sentences=nested_tensor([
-  tensor([1., 2.]),
-  tensor([3., 4., 5.])
-])
-</pre></div>
-</div>
 <p>This technique of padding a batch of data to its max length is not optimal.
 The padded data is not needed for computation and wastes memory by allocating
 larger tensors than necessary.
@@ -1367,220 +1143,40 @@ with 0 while for softmax one has to pad with -inf to ignore specific entries.
 The primary objective of nested tensor is to facilitate operations on ragged
 data using the standard PyTorch tensor UX, thereby eliminating the need
 for inefficient and complex padding and masking.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_sentences_for_softmax</span></a> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;-inf&quot;</span><span class="p">)],</span>
-                                             <span class="p">[</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">]])</span>
-<span class="nb">print</span><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.softmax.html#torch.nn.functional.softmax" title="torch.nn.functional.softmax" class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function"><span class="n">F</span><span class="o">.</span><span class="n">softmax</span></a><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_sentences_for_softmax</span></a><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.softmax.html#torch.nn.functional.softmax" title="torch.nn.functional.softmax" class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function"><span class="n">F</span><span class="o">.</span><span class="n">softmax</span></a><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nested_sentences</span></a><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[0.2689, 0.7311, 0.0000],
-        [0.0900, 0.2447, 0.6652]])
-nested_tensor([
-  tensor([0.2689, 0.7311]),
-  tensor([0.0900, 0.2447, 0.6652])
-])
-</pre></div>
-</div>
 <p>Let us take a look at a practical example: the multi-head attention component
 utilized in <a class="reference external" href="https://arxiv.org/pdf/1706.03762.pdf">Transformers</a>.
 We can implement this in such a way that it can operate on either padded
 or nested tensors.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MultiHeadAttention</span><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class"><span class="n">nn</span><span class="o">.</span><span class="n">Module</span></a><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Computes multi-head attention. Supports nested or padded tensors.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        E_q (int): Size of embedding dim for query</span>
-<span class="sd">        E_k (int): Size of embedding dim for key</span>
-<span class="sd">        E_v (int): Size of embedding dim for value</span>
-<span class="sd">        E_total (int): Total embedding dim of combined heads post input projection. Each head</span>
-<span class="sd">            has dim E_total // nheads</span>
-<span class="sd">        nheads (int): Number of heads</span>
-<span class="sd">        dropout_p (float, optional): Dropout probability. Default: 0.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">E_q</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">E_k</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">E_v</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">E_total</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">nheads</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dropout_p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nheads</span> <span class="o">=</span> <span class="n">nheads</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dropout_p</span> <span class="o">=</span> <span class="n">dropout_p</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">query_proj</span> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">E_q</span><span class="p">,</span> <span class="n">E_total</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">key_proj</span> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">E_k</span><span class="p">,</span> <span class="n">E_total</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">value_proj</span> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">E_v</span><span class="p">,</span> <span class="n">E_total</span><span class="p">)</span>
-        <span class="n">E_out</span> <span class="o">=</span> <span class="n">E_q</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">out_proj</span> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="n">E_total</span><span class="p">,</span> <span class="n">E_out</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">E_total</span> <span class="o">%</span> <span class="n">nheads</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Embedding dim is not divisible by nheads&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">E_head</span> <span class="o">=</span> <span class="n">E_total</span> <span class="o">//</span> <span class="n">nheads</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">)</span> <span class="o">-&gt;</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Forward pass; runs the following process:</span>
-<span class="sd">            1. Apply input projection</span>
-<span class="sd">            2. Split heads and prepare for SDPA</span>
-<span class="sd">            3. Run SDPA</span>
-<span class="sd">            4. Apply output projection</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            query (torch.Tensor): query of shape (N, L_t, E_q)</span>
-<span class="sd">            key (torch.Tensor): key of shape (N, L_s, E_k)</span>
-<span class="sd">            value (torch.Tensor): value of shape (N, L_s, E_v)</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            attn_output (torch.Tensor): output of shape (N, L_t, E_q)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Step 1. Apply input projection</span>
-        <span class="c1"># TODO: demonstrate packed projection</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_proj</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
-        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_proj</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value_proj</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-
-        <span class="c1"># Step 2. Split heads and prepare for SDPA</span>
-        <span class="c1"># reshape query, key, value to separate by head</span>
-        <span class="c1"># (N, L_t, E_total) -&gt; (N, L_t, nheads, E_head) -&gt; (N, nheads, L_t, E_head)</span>
-        <span class="n">query</span> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.Tensor.unflatten.html#torch.Tensor.unflatten" title="torch.Tensor.unflatten" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-method"><span class="n">query</span><span class="o">.</span><span class="n">unflatten</span></a><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nheads</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">E_head</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="c1"># (N, L_s, E_total) -&gt; (N, L_s, nheads, E_head) -&gt; (N, nheads, L_s, E_head)</span>
-        <span class="n">key</span> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.Tensor.unflatten.html#torch.Tensor.unflatten" title="torch.Tensor.unflatten" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-method"><span class="n">key</span><span class="o">.</span><span class="n">unflatten</span></a><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nheads</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">E_head</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="c1"># (N, L_s, E_total) -&gt; (N, L_s, nheads, E_head) -&gt; (N, nheads, L_s, E_head)</span>
-        <span class="n">value</span> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.Tensor.unflatten.html#torch.Tensor.unflatten" title="torch.Tensor.unflatten" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-method"><span class="n">value</span><span class="o">.</span><span class="n">unflatten</span></a><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nheads</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">E_head</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-
-        <span class="c1"># Step 3. Run SDPA</span>
-        <span class="c1"># (N, nheads, L_t, E_head)</span>
-        <span class="n">attn_output</span> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html#torch.nn.functional.scaled_dot_product_attention" title="torch.nn.functional.scaled_dot_product_attention" class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function"><span class="n">F</span><span class="o">.</span><span class="n">scaled_dot_product_attention</span></a><span class="p">(</span>
-            <span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">dropout_p</span><span class="o">=</span><span class="n">dropout_p</span><span class="p">,</span> <span class="n">is_causal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="c1"># (N, nheads, L_t, E_head) -&gt; (N, L_t, nheads, E_head) -&gt; (N, L_t, E_total)</span>
-        <span class="n">attn_output</span> <span class="o">=</span> <span class="n">attn_output</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
-
-        <span class="c1"># Step 4. Apply output projection</span>
-        <span class="c1"># (N, L_t, E_total) -&gt; (N, L_t, E_out)</span>
-        <span class="n">attn_output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_proj</span><span class="p">(</span><span class="n">attn_output</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">attn_output</span>
-</pre></div>
-</div>
 <p>set hyperparameters following <a class="reference external" href="https://arxiv.org/pdf/1706.03762.pdf">the Transformer paper</a></p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">N</span> <span class="o">=</span> <span class="mi">512</span>
-<span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">E_total</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span>
-<span class="n">E_out</span> <span class="o">=</span> <span class="n">E_q</span>
-<span class="n">nheads</span> <span class="o">=</span> <span class="mi">8</span>
-</pre></div>
-</div>
 <p>except for dropout probability: set to 0 for correctness check</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">dropout_p</span> <span class="o">=</span> <span class="mf">0.0</span>
-</pre></div>
-</div>
 <p>Let us generate some realistic fake data from Zipf’s law.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">zipf_sentence_lengths</span><span class="p">(</span><span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">:</span>
-    <span class="c1"># generate fake corpus by unigram Zipf distribution</span>
-    <span class="c1"># from wikitext-2 corpus, we get rank &quot;.&quot; = 3, &quot;!&quot; = 386, &quot;?&quot; = 858</span>
-    <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sentence_lengths</span></a> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">ibatch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
-        <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sentence_lengths</span></a><span class="p">[</span><span class="n">ibatch</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">word</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">zipf</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
-        <span class="k">while</span> <span class="n">word</span> <span class="o">!=</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">word</span> <span class="o">!=</span> <span class="mi">386</span> <span class="ow">and</span> <span class="n">word</span> <span class="o">!=</span> <span class="mi">858</span><span class="p">:</span>
-            <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sentence_lengths</span></a><span class="p">[</span><span class="n">ibatch</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">word</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">zipf</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
-    <span class="k">return</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor" title="torch.tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span></a><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sentence_lengths</span></a><span class="p">)</span>
-</pre></div>
-</div>
 <p>Create nested tensor batch inputs</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">gen_batch</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">device</span></a><span class="p">):</span>
-    <span class="c1"># generate semi-realistic data using Zipf distribution for sentence lengths</span>
-    <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sentence_lengths</span></a> <span class="o">=</span> <span class="n">zipf_sentence_lengths</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">N</span><span class="p">)</span>
-
-    <span class="c1"># Note: the torch.jagged layout is a nested tensor layout that supports a single ragged</span>
-    <span class="c1"># dimension and works with torch.compile. The batch items each have shape (B, S*, D)</span>
-    <span class="c1"># where B = batch size, S* = ragged sequence length, and D = embedding dimension.</span>
-    <span class="n">query</span> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/nested.html#torch.nested.nested_tensor" title="torch.nested.nested_tensor" class="sphx-glr-backref-module-torch-nested sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">nested</span><span class="o">.</span><span class="n">nested_tensor</span></a><span class="p">([</span>
-        <a href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">E_q</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">device</span></a><span class="o">=</span><a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">device</span></a><span class="p">)</span>
-        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sentence_lengths</span></a>
-    <span class="p">],</span> <span class="n">layout</span><span class="o">=</span><a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.layout" title="torch.layout" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">torch</span><span class="o">.</span><span class="n">jagged</span></a><span class="p">)</span>
-
-    <span class="n">key</span> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/nested.html#torch.nested.nested_tensor" title="torch.nested.nested_tensor" class="sphx-glr-backref-module-torch-nested sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">nested</span><span class="o">.</span><span class="n">nested_tensor</span></a><span class="p">([</span>
-        <a href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">E_k</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">device</span></a><span class="o">=</span><a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">device</span></a><span class="p">)</span>
-        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sentence_lengths</span></a>
-    <span class="p">],</span> <span class="n">layout</span><span class="o">=</span><a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.layout" title="torch.layout" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">torch</span><span class="o">.</span><span class="n">jagged</span></a><span class="p">)</span>
-
-    <span class="n">value</span> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/nested.html#torch.nested.nested_tensor" title="torch.nested.nested_tensor" class="sphx-glr-backref-module-torch-nested sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">nested</span><span class="o">.</span><span class="n">nested_tensor</span></a><span class="p">([</span>
-        <a href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">E_v</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">device</span></a><span class="o">=</span><a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">device</span></a><span class="p">)</span>
-        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sentence_lengths</span></a>
-    <span class="p">],</span> <span class="n">layout</span><span class="o">=</span><a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.layout" title="torch.layout" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">torch</span><span class="o">.</span><span class="n">jagged</span></a><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sentence_lengths</span></a>
-
-<span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sentence_lengths</span></a> <span class="o">=</span> <span class="n">gen_batch</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">device</span></a><span class="p">)</span>
-</pre></div>
-</div>
 <p>Generate padded forms of query, key, value for comparison</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">jagged_to_padded</span><span class="p">(</span><span class="n">jt</span><span class="p">,</span> <span class="n">padding_val</span><span class="p">):</span>
-    <span class="c1"># TODO: do jagged -&gt; padded directly when this is supported</span>
-    <span class="k">return</span> <a href="https://docs.pytorch.org/docs/stable/nested.html#torch.nested.to_padded_tensor" title="torch.nested.to_padded_tensor" class="sphx-glr-backref-module-torch-nested sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">nested</span><span class="o">.</span><span class="n">to_padded_tensor</span></a><span class="p">(</span>
-        <a href="https://docs.pytorch.org/docs/stable/nested.html#torch.nested.nested_tensor" title="torch.nested.nested_tensor" class="sphx-glr-backref-module-torch-nested sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">nested</span><span class="o">.</span><span class="n">nested_tensor</span></a><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">jt</span><span class="o">.</span><span class="n">unbind</span><span class="p">())),</span>
-        <span class="n">padding_val</span><span class="p">)</span>
-
-<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_query</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_key</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_value</span></a> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">jagged_to_padded</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-<span class="p">)</span>
-</pre></div>
-</div>
 <p>Construct the model</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">mha</span> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module" class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class"><span class="n">MultiHeadAttention</span></a><span class="p">(</span><span class="n">E_q</span><span class="p">,</span> <span class="n">E_k</span><span class="p">,</span> <span class="n">E_v</span><span class="p">,</span> <span class="n">E_total</span><span class="p">,</span> <span class="n">nheads</span><span class="p">,</span> <span class="n">dropout_p</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">device</span></a><span class="o">=</span><a href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">device</span></a><span class="p">)</span>
-</pre></div>
-</div>
 <p>Check correctness and performance</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">benchmark</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <a href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.synchronize.html#torch.cuda.synchronize" title="torch.cuda.synchronize" class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span></a><span class="p">()</span>
-    <span class="n">begin</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <a href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.synchronize.html#torch.cuda.synchronize" title="torch.cuda.synchronize" class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span></a><span class="p">()</span>
-    <span class="n">end</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">output</span><span class="p">,</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">begin</span><span class="p">)</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># padding-specific step: remove output projection bias from padded entries for fair comparison</span>
 
-<span class="n">output_nested</span><span class="p">,</span> <span class="n">time_nested</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">mha</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">output_padded</span></a><span class="p">,</span> <span class="n">time_padded</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">mha</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_query</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_key</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_value</span></a><span class="p">)</span>
 
-<span class="c1"># padding-specific step: remove output projection bias from padded entries for fair comparison</span>
-<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">entry_length</span></a> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sentence_lengths</span></a><span class="p">):</span>
-    <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">output_padded</span></a><span class="p">[</span><span class="n">i</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">entry_length</span></a><span class="p">:]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=== without torch.compile ===&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nested and padded calculations differ by&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">jagged_to_padded</span><span class="p">(</span><span class="n">output_nested</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">output_padded</span></a><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nested tensor multi-head attention takes&quot;</span><span class="p">,</span> <span class="n">time_nested</span><span class="p">,</span> <span class="s2">&quot;seconds&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;padded tensor multi-head attention takes&quot;</span><span class="p">,</span> <span class="n">time_padded</span><span class="p">,</span> <span class="s2">&quot;seconds&quot;</span><span class="p">)</span>
+
+
+
+
 
 <span class="c1"># warm up compile first...</span>
-<span class="n">compiled_mha</span> <span class="o">=</span> <a href="https://docs.pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">mha</span><span class="p">)</span>
-<span class="n">compiled_mha</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+
 <span class="c1"># ...now benchmark</span>
-<span class="n">compiled_output_nested</span><span class="p">,</span> <span class="n">compiled_time_nested</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span>
-    <span class="n">compiled_mha</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+
 
 <span class="c1"># warm up compile first...</span>
-<span class="n">compiled_mha</span><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_query</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_key</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_value</span></a><span class="p">)</span>
+
 <span class="c1"># ...now benchmark</span>
-<a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">compiled_output_padded</span></a><span class="p">,</span> <span class="n">compiled_time_padded</span> <span class="o">=</span> <span class="n">benchmark</span><span class="p">(</span>
-    <span class="n">compiled_mha</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_query</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_key</span></a><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padded_value</span></a><span class="p">)</span>
+
+
 
 <span class="c1"># padding-specific step: remove output projection bias from padded entries for fair comparison</span>
-<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">entry_length</span></a> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sentence_lengths</span></a><span class="p">):</span>
-    <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">compiled_output_padded</span></a><span class="p">[</span><span class="n">i</span><span class="p">,</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">entry_length</span></a><span class="p">:]</span> <span class="o">=</span> <span class="mf">0.0</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=== with torch.compile ===&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nested and padded calculations differ by&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">jagged_to_padded</span><span class="p">(</span><span class="n">compiled_output_nested</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-</span> <a href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">compiled_output_padded</span></a><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nested tensor multi-head attention takes&quot;</span><span class="p">,</span> <span class="n">compiled_time_nested</span><span class="p">,</span> <span class="s2">&quot;seconds&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;padded tensor multi-head attention takes&quot;</span><span class="p">,</span> <span class="n">compiled_time_padded</span><span class="p">,</span> <span class="s2">&quot;seconds&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>=== without torch.compile ===
-nested and padded calculations differ by 0.0
-nested tensor multi-head attention takes 0.011534310999877562 seconds
-padded tensor multi-head attention takes 0.009653891999960251 seconds
-/usr/local/lib/python3.10/dist-packages/torch/_inductor/compile_fx.py:282: UserWarning:
-
-TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision(&#39;high&#39;)` for better performance.
-
-=== with torch.compile ===
-nested and padded calculations differ by 0.0
-nested tensor multi-head attention takes 0.002835149000020465 seconds
-padded tensor multi-head attention takes 0.009595799999942756 seconds
 </pre></div>
 </div>
 <p>Note that without <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>, the overhead of the python subclass nested tensor
@@ -1588,12 +1184,6 @@ can make it slower than the equivalent computation on padded tensors. However, o
 <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> is enabled, operating on nested tensors gives a multiple x speedup.
 Avoiding wasted computation on padding becomes only more valuable as the percentage
 of padding in the batch increases.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nested speedup: </span><span class="si">{</span><span class="n">compiled_time_padded</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">compiled_time_nested</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Nested speedup: 3.385
-</pre></div>
-</div>
 </section>
 <section id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h2>
@@ -1607,7 +1197,10 @@ For more information, check out the docs for the
 <ul class="simple">
 <li><p><a class="reference external" href="https://docs.pytorch.org/tutorials/intermediate/transformer_building_blocks.html">Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 6.410 seconds)</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># %%%%%%RUNNABLE_CODE_REMOVED%%%%%%</span>
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.002 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-unstable-nestedtensor-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/0e22044ad9c3abd953c575aedd5e4595/nestedtensor.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">nestedtensor.ipynb</span></code></a></p>
@@ -1664,24 +1257,6 @@ For more information, check out the docs for the
 </div>
 
 <div class="prev-next-area">
-    <a class="left-prev"
-       href="vulkan_workflow.html"
-       title="previous page">
-      <i class="fa-solid fa-angle-left"></i>
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">PyTorch Vulkan Backend User Workflow</p>
-      </div>
-    </a>
-    <a class="right-next"
-       href="maskedtensor_overview.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">MaskedTensor Overview</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
-    </a>
 </div>
 
 <div class="footer-info">
@@ -1708,24 +1283,6 @@ For more information, check out the docs for the
                 <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
-    <a class="left-prev"
-       href="vulkan_workflow.html"
-       title="previous page">
-      <i class="fa-solid fa-angle-left"></i>
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">PyTorch Vulkan Backend User Workflow</p>
-      </div>
-    </a>
-    <a class="right-next"
-       href="maskedtensor_overview.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">MaskedTensor Overview</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
-    </a>
 </div>
                 </footer>
               
@@ -1946,7 +1503,7 @@ For more information, check out the docs for the
          },
         "datePublished": "",
          "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Getting Started with Nested Tensors# Nested tensors generalize the shape of regular dense tensors, allowing for representation of ragged-sized data. for a regular tensor, each dimension is regular and has a size for a nested tensor, not all dimensions have regular sizes; some of them are ragged Nested tensors are a natural solution for representing sequential data within various domains: in NLP, sentences can have variable lengths, so a batch of sentences forms a nested tensor in CV, images can have variable shapes, so a batch of images forms a nested tensor In this tutorial, we will demonstrate basic usage of nested tensors and motivate their usefulness for operating on sequential data of varying lengths with a real-world example. In particular, they are invaluable for building transformers that can efficiently operate on ragged sequential inputs. Below, we present an implementation of multi-head attention using nested tensors that, combined usage of torch.compile, out-performs operating naively on tensors with padding. Nested tensors are currently a prototype feature and are subject to change. import numpy as np import timeit import torch import torch.nn.functional as F from torch import nn torch.manual_seed(1) np.random.seed(1) device = torch.device(&#39;cuda&#39; if torch.cuda.is_available() else &#39;cpu&#39;) Nested tensor initialization# From the Python frontend, a nested tensor can be created from a list of tensors. We denote nt[i] as the ith tensor component of a nestedtensor. nt = torch.nested.nested_tensor([torch.arange(12).reshape( 2, 6), torch.arange(18).reshape(3, 6)], dtype=torch.float, device=device) print(f\&#34;{nt=}\&#34;) /usr/local/lib/python3.10/dist-packages/torch/nested/__init__.py:250: UserWarning: The PyTorch API of nested tensors is in prototype stage and will change in the near future. We recommend specifying layout=torch.jagged when constructing a nested tensor, as this layout receives active development, has better operator coverage, and works with torch.compile. (Triggered internally at /pytorch/aten/src/ATen/NestedTensorImpl.cpp:178.) nt=nested_tensor([ tensor([[ 0., 1., 2., 3., 4., 5.], [ 6., 7., 8., 9., 10., 11.]], device=&#39;cuda:0&#39;), tensor([[ 0., 1., 2., 3., 4., 5.], [ 6., 7., 8., 9., 10., 11.], [12., 13., 14., 15., 16., 17.]], device=&#39;cuda:0&#39;) ], device=&#39;cuda:0&#39;) By padding every underlying tensor to the same shape, a nestedtensor can be converted to a regular tensor. padded_out_tensor = torch.nested.to_padded_tensor(nt, padding=0.0) print(f\&#34;{padded_out_tensor=}\&#34;) padded_out_tensor=tensor([[[ 0., 1., 2., 3., 4., 5.], [ 6., 7., 8., 9., 10., 11.], [ 0., 0., 0., 0., 0., 0.]], [[ 0., 1., 2., 3., 4., 5.], [ 6., 7., 8., 9., 10., 11.], [12., 13., 14., 15., 16., 17.]]], device=&#39;cuda:0&#39;) All tensors posses an attribute for determining if they are nested; print(f\&#34;nt is nested: {nt.is_nested}\&#34;) print(f\&#34;padded_out_tensor is nested: {padded_out_tensor.is_nested}\&#34;) nt is nested: True padded_out_..."
+         "articleBody": "Note Go to the end to download the full example code. Getting Started with Nested Tensors# Nested tensors generalize the shape of regular dense tensors, allowing for representation of ragged-sized data. for a regular tensor, each dimension is regular and has a size for a nested tensor, not all dimensions have regular sizes; some of them are ragged Nested tensors are a natural solution for representing sequential data within various domains: in NLP, sentences can have variable lengths, so a batch of sentences forms a nested tensor in CV, images can have variable shapes, so a batch of images forms a nested tensor In this tutorial, we will demonstrate basic usage of nested tensors and motivate their usefulness for operating on sequential data of varying lengths with a real-world example. In particular, they are invaluable for building transformers that can efficiently operate on ragged sequential inputs. Below, we present an implementation of multi-head attention using nested tensors that, combined usage of torch.compile, out-performs operating naively on tensors with padding. Nested tensors are currently a prototype feature and are subject to change. Nested tensor initialization# From the Python frontend, a nested tensor can be created from a list of tensors. We denote nt[i] as the ith tensor component of a nestedtensor. By padding every underlying tensor to the same shape, a nestedtensor can be converted to a regular tensor. All tensors posses an attribute for determining if they are nested; It is common to construct nestedtensors from batches of irregularly shaped tensors. i.e. dimension 0 is assumed to be the batch dimension. Indexing dimension 0 gives back the first underlying tensor component. # When indexing a nestedtensor&#39;s 0th dimension, the result is a regular tensor. An important note is that slicing in dimension 0 has not been supported yet. Which means it not currently possible to construct a view that combines the underlying tensor components. Nested Tensor Operations# As each operation must be explicitly implemented for nestedtensors, operation coverage for nestedtensors is currently narrower than that of regular tensors. For now, only basic operations such as index, dropout, softmax, transpose, reshape, linear, bmm are covered. However, coverage is being expanded. If you need certain operations, please file an issue to help us prioritize coverage. reshape The reshape op is for changing the shape of a tensor. Its full semantics for regular tensors can be found here. For regular tensors, when specifying the new shape, a single dimension may be -1, in which case it is inferred from the remaining dimensions and the number of elements. The semantics for nestedtensors are similar, except that -1 no longer infers. Instead, it inherits the old size (here 2 for nt[0] and 3 for nt[1]). -1 is the only legal size to specify for a jagged dimension. transpose The transpose op is for swapping two dimensions of a tensor. Its full semantics can be..."
        }
    </script>
 
