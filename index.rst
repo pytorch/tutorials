@@ -100,6 +100,13 @@ Welcome to PyTorch Tutorials
    :tags: Getting-Started
 
 .. customcarditem::
+   :header: Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors
+   :card_description: Learn the subtleties of requires_grad, retain_grad, leaf, and non-leaf tensors
+   :image: _static/img/thumbnails/cropped/understanding_leaf_vs_nonleaf.png
+   :link: beginner/understanding_leaf_vs_nonleaf_tutorial.html
+   :tags: Getting-Started
+
+.. customcarditem::
    :header: Visualizing Gradients in PyTorch
    :card_description: Visualize the gradient flow of a network.
    :image: _static/img/thumbnails/cropped/visualizing_gradients_tutorial.png
