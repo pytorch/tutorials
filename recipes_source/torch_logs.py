@@ -32,17 +32,22 @@ import logging
 
 import torch
 
-# exit cleanly if we are on a device that doesn't support torch.compile
-if torch.cuda.get_device_capability() < (7, 0):
-    print("Skipping because torch.compile is not supported on this device.")
-else:
-    @torch.compile()
+# Use torch.compile if supported, fallback to eager mode otherwise
+try:
+    @torch.compile
+    def fn(x, y):
+        z = x + y
+        return z + 2
+        
+    inputs = (torch.ones(2, 2, device="cuda"), torch.zeros(2, 2, device="cuda"))
+except (RuntimeError, AssertionError):
+    print("⚠️  torch.compile is not supported on this system. Falling back to eager mode.")
+
     def fn(x, y):
         z = x + y
         return z + 2
 
-
-    inputs = (torch.ones(2, 2, device="cuda"), torch.zeros(2, 2, device="cuda"))
+    inputs = (torch.ones(2, 2), torch.zeros(2, 2))
 
 
 # print separator and reset dynamo
