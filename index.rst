@@ -99,6 +99,13 @@ Welcome to PyTorch Tutorials
    :link: intermediate/pinmem_nonblock.html
    :tags: Getting-Started
 
+.. customcarditem::
+   :header: Visualizing Gradients in PyTorch
+   :card_description: Visualize the gradient flow of a network.
+   :image: _static/img/thumbnails/cropped/visualizing_gradients_tutorial.png
+   :link: intermediate/visualizing_gradients_tutorial.html
+   :tags: Getting-Started
+
 .. Image/Video
 
 .. customcarditem::
@@ -837,4 +844,4 @@ Additional Resources
    :maxdepth: 1
    :hidden:
 
-   unstable_index
+   prototype/prototype_index
