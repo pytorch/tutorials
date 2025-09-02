@@ -472,7 +472,7 @@ One of the most elegant aspects of ``torch.distributed`` is its ability
 to abstract and build on top of different backends. As mentioned before,
 there are multiple backends implemented in PyTorch. These backends can be easily selected
 using the `Accelerator API <https://pytorch.org/docs/stable/torch.html#accelerators>`__,
-which provides a interface for working with different accelerator types. 
+which provides a interface for working with different accelerator types.
 Some of the most popular backends are Gloo, NCCL, and MPI. They each have different specifications and tradeoffs, depending
 on the desired use case. A comparative table of supported functions can
 be found
@@ -498,7 +498,7 @@ modifications:
 3. ``model = Net()`` :math:`\rightarrow` ``model = Net().to(device)``
 4.  Use ``data, target = data.to(device), target.to(device)``
 
-With these modifications, your model will now train across two GPUs. 
+With these modifications, your model will now train across two GPUs.
 You can monitor GPU utilization using ``watch nvidia-smi`` if you are running on NVIDIA hardware.
 
 **MPI Backend**
@@ -566,9 +566,9 @@ NCCL backend is included in the pre-built binaries with CUDA support.
 
 **XCCL Backend**
 
-The `XCCL backend` offers an optimized implementation of collective operations for XPU tensors. 
-If your workload uses only XPU tensors for collective operations, 
-this backend provides best-in-class performance. 
+The `XCCL backend` offers an optimized implementation of collective operations for XPU tensors.
+If your workload uses only XPU tensors for collective operations,
+this backend provides best-in-class performance.
 The XCCL backend is included in the pre-built binaries with XPU support.
 
 
