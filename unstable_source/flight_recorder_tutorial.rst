@@ -56,7 +56,7 @@ There are three required environment variables to get the initial version of Fli
   We recommended to set this value at *2000*. The default value is ``2000``.
 - ``TORCH_NCCL_DUMP_ON_TIMEOUT = (true, false)``: Setting this to ``true`` will write out diagnostic files to disk on job timeout.
   If enabled, there will be one file per rank output in the job's running directory. The default value is ``false``.
-- ``TORCH_NCCL_DEBUG_INFO_TEMP_FILE``: Setting the path where the flight recorder will be dumped with file prefix. One file per
+- ``TORCH_FR_DUMP_TEMP_FILE``: Setting the path where the flight recorder will be dumped with file prefix. One file per
   rank. The default value is ``/tmp/nccl_trace_rank_``.
 
 **Optional settings:**
