@@ -71,8 +71,7 @@ There are three types of tutorial content that we host on
   reStructuredText files. The build system only converts them into HTML;
   the code in them does not run on build. These tutorials are easier to
   create and maintain but they do not provide an interactive experience.
-  An example is the [Dynamic Quantization
-  tutorial](https://pytorch.org/tutorials/recipes/recipes/dynamic_quantization.html).
+
 
 * **Recipes** are tutorials that provide bite-sized, actionable
   examples of how to use specific features, which differentiates them
@@ -265,7 +264,7 @@ search, you need to include it in `index.rst`, or for recipes, in
 1. Open the relevant file
    [`index.rst`](https://github.com/pytorch/tutorials/blob/main/index.rst)
    or
-   [`recipes_index.rst`](https://github.com/pytorch/tutorials/blob/main/recipes_source/recipes_index.rst)
+   [`recipes_index.rst`](https://github.com/pytorch/tutorials/blob/main/recipes_index.rst)
 1. Add a _card_ in reStructuredText format similar to the following:
 
 ```
