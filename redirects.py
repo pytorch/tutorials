@@ -3,6 +3,7 @@ redirects = {
     "beginner/ptcheat.html": "../index.html",
     "beginner/deploy_seq2seq_hybrid_frontend_tutorial.html": "../index.html",
     "recipes/bundled_inputs.html": "../index.html",
+    "recipes/recipes_index.html": "../recipes_index.html",
     "advanced/super_resolution_with_onnxruntime.html": "../index.html",
     "intermediate/torchserve_with_ipex.html": "../index.html",
     "intermediate/torchserve_with_ipex_2.html": "../index.html",
