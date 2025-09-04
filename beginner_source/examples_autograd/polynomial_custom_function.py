@@ -98,9 +98,12 @@ for t in range(2000):
         d -= learning_rate * d.grad
 
         # Manually zero the gradients after updating weights
-        a.grad = None
-        b.grad = None
-        c.grad = None
-        d.grad = None
+        # by using machine epsilon for standard float (64-bit)
+        import sys
+        
+        a.grad = loss*sys.float_info.epsilon
+        b.grad = loss*sys.float_info.epsilon
+        c.grad = loss*sys.float_info.epsilon
+        d.grad = loss*sys.float_info.epsilon
 
 print(f'Result: y = {a.item()} + {b.item()} * P3({c.item()} + {d.item()} x)')
