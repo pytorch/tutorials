@@ -952,13 +952,13 @@ PyTorch operations.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Predictions with vmap </span><span class="si">{</span><a class="sphx-glr-backref-module-torch-utils-benchmark sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Timer.timeit" title="torch.utils.benchmark.Timer.timeit"><span class="n">with_vmap</span><span class="o">.</span><span class="n">timeit</span></a><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Predictions without vmap &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f777c5d4250&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Predictions without vmap &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7fad70219f30&gt;
 [model(minibatch) for model, minibatch in zip(models, minibatches)]
-  1.34 ms
+  1.37 ms
   1 measurement, 100 runs , 1 thread
-Predictions with vmap &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f773415c2e0&gt;
+Predictions with vmap &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7fad7025c2e0&gt;
 vmap(fmodel)(params, buffers, minibatches)
-  469.03 us
+  482.67 us
   1 measurement, 100 runs , 1 thread
 </pre></div>
 </div>
@@ -969,7 +969,7 @@ though, like if we haven’t implemented the <code class="docutils literal notra
 operation or if the underlying kernels weren’t optimized for older hardware
 (GPUs). If you see any of these cases, please let us know by opening an issue
 on GitHub.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.112 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.135 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-ensembling-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/1342193c7104875f1847417466d1417c/ensembling.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">ensembling.ipynb</span></code></a></p>
@@ -1190,7 +1190,8 @@ on GitHub.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Model ensembling",
          "headline": "Model ensembling",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/ensembling.html",
@@ -1204,9 +1205,8 @@ on GitHub.</p>
            "@type": "WebPage",
            "@id": "/intermediate/ensembling.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Model ensembling# This tutorial illustrates how to vectorize model ensembling using torch.vmap. What is model ensembling?# Model ensembling combines the predictions from multiple models together. Traditionally this is done by running each model on some inputs separately and then combining the predictions. However, if you’re running models with the same architecture, then it may be possible to combine them together using torch.vmap. vmap is a function transform that maps functions across dimensions of the input tensors. One of its use cases is eliminating for-loops and speeding them up through vectorization. Let’s demonstrate how to do this using an ensemble of simple MLPs. Note This tutorial requires PyTorch 2.0.0 or later. import torch import torch.nn as nn import torch.nn.functional as F torch.manual_seed(0) # Here&#39;s a simple MLP class SimpleMLP(nn.Module): def __init__(self): super(SimpleMLP, self).__init__() self.fc1 = nn.Linear(784, 128) self.fc2 = nn.Linear(128, 128) self.fc3 = nn.Linear(128, 10) def forward(self, x): x = x.flatten(1) x = self.fc1(x) x = F.relu(x) x = self.fc2(x) x = F.relu(x) x = self.fc3(x) return x Let’s generate a batch of dummy data and pretend that we’re working with an MNIST dataset. Thus, the dummy images are 28 by 28, and we have a minibatch of size 64. Furthermore, lets say we want to combine the predictions from 10 different models. device = &#39;cuda&#39; num_models = 10 data = torch.randn(100, 64, 1, 28, 28, device=device) targets = torch.randint(10, (6400,), device=device) models = [SimpleMLP().to(device) for _ in range(num_models)] We have a couple of options for generating predictions. Maybe we want to give each model a different randomized minibatch of data. Alternatively, maybe we want to run the same minibatch of data through each model (e.g. if we were testing the effect of different model initializations). Option 1: different minibatch for each model minibatches = data[:num_models] predictions_diff_minibatch_loop = [model(minibatch) for model, minibatch in zip(models, minibatches)] Option 2: Same minibatch minibatch = data[0] predictions2 = [model(minibatch) for model in models] Using vmap to vectorize the ensemble# Let’s use vmap to speed up the for-loop. We must first prepare the models for use with vmap. First, let’s combine the states of the model together by stacking each parameter. For example, model[i].fc1.weight has shape [784, 128]; we are going to stack the .fc1.weight of each of the 10 models to produce a big weight of shape [10, 784, 128]. PyTorch offers the torch.func.stack_module_state convenience function to do this. from torch.func import stack_module_state params, buffers = stack_module_state(models) Next, we need to define a function to vmap over. The function should, given parameters and buffers and inputs, run the model using those parameters, buffers, and inputs. We’ll use torch.func.functional_call to help out: from torch.func import..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

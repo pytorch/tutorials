@@ -1530,7 +1530,8 @@ the generated code of the GEMM template.</p>
    <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Using Max-Autotune Compilation on CPU for Better Performance",
          "headline": "Using Max-Autotune Compilation on CPU for Better Performance",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/unstable/max_autotune_on_CPU_tutorial.html",
@@ -1544,9 +1545,8 @@ the generated code of the GEMM template.</p>
            "@type": "WebPage",
            "@id": "/unstable/max_autotune_on_CPU_tutorial.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Using Max-Autotune Compilation on CPU for Better Performance# Author: Jiong Gong, Leslie Fang, Chunyuan Wu In this tutorial, you will learn how to boost your PyTorch models’ performance on CPU by leveraging the max-autotune mode in the Inductor CPU backend. Explore the activation process, understand the differences from traditional methods, and integrate max-autotune into your code for enhanced computational efficiency. Dive into the use of advanced GEMM templates for faster processing and superior runtime performance. Prerequisites:# torch.compile and TorchInductor concepts in PyTorch Introduction# The max-autotune mode for the Inductor CPU backend in torch.compile (RFC link) profiles multiple implementations of operations at compile time and selects the best-performing one, trading longer compilation times for improved runtime performance. This enhancement is particularly beneficial for GEMM-related operations. In the Inductor CPU backend, we’ve introduced a C++ template-based GEMM implementation as an alternative to the ATen-based approach that relies on oneDNN and MKL libraries. This is similar to the max-autotune mode on CUDA, where implementations from ATen, Triton, and CUTLASS are considered. We have covered most popular data types, including FP32, BF16, FP16, and INT8, with epilogue fusions for x86 CPUs. While the development is still in progress, we have already seen promising speedups over pure ATen-based GEMMs as measured by the three benchmark suites and the inference of LLMs. Activating the max-autotune mode# To activate the max-autotune mode in PyTorch, set the mode argument to max-autotune when compiling your model using torch.compile. If you prefer to bypass the tuning process and always use the C++ template implementations, you can configure this via an environment variable: export TORCHINDUCTOR_MAX_AUTOTUNE_GEMM_BACKENDS=CPP. Example# The below code is an example of using the max-autotune mode on a simple neural network with a linear layer followed by a ReLU activation. In the C++ template-based GEMM implementation, we will pre-pack the weight for good cache usage. In the case of inference which is the primary scenario of CPU AI workloads, model weights are constant and we pack them upfront during compilation so that the data accesses are contiguous within the cache blocks. Thus, We only support frozen model with torch.no_grad or the inference mode. You need to set the environment variable export TORCHINDUCTOR_FREEZING=1 and ensure that both the compilation and inference steps are executed within the torch.no_grad context. import torch from torch._inductor import config config.trace.log_autotuning_results = True # enable the log of autotuning results class M(torch.nn.Module): def __init__( self, in_features, out_features, bias, **kwargs, ): super().__init__() self.linear = torch.nn.Linear( in_features, out_features, bias, **kwargs, ) self.relu = torch.nn.ReLU() def forward(self, x): x = self.linear(x) x = self.relu(x) return ..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 

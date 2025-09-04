@@ -1127,8 +1127,9 @@ to download the full example code.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
-         "headline": "<no title>",
+         "@type": "TechArticle",
+         "name": "\u003cno title\u003e",
+         "headline": "\u003cno title\u003e",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/mnist_train_nas.html",
          "author": {
@@ -1141,9 +1142,8 @@ to download the full example code.</p>
            "@type": "WebPage",
            "@id": "/intermediate/mnist_train_nas.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Example training code for ax_multiobjective_nas_tutorial.py import argparse import logging import os import sys import time import warnings import torch from IPython.utils import io from pytorch_lightning import LightningModule, Trainer from pytorch_lightning import loggers as pl_loggers from torch import nn from torch.nn import functional as F from torch.utils.data import DataLoader from torchmetrics.functional.classification.accuracy import multiclass_accuracy from torchvision import transforms from torchvision.datasets import MNIST warnings.filterwarnings(\&#34;ignore\&#34;) # Disable data logger warnings logging.getLogger(\&#34;pytorch_lightning\&#34;).setLevel(logging.ERROR) # Disable GPU/TPU prints def parse_args(): parser = argparse.ArgumentParser(description=\&#34;train mnist\&#34;) parser.add_argument( \&#34;--log_path\&#34;, type=str, required=True, help=\&#34;dir to place tensorboard logs from all trials\&#34; ) parser.add_argument( \&#34;--hidden_size_1\&#34;, type=int, required=True, help=\&#34;hidden size layer 1\&#34; ) parser.add_argument( \&#34;--hidden_size_2\&#34;, type=int, required=True, help=\&#34;hidden size layer 2\&#34; ) parser.add_argument(\&#34;--learning_rate\&#34;, type=float, required=True, help=\&#34;learning rate\&#34;) parser.add_argument(\&#34;--epochs\&#34;, type=int, required=True, help=\&#34;number of epochs\&#34;) parser.add_argument(\&#34;--dropout\&#34;, type=float, required=True, help=\&#34;dropout probability\&#34;) parser.add_argument(\&#34;--batch_size\&#34;, type=int, required=True, help=\&#34;batch size\&#34;) return parser.parse_args() args = parse_args() PATH_DATASETS = os.environ.get(\&#34;PATH_DATASETS\&#34;, \&#34;.\&#34;) class MnistModel(LightningModule): def __init__(self): super().__init__() # Tunable parameters self.hidden_size_1 = args.hidden_size_1 self.hidden_size_2 = args.hidden_size_2 self.learning_rate = args.learning_rate self.dropout = args.dropout self.batch_size = args.batch_size # Set class attributes self.data_dir = PATH_DATASETS # Hardcode some dataset specific attributes self.num_classes = 10 self.dims = (1, 28, 28) channels, width, height = self.dims self.transform = transforms.Compose( [ transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,)), ] ) # Create a PyTorch model layers = [nn.Flatten()] width = channels * width * height hidden_layers = [self.hidden_size_1, self.hidden_size_2] num_params = 0 for hidden_size in hidden_layers: if hidden_size &gt; 0: layers.append(nn.Linear(width, hidden_size)) layers.append(nn.ReLU()) layers.append(nn.Dropout(self.dropout)) num_params += width * hidden_size width = hidden_size layers.append(nn.Linear(width, self.num_classes)) num_params += width * self.num_classes # Save the model and parameter counts self.num_params = num_params self.model = nn.Sequential(*layers) # No need to use Relu for the last layer def forward(self, x): x = self.model(x) return F.log_softmax(x, dim=1) def training_step(self, batch, batch_idx): x, y = batch logits = self(x) loss = F.nll_loss(logits, y) return loss def validation_step(self, batch, batch_idx): x, y = batch logits = self(x..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

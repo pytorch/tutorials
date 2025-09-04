@@ -1257,7 +1257,8 @@ otherwise would not be.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Double Backward with Custom Functions",
          "headline": "Double Backward with Custom Functions",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/custom_function_double_backward_tutorial.html",
@@ -1271,9 +1272,8 @@ otherwise would not be.</p>
            "@type": "WebPage",
            "@id": "/intermediate/custom_function_double_backward_tutorial.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Double Backward with Custom Functions# It is sometimes useful to run backwards twice through backward graph, for example to compute higher-order gradients. It takes an understanding of autograd and some care to support double backwards, however. Functions that support performing backward a single time are not necessarily equipped to support double backward. In this tutorial we show how to write a custom autograd function that supports double backward, and point out some things to look out for. When writing a custom autograd function to backward through twice, it is important to know when operations performed in a custom function are recorded by autograd, when they aren’t, and most importantly, how save_for_backward works with all of this. Custom functions implicitly affects grad mode in two ways: During forward, autograd does not record any the graph for any operations performed within the forward function. When forward completes, the backward function of the custom function becomes the grad_fn of each of the forward’s outputs During backward, autograd records the computation graph used to compute the backward pass if create_graph is specified Next, to understand how save_for_backward interacts with the above, we can explore a couple examples: Saving the Inputs# Consider this simple squaring function. It saves an input tensor for backward. Double backward works automatically when autograd is able to record operations in the backward pass, so there is usually nothing to worry about when we save an input for backward as the input should have grad_fn if it is a function of any tensor that requires grad. This allows the gradients to be properly propagated. import torch class Square(torch.autograd.Function): @staticmethod def forward(ctx, x): # Because we are saving one of the inputs use `save_for_backward` # Save non-tensors and non-inputs/non-outputs directly on ctx ctx.save_for_backward(x) return x**2 @staticmethod def backward(ctx, grad_out): # A function support double backward automatically if autograd # is able to record the computations performed in backward x, = ctx.saved_tensors return grad_out * 2 * x # Use double precision because finite differencing method magnifies errors x = torch.rand(3, 3, requires_grad=True, dtype=torch.double) torch.autograd.gradcheck(Square.apply, x) # Use gradcheck to verify second-order derivatives torch.autograd.gradgradcheck(Square.apply, x) We can use torchviz to visualize the graph to see why this works import torchviz x = torch.tensor(1., requires_grad=True).clone() out = Square.apply(x) grad_x, = torch.autograd.grad(out, x, create_graph=True) torchviz.make_dot((grad_x, x, out), {\&#34;grad_x\&#34;: grad_x, \&#34;x\&#34;: x, \&#34;out\&#34;: out}) We can see that the gradient wrt to x, is itself a function of x (dout/dx = 2x) And the graph of this function has been properly constructed Saving the Outputs# A slight variation on the previous example is to save an output instead of input. The mechanics are similar because outputs are als..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

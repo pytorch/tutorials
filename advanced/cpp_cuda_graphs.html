@@ -1117,7 +1117,8 @@ gain the performance of GPUs.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Using CUDA Graphs in PyTorch C++ API",
          "headline": "Using CUDA Graphs in PyTorch C++ API",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/advanced/cpp_cuda_graphs.html",
@@ -1131,9 +1132,8 @@ gain the performance of GPUs.</p>
            "@type": "WebPage",
            "@id": "/advanced/cpp_cuda_graphs.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Using CUDA Graphs in PyTorch C++ API# Note View and edit this tutorial in GitHub. The full source code is available on GitHub. Prerequisites: Using the PyTorch C++ Frontend CUDA semantics Pytorch 2.0 or later CUDA 11 or later NVIDIA’s CUDA Graphs have been a part of CUDA Toolkit library since the release of version 10. They are capable of greatly reducing the CPU overhead increasing the performance of applications. In this tutorial, we will be focusing on using CUDA Graphs for C++ frontend of PyTorch. The C++ frontend is mostly utilized in production and deployment applications which are important parts of PyTorch use cases. Since the first appearance the CUDA Graphs won users’ and developer’s hearts for being a very performant and at the same time simple-to-use tool. In fact, CUDA Graphs are used by default in torch.compile of PyTorch 2.0 to boost the productivity of training and inference. We would like to demonstrate CUDA Graphs usage on PyTorch’s MNIST example. The usage of CUDA Graphs in LibTorch (C++ Frontend) is very similar to its Python counterpart but with some differences in syntax and functionality. Getting Started# The main training loop consists of the several steps and depicted in the following code chunk: for (auto&amp; batch : data_loader) { auto data = batch.data.to(device); auto targets = batch.target.to(device); optimizer.zero_grad(); auto output = model.forward(data); auto loss = torch::nll_loss(output, targets); loss.backward(); optimizer.step(); } The example above includes a forward pass, a backward pass, and weight updates. In this tutorial, we will be applying CUDA Graph on all the compute steps through the whole-network graph capture. But before doing so, we need to slightly modify the source code. What we need to do is preallocate tensors for reusing them in the main training loop. Here is an example implementation: torch::TensorOptions FloatCUDA = torch::TensorOptions(device).dtype(torch::kFloat); torch::TensorOptions LongCUDA = torch::TensorOptions(device).dtype(torch::kLong); torch::Tensor data = torch::zeros({kTrainBatchSize, 1, 28, 28}, FloatCUDA); torch::Tensor targets = torch::zeros({kTrainBatchSize}, LongCUDA); torch::Tensor output = torch::zeros({1}, FloatCUDA); torch::Tensor loss = torch::zeros({1}, FloatCUDA); for (auto&amp; batch : data_loader) { data.copy_(batch.data); targets.copy_(batch.target); training_step(model, optimizer, data, targets, output, loss); } Where training_step simply consists of forward and backward passes with corresponding optimizer calls: void training_step( Net&amp; model, torch::optim::Optimizer&amp; optimizer, torch::Tensor&amp; data, torch::Tensor&amp; targets, torch::Tensor&amp; output, torch::Tensor&amp; loss) { optimizer.zero_grad(); output = model.forward(data); loss = torch::nll_loss(output, targets); loss.backward(); optimizer.step(); } PyTorch’s CUDA Graphs API is relying on Stream Capture which in our case would be used like this: at::cuda::CUDAGraph graph; at::cuda::CUDAStream captureStream = at::cu..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

@@ -1059,7 +1059,7 @@ document.write(`
 <p><strong>Authors</strong>: <a class="reference external" href="https://github.com/XilunWu">Xilun Wu</a>, <a class="reference external" href="https://github.com/fegin">Chien-Chin Huang</a></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><a class="reference internal" href="../_images/pencil-16.png"><img alt="edit" src="../_images/pencil-16.png" style="width: 16px; height: 16px;" /></a> View and edit this tutorial in <a class="reference external" href="https://github.com/pytorch/tutorials/blob/main/prototype_source/context_parallel.rst">GitHub</a>.</p>
+<p><a class="reference internal" href="../_images/pencil-16.png"><img alt="edit" src="../_images/pencil-16.png" style="width: 16px; height: 16px;" /></a> View and edit this tutorial in <a class="reference external" href="https://github.com/pytorch/tutorials/blob/main/unstable_source/context_parallel.rst">GitHub</a>.</p>
 </div>
 <div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
 <div class="sd-row sd-row-cols-2 sd-row-cols-xs-2 sd-row-cols-sm-2 sd-row-cols-md-2 sd-row-cols-lg-2 docutils">
@@ -1553,7 +1553,8 @@ see our post on <a class="reference external" href="https://discuss.pytorch.org/
    <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Introduction to Context Parallel",
          "headline": "Introduction to Context Parallel",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/unstable/context_parallel.html",
@@ -1567,9 +1568,8 @@ see our post on <a class="reference external" href="https://discuss.pytorch.org/
            "@type": "WebPage",
            "@id": "/unstable/context_parallel.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Introduction to Context Parallel# Authors: Xilun Wu, Chien-Chin Huang Note View and edit this tutorial in GitHub. What you will learn Context Parallel APIs 1M sequence training in TorchTitan with Context Parallel Prerequisites PyTorch 2.7 or later Introduction# Context Parallel is an approach used in large language model training to reduce peak activation size by sharding the long input sequence across multiple devices. It breaks the constraint on input sequence length resulting from peak memory usage on storing activations in Transformer blocks. Ring Attention, a novel parallel implementation of the Attention layer, is critical to performant Context Parallel. Ring Attention shuffles the KV shards and calculates the partial attention scores, repeats until all KV shards have been used on each device. Two Ring Attention variants have been implemented: the all-gather based pass-KV and the all-to-all based pass-KV: The all-gather based pass-KV algorithm is used in Llama3 training, which initially performs an all-gather on the key and value tensors, followed by computing the attention output for the local query tensor chunk. Our modified all-gather based pass-KV algorithm concurrently all-gathers KV shards and computes attention output for the local query tensor chunk using local key and value tensor chunks, followed by a final computation of attention output for the local query tensor and remaining KV shards. This allows some degree of overlap between the attention computation and the all-gather collective. For example, in the case of Llama3 training, we also shard freq_cis over the sequence dimension. The all-to-all approach uses interleaved all-to-all collectives to ring shuffle KV shards to overlap the SDPA (Scaled Dot Product Attention) computation and the all-to-all communication necessary for the next SDPA. The Context Parallel APIs consist of two parts: context_parallel() allows users to create a Python context where the SDPA function (torch.nn.functional.scaled_dot_product_attention) will be automatically replaced with Ring Attention. To shard Tensors along a dimension, simply pass the Tensors and their sharding dimensions to argument buffers and buffer_seq_dims respectively. We recommend that users add tensors computing along the sequence dimension to buffers and shard them along this dimension. Taking Llama3 training as an example, missing freq_cis in buffers will result in a miscalculated rotary embedding. set_rotate_method() allows users to choose between the all-gather based pass-KV approach and the all-to-all based pass-KV approach. Setup# With torch.distributed.tensor.experimental.context_parallel(), users can easily shard the Tensor input and parallelize the execution of the SDPA function. To better demonstrate the usage of this API, we start with a simple code snippet doing SDPA and then parallelize it using the API: import torch import torch.nn.functional as F from torch.nn.attention import sdpa_kernel, SDPBackend def sdpa_exampl..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 

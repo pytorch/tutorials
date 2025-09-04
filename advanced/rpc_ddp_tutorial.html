@@ -1269,7 +1269,8 @@ for Distributed Autograd.</p></li>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Combining Distributed DataParallel with Distributed RPC Framework",
          "headline": "Combining Distributed DataParallel with Distributed RPC Framework",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/advanced/rpc_ddp_tutorial.html",
@@ -1283,9 +1284,8 @@ for Distributed Autograd.</p></li>
            "@type": "WebPage",
            "@id": "/advanced/rpc_ddp_tutorial.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Combining Distributed DataParallel with Distributed RPC Framework# Authors: Pritam Damania and Yi Wang Note View and edit this tutorial in github. This tutorial uses a simple example to demonstrate how you can combine DistributedDataParallel (DDP) with the Distributed RPC framework to combine distributed data parallelism with distributed model parallelism to train a simple model. Source code of the example can be found here. Previous tutorials, Getting Started With Distributed Data Parallel and Getting Started with Distributed RPC Framework, described how to perform distributed data parallel and distributed model parallel training respectively. Although, there are several training paradigms where you might want to combine these two techniques. For example: If we have a model with a sparse part (large embedding table) and a dense part (FC layers), we might want to put the embedding table on a parameter server and replicate the FC layer across multiple trainers using DistributedDataParallel. The Distributed RPC framework can be used to perform embedding lookups on the parameter server. Enable hybrid parallelism as described in the PipeDream paper. We can use the Distributed RPC framework to pipeline stages of the model across multiple workers and replicate each stage (if needed) using DistributedDataParallel. In this tutorial we will cover case 1 mentioned above. We have a total of 4 workers in our setup as follows: 1 Master, which is responsible for creating an embedding table (nn.EmbeddingBag) on the parameter server. The master also drives the training loop on the two trainers. 1 Parameter Server, which basically holds the embedding table in memory and responds to RPCs from the Master and Trainers. 2 Trainers, which store an FC layer (nn.Linear) which is replicated amongst themselves using DistributedDataParallel. The trainers are also responsible for executing the forward pass, backward pass and optimizer step. The entire training process is executed as follows: The master creates a RemoteModule that holds an embedding table on the Parameter Server. The master, then kicks off the training loop on the trainers and passes the remote module to the trainers. The trainers create a HybridModel which first performs an embedding lookup using the remote module provided by the master and then executes the FC layer which is wrapped inside DDP. The trainer executes the forward pass of the model and uses the loss to execute the backward pass using Distributed Autograd. As part of the backward pass, the gradients for the FC layer are computed first and synced to all trainers via allreduce in DDP. Next, Distributed Autograd propagates the gradients to the parameter server, where the gradients for the embedding table are updated. Finally, the Distributed Optimizer is used to update all the parameters. Attention You should always use Distributed Autograd for the backward pass if you’re combining DDP and RPC. Now, let’s go through each part in detail. Firstly..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

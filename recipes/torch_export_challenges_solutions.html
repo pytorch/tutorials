@@ -1712,7 +1712,8 @@ To learn more about <code class="docutils literal notranslate"><span class="pre"
    <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Demonstration of torch.export flow, common challenges and the solutions to address them",
          "headline": "Demonstration of torch.export flow, common challenges and the solutions to address them",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/recipes/torch_export_challenges_solutions.html",
@@ -1726,9 +1727,8 @@ To learn more about <code class="docutils literal notranslate"><span class="pre"
            "@type": "WebPage",
            "@id": "/recipes/torch_export_challenges_solutions.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Demonstration of torch.export flow, common challenges and the solutions to address them# Authors: Ankith Gunapal, Jordi Ramon, Marcos Carranza In the Introduction to torch.export Tutorial , we learned how to use torch.export. This tutorial expands on the previous one and explores the process of exporting popular models with code, as well as addresses common challenges that may arise with torch.export. In this tutorial, you will learn how to export models for these use cases: Video classifier (MViT) Automatic Speech Recognition (OpenAI Whisper-Tiny) Image Captioning (BLIP) Promptable Image Segmentation (SAM2) Each of the four models were chosen to demonstrate unique features of torch.export, as well as some practical considerations and issues faced in the implementation. Prerequisites# PyTorch 2.4 or later Basic understanding of torch.export and PyTorch Eager inference. Key requirement for torch.export: No graph break# torch.compile speeds up PyTorch code by using JIT to compile PyTorch code into optimized kernels. It optimizes the given model using TorchDynamo and creates an optimized graph , which is then lowered into the hardware using the backend specified in the API. When TorchDynamo encounters unsupported Python features, it breaks the computation graph, lets the default Python interpreter handle the unsupported code, and then resumes capturing the graph. This break in the computation graph is called a graph break. One of the key differences between torch.export and torch.compile is that torch.export doesn’t support graph breaks which means that the entire model or part of the model that you are exporting needs to be a single graph. This is because handling graph breaks involves interpreting the unsupported operation with default Python evaluation, which is incompatible with what torch.export is designed for. You can read details about the differences between the various PyTorch frameworks in this link You can identify graph breaks in your program by using the following command: TORCH_LOGS=\&#34;graph_breaks\&#34; python &lt;file_name&gt;.py You will need to modify your program to get rid of graph breaks. Once resolved, you are ready to export the model. PyTorch runs nightly benchmarks for torch.compile on popular HuggingFace and TIMM models. Most of these models have no graph breaks. The models in this recipe have no graph breaks, but fail with torch.export. Video Classification# MViT is a class of models based on MultiScale Vision Transformers. This model has been trained for video classification using the Kinetics-400 Dataset. This model with a relevant dataset can be used for action recognition in the context of gaming. The code below exports MViT by tracing with batch_size=2 and then checks if the ExportedProgram can run with batch_size=4. import numpy as np import torch from torchvision.models.video import MViT_V1_B_Weights, mvit_v1_b import traceback as tb model = mvit_v1_b(weights=MViT_V1_B_Weights.DEFAULT) # Create a batch of 2 videos, each with..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 

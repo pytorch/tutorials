@@ -1341,7 +1341,8 @@ this pass improves inference performance.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Building a Convolution/Batch Norm fuser with torch.compile",
          "headline": "Building a Convolution/Batch Norm fuser with torch.compile",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/torch_compile_conv_bn_fuser.html",
@@ -1355,9 +1356,8 @@ this pass improves inference performance.</p>
            "@type": "WebPage",
            "@id": "/intermediate/torch_compile_conv_bn_fuser.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Building a Convolution/Batch Norm fuser with torch.compile# Author: Horace He, Will Feng What you will learn How to register custom fusion patterns with torch.compile’s pattern matcher Prerequisites PyTorch v2.7.0 Note This optimization only works for models in inference mode (i.e. model.eval()). However, torch.compile’s pattern matching system works for both training and inference. First, let’s get some imports out of the way (we will be using all of these later in the code). from typing import Type, Dict, Any, Tuple, Iterable import copy import torch import torch.nn as nn device = torch.device(\&#34;cuda\&#34; if torch.cuda.is_available() else \&#34;cpu\&#34;) For this tutorial, we are going to create a model consisting of convolutions and batch norms. Note that this model has some tricky components - some of the conv/batch norm patterns are hidden within Sequentials and one of the BatchNorms is wrapped in another Module. class WrappedBatchNorm(nn.Module): def __init__(self): super().__init__() self.mod = nn.BatchNorm2d(1) def forward(self, x): return self.mod(x) class M(nn.Module): def __init__(self): super().__init__() self.conv1 = nn.Conv2d(1, 1, 1) self.bn1 = nn.BatchNorm2d(1) self.conv2 = nn.Conv2d(1, 1, 1) self.nested = nn.Sequential( nn.BatchNorm2d(1), nn.Conv2d(1, 1, 1), ) self.wrapped = WrappedBatchNorm() def forward(self, x): x = self.conv1(x) x = self.bn1(x) x = self.conv2(x) x = self.nested(x) x = self.wrapped(x) return x model = M().to(device) model.eval() Fusing Convolution with Batch Norm# One of the primary challenges with trying to automatically fuse convolution and batch norm in PyTorch is that PyTorch does not provide an easy way of accessing the computational graph. torch.compile resolves this problem by capturing the computational graph during compilation, allowing us to apply pattern-based optimizations across the entire model, including operations nested within Sequential modules or wrapped in custom modules. import torch._inductor.pattern_matcher as pm from torch._inductor.pattern_matcher import register_replacement torch.compile will capture a graph representation of our model. During compilation, modules hidden within Sequential containers and wrapped modules are all inlined into the graph, making them available for pattern matching and optimization. Fusing Convolution with Batch Norm# Unlike some other fusions, fusion of convolution with batch norm does not require any new operators. Instead, as batch norm during inference consists of a pointwise add and multiply, these operations can be “baked” into the preceding convolution’s weights. This allows us to remove the batch norm entirely from our model! Read https://nenadmarkus.com/p/fusing-batchnorm-and-conv/ for further details. The code here is copied from pytorch/pytorch clarity purposes. def fuse_conv_bn_eval(conv, bn): \&#34;\&#34;\&#34; Given a conv Module `A` and an batch_norm module `B`, returns a conv module `C` such that C(x) == B(A(x)) i..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

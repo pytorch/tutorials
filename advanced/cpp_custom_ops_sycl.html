@@ -1213,7 +1213,8 @@ in a separate <code class="docutils literal notranslate"><span class="pre">TORCH
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Custom SYCL Operators",
          "headline": "Custom SYCL Operators",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/advanced/cpp_custom_ops_sycl.html",
@@ -1227,9 +1228,8 @@ in a separate <code class="docutils literal notranslate"><span class="pre">TORCH
            "@type": "WebPage",
            "@id": "/advanced/cpp_custom_ops_sycl.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Custom SYCL Operators# What you will learn How to integrate custom operators written in SYCL with PyTorch Prerequisites PyTorch 2.8 or later Basic understanding of SYCL programming Note SYCL serves as the backend programming language for Intel GPUs (device label xpu). For configuration details, see: Getting Started on Intel GPUs. The Intel Compiler, which comes bundled with Intel Deep Learning Essentials, handles SYCL compilation. Ensure you install and activate the compiler environment prior to executing the code examples in this tutorial. PyTorch offers a large library of operators that work on Tensors (e.g. torch.add, torch.sum, etc). However, you may wish to bring a new custom operator to PyTorch. This tutorial demonstrates the best path to authoring a custom operator written in SYCL. Tutorials for C++ and CUDA operators are available in the Custom C++ and CUDA Operators. Follow the structure to create a custom SYCL operator: sycl_example/ ├── setup.py ├── sycl_extension │ ├── __init__.py │ ├── muladd.sycl │ └── ops.py └── test_sycl_extension.py Setting up the Build System# If you need to compile SYCL code (for example, .sycl files), use torch.utils.cpp_extension.SyclExtension. The setup process is very similar to C++/CUDA, except the compilation arguments need to be adjusted for SYCL. Using sycl_extension is as straightforward as writing the following setup.py: import os import torch import glob from setuptools import find_packages, setup from torch.utils.cpp_extension import SyclExtension, BuildExtension library_name = \&#34;sycl_extension\&#34; py_limited_api = True extra_compile_args = { \&#34;cxx\&#34;: [\&#34;-O3\&#34;, \&#34;-fdiagnostics-color=always\&#34;, \&#34;-DPy_LIMITED_API=0x03090000\&#34;], \&#34;sycl\&#34;: [\&#34;-O3\&#34; ] } assert(torch.xpu.is_available()), \&#34;XPU is not available, please check your environment\&#34; # Source files collection this_dir = os.path.dirname(os.path.curdir) extensions_dir = os.path.join(this_dir, library_name) sources = list(glob.glob(os.path.join(extensions_dir, \&#34;*.sycl\&#34;))) # Construct extension ext_modules = [ SyclExtension( f\&#34;{library_name}._C\&#34;, sources, extra_compile_args=extra_compile_args, py_limited_api=py_limited_api, ) ] setup( name=library_name, packages=find_packages(), ext_modules=ext_modules, install_requires=[\&#34;torch\&#34;], description=\&#34;Simple Example of PyTorch Sycl extensions\&#34;, cmdclass={\&#34;build_ext\&#34;: BuildExtension}, options={\&#34;bdist_wheel\&#34;: {\&#34;py_limited_api\&#34;: \&#34;cp39\&#34;}} if py_limited_api else {}, ) Defining the custom op and adding backend implementations# First, let’s write a SYCL function that computes mymuladd: In order to use this from PyTorch’s Python frontend, we need to register it as a PyTorch operator using the TORCH_LIBRARY API. This will automatically bind the operator to Python. If you also have a SYCL implementation of myaddmul, you can also register it in a separate TORCH_LIBRARY_IMPL block: #include &lt;c10/xpu/XPUStream.h&gt; #include &lt;sycl/sycl.hpp&gt; #include &lt;ATen/Operators.h&gt; #include &lt;torch/all.h&gt; #include &lt;torch/library.h&gt; namespace sycl_extens..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

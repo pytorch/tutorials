@@ -1085,10 +1085,10 @@ we use a helper function, <code class="docutils literal notranslate"><span class
 <span class="nb">print</span><span class="p">(</span><span class="n">label_from_output</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">output</span></a><span class="p">,</span> <span class="n">alldata</span><span class="o">.</span><span class="n">labels_uniq</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-2.7094, -2.8494, -2.8399, -2.8614, -2.8697, -2.9800, -2.7388, -2.8795,
-         -2.8977, -2.9956, -2.9557, -2.8601, -2.9798, -3.0613, -2.9211, -2.8316,
-         -2.9342, -2.9272]], device='cuda:0', grad_fn=&lt;LogSoftmaxBackward0&gt;)
-('Arabic', 0)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-2.8679, -2.9377, -2.7985, -2.7776, -2.7900, -2.8763, -2.8797, -2.9783,
+         -3.0260, -2.8733, -2.8755, -2.8348, -2.9150, -2.9668, -2.9591, -2.9884,
+         -2.8880, -2.8374]], device='cuda:0', grad_fn=&lt;LogSoftmaxBackward0&gt;)
+('Greek', 3)
 </pre></div>
 </div>
 </section>
@@ -1160,12 +1160,12 @@ example is reduced to speed up the build. You can get better results with differ
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>training on data set with n = 17063
-5 (19%):         average batch loss = 0.8786449459124466
-10 (37%):        average batch loss = 0.6910293929334871
-15 (56%):        average batch loss = 0.5725766614812037
-20 (74%):        average batch loss = 0.4986357924650693
-25 (93%):        average batch loss = 0.4389375893193355
-training took 339.63284373283386s
+5 (19%):         average batch loss = 0.8799649826635026
+10 (37%):        average batch loss = 0.6905105558070508
+15 (56%):        average batch loss = 0.5741002904672441
+20 (74%):        average batch loss = 0.4933865505148387
+25 (93%):        average batch loss = 0.43969820851859776
+training took 336.7161376476288s
 </pre></div>
 </div>
 </section>
@@ -1255,7 +1255,7 @@ English (perhaps because of overlap with other languages).</p>
 </ul>
 </li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (5 minutes 45.796 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (5 minutes 42.821 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-char-rnn-classification-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/13b143c2380f4768d9432d808ad50799/char_rnn_classification_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">char_rnn_classification_tutorial.ipynb</span></code></a></p>
@@ -1457,7 +1457,8 @@ English (perhaps because of overlap with other languages).</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "NLP From Scratch: Classifying Names with a Character-Level RNN",
          "headline": "NLP From Scratch: Classifying Names with a Character-Level RNN",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/char_rnn_classification_tutorial.html",
@@ -1471,9 +1472,8 @@ English (perhaps because of overlap with other languages).</p>
            "@type": "WebPage",
            "@id": "/intermediate/char_rnn_classification_tutorial.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. NLP From Scratch: Classifying Names with a Character-Level RNN# Author: Sean Robertson This tutorials is part of a three-part series: NLP From Scratch: Classifying Names with a Character-Level RNN NLP From Scratch: Generating Names with a Character-Level RNN NLP From Scratch: Translation with a Sequence to Sequence Network and Attention We will be building and training a basic character-level Recurrent Neural Network (RNN) to classify words. This tutorial, along with two other Natural Language Processing (NLP) “from scratch” tutorials NLP From Scratch: Generating Names with a Character-Level RNN and NLP From Scratch: Translation with a Sequence to Sequence Network and Attention, show how to preprocess data to model NLP. In particular, these tutorials show how preprocessing to model NLP works at a low level. A character-level RNN reads words as a series of characters - outputting a prediction and “hidden state” at each step, feeding its previous hidden state into each next step. We take the final prediction to be the output, i.e. which class the word belongs to. Specifically, we’ll train on a few thousand surnames from 18 languages of origin, and predict which language a name is from based on the spelling. Recommended Preparation# Before starting this tutorial it is recommended that you have installed PyTorch, and have a basic understanding of Python programming language and Tensors: https://pytorch.org/ For installation instructions Deep Learning with PyTorch: A 60 Minute Blitz to get started with PyTorch in general and learn the basics of Tensors Learning PyTorch with Examples for a wide and deep overview PyTorch for Former Torch Users if you are former Lua Torch user It would also be useful to know about RNNs and how they work: The Unreasonable Effectiveness of Recurrent Neural Networks shows a bunch of real life examples Understanding LSTM Networks is about LSTMs specifically but also informative about RNNs in general Preparing Torch# Set up torch to default to the right device use GPU acceleration depending on your hardware (CPU or CUDA). import torch # Check if CUDA is available device = torch.device(&#39;cpu&#39;) if torch.cuda.is_available(): device = torch.device(&#39;cuda&#39;) torch.set_default_device(device) print(f\&#34;Using device = {torch.get_default_device()}\&#34;) Using device = cuda:0 Preparing the Data# Download the data from here and extract it to the current directory. Included in the data/names directory are 18 text files named as [Language].txt. Each file contains a bunch of names, one name per line, mostly romanized (but we still need to convert from Unicode to ASCII). The first step is to define and clean our data. Initially, we need to convert Unicode to plain ASCII to limit the RNN input layers. This is accomplished by converting Unicode strings to ASCII and allowing only a small set of allowed characters. import string import unicodedata # We can use \&#34;_\&#34; to represent an out-of-vocabulary..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

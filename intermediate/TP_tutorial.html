@@ -1307,7 +1307,8 @@ It explains how to apply Tensor Parallel to different parts of the model, with <
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Large Scale Transformer model training with Tensor Parallel (TP)",
          "headline": "Large Scale Transformer model training with Tensor Parallel (TP)",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/TP_tutorial.html",
@@ -1321,9 +1322,8 @@ It explains how to apply Tensor Parallel to different parts of the model, with <
            "@type": "WebPage",
            "@id": "/intermediate/TP_tutorial.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Large Scale Transformer model training with Tensor Parallel (TP)# Author: Wanchao Liang, Tianyu Liu Note View and edit this tutorial in github. This tutorial demonstrates how to train a large Transformer-like model across hundreds to thousands of GPUs using Tensor Parallel and Fully Sharded Data Parallel. Prerequisites: PyTorch 2.3.0 or later installed with CUDA/Linux Tensor Parallel APIs Getting Started with DeviceMesh Getting Started with Fully Sharded Data Parallel How Tensor Parallel works?# Tensor Parallel (TP) was originally proposed in the Megatron-LM paper, and it is an efficient model parallelism technique to train large scale Transformer models. Sequence Parallel (SP) we mention in this tutorial is a variant of Tensor Parallel that shards on the sequence dimension for nn.LayerNorm or RMSNorm to further save activation memory during training. As the model becomes larger, the activation memory becomes the bottleneck, so in Tensor Parallel training it usually applies Sequence Parallel to LayerNorm or RMSNorm layers. Figure 1. represents the sharding in Tensor Parallel style on a Transformer model’s MLP and Self-Attention layer, where the matrix multiplications in both attention/MLP happens through sharded computations (image source)# At a high level, PyTorch Tensor Parallel works as follows: Sharding initialization Determine which ParallelStyle to apply to each layer and shard the initialized module by calling parallelize_module. The parallelized modules would have their model parameters be swapped to DTensors, and DTensor would be responsible to run the parallelized module using sharded computation. Runtime foward/backward Depending on the input/outputs DTensor layouts user specified for each ParallelStyle, it would run proper communication operation to transform the DTensor layouts for inputs/outputs (such as allreduce, allgather and reduce_scatter). Run sharded computation for the parallelized layers to save compute/memory (for example, nn.Linear, nn.Embedding). When and Why you should apply Tensor Parallel# The PyTorch Fully Sharded Data Parallel (FSDP) already has the capability to scale model training to a specific number of GPUs. However, when it comes to further scale the model training in terms of model size and GPU quantity, many additional challenges arise that may require combining Tensor Parallel with FSDP.: As the world size (number of GPUs) is becoming excessively large (exceeding 128/256 GPUs), the FSDP collectives (such as allgather) are being dominated by ring latency. By implementing TP/SP on top of FSDP, the FSDP world size could be reduced by 8 by applying FSDP to be inter-host only, consequently decreasing the latency costs by the same amount. Hit data parallelism limit where you can not raise the global batch size to be above the number of GPUs due to both convergence and GPU memory limitations, Tensor/Sequence Parallel is the only known way to “ballpark” the global batch size and continue scaling with more GPUs. ..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

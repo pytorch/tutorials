@@ -1490,7 +1490,8 @@ We also reviewed an example on how to use the autoloading mechanism with Intel G
    <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Autoloading Out-of-Tree Extension",
          "headline": "Autoloading Out-of-Tree Extension",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/unstable/python_extension_autoload.html",
@@ -1504,9 +1505,8 @@ We also reviewed an example on how to use the autoloading mechanism with Intel G
            "@type": "WebPage",
            "@id": "/unstable/python_extension_autoload.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Autoloading Out-of-Tree Extension# Author: Yuanhao Ji The extension autoloading mechanism enables PyTorch to automatically load out-of-tree backend extensions without explicit import statements. This feature is beneficial for users as it enhances their experience and enables them to follow the familiar PyTorch device programming model without having to explicitly load or import device-specific extensions. Additionally, it facilitates effortless adoption of existing PyTorch applications with zero-code changes on out-of-tree devices. For further details, refer to the [RFC] Autoload Device Extension. What you will learn How to use out-of-tree extension autoloading in PyTorch Review examples with Intel Gaudi HPU, Huawei Ascend NPU Prerequisites PyTorch v2.5 or later Note This feature is enabled by default and can be disabled by using export TORCH_DEVICE_BACKEND_AUTOLOAD=0. If you get an error like this: “Failed to load the backend extension”, this error is independent with PyTorch, you should disable this feature and ask the out-of-tree extension maintainer for help. How to apply this mechanism to out-of-tree extensions?# For instance, suppose you have a backend named foo and a corresponding package named torch_foo. Ensure that your package is compatible with PyTorch 2.5 or later and includes the following snippet in its __init__.py file: def _autoload(): print(\&#34;Check things are working with `torch.foo.is_available()`.\&#34;) Then, the only thing you need to do is define an entry point within your Python package: setup( name=\&#34;torch_foo\&#34;, version=\&#34;1.0\&#34;, entry_points={ \&#34;torch.backends\&#34;: [ \&#34;torch_foo = torch_foo:_autoload\&#34;, ], } ) Now you can import the torch_foo module by simply adding the import torch statement without the need to add import torch_foo: &gt;&gt;&gt; import torch Check things are working with `torch.foo.is_available()`. &gt;&gt;&gt; torch.foo.is_available() True In some cases, you might encounter issues with circular imports. The examples below demonstrate how you can address them. Examples# In this example, we will be using Intel Gaudi HPU and Huawei Ascend NPU to determine how to integrate your out-of-tree extension with PyTorch using the autoloading feature. habana_frameworks.torch is a Python package that enables users to run PyTorch programs on Intel Gaudi by using the PyTorch HPU device key. habana_frameworks.torch is a submodule of habana_frameworks, we add an entry point to __autoload() in habana_frameworks/setup.py: setup( name=\&#34;habana_frameworks\&#34;, version=\&#34;2.5\&#34;, + entry_points={ + &#39;torch.backends&#39;: [ + \&#34;device_backend = habana_frameworks:__autoload\&#34;, + ], + } ) In habana_frameworks/init.py, we use a global variable to track if our module has been loaded: import os is_loaded = False # A member variable of habana_frameworks module to track if our module has been imported def __autoload(): # This is an entrypoint for pytorch autoload mechanism # If the following condition is true, that means our backend has already been loaded, either explicitly # o..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 

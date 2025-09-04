@@ -1322,7 +1322,8 @@ Networks</a></p></li>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Visualizing Gradients",
          "headline": "Visualizing Gradients",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/visualizing_gradients_tutorial.html",
@@ -1336,9 +1337,8 @@ Networks</a></p></li>
            "@type": "WebPage",
            "@id": "/intermediate/visualizing_gradients_tutorial.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Visualizing Gradients# Author: Justin Silver This tutorial explains how to extract and visualize gradients at any layer in a neural network. By inspecting how information flows from the end of the network to the parameters we want to optimize, we can debug issues such as vanishing or exploding gradients that occur during training. Before starting, make sure you understand tensors and how to manipulate them. A basic knowledge of how autograd works would also be useful. Setup# First, make sure PyTorch is installed and then import the necessary libraries. import torch import torch.nn as nn import torch.optim as optim import torch.nn.functional as F import matplotlib.pyplot as plt Next, we’ll be creating a network intended for the MNIST dataset, similar to the architecture described by the batch normalization paper. To illustrate the importance of gradient visualization, we will instantiate one version of the network with batch normalization (BatchNorm), and one without it. Batch normalization is an extremely effective technique to resolve vanishing/exploding gradients, and we will be verifying that experimentally. The model we use has a configurable number of repeating fully-connected layers which alternate between nn.Linear, norm_layer, and nn.Sigmoid. If batch normalization is enabled, then norm_layer will use BatchNorm1d, otherwise it will use the Identity transformation. def fc_layer(in_size, out_size, norm_layer): \&#34;\&#34;\&#34;Return a stack of linear-&gt;norm-&gt;sigmoid layers\&#34;\&#34;\&#34; return nn.Sequential(nn.Linear(in_size, out_size), norm_layer(out_size), nn.Sigmoid()) class Net(nn.Module): \&#34;\&#34;\&#34;Define a network that has num_layers of linear-&gt;norm-&gt;sigmoid transformations\&#34;\&#34;\&#34; def __init__(self, in_size=28*28, hidden_size=128, out_size=10, num_layers=3, batchnorm=False): super().__init__() if batchnorm is False: norm_layer = nn.Identity else: norm_layer = nn.BatchNorm1d layers = [] layers.append(fc_layer(in_size, hidden_size, norm_layer)) for i in range(num_layers-1): layers.append(fc_layer(hidden_size, hidden_size, norm_layer)) layers.append(nn.Linear(hidden_size, out_size)) self.layers = nn.Sequential(*layers) def forward(self, x): x = torch.flatten(x, 1) return self.layers(x) Next we set up some dummy data, instantiate two versions of the model, and initialize the optimizers. # set up dummy data x = torch.randn(10, 28, 28) y = torch.randint(10, (10, )) # init model model_bn = Net(batchnorm=True, num_layers=3) model_nobn = Net(batchnorm=False, num_layers=3) model_bn.train() model_nobn.train() optimizer_bn = optim.SGD(model_bn.parameters(), lr=0.01, momentum=0.9) optimizer_nobn = optim.SGD(model_nobn.parameters(), lr=0.01, momentum=0.9) We can verify that batch normalization is only being applied to one of the models by probing one of the internal layers: print(model_bn.layers[0]) print(model_nobn.layers[0]) Sequential( (0): Linear(in_features=784, out_features=128, bias=True) (1): BatchNorm1d(128, eps=1e-05,..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

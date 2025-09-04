@@ -1501,8 +1501,9 @@ as reduction semantics.</p>
    <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
-         "headline": "Efficiently writing “sparse” semantics for Adagrad with MaskedTensor",
+         "@type": "TechArticle",
+         "name": "Efficiently writing \u201csparse\u201d semantics for Adagrad with MaskedTensor",
+         "headline": "Efficiently writing \u201csparse\u201d semantics for Adagrad with MaskedTensor",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/unstable/maskedtensor_adagrad.html",
          "author": {
@@ -1515,9 +1516,8 @@ as reduction semantics.</p>
            "@type": "WebPage",
            "@id": "/unstable/maskedtensor_adagrad.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Efficiently writing “sparse” semantics for Adagrad with MaskedTensor# Before working through this tutorial, please review the MaskedTensor Overview and Sparsity tutorials. Introduction and Motivation# Issue 1369 discussed the additional lines of code that were introduced while writing “sparse” semantics for Adagrad, but really, the code uses sparsity as a proxy for masked semantics rather than the intended use case of sparsity: a compression and optimization technique. Previously, we worked around the lack of formal masked semantics by introducing one-off semantics and operators while forcing users to be aware of storage details such as indices and values. Now that we have masked semantics, we are better equipped to point out when sparsity is used as a semantic extension. We’ll also compare and contrast this with equivalent code written using MaskedTensor. In the end the code snippets are repeated without additional comments to show the difference in brevity. Preparation# # Disable prototype warnings and such # Some hyperparameters Simpler Code with MaskedTensor# Before we get too far in the weeds, let’s introduce the problem a bit more concretely. We will be taking a look into the Adagrad (functional) implementation in PyTorch with the ultimate goal of simplifying and more faithfully representing the masked approach. For reference, this is the regular, dense code path without masked gradients or sparsity: state_sum.addcmul_(grad, grad, value=1) std = state_sum.sqrt().add_(eps) param.addcdiv_(grad, std, value=-clr) The vanilla tensor implementation for sparse is: def _make_sparse(grad, grad_indices, values): size = grad.size() if grad_indices.numel() == 0 or values.numel() == 0: return torch.empty_like(grad) return torch.sparse_coo_tensor(grad_indices, values, size) grad = grad.coalesce() # the update is non-linear so indices must be unique grad_indices = grad._indices() grad_values = grad._values() state_sum.add_(_make_sparse(grad, grad_indices, grad_values.pow(2))) # a different _make_sparse per layout std = state_sum.sparse_mask(grad) std_values = std._values().sqrt_().add_(eps) param.add_(_make_sparse(grad, grad_indices, grad_values / std_values), alpha=-clr) while MaskedTensor minimizes the code to the snippet: state_sum2 = state_sum2 + masked_grad.pow(2).get_data() std2 = masked_tensor(state_sum2.to_sparse(), mask) std2 = std2.sqrt().add(eps) param2 = param2.add((masked_grad / std2).get_data(), alpha=-clr) In this tutorial, we will go through each implementation line by line, but at first glance, we can notice (1) how much shorter the MaskedTensor implementation is, and (2) how it avoids conversions between dense and sparse tensors. Original Sparse Implementation# Now, let’s break down the code with some inline comments: # We don&#39;t support sparse gradients # pow(2) has the same semantics for both sparse and dense memory layouts since 0^2 is zero # We take care to make std sparse, even..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 

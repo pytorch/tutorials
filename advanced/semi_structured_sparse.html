@@ -1639,7 +1639,8 @@ fine-tuning BERT to recover any lost F1 (86.92 dense vs 86.48 sparse).</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "(beta) Accelerating BERT with semi-structured (2:4) sparsity",
          "headline": "(beta) Accelerating BERT with semi-structured (2:4) sparsity",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/advanced/semi_structured_sparse.html",
@@ -1653,9 +1654,8 @@ fine-tuning BERT to recover any lost F1 (86.92 dense vs 86.48 sparse).</p>
            "@type": "WebPage",
            "@id": "/advanced/semi_structured_sparse.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. (beta) Accelerating BERT with semi-structured (2:4) sparsity# Author: Jesse Cai Overview# Like other forms of sparsity, semi-structured sparsity is a model optimization technique that seeks to reduce the memory overhead and latency of a neural network at the expense of some model accuracy. It is also known as fine-grained structured sparsity or 2:4 structured sparsity. Semi-structured sparsity derives its name from its unique sparsity pattern, where n out of every 2n elements are pruned. We most often see n=2, hence 2:4 sparsity Semi-structured sparsity is particularly interesting because it can be efficiently accelerated on GPUs and doesn’t degrade model accuracy as much as other sparsity patterns. With the introduction of semi-structured sparsity support, it is possible to prune and accelerate a semi-structured sparse model without leaving PyTorch. We will explain this process in this tutorial. By the end of this tutorial, we will have sparsified a BERT question-answering model to be 2:4 sparse, fine-tuning it to recover nearly all F1 loss (86.92 dense vs 86.48 sparse). Finally, we will accelerate this 2:4 sparse model for inference, yielding a 1.3x speedup. Requirements# PyTorch &gt;= 2.1. A NVIDIA GPU with semi-structured sparsity support (Compute Capability 8.0+). This tutorial is designed for beginners to semi-structured sparsity and sparsity in general. For users with existing 2:4 sparse models, accelerating nn.Linear layers for inference with to_sparse_semi_structured is quite straightforward. Here is an example: import torch from torch.sparse import to_sparse_semi_structured, SparseSemiStructuredTensor from torch.utils.benchmark import Timer SparseSemiStructuredTensor._FORCE_CUTLASS = True # mask Linear weight to be 2:4 sparse mask = torch.Tensor([0, 0, 1, 1]).tile((3072, 2560)).cuda().bool() linear = torch.nn.Linear(10240, 3072).half().cuda().eval() linear.weight = torch.nn.Parameter(mask * linear.weight) x = torch.rand(3072, 10240).half().cuda() with torch.inference_mode(): dense_output = linear(x) dense_t = Timer(stmt=\&#34;linear(x)\&#34;, globals={\&#34;linear\&#34;: linear, \&#34;x\&#34;: x}).blocked_autorange().median * 1e3 # accelerate via SparseSemiStructuredTensor linear.weight = torch.nn.Parameter(to_sparse_semi_structured(linear.weight)) sparse_output = linear(x) sparse_t = Timer(stmt=\&#34;linear(x)\&#34;, globals={\&#34;linear\&#34;: linear, \&#34;x\&#34;: x}).blocked_autorange().median * 1e3 # sparse and dense matmul are numerically equivalent # On an A100 80GB, we see: `Dense: 0.870ms Sparse: 0.630ms | Speedup: 1.382x` assert torch.allclose(sparse_output, dense_output, atol=1e-3) print(f\&#34;Dense: {dense_t:.3f}ms Sparse: {sparse_t:.3f}ms | Speedup: {(dense_t / sparse_t):.3f}x\&#34;) What problem does semi-structured sparsity solve?# The general motivation behind sparsity is simple: if there are zeros in your network, you can optimize efficiency by not storing or computing those parameters. However, the specifics of sparsity are tricky...."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

@@ -1478,7 +1478,8 @@ The current profiler step is stored in <code class="docutils literal notranslate
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "PyTorch Profiler",
          "headline": "PyTorch Profiler",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/recipes/recipes/profiler_recipe.html",
@@ -1492,9 +1493,8 @@ The current profiler step is stored in <code class="docutils literal notranslate
            "@type": "WebPage",
            "@id": "/recipes/recipes/profiler_recipe.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. PyTorch Profiler# Author: Shivam Raikundalia This recipe explains how to use PyTorch profiler and measure the time and memory consumption of the model’s operators. Introduction# PyTorch includes a simple profiler API that is useful when the user needs to determine the most expensive operators in the model. In this recipe, we will use a simple Resnet model to demonstrate how to use the profiler to analyze model performance. Prerequisites# torch &gt;= 2.3.0 Setup# To install torch and torchvision use the following command: pip install torch torchvision Steps# Import all necessary libraries Instantiate a simple Resnet model Using profiler to analyze execution time Using profiler to analyze memory consumption Using tracing functionality Examining stack traces Using profiler to analyze long-running jobs 1. Import all necessary libraries# In this recipe we will use torch, torchvision.models and profiler modules: import torch import torchvision.models as models from torch.profiler import profile, ProfilerActivity, record_function 2. Instantiate a simple Resnet model# Let’s create an instance of a Resnet model and prepare an input for it: model = models.resnet18() inputs = torch.randn(5, 3, 224, 224) 3. Using profiler to analyze execution time# PyTorch profiler is enabled through the context manager and accepts a number of parameters, some of the most useful are: activities - a list of activities to profile: ProfilerActivity.CPU - PyTorch operators, TorchScript functions and user-defined code labels (see record_function below); ProfilerActivity.CUDA - on-device CUDA kernels; ProfilerActivity.XPU - on-device XPU kernels; record_shapes - whether to record shapes of the operator inputs; profile_memory - whether to report amount of memory consumed by model’s Tensors; Note: when using CUDA, profiler also shows the runtime CUDA events occurring on the host. Let’s see how we can use profiler to analyze the execution time: with profile(activities=[ProfilerActivity.CPU], record_shapes=True) as prof: with record_function(\&#34;model_inference\&#34;): model(inputs) Note that we can use record_function context manager to label arbitrary code ranges with user provided names (model_inference is used as a label in the example above). Profiler allows one to check which operators were called during the execution of a code range wrapped with a profiler context manager. If multiple profiler ranges are active at the same time (e.g. in parallel PyTorch threads), each profiling context manager tracks only the operators of its corresponding range. Profiler also automatically profiles the asynchronous tasks launched with torch.jit._fork and (in case of a backward pass) the backward pass operators launched with backward() call. Let’s print out the stats for the execution above: print(prof.key_averages().table(sort_by=\&#34;cpu_time_total\&#34;, row_limit=10)) The output will look like (omitting some columns): --------------------------------- --..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

@@ -1391,7 +1391,8 @@ or <a class="reference external" href="https://github.com/pytorch/pytorch/issues
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Autograd in C++ Frontend",
          "headline": "Autograd in C++ Frontend",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/advanced/cpp_autograd.html",
@@ -1405,9 +1406,8 @@ or <a class="reference external" href="https://github.com/pytorch/pytorch/issues
            "@type": "WebPage",
            "@id": "/advanced/cpp_autograd.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Autograd in C++ Frontend# The autograd package is crucial for building highly flexible and dynamic neural networks in PyTorch. Most of the autograd APIs in PyTorch Python frontend are also available in C++ frontend, allowing easy translation of autograd code from Python to C++. In this tutorial explore several examples of doing autograd in PyTorch C++ frontend. Note that this tutorial assumes that you already have a basic understanding of autograd in Python frontend. If that’s not the case, please first read Autograd: Automatic Differentiation. Basic autograd operations# (Adapted from this tutorial) Create a tensor and set torch::requires_grad() to track computation with it auto x = torch::ones({2, 2}, torch::requires_grad()); std::cout &lt;&lt; x &lt;&lt; std::endl; Out: 1 1 1 1 [ CPUFloatType{2,2} ] Do a tensor operation: auto y = x + 2; std::cout &lt;&lt; y &lt;&lt; std::endl; Out: 3 3 3 3 [ CPUFloatType{2,2} ] y was created as a result of an operation, so it has a grad_fn. std::cout &lt;&lt; y.grad_fn()-&gt;name() &lt;&lt; std::endl; Out: AddBackward1 Do more operations on y auto z = y * y * 3; auto out = z.mean(); std::cout &lt;&lt; z &lt;&lt; std::endl; std::cout &lt;&lt; z.grad_fn()-&gt;name() &lt;&lt; std::endl; std::cout &lt;&lt; out &lt;&lt; std::endl; std::cout &lt;&lt; out.grad_fn()-&gt;name() &lt;&lt; std::endl; Out: 27 27 27 27 [ CPUFloatType{2,2} ] MulBackward1 27 [ CPUFloatType{} ] MeanBackward0 .requires_grad_( ... ) changes an existing tensor’s requires_grad flag in-place. auto a = torch::randn({2, 2}); a = ((a * 3) / (a - 1)); std::cout &lt;&lt; a.requires_grad() &lt;&lt; std::endl; a.requires_grad_(true); std::cout &lt;&lt; a.requires_grad() &lt;&lt; std::endl; auto b = (a * a).sum(); std::cout &lt;&lt; b.grad_fn()-&gt;name() &lt;&lt; std::endl; Out: false true SumBackward0 Let’s backprop now. Because out contains a single scalar, out.backward() is equivalent to out.backward(torch::tensor(1.)). out.backward(); Print gradients d(out)/dx std::cout &lt;&lt; x.grad() &lt;&lt; std::endl; Out: 4.5000 4.5000 4.5000 4.5000 [ CPUFloatType{2,2} ] You should have got a matrix of 4.5. For explanations on how we arrive at this value, please see the corresponding section in this tutorial. Now let’s take a look at an example of vector-Jacobian product: x = torch::randn(3, torch::requires_grad()); y = x * 2; while (y.norm().item&lt;double&gt;() &lt; 1000) { y = y * 2; } std::cout &lt;&lt; y &lt;&lt; std::endl; std::cout &lt;&lt; y.grad_fn()-&gt;name() &lt;&lt; std::endl; Out: -1021.4020 314.6695 -613.4944 [ CPUFloatType{3} ] MulBackward1 If we want the vector-Jacobian product, pass the vector to backward as argument: auto v = torch::tensor({0.1, 1.0, 0.0001}, torch::kFloat); y.backward(v); std::cout &lt;&lt; x.grad() &lt;&lt; std::endl; Out: 102.4000 1024.0000 0.1024 [ CPUFloatType{3} ] You can also stop autograd from tracking history on tensors that require gradients either by putting torch::NoGradGuard in a code block std::cout &lt;&lt; x.requires_grad() &lt;&lt; std::endl; std::cout &lt;&lt; x.pow(2).requires_grad() &lt;&lt; std::endl; { torch::NoGradGuard no_grad; std::cout &lt;&lt; x.pow(2).requires_grad() &lt;&lt; std::endl; } Out: true true false Or by usi..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

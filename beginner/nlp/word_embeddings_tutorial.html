@@ -917,7 +917,7 @@ indices are integers, not floats).</p>
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.manual_seed.html#torch.manual_seed" title="torch.manual_seed"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span></a><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;torch._C.Generator object at 0x7fa7cd5546b0&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;torch._C.Generator object at 0x7f0a4ed4c6b0&gt;
 </pre></div>
 </div>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">word_to_ix</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"hello"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"world"</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
@@ -1033,9 +1033,9 @@ examples and update the parameters with backpropagation.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[(['forty', 'When'], 'winters'), (['winters', 'forty'], 'shall'), (['shall', 'winters'], 'besiege')]
-[519.3444261550903, 516.6925873756409, 514.0597357749939, 511.4449710845947, 508.84615659713745, 506.2618021965027, 503.6913917064667, 501.13424134254456, 498.5901906490326, 496.0581533908844]
-tensor([-0.3760, -2.4118, -1.2800, -0.0629, -1.2297, -1.0640, -0.3881,  0.3797,
-        -0.2087,  0.6930], grad_fn=&lt;SelectBackward0&gt;)
+[519.2990381717682, 516.6792044639587, 514.0788066387177, 511.49417424201965, 508.925039768219, 506.3702425956726, 503.830677986145, 501.30367255210876, 498.78911304473877, 496.28460359573364]
+tensor([-0.5678,  0.7178,  0.1934,  0.2456, -0.3128,  0.0447, -1.5464, -0.3744,
+         0.7129,  1.9293], grad_fn=&lt;SelectBackward0&gt;)
 </pre></div>
 </div>
 </section>
@@ -1112,10 +1112,10 @@ reshape.</p></li>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[(['are', 'We', 'to', 'study'], 'about'), (['about', 'are', 'study', 'the'], 'to'), (['to', 'about', 'the', 'idea'], 'study'), (['study', 'to', 'idea', 'of'], 'the'), (['the', 'study', 'of', 'a'], 'idea')]
 
-tensor([19, 26, 45, 47])
+tensor([ 2,  5, 45, 48])
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.582 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.562 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-nlp-word-embeddings-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/363afc3b7c522e4e56981679c22f1ad6/word_embeddings_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">word_embeddings_tutorial.ipynb</span></code></a></p>
@@ -1309,7 +1309,8 @@ tensor([19, 26, 45, 47])
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Word Embeddings: Encoding Lexical Semantics",
          "headline": "Word Embeddings: Encoding Lexical Semantics",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/beginner/nlp/word_embeddings_tutorial.html",
@@ -1323,9 +1324,8 @@ tensor([19, 26, 45, 47])
            "@type": "WebPage",
            "@id": "/beginner/nlp/word_embeddings_tutorial.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Word Embeddings: Encoding Lexical Semantics# Word embeddings are dense vectors of real numbers, one per word in your vocabulary. In NLP, it is almost always the case that your features are words! But how should you represent a word in a computer? You could store its ascii character representation, but that only tells you what the word is, it doesn’t say much about what it means (you might be able to derive its part of speech from its affixes, or properties from its capitalization, but not much). Even more, in what sense could you combine these representations? We often want dense outputs from our neural networks, where the inputs are \\(|V|\\) dimensional, where \\(V\\) is our vocabulary, but often the outputs are only a few dimensional (if we are only predicting a handful of labels, for instance). How do we get from a massive dimensional space to a smaller dimensional space? How about instead of ascii representations, we use a one-hot encoding? That is, we represent the word \\(w\\) by \\[\\overbrace{\\left[ 0, 0, \\dots, 1, \\dots, 0, 0 \\right]}^\\text{|V| elements} \\] where the 1 is in a location unique to \\(w\\). Any other word will have a 1 in some other location, and a 0 everywhere else. There is an enormous drawback to this representation, besides just how huge it is. It basically treats all words as independent entities with no relation to each other. What we really want is some notion of similarity between words. Why? Let’s see an example. Suppose we are building a language model. Suppose we have seen the sentences The mathematician ran to the store. The physicist ran to the store. The mathematician solved the open problem. in our training data. Now suppose we get a new sentence never before seen in our training data: The physicist solved the open problem. Our language model might do OK on this sentence, but wouldn’t it be much better if we could use the following two facts: We have seen mathematician and physicist in the same role in a sentence. Somehow they have a semantic relation. We have seen mathematician in the same role in this new unseen sentence as we are now seeing physicist. and then infer that physicist is actually a good fit in the new unseen sentence? This is what we mean by a notion of similarity: we mean semantic similarity, not simply having similar orthographic representations. It is a technique to combat the sparsity of linguistic data, by connecting the dots between what we have seen and what we haven’t. This example of course relies on a fundamental linguistic assumption: that words appearing in similar contexts are related to each other semantically. This is called the distributional hypothesis. Getting Dense Word Embeddings# How can we solve this problem? That is, how could we actually encode semantic similarity in words? Maybe we think up some semantic attributes. For example, we see that both mathematicians and physicists can run, so maybe we give these words a high sc..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

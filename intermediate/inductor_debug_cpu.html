@@ -1358,7 +1358,7 @@ The main idea is to narrow down the problem.</p>
 Firstly determine which component the failure occurs in and then try to generate the smallest snippet of code that can reproduce the failure.</p>
 <p>When the performance with Inductor is better than that of eager mode, we provide a solid analytical method for performance profiling.
 We show how to find the time-consuming hotspot with PyTorch Profiler and figure out the operator-level or kernel-level reason to explain the phenomenon.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (10 minutes 41.135 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (10 minutes 38.123 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-inductor-debug-cpu-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/57fbbe6265e9c97da47580b6e60037ac/inductor_debug_cpu.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">inductor_debug_cpu.ipynb</span></code></a></p>
@@ -1586,7 +1586,8 @@ We show how to find the time-consuming hotspot with PyTorch Profiler and figure 
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Inductor CPU backend debugging and profiling",
          "headline": "Inductor CPU backend debugging and profiling",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/inductor_debug_cpu.html",
@@ -1600,9 +1601,8 @@ We show how to find the time-consuming hotspot with PyTorch Profiler and figure 
            "@type": "WebPage",
            "@id": "/intermediate/inductor_debug_cpu.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Inductor CPU backend debugging and profiling# Authors: Xuan Liao, Haozhe Zhu, Jiong Gong, Weihan Wang Overview# PyTorch 2.0 introduced the compilation API called torch.compile. This new feature offers a significant speedup over eager mode execution through graph-level optimization powered by the default Inductor backend. This tutorial is intended to provide an in-depth introduction on the debugging and performance profiling on Inductor CPU backend by delving into the intricacies of torch.compile. Meanwhile, you may also find related tutorials about torch.compile around basic usage, comprehensive troubleshooting and GPU-specific knowledge like GPU performance profiling. We will start debugging with a motivating example that triggers compilation issues and accuracy problems by demonstrating the process of debugging to pinpoint the problems. By enabling logging and exploring the underlying generated code, you can learn how to narrow down the failure step by step and finally figure out the route cause. Following that, we will proceed to discuss how to profile the compiled code and, through a performance comparison with eager mode, elaborate on the reasons why torch.compile can provide an additional performance boost compared to its eager counterpart. Debugging# Here is a simple example to run the torch.compile using Inductor and compare its result with eager mode: import torch def foo1(x1, x2): a = torch.neg(x1) b = torch.maximum(x2, a) y = torch.cat([b], dim=0) return y x1 = torch.randint(256, (1, 8), dtype=torch.uint8) x2 = torch.randint(256, (8390, 8), dtype=torch.uint8) compiled_foo1 = torch.compile(foo1) result = compiled_foo1(x1, x2) The correct implementation of neg in the cpp codegen is as follows: def neg1(x): return f\&#34;decltype({x})(-{x})\&#34; In order to demonstrate the debugging, we will modify the function to a wrong one later. Get more logging information# No debugging information would be provided if you run this simple example by default. In order to get more useful debugging and logging information, we usually add a TORCH_COMPILE_DEBUG environment variable like below: TORCH_COMPILE_DEBUG=1 python xx.py This would print more debug information in the output logs and also dump the intermediate IRs generated during the codegen process. You can find the dumped file paths in the log like below: torch._inductor.debug: [WARNING] model___20 debug trace: /tmp/torchinductor_root/rx/crxfi2ybd7yp5sbj2pnhw33wfhtdw7wumvrobyp5sjvdui5ktjc2.debug In this directory, the following files are saved for debugging purposes: File Description fx_graph_runnable.py Executable FX graph, after decomposition, before pattern match fx_graph_transformed.py Transformed FX graph, after pattern match ir_pre_fusion.txt Inductor IR before fusion ir_post_fusion.txt Inductor IR after fusion output_code.py Generated Python code for graph, with C++/Triton kernels Note that fx_graph_runnable.py and output_code.py are both run..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

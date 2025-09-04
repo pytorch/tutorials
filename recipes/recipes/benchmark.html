@@ -1881,7 +1881,8 @@ Total: -13693
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "PyTorch Benchmark",
          "headline": "PyTorch Benchmark",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/recipes/recipes/benchmark.html",
@@ -1895,9 +1896,8 @@ Total: -13693
            "@type": "WebPage",
            "@id": "/recipes/recipes/benchmark.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. PyTorch Benchmark# This recipe provides a quick-start guide to using PyTorch benchmark module to measure and compare code performance. Introduction# Benchmarking is an important step in writing code. It helps us validate that our code meets performance expectations, compare different approaches to solving the same problem and prevent performance regressions. There are many options when it comes to benchmarking PyTorch code including the Python builtin timeit module. However, benchmarking PyTorch code has many caveats that can be easily overlooked such as managing the number of threads and synchronizing CUDA devices. Moreover, generating Tensor inputs for benchmarking can be quite tedious. This recipe demonstrates how to use PyTorch benchmark module to avoid common mistakes while making it easier to compare performance of different code, generate input for benchmarking and more. Setup# Before we begin, install torch if it isn’t already available. pip install torch Steps# Defining functions to benchmark Benchmarking with timeit.Timer Benchmarking with torch.utils.benchmark.Timer Benchmarking with Blocked Autorange Comparing benchmark results Saving/Loading benchmark results Generating inputs with Fuzzed Parameters Collecting instruction counts with Callgrind 1. Defining functions to benchmark# As of the time of this writing, torch.dot does not support batched mode, so we will compare two approaches to implementing it using existing torch operators: one approach uses a combination of mul and sum while the other reduces the problem to bmm. import torch def batched_dot_mul_sum(a, b): &#39;&#39;&#39;Computes batched dot by multiplying and summing&#39;&#39;&#39; return a.mul(b).sum(-1) def batched_dot_bmm(a, b): &#39;&#39;&#39;Computes batched dot by reducing to ``bmm``&#39;&#39;&#39; a = a.reshape(-1, 1, a.shape[-1]) b = b.reshape(-1, b.shape[-1], 1) return torch.bmm(a, b).flatten(-3) # Input for benchmarking x = torch.randn(10000, 64) # Ensure that both functions compute the same output assert batched_dot_mul_sum(x, x).allclose(batched_dot_bmm(x, x)) 2. Benchmarking with timeit.Timer# First, let’s benchmark the code using Python’s builtin timeit module. We keep the benchmark code simple here so we can compare the defaults of timeit and torch.utils.benchmark. import timeit t0 = timeit.Timer( stmt=&#39;batched_dot_mul_sum(x, x)&#39;, setup=&#39;from __main__ import batched_dot_mul_sum&#39;, globals={&#39;x&#39;: x}) t1 = timeit.Timer( stmt=&#39;batched_dot_bmm(x, x)&#39;, setup=&#39;from __main__ import batched_dot_bmm&#39;, globals={&#39;x&#39;: x}) print(f&#39;mul_sum(x, x): {t0.timeit(100) / 100 * 1e6:&gt;5.1f} us&#39;) print(f&#39;bmm(x, x): {t1.timeit(100) / 100 * 1e6:&gt;5.1f} us&#39;) Output# mul_sum(x, x): 111.6 us bmm(x, x): 70.0 us 3. Benchmarking with torch.utils.benchmark.Timer# PyTorch benchmark module was designed to be familiar to those who have used the timeit module before. However, its defaults make it easier and safer to use for benchmarking PyTorch code. Let’s first compare the same basic API ..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

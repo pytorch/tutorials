@@ -1227,7 +1227,8 @@ parallelism as well as composition with other distributed techniques, see
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Introduction to Distributed Pipeline Parallelism",
          "headline": "Introduction to Distributed Pipeline Parallelism",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/pipelining_tutorial.html",
@@ -1241,9 +1242,8 @@ parallelism as well as composition with other distributed techniques, see
            "@type": "WebPage",
            "@id": "/intermediate/pipelining_tutorial.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Introduction to Distributed Pipeline Parallelism# Authors: Howard Huang Note View and edit this tutorial in github. This tutorial uses a gpt-style transformer model to demonstrate implementing distributed pipeline parallelism with torch.distributed.pipelining APIs. What you will learn How to use torch.distributed.pipelining APIs How to apply pipeline parallelism to a transformer model How to utilize different schedules on a set of microbatches Prerequisites Familiarity with basic distributed training in PyTorch Setup# With torch.distributed.pipelining we will be partitioning the execution of a model and scheduling computation on micro-batches. We will be using a simplified version of a transformer decoder model. The model architecture is for educational purposes and has multiple transformer decoder layers as we want to demonstrate how to split the model into different chunks. First, let us define the model: import torch import torch.nn as nn from dataclasses import dataclass @dataclass class ModelArgs: dim: int = 512 n_layers: int = 8 n_heads: int = 8 vocab_size: int = 10000 class Transformer(nn.Module): def __init__(self, model_args: ModelArgs): super().__init__() self.tok_embeddings = nn.Embedding(model_args.vocab_size, model_args.dim) # Using a ModuleDict lets us delete layers witout affecting names, # ensuring checkpoints will correctly save and load. self.layers = torch.nn.ModuleDict() for layer_id in range(model_args.n_layers): self.layers[str(layer_id)] = nn.TransformerDecoderLayer(model_args.dim, model_args.n_heads) self.norm = nn.LayerNorm(model_args.dim) self.output = nn.Linear(model_args.dim, model_args.vocab_size) def forward(self, tokens: torch.Tensor): # Handling layers being &#39;None&#39; at runtime enables easy pipeline splitting h = self.tok_embeddings(tokens) if self.tok_embeddings else tokens for layer in self.layers.values(): h = layer(h, h) h = self.norm(h) if self.norm else h output = self.output(h).clone() if self.output else h return output Then, we need to import the necessary libraries in our script and initialize the distributed training process. In this case, we are defining some global variables to use later in the script: import os import torch.distributed as dist from torch.distributed.pipelining import pipeline, SplitPoint, PipelineStage, ScheduleGPipe global rank, device, pp_group, stage_index, num_stages def init_distributed(): global rank, device, pp_group, stage_index, num_stages rank = int(os.environ[\&#34;LOCAL_RANK\&#34;]) world_size = int(os.environ[\&#34;WORLD_SIZE\&#34;]) device = torch.device(f\&#34;cuda:{rank}\&#34;) if torch.cuda.is_available() else torch.device(\&#34;cpu\&#34;) dist.init_process_group() # This group can be a sub-group in the N-D parallel case pp_group = dist.new_group() stage_index = rank num_stages = world_size The rank, world_size, and init_process_group() code should seem familiar to you as those are commonly used in all distributed programs. The globals specific to pipeline parallelism include pp_group which is the process ..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

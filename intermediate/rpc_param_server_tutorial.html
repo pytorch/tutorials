@@ -1335,7 +1335,8 @@ document.write(`
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Implementing a Parameter Server Using Distributed RPC Framework",
          "headline": "Implementing a Parameter Server Using Distributed RPC Framework",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/rpc_param_server_tutorial.html",
@@ -1349,9 +1350,8 @@ document.write(`
            "@type": "WebPage",
            "@id": "/intermediate/rpc_param_server_tutorial.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Implementing a Parameter Server Using Distributed RPC Framework# Author: Rohan Varma Note View and edit this tutorial in github. Prerequisites: PyTorch Distributed Overview RPC API documents This tutorial walks through a simple example of implementing a parameter server using PyTorch’s Distributed RPC framework. The parameter server framework is a paradigm in which a set of servers store parameters, such as large embedding tables, and several trainers query the parameter servers in order to retrieve the most up to date parameters. These trainers can run a training loop locally and occasionally synchronize with the parameter server to get the latest parameters. For more reading on the parameter server approach, check out this paper. Using the Distributed RPC Framework, we’ll build an example where multiple trainers use RPC to communicate with the same parameter server and use RRef to access states on the remote parameter server instance. Each trainer will launch its dedicated backward pass in a distributed fashion through stitching of the autograd graph across multiple nodes using distributed autograd. Note: This tutorial covers the use of the Distributed RPC Framework, which is useful for splitting a model onto multiple machines, or for implementing a parameter-server training strategy where network trainers fetch parameters hosted on a different machine. If instead you are looking for replicating your model across many GPUs, please see the Distributed Data Parallel tutorial. There is also another RPC tutorial that covers reinforcement learning and RNN use cases. Let’s start with the familiar: importing our required modules and defining a simple ConvNet that will train on the MNIST dataset. The below network is largely adopted from the network defined in the pytorch/examples repo. import argparse import os import time from threading import Lock import torch import torch.distributed.autograd as dist_autograd import torch.distributed.rpc as rpc import torch.multiprocessing as mp import torch.nn as nn import torch.nn.functional as F from torch import optim from torch.distributed.optim import DistributedOptimizer from torchvision import datasets, transforms # --------- MNIST Network to train, from pytorch/examples ----- class Net(nn.Module): def __init__(self, num_gpus=0): super(Net, self).__init__() print(f\&#34;Using {num_gpus} GPUs to train\&#34;) self.num_gpus = num_gpus device = torch.device( \&#34;cuda:0\&#34; if torch.cuda.is_available() and self.num_gpus &gt; 0 else \&#34;cpu\&#34;) print(f\&#34;Putting first 2 convs on {str(device)}\&#34;) # Put conv layers on the first cuda device, or CPU if no cuda device self.conv1 = nn.Conv2d(1, 32, 3, 1).to(device) self.conv2 = nn.Conv2d(32, 64, 3, 1).to(device) # Put rest of the network on the 2nd cuda device, if there is one if \&#34;cuda\&#34; in str(device) and num_gpus &gt; 1: device = torch.device(\&#34;cuda:1\&#34;) print(f\&#34;Putting rest of layers on {str(device)}\&#34;) self.dropout1 = nn.Dropout2d(0.25).to(device) self.dropout2 = nn.Dropout2d(0.5).to(device) sel..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

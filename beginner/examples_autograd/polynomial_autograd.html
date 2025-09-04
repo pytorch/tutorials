@@ -1101,7 +1101,8 @@ holding the gradient of <code class="docutils literal notranslate"><span class="
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "PyTorch: Tensors and autograd",
          "headline": "PyTorch: Tensors and autograd",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/beginner/examples_autograd/polynomial_autograd.html",
@@ -1115,9 +1116,8 @@ holding the gradient of <code class="docutils literal notranslate"><span class="
            "@type": "WebPage",
            "@id": "/beginner/examples_autograd/polynomial_autograd.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. PyTorch: Tensors and autograd# A third order polynomial, trained to predict \\(y=\\sin(x)\\) from \\(-\\pi\\) to \\(\\pi\\) by minimizing squared Euclidean distance. This implementation computes the forward pass using operations on PyTorch Tensors, and uses PyTorch autograd to compute gradients. A PyTorch Tensor represents a node in a computational graph. If x is a Tensor that has x.requires_grad=True then x.grad is another Tensor holding the gradient of x with respect to some scalar value. import torch import math # We want to be able to train our model on an `accelerator &lt;https://pytorch.org/docs/stable/torch.html#accelerators&gt;`__ # such as CUDA, MPS, MTIA, or XPU. If the current accelerator is available, we will use it. Otherwise, we use the CPU. dtype = torch.float device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else \&#34;cpu\&#34; print(f\&#34;Using {device} device\&#34;) torch.set_default_device(device) # Create Tensors to hold input and outputs. # By default, requires_grad=False, which indicates that we do not need to # compute gradients with respect to these Tensors during the backward pass. x = torch.linspace(-math.pi, math.pi, 2000, dtype=dtype) y = torch.sin(x) # Create random Tensors for weights. For a third order polynomial, we need # 4 weights: y = a + b x + c x^2 + d x^3 # Setting requires_grad=True indicates that we want to compute gradients with # respect to these Tensors during the backward pass. a = torch.randn((), dtype=dtype, requires_grad=True) b = torch.randn((), dtype=dtype, requires_grad=True) c = torch.randn((), dtype=dtype, requires_grad=True) d = torch.randn((), dtype=dtype, requires_grad=True) learning_rate = 1e-6 for t in range(2000): # Forward pass: compute predicted y using operations on Tensors. y_pred = a + b * x + c * x ** 2 + d * x ** 3 # Compute and print loss using operations on Tensors. # Now loss is a Tensor of shape (1,) # loss.item() gets the scalar value held in the loss. loss = (y_pred - y).pow(2).sum() if t % 100 == 99: print(t, loss.item()) # Use autograd to compute the backward pass. This call will compute the # gradient of loss with respect to all Tensors with requires_grad=True. # After this call a.grad, b.grad. c.grad and d.grad will be Tensors holding # the gradient of the loss with respect to a, b, c, d respectively. loss.backward() # Manually update weights using gradient descent. Wrap in torch.no_grad() # because weights have requires_grad=True, but we don&#39;t need to track this # in autograd. with torch.no_grad(): a -= learning_rate * a.grad b -= learning_rate * b.grad c -= learning_rate * c.grad d -= learning_rate * d.grad # Manually zero the gradients after updating weights a.grad = None b.grad = None c.grad = None d.grad = None print(f&#39;Result: y = {a.item()} + {b.item()} x + {c.item()} x^2 + {d.item()} x^3&#39;) Download Jupyter notebook: polynomial_autograd.ipynb Download Python source code: polynomial_autograd.py Download z..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

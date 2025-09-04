@@ -969,7 +969,7 @@ compilation.</p>
 
 TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
 
-Full model compilation time = 10.51 seconds
+Full model compilation time = 10.54 seconds
 Regional compilation time = 0.81 seconds
 </pre></div>
 </div>
@@ -980,7 +980,7 @@ Regional compilation time = 0.81 seconds
 has repeated regions. This approach requires user modifications to apply <cite>torch.compile</cite> to
 the repeated regions instead of more commonly used full model compilation. We
 are continually working on reducing cold start compilation time.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 13.002 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 13.012 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-regional-compilation-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/cbd5804c4553cb4a23dc24137bde6077/regional_compilation.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">regional_compilation.ipynb</span></code></a></p>
@@ -1202,7 +1202,8 @@ are continually working on reducing cold start compilation time.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Reducing torch.compile cold start compilation time with regional compilation",
          "headline": "Reducing torch.compile cold start compilation time with regional compilation",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/recipes/regional_compilation.html",
@@ -1216,9 +1217,8 @@ are continually working on reducing cold start compilation time.</p>
            "@type": "WebPage",
            "@id": "/recipes/regional_compilation.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Reducing torch.compile cold start compilation time with regional compilation# Author: Animesh Jain As deep learning models get larger, the compilation time of these models also increases. This extended compilation time can result in a large startup time in inference services or wasted resources in large-scale training. This recipe shows an example of how to reduce the cold start compilation time by choosing to compile a repeated region of the model instead of the entire model. Prerequisites# Pytorch 2.5 or later Setup# Before we begin, we need to install torch if it is not already available. pip install torch Note This feature is available starting with the 2.5 release. If you are using version 2.4, you can enable the configuration flag torch._dynamo.config.inline_inbuilt_nn_modules=True to prevent recompilations during regional compilation. In version 2.5, this flag is enabled by default. from time import perf_counter Steps# In this recipe, we will follow these steps: Import all necessary libraries. Define and initialize a neural network with repeated regions. Understand the difference between the full model and the regional compilation. Measure the compilation time of the full model and the regional compilation. First, let’s import the necessary libraries for loading our data: import torch import torch.nn as nn Next, let’s define and initialize a neural network with repeated regions. Typically, neural networks are composed of repeated layers. For example, a large language model is composed of many Transformer blocks. In this recipe, we will create a Layer using the nn.Module class as a proxy for a repeated region. We will then create a Model which is composed of 64 instances of this Layer class. class Layer(torch.nn.Module): def __init__(self): super().__init__() self.linear1 = torch.nn.Linear(10, 10) self.relu1 = torch.nn.ReLU() self.linear2 = torch.nn.Linear(10, 10) self.relu2 = torch.nn.ReLU() def forward(self, x): a = self.linear1(x) a = self.relu1(a) a = torch.sigmoid(a) b = self.linear2(a) b = self.relu2(b) return b class Model(torch.nn.Module): def __init__(self, apply_regional_compilation): super().__init__() self.linear = torch.nn.Linear(10, 10) # Apply compile only to the repeated layers. if apply_regional_compilation: self.layers = torch.nn.ModuleList( [torch.compile(Layer()) for _ in range(64)] ) else: self.layers = torch.nn.ModuleList([Layer() for _ in range(64)]) def forward(self, x): # In regional compilation, the self.linear is outside of the scope of `torch.compile`. x = self.linear(x) for layer in self.layers: x = layer(x) return x Next, let’s review the difference between the full model and the regional compilation. In full model compilation, the entire model is compiled as a whole. This is the common approach most users take with torch.compile. In this example, we apply torch.compile to the Model object. This will effectively inline the 64 layers, producing a large gra..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

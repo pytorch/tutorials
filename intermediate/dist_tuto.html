@@ -1618,7 +1618,8 @@ and answering questions on early drafts.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Writing Distributed Applications with PyTorch",
          "headline": "Writing Distributed Applications with PyTorch",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/dist_tuto.html",
@@ -1632,9 +1633,8 @@ and answering questions on early drafts.</p>
            "@type": "WebPage",
            "@id": "/intermediate/dist_tuto.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Writing Distributed Applications with PyTorch# Author: Séb Arnold Note View and edit this tutorial in github. Prerequisites: PyTorch Distributed Overview In this short tutorial, we will be going over the distributed package of PyTorch. We’ll see how to set up the distributed setting, use the different communication strategies, and go over some of the internals of the package. Setup# The distributed package included in PyTorch (i.e., torch.distributed) enables researchers and practitioners to easily parallelize their computations across processes and clusters of machines. To do so, it leverages message passing semantics allowing each process to communicate data to any of the other processes. As opposed to the multiprocessing (torch.multiprocessing) package, processes can use different communication backends and are not restricted to being executed on the same machine. In order to get started we need the ability to run multiple processes simultaneously. If you have access to compute cluster you should check with your local sysadmin or use your favorite coordination tool (e.g., pdsh, clustershell, or slurm). For the purpose of this tutorial, we will use a single machine and spawn multiple processes using the following template. \&#34;\&#34;\&#34;run.py:\&#34;\&#34;\&#34; #!/usr/bin/env python import os import sys import torch import torch.distributed as dist import torch.multiprocessing as mp def run(rank, size): \&#34;\&#34;\&#34; Distributed function to be implemented later. \&#34;\&#34;\&#34; pass def init_process(rank, size, fn, backend=&#39;gloo&#39;): \&#34;\&#34;\&#34; Initialize the distributed environment. \&#34;\&#34;\&#34; os.environ[&#39;MASTER_ADDR&#39;] = &#39;127.0.0.1&#39; os.environ[&#39;MASTER_PORT&#39;] = &#39;29500&#39; dist.init_process_group(backend, rank=rank, world_size=size) fn(rank, size) if __name__ == \&#34;__main__\&#34;: world_size = 2 processes = [] if \&#34;google.colab\&#34; in sys.modules: print(\&#34;Running in Google Colab\&#34;) mp.get_context(\&#34;spawn\&#34;) else: mp.set_start_method(\&#34;spawn\&#34;) for rank in range(world_size): p = mp.Process(target=init_process, args=(rank, world_size, run)) p.start() processes.append(p) for p in processes: p.join() The above script spawns two processes who will each setup the distributed environment, initialize the process group (dist.init_process_group), and finally execute the given run function. Let’s have a look at the init_process function. It ensures that every process will be able to coordinate through a master, using the same ip address and port. Note that we used the gloo backend but other backends are available. (c.f. Section 5.1) We will go over the magic happening in dist.init_process_group at the end of this tutorial, but it essentially allows processes to communicate with each other by sharing their locations. Point-to-Point Communication# Send and Recv# A transfer of data from one process to another is called a point-to-point communication. These are achieved through the send and recv functions or their immediate counter-parts, isend and irecv. \&#34;\&#34;\&#34;Blocking point-to-point communication.\&#34;\&#34;\&#34; def run(rank, size): tensor = torch.zer..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

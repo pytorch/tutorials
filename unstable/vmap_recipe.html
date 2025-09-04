@@ -1430,7 +1430,8 @@ should be, but if you have ideas, please comment in
    <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "torch.vmap",
          "headline": "torch.vmap",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/unstable/vmap_recipe.html",
@@ -1444,9 +1445,8 @@ should be, but if you have ideas, please comment in
            "@type": "WebPage",
            "@id": "/unstable/vmap_recipe.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. torch.vmap# This tutorial introduces torch.vmap, an autovectorizer for PyTorch operations. torch.vmap is a prototype feature and cannot handle a number of use cases; however, we would like to gather use cases for it to inform the design. If you are considering using torch.vmap or think it would be really cool for something, please contact us at pytorch/pytorch#42368. So, what is vmap?# vmap is a higher-order function. It accepts a function func and returns a new function that maps func over some dimension of the inputs. It is highly inspired by JAX’s vmap. Semantically, vmap pushes the “map” into PyTorch operations called by func, effectively vectorizing those operations. # NB: vmap is only available on nightly builds of PyTorch. # You can download one at pytorch.org if you&#39;re interested in testing it out. The first use case for vmap is making it easier to handle batch dimensions in your code. One can write a function func that runs on examples and then lift it to a function that can take batches of examples with vmap(func). func however is subject to many restrictions: it must be functional (one cannot mutate a Python data structure inside of it), with the exception of in-place PyTorch operations. batches of examples must be provided as Tensors. This means that vmap doesn’t handle variable-length sequences out of the box. One example of using vmap is to compute batched dot products. PyTorch doesn’t provide a batched torch.dot API; instead of unsuccessfully rummaging through docs, use vmap to construct a new function: vmap can be helpful in hiding batch dimensions, leading to a simpler model authoring experience. # Note that model doesn&#39;t work with a batch of feature vectors because # torch.dot must take 1D tensors. It&#39;s pretty easy to rewrite this # to use `torch.matmul` instead, but if we didn&#39;t want to do that or if # the code is more complicated (e.g., does some advanced indexing # shenanigins), we can simply call `vmap`. `vmap` batches over ALL # inputs, unless otherwise specified (with the in_dims argument, # please see the documentation for more details). vmap can also help vectorize computations that were previously difficult or impossible to batch. This bring us to our second use case: batched gradient computation. pytorch/pytorch#8304 pytorch/pytorch#23475 The PyTorch autograd engine computes vjps (vector-Jacobian products). Using vmap, we can compute (batched vector) - jacobian products. One example of this is computing a full Jacobian matrix (this can also be applied to computing a full Hessian matrix). Computing a full Jacobian matrix for some function f: R^N -&gt; R^N usually requires N calls to autograd.grad, one per Jacobian row. # Setup # Sequential approach # Using `vmap`, we can vectorize the whole computation, computing the # Jacobian in a single call to `autograd.grad`. The third main use case for vmap is computing per-sample-gradients. This is something that the vmap prot..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 

@@ -1327,7 +1327,8 @@ Read more about Profiler here:</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Profiling your PyTorch Module",
          "headline": "Profiling your PyTorch Module",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/beginner/profiler.html",
@@ -1341,9 +1342,8 @@ Read more about Profiler here:</p>
            "@type": "WebPage",
            "@id": "/beginner/profiler.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Profiling your PyTorch Module# Author: Suraj Subramanian PyTorch includes a profiler API that is useful to identify the time and memory costs of various PyTorch operations in your code. Profiler can be easily integrated in your code, and the results can be printed as a table or returned in a JSON trace file. Note Profiler supports multithreaded models. Profiler runs in the same thread as the operation but it will also profile child operators that might run in another thread. Concurrently-running profilers will be scoped to their own thread to prevent mixing of results. Note PyTorch 1.8 introduces the new API that will replace the older profiler API in the future releases. Check the new API at this page. Head on over to this recipe for a quicker walkthrough of Profiler API usage. import torch import numpy as np from torch import nn import torch.autograd.profiler as profiler Performance debugging using Profiler# Profiler can be useful to identify performance bottlenecks in your models. In this example, we build a custom module that performs two sub-tasks: a linear transformation on the input, and use the transformation result to get indices on a mask tensor. We wrap the code for each sub-task in separate labelled context managers using profiler.record_function(\&#34;label\&#34;). In the profiler output, the aggregate performance metrics of all operations in the sub-task will show up under its corresponding label. Note that using Profiler incurs some overhead, and is best used only for investigating code. Remember to remove it if you are benchmarking runtimes. class MyModule(nn.Module): def __init__(self, in_features: int, out_features: int, bias: bool = True): super(MyModule, self).__init__() self.linear = nn.Linear(in_features, out_features, bias) def forward(self, input, mask): with profiler.record_function(\&#34;LINEAR PASS\&#34;): out = self.linear(input) with profiler.record_function(\&#34;MASK INDICES\&#34;): threshold = out.sum(axis=1).mean().item() hi_idx = np.argwhere(mask.cpu().numpy() &gt; threshold) hi_idx = torch.from_numpy(hi_idx).cuda() return out, hi_idx Profile the forward pass# We initialize random input and mask tensors, and the model. Before we run the profiler, we warm-up CUDA to ensure accurate performance benchmarking. We wrap the forward pass of our module in the profiler.profile context manager. The with_stack=True parameter appends the file and line number of the operation in the trace. Warning with_stack=True incurs an additional overhead, and is better suited for investigating code. Remember to remove it if you are benchmarking performance. model = MyModule(500, 10).cuda() input = torch.rand(128, 500).cuda() mask = torch.rand((500, 500, 500), dtype=torch.double).cuda() # warm-up model(input, mask) with profiler.profile(with_stack=True, profile_memory=True) as prof: out, idx = model(input, mask) Print profiler results# Finally, we print the profiler results. profiler.key_averages aggregates the res..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

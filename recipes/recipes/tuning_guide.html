@@ -1554,7 +1554,8 @@ significant performance improvements across a wide range of deep learning models
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Performance Tuning Guide",
          "headline": "Performance Tuning Guide",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/recipes/recipes/tuning_guide.html",
@@ -1568,9 +1569,8 @@ significant performance improvements across a wide range of deep learning models
            "@type": "WebPage",
            "@id": "/recipes/recipes/tuning_guide.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Performance Tuning Guide# Author: Szymon Migacz Performance Tuning Guide is a set of optimizations and best practices which can accelerate training and inference of deep learning models in PyTorch. Presented techniques often can be implemented by changing only a few lines of code and can be applied to a wide range of deep learning models across all domains. What you will learn General optimization techniques for PyTorch models CPU-specific performance optimizations GPU acceleration strategies Distributed training optimizations Prerequisites PyTorch 2.0 or later Python 3.8 or later CUDA-capable GPU (recommended for GPU optimizations) Linux, macOS, or Windows operating system Overview# Performance optimization is crucial for efficient deep learning model training and inference. This tutorial covers a comprehensive set of techniques to accelerate PyTorch workloads across different hardware configurations and use cases. General optimizations# import torch import torchvision Enable asynchronous data loading and augmentation# torch.utils.data.DataLoader supports asynchronous data loading and data augmentation in separate worker subprocesses. The default setting for DataLoader is num_workers=0, which means that the data loading is synchronous and done in the main process. As a result the main training process has to wait for the data to be available to continue the execution. Setting num_workers &gt; 0 enables asynchronous data loading and overlap between the training and data loading. num_workers should be tuned depending on the workload, CPU, GPU, and location of training data. DataLoader accepts pin_memory argument, which defaults to False. When using a GPU it’s better to set pin_memory=True, this instructs DataLoader to use pinned memory and enables faster and asynchronous memory copy from the host to the GPU. Disable gradient calculation for validation or inference# PyTorch saves intermediate buffers from all operations which involve tensors that require gradients. Typically gradients aren’t needed for validation or inference. torch.no_grad() context manager can be applied to disable gradient calculation within a specified block of code, this accelerates execution and reduces the amount of required memory. torch.no_grad() can also be used as a function decorator. Disable bias for convolutions directly followed by a batch norm# torch.nn.Conv2d() has bias parameter which defaults to True (the same is true for Conv1d and Conv3d ). If a nn.Conv2d layer is directly followed by a nn.BatchNorm2d layer, then the bias in the convolution is not needed, instead use nn.Conv2d(..., bias=False, ....). Bias is not needed because in the first step BatchNorm subtracts the mean, which effectively cancels out the effect of bias. This is also applicable to 1d and 3d convolutions as long as BatchNorm (or other normalization layer) normalizes on the same dimension as convolution’s bias. Models available from torchvis..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

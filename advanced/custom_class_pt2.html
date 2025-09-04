@@ -1194,7 +1194,8 @@ behavior.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Supporting Custom C++ Classes in torch.compile/torch.export",
          "headline": "Supporting Custom C++ Classes in torch.compile/torch.export",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/advanced/custom_class_pt2.html",
@@ -1208,9 +1209,8 @@ behavior.</p>
            "@type": "WebPage",
            "@id": "/advanced/custom_class_pt2.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Supporting Custom C++ Classes in torch.compile/torch.export# This tutorial is a follow-on to the custom C++ classes tutorial, and introduces additional steps that are needed to support custom C++ classes in torch.compile/torch.export. Warning This feature is in prototype status and is subject to backwards compatibility breaking changes. This tutorial provides a snapshot as of PyTorch 2.8. If you run into any issues, please reach out to us on Github! Concretely, there are a few steps: Implement an __obj_flatten__ method to the C++ custom class implementation to allow us to inspect its states and guard the changes. The method should return a tuple of tuple of attribute_name, value (tuple[tuple[str, value] * n]). Register a python fake class using @torch._library.register_fake_class Implement “fake methods” of each of the class’s c++ methods, which should have the same schema as the C++ implementation. Additionally, implement an __obj_unflatten__ classmethod in the Python fake class to tell us how to create a fake class from the flattened states returned by __obj_flatten__. Here is a breakdown of the diff. Following the guide in Extending TorchScript with Custom C++ Classes, we can create a thread-safe tensor queue and build it. // Thread-safe Tensor Queue #include &lt;torch/custom_class.h&gt; #include &lt;torch/script.h&gt; #include &lt;iostream&gt; #include &lt;string&gt; #include &lt;vector&gt; using namespace torch::jit; // Thread-safe Tensor Queue struct TensorQueue : torch::CustomClassHolder { explicit TensorQueue(at::Tensor t) : init_tensor_(t) {} explicit TensorQueue(c10::Dict&lt;std::string, at::Tensor&gt; dict) { init_tensor_ = dict.at(std::string(\&#34;init_tensor\&#34;)); const std::string key = \&#34;queue\&#34;; at::Tensor size_tensor; size_tensor = dict.at(std::string(key + \&#34;/size\&#34;)).cpu(); const auto* size_tensor_acc = size_tensor.const_data_ptr&lt;int64_t&gt;(); int64_t queue_size = size_tensor_acc[0]; for (const auto index : c10::irange(queue_size)) { at::Tensor val; queue_[index] = dict.at(key + \&#34;/\&#34; + std::to_string(index)); queue_.push_back(val); } } // Push the element to the rear of queue. // Lock is added for thread safe. void push(at::Tensor x) { std::lock_guard&lt;std::mutex&gt; guard(mutex_); queue_.push_back(x); } // Pop the front element of queue and return it. // If empty, return init_tensor_. // Lock is added for thread safe. at::Tensor pop() { std::lock_guard&lt;std::mutex&gt; guard(mutex_); if (!queue_.empty()) { auto val = queue_.front(); queue_.pop_front(); return val; } else { return init_tensor_; } } std::vector&lt;at::Tensor&gt; get_raw_queue() { std::vector&lt;at::Tensor&gt; raw_queue(queue_.begin(), queue_.end()); return raw_queue; } private: std::deque&lt;at::Tensor&gt; queue_; std::mutex mutex_; at::Tensor init_tensor_; }; // The torch binding code TORCH_LIBRARY(MyCustomClass, m) { m.class_&lt;TensorQueue&gt;(\&#34;TensorQueue\&#34;) .def(torch::init&lt;at::Tensor&gt;()) .def(\&#34;push\&#34;, &amp;TensorQueue::push) .def(\&#34;pop\&#34;, &amp;TensorQueue::pop) .def(\&#34;get_raw_queue\&#34;, &amp;TensorQueue::get_raw_queue); } Step 1: Add an __obj_flatten__ ..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

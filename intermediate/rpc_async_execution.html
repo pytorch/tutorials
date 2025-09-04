@@ -1501,7 +1501,8 @@ that batch processing helped to speed up training.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Implementing Batch RPC Processing Using Asynchronous Executions",
          "headline": "Implementing Batch RPC Processing Using Asynchronous Executions",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/rpc_async_execution.html",
@@ -1515,9 +1516,8 @@ that batch processing helped to speed up training.</p>
            "@type": "WebPage",
            "@id": "/intermediate/rpc_async_execution.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Implementing Batch RPC Processing Using Asynchronous Executions# Author: Shen Li Note View and edit this tutorial in github. Prerequisites: PyTorch Distributed Overview Getting started with Distributed RPC Framework Implementing a Parameter Server using Distributed RPC Framework RPC Asynchronous Execution Decorator This tutorial demonstrates how to build batch-processing RPC applications with the @rpc.functions.async_execution decorator, which helps to speed up training by reducing the number of blocked RPC threads and consolidating CUDA operations on the callee. Note This tutorial requires PyTorch v1.6.0 or above. Basics# Previous tutorials have shown the steps to build distributed training applications using torch.distributed.rpc, but they didn’t elaborate on what happens on the callee side when processing an RPC request. As of PyTorch v1.5, each RPC request will block one thread on the callee to execute the function in that request until that function returns. This works for many use cases, but there is one caveat. If the user function blocks on IO, e.g., with nested RPC invocation, or signaling, e.g., waiting for a different RPC request to unblock, the RPC thread on the callee will have to idle waiting until the IO finishes or the signaling event occurs. As a result, RPC callees are likely to use more threads than necessary. The cause of this problem is that RPC treats user functions as black boxes, and knows very little about what happens in the function. To allow user functions to yield and free RPC threads, more hints need to be provided to the RPC system. Since v1.6.0, PyTorch addresses this problem by introducing two new concepts: A torch.futures.Future type that encapsulates an asynchronous execution, which also supports installing callback functions. An @rpc.functions.async_execution decorator that allows applications to tell the callee that the target function will return a future and can pause and yield multiple times during execution. With these two tools, the application code can break a user function into multiple smaller functions, chain them together as callbacks on Future objects, and return the Future that contains the final result. On the callee side, when getting the Future object, it installs subsequent RPC response preparation and communication as callbacks as well, which will be triggered when the final result is ready. In this way, the callee no longer needs to block one thread and wait until the final return value is ready. Please refer to the API doc of @rpc.functions.async_execution for simple examples. Besides reducing the number of idle threads on the callee, these tools also help to make batch RPC processing easier and faster. The following two sections of this tutorial demonstrate how to build distributed batch-updating parameter server and batch-processing reinforcement learning applications using the @rpc.functions.async_execution decorator. Batch-Updating Parameter Server# Consider a synchronized parameter s..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

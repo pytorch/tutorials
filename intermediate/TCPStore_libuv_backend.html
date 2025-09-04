@@ -1281,7 +1281,8 @@ of the potential impact, and introduces three exit routes to remain using the le
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Introduction to Libuv TCPStore Backend",
          "headline": "Introduction to Libuv TCPStore Backend",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/TCPStore_libuv_backend.html",
@@ -1295,9 +1296,8 @@ of the potential impact, and introduces three exit routes to remain using the le
            "@type": "WebPage",
            "@id": "/intermediate/TCPStore_libuv_backend.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Introduction to Libuv TCPStore Backend# Authors: Xilun Wu Note View and edit this tutorial in github. What you will learn What is the new TCPStore backend Compare the new libuv backend against the legacy backend How to enable to use the legacy backend Prerequisites PyTorch 2.4 or later Read about the TCPStore API. Introduction# Recently, we have rolled out a new TCPStore server backend using libuv, a third-party library for asynchronous I/O. This new server backend aims to address scalability and robustness challenges in large-scale distributed training jobs, such as those with more than 1024 ranks. We ran a series of benchmarks to compare the libuv backend against the old one, and the experiment results demonstrated significant improvements in store initialization time and maintained a comparable performance in store I/O operations. As a result of these findings, the libuv backend has been set as the default TCPStore server backend in PyTorch 2.4. This change is expected to enhance the performance and scalability of distributed training jobs. This change introduces a slight incompatibility to store initialization. For users who wish to continue using the legacy backend, the tutorial will provide guidance on how to specify to use the previous TCPStore server backend. Performance Benchmark# To better demonstrate the benefit of our new libuv TCPStore backend, we set up a benchmark over a wide range of job size, from 1024 (1K) to 98304 (96K) ranks. We first measured the TCPStore initialization time using the code snippet below: import logging import os from time import perf_counter import torch import torch.distributed as dist logger: logging.Logger = logging.getLogger(__name__) # Env var are preset when launching the benchmark env_rank = os.environ.get(\&#34;RANK\&#34;, 0) env_world_size = os.environ.get(\&#34;WORLD_SIZE\&#34;, 1) env_master_addr = os.environ.get(\&#34;MASTER_ADDR\&#34;, \&#34;localhost\&#34;) env_master_port = os.environ.get(\&#34;MASTER_PORT\&#34;, \&#34;23456\&#34;) start = perf_counter() tcp_store = dist.TCPStore( env_master_addr, int(env_master_port), world_size=int(env_world_size), is_master=(int(env_rank) == 0), ) end = perf_counter() time_elapsed = end - start logger.info( f\&#34;Complete TCPStore init with rank={env_rank}, world_size={env_world_size} in {time_elapsed} seconds.\&#34; ) Since the execution of the TCPStore server thread will be blocked until all clients are successfully connected, we take the time measured on rank 0 as the total TCPStore initialization runtime. The experiment numbers are reported in the figure below: Figure 1. shows some significant evidence that the libuv backend is superior to the legacy backend: TCPStore with libuv backend always has a faster initialization than the legacy backend, especially at super-large scale The legacy backend would timeout at server-client connecting at 96K scale (for example, over 30 minutes) while the libuv backend completed the initialization in 100 seconds. The second benchmark we did is to measure the runtime of TCPStore store_..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

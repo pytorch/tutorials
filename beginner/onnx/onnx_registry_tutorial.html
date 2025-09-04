@@ -1180,7 +1180,7 @@ sit tight and have fun going through all of them to learn all there is about the
 </div>
 <div class="toctree-wrapper compound">
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 2.876 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 2.836 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-onnx-onnx-registry-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/0bd6b9a8e47e1d64e4d20ef356a6095d/onnx_registry_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">onnx_registry_tutorial.ipynb</span></code></a></p>
@@ -1407,7 +1407,8 @@ sit tight and have fun going through all of them to learn all there is about the
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Extending the ONNX Exporter Operator Support",
          "headline": "Extending the ONNX Exporter Operator Support",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/beginner/onnx/onnx_registry_tutorial.html",
@@ -1421,9 +1422,8 @@ sit tight and have fun going through all of them to learn all there is about the
            "@type": "WebPage",
            "@id": "/beginner/onnx/onnx_registry_tutorial.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Introduction to ONNX || Exporting a PyTorch model to ONNX || Extending the ONNX exporter operator support || Export a model with control flow to ONNX Extending the ONNX Exporter Operator Support# Authors: Ti-Tai Wang, Justin Chu Overview# This tutorial describes how you can create ONNX implementation for unsupported PyTorch operators or replace existing implementation with your own. We will cover three scenarios that require extending the ONNX exporter’s operator support: Overriding the implementation of an existing PyTorch operator Using custom ONNX operators Supporting a custom PyTorch operator What you will learn: How to override or add support for PyTorch operators in ONNX. How to integrate custom ONNX operators for specialized runtimes. How to implement and translate custom PyTorch operators to ONNX. Prerequisites# Before starting this tutorial, make sure you have completed the following prerequisites: torch &gt;= 2.6 The target PyTorch operator Completed the ONNX Script tutorial before proceeding The implementation of the operator using ONNX Script Overriding the implementation of an existing PyTorch operator# Although the ONNX exporter team does their best efforts to support all PyTorch operators, some of them might not be supported yet. In this section, we will demonstrate how you can add unsupported PyTorch operators to the ONNX Registry. Note The steps to implement unsupported PyTorch operators are the same as those for replacing the implementation of an existing PyTorch operator with a custom one. Because we don’t actually have an unsupported PyTorch operator to use in this tutorial, we are going to leverage this and replace the implementation of torch.ops.aten.add.Tensor with a custom implementation the same way we would if the operator was not implemented by the ONNX exporter. When a model cannot be exported to ONNX due to an unsupported operator, the ONNX exporter will show an error message similar to: No decompositions registered for [...] The error message indicates that the unsupported PyTorch operator is torch.ops.aten.add.Tensor. The operator is of type &lt;class &#39;torch._ops.OpOverload&#39;&gt;, and this operator is what we will use as the target to register our custom implementation. import torch import onnxscript # Opset 18 is the standard supported version as of PyTorch 2.6 from onnxscript import opset18 as op # Create a model that uses the operator torch.ops.aten.add.Tensor class Model(torch.nn.Module): def forward(self, input_x, input_y): return torch.ops.aten.add.Tensor(input_x, input_y) # NOTE: The function signature (including parameter names) must match the signature of the unsupported PyTorch operator. # https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/native_functions.yaml # All attributes must be annotated with type hints. def custom_aten_add(self, other, alpha: float = 1.0): if alpha != 1.0: alpha = op.CastLike(alpha, other) other = op.Mul(other, alpha) #..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

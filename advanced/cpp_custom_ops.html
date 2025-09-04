@@ -1559,7 +1559,8 @@ low-level. For more information about how to use the API, see
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Custom C++ and CUDA Operators",
          "headline": "Custom C++ and CUDA Operators",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/advanced/cpp_custom_ops.html",
@@ -1573,9 +1574,8 @@ low-level. For more information about how to use the API, see
            "@type": "WebPage",
            "@id": "/advanced/cpp_custom_ops.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Custom C++ and CUDA Operators# Author: Richard Zou What you will learn How to integrate custom operators written in C++/CUDA with PyTorch How to test custom operators using torch.library.opcheck Prerequisites PyTorch 2.4 or later Basic understanding of C++ and CUDA programming Note This tutorial will also work on AMD ROCm with no additional modifications. PyTorch offers a large library of operators that work on Tensors (e.g. torch.add, torch.sum, etc). However, you may wish to bring a new custom operator to PyTorch. This tutorial demonstrates the blessed path to authoring a custom operator written in C++/CUDA. For our tutorial, we’ll demonstrate how to author a fused multiply-add C++ and CUDA operator that composes with PyTorch subsystems. The semantics of the operation are as follows: def mymuladd(a: Tensor, b: Tensor, c: float): return a * b + c You can find the end-to-end working example for this tutorial here . Setting up the Build System# If you are developing custom C++/CUDA code, it must be compiled. Note that if you’re interfacing with a Python library that already has bindings to precompiled C++/CUDA code, you might consider writing a custom Python operator instead (Custom Python Operators). Use torch.utils.cpp_extension to compile custom C++/CUDA code for use with PyTorch C++ extensions may be built either “ahead of time” with setuptools, or “just in time” via load_inline; we’ll focus on the “ahead of time” flavor. Using cpp_extension is as simple as writing the following setup.py: from setuptools import setup, Extension from torch.utils import cpp_extension setup(name=\&#34;extension_cpp\&#34;, ext_modules=[ cpp_extension.CppExtension( \&#34;extension_cpp\&#34;, [\&#34;muladd.cpp\&#34;], # define Py_LIMITED_API with min version 3.9 to expose only the stable # limited API subset from Python.h extra_compile_args={\&#34;cxx\&#34;: [\&#34;-DPy_LIMITED_API=0x03090000\&#34;]}, py_limited_api=True)], # Build 1 wheel across multiple Python versions cmdclass={&#39;build_ext&#39;: cpp_extension.BuildExtension}, options={\&#34;bdist_wheel\&#34;: {\&#34;py_limited_api\&#34;: \&#34;cp39\&#34;}} # 3.9 is minimum supported Python version ) If you need to compile CUDA code (for example, .cu files), then instead use torch.utils.cpp_extension.CUDAExtension. Please see extension-cpp for an example for how this is set up. The above example represents what we refer to as a CPython agnostic wheel, meaning we are building a single wheel that can be run across multiple CPython versions (similar to pure Python packages). CPython agnosticism is desirable in minimizing the number of wheels your custom library needs to support and release. The minimum version we’d like to support is 3.9, since it is the oldest supported version currently, so we use the corresponding hexcode and specifier throughout the setup code. We suggest building the extension in the same environment as the minimum CPython version you’d like to support to minimize unknown behavior, so, here, we build the extension in a CPython 3.9 environment. When built, this single wheel wi..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

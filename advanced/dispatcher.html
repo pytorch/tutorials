@@ -1408,7 +1408,8 @@ progress.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Registering a Dispatched Operator in C++",
          "headline": "Registering a Dispatched Operator in C++",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/advanced/dispatcher.html",
@@ -1422,9 +1423,8 @@ progress.</p>
            "@type": "WebPage",
            "@id": "/advanced/dispatcher.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Registering a Dispatched Operator in C++# Warning This tutorial is deprecated as of PyTorch 2.4. Please see PyTorch Custom Operators for the newest up-to-date guides on extending PyTorch with Custom Operators. The dispatcher is an internal component of PyTorch which is responsible for figuring out what code should actually get run when you call a function like torch::add. This can be nontrivial, because PyTorch operations need to handle a lot of cross-cutting concerns that are “layered” on top of one of another. Here is a sampling of some of the things it handles: Switching between the CPU and CUDA implementations of an operator, depending on the devices of the input tensors. Switching between the autograd and backend implementations of an operator, depending on whether or not autograd handling is necessary. Applying autocasting when necessary for automatic mixed precision. Applying batching rules when an operator is run under a vmap call. Tracing execution of operations, if you are tracing a model for export. If in your custom operator code you find yourself manually writing if statements to handle these cases, the dispatcher APIs can help organize your code. (Conversely, if your custom operator is very simple and is only for CPU inference, you probably don’t need to use the dispatcher, just use the basic API.) In this tutorial, we will describe how to structure a custom operator registration to use the dispatcher to organize various components. We’ll assume that you are familiar with how to register an operator and how to write a custom autograd function. Defining schema and backend implementations# The general principle behind the dispatcher is that it divides the implementation of an operator into multiple kernels, each of which implements functionality for a specific dispatch key, e.g. CPU, CUDA. The dispatcher determines what the highest priority dispatch key is at the time you call an operator (this is done by looking at both the tensor arguments as well as some thread local state), and transfers control to the kernel for that dispatch key. The end effect is that when you call an operator, we first execute the Autograd kernel, and then we redispatch to the backend kernel depending on the device types of the passed in tensors. Let’s take a look at the various parts involved in making this happen. First, we must define the schema for the operator in question. Unlike simple pybind11-style operator registration, we don’t actually provide an implementation of our operator at this point; we just provide a schema string specifying the type signature of the operator that all of our other kernels will abide by: TORCH_LIBRARY(myops, m) { m.def(\&#34;myadd(Tensor self, Tensor other) -&gt; Tensor\&#34;); } Next, we need to actually provide some implementations of this operator. For concreteness, here is a really simple implementation of addition on CPU: Tensor myadd_cpu(const Tensor&amp; self_, const Tensor&amp; other_) { TORCH_CHECK(self_.sizes() == other_.sizes()); T..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

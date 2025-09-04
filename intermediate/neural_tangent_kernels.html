@@ -1002,7 +1002,7 @@ such as fully-connected (not convolutional) models with many outputs <span class
 Memory-wise, both methods should be comparable. See section 3.3 in
 <a class="reference external" href="https://arxiv.org/abs/2206.08720">Fast Finite Width Neural Tangent Kernel</a>
 for details.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.798 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.805 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-neural-tangent-kernels-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/412c6fac9e4f7432b11f6e67d066ee2f/neural_tangent_kernels.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">neural_tangent_kernels.ipynb</span></code></a></p>
@@ -1196,7 +1196,8 @@ for details.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Neural Tangent Kernels",
          "headline": "Neural Tangent Kernels",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/neural_tangent_kernels.html",
@@ -1210,9 +1211,8 @@ for details.</p>
            "@type": "WebPage",
            "@id": "/intermediate/neural_tangent_kernels.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Neural Tangent Kernels# The neural tangent kernel (NTK) is a kernel that describes how a neural network evolves during training. There has been a lot of research around it in recent years. This tutorial, inspired by the implementation of NTKs in JAX (see Fast Finite Width Neural Tangent Kernel for details), demonstrates how to easily compute this quantity using torch.func, composable function transforms for PyTorch. Note This tutorial requires PyTorch 2.0.0 or later. Setup# First, some setup. Let’s define a simple CNN that we wish to compute the NTK of. import torch import torch.nn as nn from torch.func import functional_call, vmap, vjp, jvp, jacrev device = &#39;cuda&#39; if torch.cuda.device_count() &gt; 0 else &#39;cpu&#39; class CNN(nn.Module): def __init__(self): super(CNN, self).__init__() self.conv1 = nn.Conv2d(3, 32, (3, 3)) self.conv2 = nn.Conv2d(32, 32, (3, 3)) self.conv3 = nn.Conv2d(32, 32, (3, 3)) self.fc = nn.Linear(21632, 10) def forward(self, x): x = self.conv1(x) x = x.relu() x = self.conv2(x) x = x.relu() x = self.conv3(x) x = x.flatten(1) x = self.fc(x) return x And let’s generate some random data x_train = torch.randn(20, 3, 32, 32, device=device) x_test = torch.randn(5, 3, 32, 32, device=device) Create a function version of the model# torch.func transforms operate on functions. In particular, to compute the NTK, we will need a function that accepts the parameters of the model and a single input (as opposed to a batch of inputs!) and returns a single output. We’ll use torch.func.functional_call, which allows us to call an nn.Module using different parameters/buffers, to help accomplish the first step. Keep in mind that the model was originally written to accept a batch of input data points. In our CNN example, there are no inter-batch operations. That is, each data point in the batch is independent of other data points. With this assumption in mind, we can easily generate a function that evaluates the model on a single data point: net = CNN().to(device) # Detaching the parameters because we won&#39;t be calling Tensor.backward(). params = {k: v.detach() for k, v in net.named_parameters()} def fnet_single(params, x): return functional_call(net, params, (x.unsqueeze(0),)).squeeze(0) Compute the NTK: method 1 (Jacobian contraction)# We’re ready to compute the empirical NTK. The empirical NTK for two data points \\(x_1\\) and \\(x_2\\) is defined as the matrix product between the Jacobian of the model evaluated at \\(x_1\\) and the Jacobian of the model evaluated at \\(x_2\\): \\[J_{net}(x_1) J_{net}^T(x_2)\\] In the batched case where \\(x_1\\) is a batch of data points and \\(x_2\\) is a batch of data points, then we want the matrix product between the Jacobians of all combinations of data points from \\(x_1\\) and \\(x_2\\). The first method consists of doing just that - computing the two Jacobians, and contracting them. Here’s how to compute the NTK in the batched case: def empirical_ntk_jacobian_contraction(fne..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

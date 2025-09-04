@@ -1778,7 +1778,8 @@ Please refer to this <a class="reference external" href="https://pytorch.org/blo
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "(Beta) PyTorch Inference Performance Tuning on AWS Graviton Processors",
          "headline": "(Beta) PyTorch Inference Performance Tuning on AWS Graviton Processors",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/recipes/inference_tuning_on_aws_graviton.html",
@@ -1792,9 +1793,8 @@ Please refer to this <a class="reference external" href="https://pytorch.org/blo
            "@type": "WebPage",
            "@id": "/recipes/inference_tuning_on_aws_graviton.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "(Beta) PyTorch Inference Performance Tuning on AWS Graviton Processors# Author: Sunita Nadampalli AWS Graviton is a series of ARM-based processors designed by AWS. AWS Graviton3 processors are optimized for Machine Learning (ML) workloads, including support for bfloat16, Scalable Vector Extension (SVE) and twice the Single Instruction Multiple Data (SIMD) bandwidth compared to Graviton2. PyTorch provides native reference ATen kernels for the machine learning operators like convolutions, matmul, relu, etc. These operators can be accelerated with platform specific kernel implementations from Basic Linear Algebra (BLAS) libraries. On AWS Graviton CPUs, MKLDNN with Arm Compute Library (ACL) and OpenBLAS libraries provide optimized implementations for a subset of the operators. Both these libraries are integrated into PyTorch with PyTorch 2.0 version. In this tutorial we will cover how to achieve the best inference performance for linear layer neural network on AWS Graviton3 CPUs (AWS c7g instance) with bfloa16 kernels and with the right backend selection. Contents# Basic Usage Speed up inference with Bfloat16 fast math kernels Improve inference performance with OpenBLAS for smaller batch dimensions Optimize memory allocation overhead with Linux Transparent huge pages Conclusion Note To successfully run this tutorial and reproduce the speedup numbers shown below, you need an instance from the Graviton3 family (c7g/r7g/m7g) of hardware. For this tutorial, we used the c7g.xl (4vcpu) instance . Basic Usage# PyTorch natively supports AWS Graviton3 optimizations starting with PyTorch 2.0 version. Please refer to this blog for more details on the optimizations. Install PyTorch by running the following command: python3 -m pip install torch We will start by importing the required dependencies and defining the device will run on: import torch import torch.nn as nn from torch.profiler import profile, record_function, ProfilerActivity # AWS Graviton3 cpu device = (\&#34;cpu\&#34;) print(f\&#34;Using {device} device\&#34;) Given linear layers are at the heart of several neural networks, including transformers, we take a linear layer for this demo. We define our neural network by subclassing nn.Module, and initializing the layers in __init__. We construct the network with a typical large language model parameters to match the real world scenario: class MyNeuralNetwork(nn.Module): def __init__(self): super().__init__() self.flatten = nn.Flatten() self.linear_relu_stack = nn.Sequential( nn.Linear(4096, 4096), nn.ReLU(), nn.Linear(4096, 11008), nn.ReLU(), nn.Linear(11008, 10), ) def forward(self, x): x = self.flatten(x) logits = self.linear_relu_stack(x) return logits Let’s create an instance of MyNeuralNetwork, and move it to the device: model = MyNeuralNetwork().to(device) print(model) Next, let’s get the prediction probabilities by passing them through an instance of the nn.Softmax module: X = torch.rand(1, 64, 64, device=device) logits = model(X) pred_probab = nn.Softmax(dim=1)(l..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

@@ -1519,9 +1519,9 @@ his world, we suggest running the loop for at least 40,000 episodes!</p>
 </div>
 <img alt="mario rl tutorial" class="sphx-glr-single-img" src="../_images/sphx_glr_mario_rl_tutorial_001.png" srcset="../_images/sphx_glr_mario_rl_tutorial_001.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Using CUDA: True
 
-Episode 0 - Step 109 - Epsilon 0.9999727503678678 - Mean Reward 613.0 - Mean Length 109.0 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 0.924 - Time 2025-09-02T16:10:44
-Episode 20 - Step 3596 - Epsilon 0.9991014038670324 - Mean Reward 558.952 - Mean Length 171.238 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 29.698 - Time 2025-09-02T16:11:14
-Episode 39 - Step 6673 - Epsilon 0.998333140547132 - Mean Reward 586.2 - Mean Length 166.825 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 26.986 - Time 2025-09-02T16:11:41
+Episode 0 - Step 40 - Epsilon 0.9999900000487484 - Mean Reward 231.0 - Mean Length 40.0 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 0.341 - Time 2025-09-04T15:48:39
+Episode 20 - Step 6115 - Epsilon 0.9984724177520263 - Mean Reward 658.476 - Mean Length 291.19 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 52.007 - Time 2025-09-04T15:49:31
+Episode 39 - Step 10063 - Epsilon 0.9974874115329706 - Mean Reward 685.25 - Mean Length 251.575 - Mean Loss 0.062 - Mean Q Value 0.013 - Time Delta 34.259 - Time 2025-09-04T15:50:05
 </pre></div>
 </div>
 </section>
@@ -1530,7 +1530,7 @@ Episode 39 - Step 6673 - Epsilon 0.998333140547132 - Mean Reward 586.2 - Mean Le
 <p>In this tutorial, we saw how we can use PyTorch to train a game-playing AI. You can use the same methods
 to train an AI to play any of the games at the <a class="reference external" href="https://gym.openai.com/">OpenAI gym</a>. Hope you enjoyed this tutorial, feel free to reach us at
 <a class="reference external" href="https://github.com/yuansongFeng/MadMario/">our github</a>!</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 58.745 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 27.738 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-mario-rl-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/c195adbae0504b6504c93e0fd18235ce/mario_rl_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">mario_rl_tutorial.ipynb</span></code></a></p>
@@ -1770,7 +1770,8 @@ to train an AI to play any of the games at the <a class="reference external" hre
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Train a Mario-playing RL Agent",
          "headline": "Train a Mario-playing RL Agent",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/mario_rl_tutorial.html",
@@ -1784,9 +1785,8 @@ to train an AI to play any of the games at the <a class="reference external" hre
            "@type": "WebPage",
            "@id": "/intermediate/mario_rl_tutorial.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Train a Mario-playing RL Agent# Authors: Yuansong Feng, Suraj Subramanian, Howard Wang, Steven Guo. This tutorial walks you through the fundamentals of Deep Reinforcement Learning. At the end, you will implement an AI-powered Mario (using Double Deep Q-Networks) that can play the game by itself. Although no prior knowledge of RL is necessary for this tutorial, you can familiarize yourself with these RL concepts, and have this handy cheatsheet as your companion. The full code is available here. %%bash pip install gym-super-mario-bros==7.4.0 pip install tensordict==0.3.0 pip install torchrl==0.3.0 import torch from torch import nn from torchvision import transforms as T from PIL import Image import numpy as np from pathlib import Path from collections import deque import random, datetime, os # Gym is an OpenAI toolkit for RL import gym from gym.spaces import Box from gym.wrappers import FrameStack # NES Emulator for OpenAI Gym from nes_py.wrappers import JoypadSpace # Super Mario environment for OpenAI Gym import gym_super_mario_bros from tensordict import TensorDict from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality. Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade. Users of this version of Gym should be able to simply replace &#39;import gym&#39; with &#39;import gymnasium as gym&#39; in the vast majority of cases. See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information. /usr/local/lib/python3.10/dist-packages/torchrl/__init__.py:43: UserWarning: failed to set start method to spawn, and current start method for mp is fork. RL Definitions# Environment The world that an agent interacts with and learns from. Action \\(a\\) : How the Agent responds to the Environment. The set of all possible Actions is called action-space. State \\(s\\) : The current characteristic of the Environment. The set of all possible States the Environment can be in is called state-space. Reward \\(r\\) : Reward is the key feedback from Environment to Agent. It is what drives the Agent to learn and to change its future action. An aggregation of rewards over multiple time steps is called Return. Optimal Action-Value function \\(Q^*(s,a)\\) : Gives the expected return if you start in state \\(s\\), take an arbitrary action \\(a\\), and then for each future time step take the action that maximizes returns. \\(Q\\) can be said to stand for the “quality” of the action in a state. We try to approximate this function. Environment# Initialize Environment# In Mario, the environment consists of tubes, mushrooms and other components. When Mario makes an action, the environment responds with the changed (next) state, reward and other info. # Initialize Super Mario environment (in v0.26 change re..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

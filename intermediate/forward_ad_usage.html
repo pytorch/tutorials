@@ -1057,7 +1057,7 @@ We've integrated functorch into PyTorch. As the final step of the integration, `
 </pre></div>
 </div>
 <p>[0] <a class="reference external" href="https://en.wikipedia.org/wiki/Dual_number">https://en.wikipedia.org/wiki/Dual_number</a></p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.121 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.120 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-forward-ad-usage-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/31e117c487018c27130cd7b1fd3e3cad/forward_ad_usage.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">forward_ad_usage.ipynb</span></code></a></p>
@@ -1281,7 +1281,8 @@ We've integrated functorch into PyTorch. As the final step of the integration, `
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Forward-mode Automatic Differentiation (Beta)",
          "headline": "Forward-mode Automatic Differentiation (Beta)",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/forward_ad_usage.html",
@@ -1295,9 +1296,8 @@ We've integrated functorch into PyTorch. As the final step of the integration, `
            "@type": "WebPage",
            "@id": "/intermediate/forward_ad_usage.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Forward-mode Automatic Differentiation (Beta)# This tutorial demonstrates how to use forward-mode AD to compute directional derivatives (or equivalently, Jacobian-vector products). The tutorial below uses some APIs only available in versions &gt;= 1.11 (or nightly builds). Also note that forward-mode AD is currently in beta. The API is subject to change and operator coverage is still incomplete. Basic Usage# Unlike reverse-mode AD, forward-mode AD computes gradients eagerly alongside the forward pass. We can use forward-mode AD to compute a directional derivative by performing the forward pass as before, except we first associate our input with another tensor representing the direction of the directional derivative (or equivalently, the v in a Jacobian-vector product). When an input, which we call “primal”, is associated with a “direction” tensor, which we call “tangent”, the resultant new tensor object is called a “dual tensor” for its connection to dual numbers[0]. As the forward pass is performed, if any input tensors are dual tensors, extra computation is performed to propagate this “sensitivity” of the function. import torch import torch.autograd.forward_ad as fwAD primal = torch.randn(10, 10) tangent = torch.randn(10, 10) def fn(x, y): return x ** 2 + y ** 2 # All forward AD computation must be performed in the context of # a ``dual_level`` context. All dual tensors created in such a context # will have their tangents destroyed upon exit. This is to ensure that # if the output or intermediate results of this computation are reused # in a future forward AD computation, their tangents (which are associated # with this computation) won&#39;t be confused with tangents from the later # computation. with fwAD.dual_level(): # To create a dual tensor we associate a tensor, which we call the # primal with another tensor of the same size, which we call the tangent. # If the layout of the tangent is different from that of the primal, # The values of the tangent are copied into a new tensor with the same # metadata as the primal. Otherwise, the tangent itself is used as-is. # # It is also important to note that the dual tensor created by # ``make_dual`` is a view of the primal. dual_input = fwAD.make_dual(primal, tangent) assert fwAD.unpack_dual(dual_input).tangent is tangent # To demonstrate the case where the copy of the tangent happens, # we pass in a tangent with a layout different from that of the primal dual_input_alt = fwAD.make_dual(primal, tangent.T) assert fwAD.unpack_dual(dual_input_alt).tangent is not tangent # Tensors that do not have an associated tangent are automatically # considered to have a zero-filled tangent of the same shape. plain_tensor = torch.randn(10, 10) dual_output = fn(dual_input, plain_tensor) # Unpacking the dual returns a ``namedtuple`` with ``primal`` and ``tangent`` # as attributes jvp = fwAD.unpack_dual(dual_output).tangent assert fwAD.unpack_dual(dual_output).tangent..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

@@ -1167,7 +1167,8 @@ memory and using CPU RPC.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Direct Device-to-Device Communication with TensorPipe CUDA RPC",
          "headline": "Direct Device-to-Device Communication with TensorPipe CUDA RPC",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/recipes/cuda_rpc.html",
@@ -1181,9 +1182,8 @@ memory and using CPU RPC.</p>
            "@type": "WebPage",
            "@id": "/recipes/cuda_rpc.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Direct Device-to-Device Communication with TensorPipe CUDA RPC# Note Direct device-to-device RPC (CUDA RPC) is introduced in PyTorch 1.8 as a prototype feature. This API is subject to change. In this recipe, you will learn: The high-level idea of CUDA RPC. How to use CUDA RPC. Requirements# PyTorch 1.8+ Getting Started With Distributed RPC Framework What is CUDA RPC?# CUDA RPC supports directly sending Tensors from local CUDA memory to remote CUDA memory. Prior to v1.8 release, PyTorch RPC only accepts CPU Tensors. As a result, when an application needs to send a CUDA Tensor through RPC, it has to first move the Tensor to CPU on the caller, send it via RPC, and then move it to the destination device on the callee, which incurs both unnecessary synchronizations and D2H and H2D copies. Since v1.8, RPC allows users to configure a per-process global device map using the set_device_map API, specifying how to map local devices to remote devices. More specifically, if worker0’s device map has an entry \&#34;worker1\&#34; : {\&#34;cuda:0\&#34; : \&#34;cuda:1\&#34;}, all RPC arguments on \&#34;cuda:0\&#34; from worker0 will be directly sent to \&#34;cuda:1\&#34; on worker1. The response of an RPC will use the inverse of the caller device map, i.e., if worker1 returns a Tensor on \&#34;cuda:1\&#34;, it will be directly sent to \&#34;cuda:0\&#34; on worker0. All intended device-to-device direct communication must be specified in the per-process device map. Otherwise, only CPU tensors are allowed. Under the hood, PyTorch RPC relies on TensorPipe as the communication backend. PyTorch RPC extracts all Tensors from each request or response into a list and packs everything else into a binary payload. Then, TensorPipe will automatically choose a communication channel for each Tensor based on Tensor device type and channel availability on both the caller and the callee. Existing TensorPipe channels cover NVLink, InfiniBand, SHM, CMA, TCP, etc. How to use CUDA RPC?# The code below shows how to use CUDA RPC. The model contains two linear layers and is split into two shards. The two shards are placed on worker0 and worker1 respectively, and worker0 serves as the master that drives the forward and backward passes. Note that we intentionally skipped DistributedOptimizer to highlight the performance improvements when using CUDA RPC. The experiment repeats the forward and backward passes 10 times and measures the total execution time. It compares using CUDA RPC against manually staging to CPU memory and using CPU RPC. import torch import torch.distributed.autograd as autograd import torch.distributed.rpc as rpc import torch.multiprocessing as mp import torch.nn as nn import os import time class MyModule(nn.Module): def __init__(self, device, comm_mode): super().__init__() self.device = device self.linear = nn.Linear(1000, 1000).to(device) self.comm_mode = comm_mode def forward(self, x): # x.to() is a no-op if x is already on self.device y = self.linear(x.to(self.device)) return y.cpu() if self.comm_mode == \&#34;cpu\&#34; else y def parameter_rre..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

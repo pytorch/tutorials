@@ -997,15 +997,15 @@ some results on our build machines:</p>
 <span class="n">get_perf</span><span class="p">(</span><a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">with_vmap_timing</span></a><span class="p">,</span> <span class="s2">"vmap"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-benchmark-utils-common sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Measurement" title="torch.utils.benchmark.utils.common.Measurement"><span class="n">no_vmap_timing</span></a><span class="p">,</span> <span class="s2">"no vmap"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Per-sample-grads without vmap &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f6e684b7520&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Per-sample-grads without vmap &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f26d83e2c20&gt;
 compute_sample_grads(data, targets)
-  64.58 ms
+  63.86 ms
   1 measurement, 100 runs , 1 thread
-Per-sample-grads with vmap &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f6e684b2cb0&gt;
+Per-sample-grads with vmap &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f26d838f370&gt;
 ft_compute_sample_grad(params, buffers, data, targets)
   3.40 ms
   1 measurement, 100 runs , 1 thread
-Performance delta: 1799.3212 percent improvement with vmap
+Performance delta: 1777.8161 percent improvement with vmap
 </pre></div>
 </div>
 <p>There are other optimized solutions (like in <a class="github reference external" href="https://github.com/pytorch/opacus">pytorch/opacus</a>)
@@ -1018,7 +1018,7 @@ though, like if we haven’t implemented the <code class="docutils literal notra
 operation or if the underlying kernels weren’t optimized for older hardware
 (GPUs). If you see any of these cases, please let us know by opening an issue
 at on GitHub.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 8.192 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 8.112 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-per-sample-grads-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/df89b8f78d7ed3520a0f632afae4a5b9/per_sample_grads.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">per_sample_grads.ipynb</span></code></a></p>
@@ -1239,7 +1239,8 @@ at on GitHub.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Per-sample-gradients",
          "headline": "Per-sample-gradients",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/per_sample_grads.html",
@@ -1253,9 +1254,8 @@ at on GitHub.</p>
            "@type": "WebPage",
            "@id": "/intermediate/per_sample_grads.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Per-sample-gradients# What is it?# Per-sample-gradient computation is computing the gradient for each and every sample in a batch of data. It is a useful quantity in differential privacy, meta-learning, and optimization research. Note This tutorial requires PyTorch 2.0.0 or later. import torch import torch.nn as nn import torch.nn.functional as F torch.manual_seed(0) # Here&#39;s a simple CNN and loss function: class SimpleCNN(nn.Module): def __init__(self): super(SimpleCNN, self).__init__() self.conv1 = nn.Conv2d(1, 32, 3, 1) self.conv2 = nn.Conv2d(32, 64, 3, 1) self.fc1 = nn.Linear(9216, 128) self.fc2 = nn.Linear(128, 10) def forward(self, x): x = self.conv1(x) x = F.relu(x) x = self.conv2(x) x = F.relu(x) x = F.max_pool2d(x, 2) x = torch.flatten(x, 1) x = self.fc1(x) x = F.relu(x) x = self.fc2(x) output = F.log_softmax(x, dim=1) return output def loss_fn(predictions, targets): return F.nll_loss(predictions, targets) Let’s generate a batch of dummy data and pretend that we’re working with an MNIST dataset. The dummy images are 28 by 28 and we use a minibatch of size 64. device = &#39;cuda&#39; num_models = 10 batch_size = 64 data = torch.randn(batch_size, 1, 28, 28, device=device) targets = torch.randint(10, (64,), device=device) In regular model training, one would forward the minibatch through the model, and then call .backward() to compute gradients. This would generate an ‘average’ gradient of the entire mini-batch: model = SimpleCNN().to(device=device) predictions = model(data) # move the entire mini-batch through the model loss = loss_fn(predictions, targets) loss.backward() # back propagate the &#39;average&#39; gradient of this mini-batch In contrast to the above approach, per-sample-gradient computation is equivalent to: for each individual sample of the data, perform a forward and a backward pass to get an individual (per-sample) gradient. def compute_grad(sample, target): sample = sample.unsqueeze(0) # prepend batch dimension for processing target = target.unsqueeze(0) prediction = model(sample) loss = loss_fn(prediction, target) return torch.autograd.grad(loss, list(model.parameters())) def compute_sample_grads(data, targets): \&#34;\&#34;\&#34; manually process each sample with per sample gradient \&#34;\&#34;\&#34; sample_grads = [compute_grad(data[i], targets[i]) for i in range(batch_size)] sample_grads = zip(*sample_grads) sample_grads = [torch.stack(shards) for shards in sample_grads] return sample_grads per_sample_grads = compute_sample_grads(data, targets) sample_grads[0] is the per-sample-grad for model.conv1.weight. model.conv1.weight.shape is [32, 1, 3, 3]; notice how there is one gradient, per sample, in the batch for a total of 64. print(per_sample_grads[0].shape) torch.Size([64, 32, 1, 3, 3]) Per-sample-grads, the efficient way, using function transforms# We can compute per-sample-gradients efficiently by using function transforms. The torch.func function transform API transforms over functions. Our strategy is t..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

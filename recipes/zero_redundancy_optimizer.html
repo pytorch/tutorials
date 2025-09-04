@@ -1173,7 +1173,8 @@ values after one iterations (the parameters sum is the same with and without
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Shard Optimizer States with ZeroRedundancyOptimizer",
          "headline": "Shard Optimizer States with ZeroRedundancyOptimizer",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/recipes/zero_redundancy_optimizer.html",
@@ -1187,9 +1188,8 @@ values after one iterations (the parameters sum is the same with and without
            "@type": "WebPage",
            "@id": "/recipes/zero_redundancy_optimizer.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Shard Optimizer States with ZeroRedundancyOptimizer# In this recipe, you will learn: The high-level idea of ZeroRedundancyOptimizer. How to use ZeroRedundancyOptimizer in distributed training and its impact. Requirements# PyTorch 1.8+ Getting Started With Distributed Data Parallel What is ZeroRedundancyOptimizer?# The idea of ZeroRedundancyOptimizer comes from DeepSpeed/ZeRO project and Marian that shard optimizer states across distributed data-parallel processes to reduce per-process memory footprint. In the Getting Started With Distributed Data Parallel tutorial, we have shown how to use DistributedDataParallel (DDP) to train models. In that tutorial, each process keeps a dedicated replica of the optimizer. Since DDP has already synchronized gradients in the backward pass, all optimizer replicas will operate on the same parameter and gradient values in every iteration, and this is how DDP keeps model replicas in the same state. Oftentimes, optimizers also maintain local states. For example, the Adam optimizer uses per-parameter exp_avg and exp_avg_sq states. As a result, the Adam optimizer’s memory consumption is at least twice the model size. Given this observation, we can reduce the optimizer memory footprint by sharding optimizer states across DDP processes. More specifically, instead of creating per-param states for all parameters, each optimizer instance in different DDP processes only keeps optimizer states for a shard of all model parameters. The optimizer step() function only updates the parameters in its shard and then broadcasts its updated parameters to all other peer DDP processes, so that all model replicas still land in the same state. How to use ZeroRedundancyOptimizer?# The code below demonstrates how to use ZeroRedundancyOptimizer. The majority of the code is similar to the simple DDP example presented in Distributed Data Parallel notes. The main difference is the if-else clause in the example function which wraps optimizer constructions, toggling between ZeroRedundancyOptimizer and Adam optimizer. import os import torch import torch.distributed as dist import torch.multiprocessing as mp import torch.nn as nn import torch.optim as optim from torch.distributed.optim import ZeroRedundancyOptimizer from torch.nn.parallel import DistributedDataParallel as DDP def print_peak_memory(prefix, device): if device == 0: print(f\&#34;{prefix}: {torch.cuda.max_memory_allocated(device) // 1e6}MB \&#34;) def example(rank, world_size, use_zero): torch.manual_seed(0) torch.cuda.manual_seed(0) os.environ[&#39;MASTER_ADDR&#39;] = &#39;localhost&#39; os.environ[&#39;MASTER_PORT&#39;] = &#39;29500&#39; # create default process group dist.init_process_group(\&#34;gloo\&#34;, rank=rank, world_size=world_size) # create local model model = nn.Sequential(*[nn.Linear(2000, 2000).to(rank) for _ in range(20)]) print_peak_memory(\&#34;Max memory allocated after creating local model\&#34;, rank) # construct DDP model ddp_model = DDP(model, device_ids=[rank]) print_peak_memory(\&#34;Max memory allocated after creating DDP..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

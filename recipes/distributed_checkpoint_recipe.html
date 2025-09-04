@@ -1374,7 +1374,8 @@ generation and loading.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Getting Started with Distributed Checkpoint (DCP)",
          "headline": "Getting Started with Distributed Checkpoint (DCP)",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/recipes/distributed_checkpoint_recipe.html",
@@ -1388,9 +1389,8 @@ generation and loading.</p>
            "@type": "WebPage",
            "@id": "/recipes/distributed_checkpoint_recipe.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Getting Started with Distributed Checkpoint (DCP)# Author: Iris Zhang, Rodrigo Kumpera, Chien-Chin Huang, Lucas Pasqualin Note View and edit this tutorial in github. Prerequisites: FullyShardedDataParallel API documents torch.load API documents Checkpointing AI models during distributed training could be challenging, as parameters and gradients are partitioned across trainers and the number of trainers available could change when you resume training. Pytorch Distributed Checkpointing (DCP) can help make this process easier. In this tutorial, we show how to use DCP APIs with a simple FSDP wrapped model. How DCP works# torch.distributed.checkpoint() enables saving and loading models from multiple ranks in parallel. You can use this module to save on any number of ranks in parallel, and then re-shard across differing cluster topologies at load time. Addditionally, through the use of modules in torch.distributed.checkpoint.state_dict(), DCP offers support for gracefully handling state_dict generation and loading in distributed settings. This includes managing fully-qualified-name (FQN) mappings across models and optimizers, and setting default parameters for PyTorch provided parallelisms. DCP is different from torch.save() and torch.load() in a few significant ways: It produces multiple files per checkpoint, with at least one per rank. It operates in place, meaning that the model should allocate its data first and DCP uses that storage instead. DCP offers special handling of Stateful objects (formally defined in torch.distributed.checkpoint.stateful), automatically calling both state_dict and load_state_dict methods if they are defined. Note The code in this tutorial runs on an 8-GPU server, but it can be easily generalized to other environments. How to use DCP# Here we use a toy model wrapped with FSDP for demonstration purposes. Similarly, the APIs and logic can be applied to larger models for checkpointing. Saving# Now, let’s create a toy module, wrap it with FSDP, feed it with some dummy input data, and save it. import os import torch import torch.distributed as dist import torch.distributed.checkpoint as dcp import torch.multiprocessing as mp import torch.nn as nn from torch.distributed.fsdp import fully_shard from torch.distributed.checkpoint.state_dict import get_state_dict, set_state_dict from torch.distributed.checkpoint.stateful import Stateful CHECKPOINT_DIR = \&#34;checkpoint\&#34; class AppState(Stateful): \&#34;\&#34;\&#34;This is a useful wrapper for checkpointing the Application State. Since this object is compliant with the Stateful protocol, DCP will automatically call state_dict/load_stat_dict as needed in the dcp.save/load APIs. Note: We take advantage of this wrapper to hande calling distributed state dict methods on the model and optimizer. \&#34;\&#34;\&#34; def __init__(self, model, optimizer=None): self.model = model self.optimizer = optimizer def state_dict(self): # this line automatically manages FSDP FQN&#39;s, as well as sets the default state dict type to FSDP...."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

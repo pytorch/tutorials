@@ -1219,7 +1219,7 @@ know by creating <a class="reference external" href="https://github.com/pytorch/
 how to use it for performance gains. For a practical example of accelerating
 vision models using channels last, see the post
 <a class="reference external" href="https://pytorch.org/blog/accelerating-pytorch-vision-models-with-channels-last-on-cpu/">here</a>.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.328 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.323 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-memory-format-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/f11c58c36c9b8a5daf09d3f9a792ef84/memory_format_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">memory_format_tutorial.ipynb</span></code></a></p>
@@ -1442,7 +1442,8 @@ vision models using channels last, see the post
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Channels Last Memory Format in PyTorch",
          "headline": "Channels Last Memory Format in PyTorch",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/memory_format_tutorial.html",
@@ -1456,9 +1457,8 @@ vision models using channels last, see the post
            "@type": "WebPage",
            "@id": "/intermediate/memory_format_tutorial.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Channels Last Memory Format in PyTorch# Author: Vitaly Fedyunin What you will learn What is the channels last memory format in PyTorch? How can it be used to improve performance on certain operators? Prerequisites PyTorch v1.5.0 A CUDA-capable GPU The channels last memory format is an alternative way of ordering NCHW tensors in memory preserving dimensions ordering. Channels last tensors ordered in such a way that channels become the densest dimension (aka storing images pixel-per-pixel). For example, classic (contiguous) storage of NCHW tensor (in our case it is two 4x4 images with 3 color channels) look like this: Channels last memory format orders data differently: Pytorch supports memory formats by utilizing the existing strides structure. For example, 10x3x16x16 batch in Channels last format will have strides equal to (768, 1, 48, 3). Channels last memory format is implemented for 4D NCHW Tensors only. Memory Format API# Here is how to convert tensors between contiguous and channels last memory formats. Classic PyTorch contiguous tensor import torch N, C, H, W = 10, 3, 32, 32 x = torch.empty(N, C, H, W) print(x.stride()) # Outputs: (3072, 1024, 32, 1) (3072, 1024, 32, 1) Conversion operator x = x.to(memory_format=torch.channels_last) print(x.shape) # Outputs: (10, 3, 32, 32) as dimensions order preserved print(x.stride()) # Outputs: (3072, 1, 96, 3) torch.Size([10, 3, 32, 32]) (3072, 1, 96, 3) Back to contiguous x = x.to(memory_format=torch.contiguous_format) print(x.stride()) # Outputs: (3072, 1024, 32, 1) (3072, 1024, 32, 1) Alternative option x = x.contiguous(memory_format=torch.channels_last) print(x.stride()) # Outputs: (3072, 1, 96, 3) (3072, 1, 96, 3) Format checks print(x.is_contiguous(memory_format=torch.channels_last)) # Outputs: True True There are minor difference between the two APIs to and contiguous. We suggest to stick with to when explicitly converting memory format of tensor. For general cases the two APIs behave the same. However in special cases for a 4D tensor with size NCHW when either: C==1 or H==1 &amp;&amp; W==1, only to would generate a proper stride to represent channels last memory format. This is because in either of the two cases above, the memory format of a tensor is ambiguous, i.e. a contiguous tensor with size N1HW is both contiguous and channels last in memory storage. Therefore, they are already considered as is_contiguous for the given memory format and hence contiguous call becomes a no-op and would not update the stride. On the contrary, to would restride tensor with a meaningful stride on dimensions whose sizes are 1 in order to properly represent the intended memory format special_x = torch.empty(4, 1, 4, 4) print(special_x.is_contiguous(memory_format=torch.channels_last)) # Outputs: True print(special_x.is_contiguous(memory_format=torch.contiguous_format)) # Outputs: True True True Same thing applies to explicit permutation API permute. In special case..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

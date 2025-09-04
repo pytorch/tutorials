@@ -1412,7 +1412,8 @@ will warn if debug symbols are missing.)</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Timer quick start",
          "headline": "Timer quick start",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/recipes/recipes/timer_quick_start.html",
@@ -1426,9 +1427,8 @@ will warn if debug symbols are missing.)</p>
            "@type": "WebPage",
            "@id": "/recipes/recipes/timer_quick_start.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Timer quick start# In this tutorial, we’re going to cover the primary APIs of torch.utils.benchmark.Timer. The PyTorch Timer is based on the timeit.Timer API, with several PyTorch specific modifications. Familiarity with the builtin Timer class is not required for this tutorial, however we assume that the reader is familiar with the fundamentals of performance work. For a more comprehensive performance tuning tutorial, see PyTorch Benchmark. Contents: Defining a Timer Wall time: Timer.blocked_autorange(…) C++ snippets Instruction counts: Timer.collect_callgrind(…) Instruction counts: Delving deeper A/B testing with Callgrind Wrapping up Footnotes 1. Defining a Timer# A Timer serves as a task definition. from torch.utils.benchmark import Timer timer = Timer( # The computation which will be run in a loop and timed. stmt=\&#34;x * y\&#34;, # `setup` will be run before calling the measurement loop, and is used to # populate any state which is needed by `stmt` setup=\&#34;\&#34;\&#34; x = torch.ones((128,)) y = torch.ones((128,)) \&#34;\&#34;\&#34;, # Alternatively, ``globals`` can be used to pass variables from the outer scope. # # globals={ # \&#34;x\&#34;: torch.ones((128,)), # \&#34;y\&#34;: torch.ones((128,)), # }, # Control the number of threads that PyTorch uses. (Default: 1) num_threads=1, ) 2. Wall time: Timer.blocked_autorange(...)# This method will handle details such as picking a suitable number if repeats, fixing the number of threads, and providing a convenient representation of the results. # Measurement objects store the results of multiple repeats, and provide # various utility features. from torch.utils.benchmark import Measurement m: Measurement = timer.blocked_autorange(min_run_time=1) print(m) Snippet wall time.# &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f1929a38ed0&gt; x * y setup: x = torch.ones((128,)) y = torch.ones((128,)) Median: 2.34 us IQR: 0.07 us (2.31 to 2.38) 424 measurements, 1000 runs per measurement, 1 thread 3. C++ snippets# from torch.utils.benchmark import Language cpp_timer = Timer( \&#34;x * y;\&#34;, \&#34;\&#34;\&#34; auto x = torch::ones({128}); auto y = torch::ones({128}); \&#34;\&#34;\&#34;, language=Language.CPP, ) print(cpp_timer.blocked_autorange(min_run_time=1)) C++ snippet wall time.# &lt;torch.utils.benchmark.utils.common.Measurement object at 0x7f192b019ed0&gt; x * y; setup: auto x = torch::ones({128}); auto y = torch::ones({128}); Median: 1.21 us IQR: 0.03 us (1.20 to 1.23) 83 measurements, 10000 runs per measurement, 1 thread Unsurprisingly, the C++ snippet is both faster and has lower variation. 4. Instruction counts: Timer.collect_callgrind(...)# For deep dive investigations, Timer.collect_callgrind wraps Callgrind in order to collect instruction counts. These are useful as they offer fine grained and deterministic (or very low noise in the case of Python) insights into how a snippet is run. from torch.utils.benchmark import CallgrindStats, FunctionCounts stats: CallgrindStats = cpp_timer.collect_callgrind() print(stats) C++ Ca..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

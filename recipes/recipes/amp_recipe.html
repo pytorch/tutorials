@@ -1364,7 +1364,8 @@ fine-grained information on which backend op is failing.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Automatic Mixed Precision",
          "headline": "Automatic Mixed Precision",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/recipes/recipes/amp_recipe.html",
@@ -1378,9 +1379,8 @@ fine-grained information on which backend op is failing.</p>
            "@type": "WebPage",
            "@id": "/recipes/recipes/amp_recipe.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. Automatic Mixed Precision# Author: Michael Carilli torch.cuda.amp provides convenience methods for mixed precision, where some operations use the torch.float32 (float) datatype and other operations use torch.float16 (half). Some ops, like linear layers and convolutions, are much faster in float16 or bfloat16. Other ops, like reductions, often require the dynamic range of float32. Mixed precision tries to match each op to its appropriate datatype, which can reduce your network’s runtime and memory footprint. Ordinarily, “automatic mixed precision training” uses torch.autocast and torch.cuda.amp.GradScaler together. This recipe measures the performance of a simple network in default precision, then walks through adding autocast and GradScaler to run the same network in mixed precision with improved performance. You may download and run this recipe as a standalone Python script. The only requirements are PyTorch 1.6 or later and a CUDA-capable GPU. Mixed precision primarily benefits Tensor Core-enabled architectures (Volta, Turing, Ampere). This recipe should show significant (2-3X) speedup on those architectures. On earlier architectures (Kepler, Maxwell, Pascal), you may observe a modest speedup. Run nvidia-smi to display your GPU’s architecture. import torch, time, gc # Timing utilities start_time = None def start_timer(): global start_time gc.collect() torch.cuda.empty_cache() torch.cuda.reset_max_memory_allocated() torch.cuda.synchronize() start_time = time.time() def end_timer_and_print(local_msg): torch.cuda.synchronize() end_time = time.time() print(\&#34;\\n\&#34; + local_msg) print(\&#34;Total execution time = {:.3f} sec\&#34;.format(end_time - start_time)) print(\&#34;Max memory used by tensors = {} bytes\&#34;.format(torch.cuda.max_memory_allocated())) A simple network# The following sequence of linear layers and ReLUs should show a speedup with mixed precision. def make_model(in_size, out_size, num_layers): layers = [] for _ in range(num_layers - 1): layers.append(torch.nn.Linear(in_size, in_size)) layers.append(torch.nn.ReLU()) layers.append(torch.nn.Linear(in_size, out_size)) return torch.nn.Sequential(*tuple(layers)).cuda() batch_size, in_size, out_size, and num_layers are chosen to be large enough to saturate the GPU with work. Typically, mixed precision provides the greatest speedup when the GPU is saturated. Small networks may be CPU bound, in which case mixed precision won’t improve performance. Sizes are also chosen such that linear layers’ participating dimensions are multiples of 8, to permit Tensor Core usage on Tensor Core-capable GPUs (see Troubleshooting below). Exercise: Vary participating sizes and see how the mixed precision speedup changes. batch_size = 512 # Try, for example, 128, 256, 513. in_size = 4096 out_size = 4096 num_layers = 3 num_batches = 50 epochs = 3 device = &#39;cuda&#39; if torch.cuda.is_available() else &#39;cpu&#39; torch.set_default_device(device) # Creates data in default precision. # The..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

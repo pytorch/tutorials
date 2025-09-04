@@ -1311,7 +1311,8 @@ even further.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Asynchronous Saving with Distributed Checkpoint (DCP)",
          "headline": "Asynchronous Saving with Distributed Checkpoint (DCP)",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/recipes/distributed_async_checkpoint_recipe.html",
@@ -1325,9 +1326,8 @@ even further.</p>
            "@type": "WebPage",
            "@id": "/recipes/distributed_async_checkpoint_recipe.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Asynchronous Saving with Distributed Checkpoint (DCP)# Author: Lucas Pasqualin, Iris Zhang, Rodrigo Kumpera, Chien-Chin Huang Checkpointing is often a bottle-neck in the critical path for distributed training workloads, incurring larger and larger costs as both model and world sizes grow. One excellent strategy for offsetting this cost is to checkpoint in parallel, asynchronously. Below, we expand the save example from the Getting Started with Distributed Checkpoint Tutorial to show how this can be integrated quite easily with torch.distributed.checkpoint.async_save. What you will learn How to use DCP to generate checkpoints in parallel Effective strategies to optimize performance Prerequisites PyTorch v2.4.0 or later Getting Started with Distributed Checkpoint Tutorial Asynchronous Checkpointing Overview# Before getting started with Asynchronous Checkpointing, it’s important to understand it’s differences and limitations as compared to synchronous checkpointing. Specifically: Memory requirements - Asynchronous checkpointing works by first copying models into internal CPU-buffers.This is helpful since it ensures model and optimizer weights are not changing while the model is still checkpointing, but does raise CPU memory by a factor of checkpoint_size_per_rank X number_of_ranks. Additionally, users should take care to understand the memory constraints of their systems. Specifically, pinned memory implies the usage of page-lock memory, which can be scarce as compared to pageable memory. Checkpoint Management - Since checkpointing is asynchronous, it is up to the user to manage concurrently run checkpoints. In general, users canemploy their own management strategies by handling the future object returned form async_save. For most users, we recommend limiting checkpoints to one asynchronous request at a time, avoiding additional memory pressure per request. import os import torch import torch.distributed as dist import torch.distributed.checkpoint as dcp import torch.multiprocessing as mp import torch.nn as nn from torch.distributed.fsdp import fully_shard from torch.distributed.checkpoint.state_dict import get_state_dict, set_state_dict from torch.distributed.checkpoint.stateful import Stateful CHECKPOINT_DIR = \&#34;checkpoint\&#34; class AppState(Stateful): \&#34;\&#34;\&#34;This is a useful wrapper for checkpointing the Application State. Since this object is compliant with the Stateful protocol, DCP will automatically call state_dict/load_stat_dict as needed in the dcp.save/load APIs. Note: We take advantage of this wrapper to hande calling distributed state dict methods on the model and optimizer. \&#34;\&#34;\&#34; def __init__(self, model, optimizer=None): self.model = model self.optimizer = optimizer def state_dict(self): # this line automatically manages FSDP FQN&#39;s, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT model_state_dict, optimizer_state_dict = get_state_dict(self.model, self.optimizer) return { \&#34;model\&#34;: model_state_dict, \&#34;optim\&#34;: optimizer_sta..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

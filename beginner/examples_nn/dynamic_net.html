@@ -1105,7 +1105,8 @@ the same weights multiple times to compute the fourth and fifth order.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "PyTorch: Control Flow + Weight Sharing",
          "headline": "PyTorch: Control Flow + Weight Sharing",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/beginner/examples_nn/dynamic_net.html",
@@ -1119,9 +1120,8 @@ the same weights multiple times to compute the fourth and fifth order.</p>
            "@type": "WebPage",
            "@id": "/beginner/examples_nn/dynamic_net.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Note Go to the end to download the full example code. PyTorch: Control Flow + Weight Sharing# To showcase the power of PyTorch dynamic graphs, we will implement a very strange model: a third-fifth order polynomial that on each forward pass chooses a random number between 4 and 5 and uses that many orders, reusing the same weights multiple times to compute the fourth and fifth order. import random import torch import math class DynamicNet(torch.nn.Module): def __init__(self): \&#34;\&#34;\&#34; In the constructor we instantiate five parameters and assign them as members. \&#34;\&#34;\&#34; super().__init__() self.a = torch.nn.Parameter(torch.randn(())) self.b = torch.nn.Parameter(torch.randn(())) self.c = torch.nn.Parameter(torch.randn(())) self.d = torch.nn.Parameter(torch.randn(())) self.e = torch.nn.Parameter(torch.randn(())) def forward(self, x): \&#34;\&#34;\&#34; For the forward pass of the model, we randomly choose either 4, 5 and reuse the e parameter to compute the contribution of these orders. Since each forward pass builds a dynamic computation graph, we can use normal Python control-flow operators like loops or conditional statements when defining the forward pass of the model. Here we also see that it is perfectly safe to reuse the same parameter many times when defining a computational graph. \&#34;\&#34;\&#34; y = self.a + self.b * x + self.c * x ** 2 + self.d * x ** 3 for exp in range(4, random.randint(4, 6)): y = y + self.e * x ** exp return y def string(self): \&#34;\&#34;\&#34; Just like any class in Python, you can also define custom method on PyTorch modules \&#34;\&#34;\&#34; return f&#39;y = {self.a.item()} + {self.b.item()} x + {self.c.item()} x^2 + {self.d.item()} x^3 + {self.e.item()} x^4 ? + {self.e.item()} x^5 ?&#39; # Create Tensors to hold input and outputs. x = torch.linspace(-math.pi, math.pi, 2000) y = torch.sin(x) # Construct our model by instantiating the class defined above model = DynamicNet() # Construct our loss function and an Optimizer. Training this strange model with # vanilla stochastic gradient descent is tough, so we use momentum criterion = torch.nn.MSELoss(reduction=&#39;sum&#39;) optimizer = torch.optim.SGD(model.parameters(), lr=1e-8, momentum=0.9) for t in range(30000): # Forward pass: Compute predicted y by passing x to the model y_pred = model(x) # Compute and print loss loss = criterion(y_pred, y) if t % 2000 == 1999: print(t, loss.item()) # Zero gradients, perform a backward pass, and update the weights. optimizer.zero_grad() loss.backward() optimizer.step() print(f&#39;Result: {model.string()}&#39;) Download Jupyter notebook: dynamic_net.ipynb Download Python source code: dynamic_net.py Download zipped: dynamic_net.zip"
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

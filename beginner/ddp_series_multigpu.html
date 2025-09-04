@@ -1163,7 +1163,8 @@ Initialization</a></p></li>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Multi GPU training with DDP",
          "headline": "Multi GPU training with DDP",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/beginner/ddp_series_multigpu.html",
@@ -1177,9 +1178,8 @@ Initialization</a></p></li>
            "@type": "WebPage",
            "@id": "/beginner/ddp_series_multigpu.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Introduction || What is DDP || Single-Node Multi-GPU Training || Fault Tolerance || Multi-Node training || minGPT Training Multi GPU training with DDP# Authors: Suraj Subramanian What you will learn How to migrate a single-GPU training script to multi-GPU via DDP Setting up the distributed process group Saving and loading models in a distributed setup View the code used in this tutorial on GitHub Prerequisites High-level overview of how DDP works A machine with multiple GPUs (this tutorial uses an AWS p3.8xlarge instance) PyTorch installed with CUDA Follow along with the video below or on youtube. In the previous tutorial, we got a high-level overview of how DDP works; now we see how to use DDP in code. In this tutorial, we start with a single-GPU training script and migrate that to running it on 4 GPUs on a single node. Along the way, we will talk through important concepts in distributed training while implementing them in our code. Note If your model contains any BatchNorm layers, it needs to be converted to SyncBatchNorm to sync the running stats of BatchNorm layers across replicas. Use the helper function torch.nn.SyncBatchNorm.convert_sync_batchnorm(model) to convert all BatchNorm layers in the model to SyncBatchNorm. Diff for single_gpu.py v/s multigpu.py These are the changes you typically make to a single-GPU training script to enable DDP. Imports# torch.multiprocessing is a PyTorch wrapper around Python’s native multiprocessing The distributed process group contains all the processes that can communicate and synchronize with each other. import torch import torch.nn.functional as F from utils import MyTrainDataset import torch.multiprocessing as mp from torch.utils.data.distributed import DistributedSampler from torch.nn.parallel import DistributedDataParallel as DDP from torch.distributed import init_process_group, destroy_process_group import os Constructing the process group# First, before initializing the group process, call set_device, which sets the default GPU for each process. This is important to prevent hangs or excessive memory utilization on GPU:0 The process group can be initialized by TCP (default) or from a shared file-system. Read more on process group initialization init_process_group initializes the distributed process group. Read more about choosing a DDP backend def ddp_setup(rank: int, world_size: int): \&#34;\&#34;\&#34; Args: rank: Unique identifier of each process world_size: Total number of processes \&#34;\&#34;\&#34; os.environ[\&#34;MASTER_ADDR\&#34;] = \&#34;localhost\&#34; os.environ[\&#34;MASTER_PORT\&#34;] = \&#34;12355\&#34; torch.cuda.set_device(rank) init_process_group(backend=\&#34;nccl\&#34;, rank=rank, world_size=world_size) Constructing the DDP model# self.model = DDP(model, device_ids=[gpu_id]) Distributing input data# DistributedSampler chunks the input data across all distributed processes. The DataLoader combines a dataset and asampler, and provides an iterable over the given dataset. Each process will receive an input batch of 32 samples; the effective batch size is 32 ..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>

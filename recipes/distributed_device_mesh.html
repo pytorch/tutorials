@@ -1187,7 +1187,8 @@ they can be used to describe the layout of devices across the cluster.</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "Article",
+         "@type": "TechArticle",
+         "name": "Getting Started with DeviceMesh",
          "headline": "Getting Started with DeviceMesh",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/recipes/distributed_device_mesh.html",
@@ -1201,9 +1202,8 @@ they can be used to describe the layout of devices across the cluster.</p>
            "@type": "WebPage",
            "@id": "/recipes/distributed_device_mesh.html"
          },
-        "datePublished": "",
-         "dateModified": "",
-         "articleBody": "Getting Started with DeviceMesh# Author: Iris Zhang, Wanchao Liang Note View and edit this tutorial in github. Prerequisites: Distributed Communication Package - torch.distributed Python 3.8 - 3.11 PyTorch 2.2 Setting up distributed communicators, i.e. NVIDIA Collective Communication Library (NCCL) communicators, for distributed training can pose a significant challenge. For workloads where users need to compose different parallelisms, users would need to manually set up and manage NCCL communicators (for example, ProcessGroup) for each parallelism solution. This process could be complicated and susceptible to errors. DeviceMesh can simplify this process, making it more manageable and less prone to errors. What is DeviceMesh# DeviceMesh is a higher level abstraction that manages ProcessGroup. It allows users to effortlessly create inter-node and intra-node process groups without worrying about how to set up ranks correctly for different sub process groups. Users can also easily manage the underlying process_groups/devices for multi-dimensional parallelism via DeviceMesh. Why DeviceMesh is Useful# DeviceMesh is useful when working with multi-dimensional parallelism (i.e. 3-D parallel) where parallelism composability is required. For example, when your parallelism solutions require both communication across hosts and within each host. The image above shows that we can create a 2D mesh that connects the devices within each host, and connects each device with its counterpart on the other hosts in a homogeneous setup. Without DeviceMesh, users would need to manually set up NCCL communicators, cuda devices on each process before applying any parallelism, which could be quite complicated. The following code snippet illustrates a hybrid sharding 2-D Parallel pattern setup without DeviceMesh. First, we need to manually calculate the shard group and replicate group. Then, we need to assign the correct shard and replicate group to each rank. import os import torch import torch.distributed as dist # Understand world topology rank = int(os.environ[\&#34;RANK\&#34;]) world_size = int(os.environ[\&#34;WORLD_SIZE\&#34;]) print(f\&#34;Running example on {rank=} in a world with {world_size=}\&#34;) # Create process groups to manage 2-D like parallel pattern dist.init_process_group(\&#34;nccl\&#34;) torch.cuda.set_device(rank) # Create shard groups (e.g. (0, 1, 2, 3), (4, 5, 6, 7)) # and assign the correct shard group to each rank num_node_devices = torch.cuda.device_count() shard_rank_lists = list(range(0, num_node_devices // 2)), list(range(num_node_devices // 2, num_node_devices)) shard_groups = ( dist.new_group(shard_rank_lists[0]), dist.new_group(shard_rank_lists[1]), ) current_shard_group = ( shard_groups[0] if rank in shard_rank_lists[0] else shard_groups[1] ) # Create replicate groups (for example, (0, 4), (1, 5), (2, 6), (3, 7)) # and assign the correct replicate group to each rank current_replicate_group = None shard_factor = len(shard_rank_lists[0]) for i in range(num_node_devices // 2): re..."
+         "datePublished": "",
+         "dateModified": ""
        }
    </script>
 </body>
