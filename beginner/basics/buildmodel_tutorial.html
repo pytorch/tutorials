@@ -733,6 +733,7 @@ document.write(`
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../understanding_leaf_vs_nonleaf_tutorial.html">Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/nlp_from_scratch_index.html">NLP from Scratch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/tensorboard_tutorial.html">Visualizing Models, Data, and Training with TensorBoard</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/pinmem_nonblock.html">A guide on good usage of <code class="docutils literal notranslate"><span class="pre">non_blocking</span></code> and <code class="docutils literal notranslate"><span class="pre">pin_memory()</span></code> in PyTorch</a></li>
@@ -930,7 +931,7 @@ We get the prediction probabilities by passing it through an instance of the <co
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Predicted class: </span><span class="si">{</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">y_pred</span></a><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Predicted class: tensor([2], device='cuda:0')
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Predicted class: tensor([1], device='cuda:0')
 </pre></div>
 </div>
 <hr class="docutils"/>
@@ -986,26 +987,26 @@ linear layers, but there’s other activations to introduce non-linearity in you
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"After ReLU: </span><span class="si">{</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">hidden1</span></a><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before ReLU: tensor([[-0.2337,  0.1965,  0.4205,  0.3694,  0.1236,  0.0859,  0.0127, -0.3535,
-          0.0562, -0.7157,  0.2662, -0.0701, -0.1321,  0.4030, -0.3124, -0.3488,
-         -0.2347,  0.5578,  0.7403, -0.2783],
-        [-0.3833,  0.1912,  0.5333,  0.0619, -0.1191, -0.1637,  0.1241, -0.3037,
-         -0.4150, -0.4762,  0.2660,  0.0719, -0.2045, -0.0941, -0.4124, -0.2452,
-         -0.1692,  0.8515,  0.6793, -0.5129],
-        [-0.1923,  0.5412,  0.0939,  0.2755, -0.0028, -0.1462,  0.1912, -0.3003,
-          0.1705, -0.5618,  0.0333, -0.1295, -0.0671,  0.2917, -0.4995, -0.2241,
-         -0.1467,  0.7234,  0.3311, -0.3906]], grad_fn=&lt;AddmmBackward0&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before ReLU: tensor([[ 0.0709, -0.3241, -0.1057,  0.1769, -0.2905, -0.2083, -0.5481,  0.7050,
+          0.2829, -0.2639, -0.3248, -0.0625, -0.5347,  0.5032,  0.1604, -0.5276,
+          0.1147,  0.2143,  0.3785, -0.0471],
+        [-0.1225,  0.1388, -0.1119, -0.0486, -0.0461, -0.2669, -0.5430,  0.0664,
+          0.3244, -0.0102, -0.0068, -0.2242, -0.0769,  0.4102,  0.1483, -0.8396,
+          0.2044,  0.0278,  0.2270, -0.5515],
+        [-0.2868,  0.0509, -0.1900, -0.1721, -0.8953, -0.1001, -0.1753,  0.1212,
+          0.0620, -0.3560, -0.0921, -0.2607, -0.2917,  0.3640,  0.1496, -0.3154,
+          0.3753,  0.4695, -0.1598,  0.1003]], grad_fn=&lt;AddmmBackward0&gt;)
 
 
-After ReLU: tensor([[0.0000, 0.1965, 0.4205, 0.3694, 0.1236, 0.0859, 0.0127, 0.0000, 0.0562,
-         0.0000, 0.2662, 0.0000, 0.0000, 0.4030, 0.0000, 0.0000, 0.0000, 0.5578,
-         0.7403, 0.0000],
-        [0.0000, 0.1912, 0.5333, 0.0619, 0.0000, 0.0000, 0.1241, 0.0000, 0.0000,
-         0.0000, 0.2660, 0.0719, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.8515,
-         0.6793, 0.0000],
-        [0.0000, 0.5412, 0.0939, 0.2755, 0.0000, 0.0000, 0.1912, 0.0000, 0.1705,
-         0.0000, 0.0333, 0.0000, 0.0000, 0.2917, 0.0000, 0.0000, 0.0000, 0.7234,
-         0.3311, 0.0000]], grad_fn=&lt;ReluBackward0&gt;)
+After ReLU: tensor([[0.0709, 0.0000, 0.0000, 0.1769, 0.0000, 0.0000, 0.0000, 0.7050, 0.2829,
+         0.0000, 0.0000, 0.0000, 0.0000, 0.5032, 0.1604, 0.0000, 0.1147, 0.2143,
+         0.3785, 0.0000],
+        [0.0000, 0.1388, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0664, 0.3244,
+         0.0000, 0.0000, 0.0000, 0.0000, 0.4102, 0.1483, 0.0000, 0.2044, 0.0278,
+         0.2270, 0.0000],
+        [0.0000, 0.0509, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.1212, 0.0620,
+         0.0000, 0.0000, 0.0000, 0.0000, 0.3640, 0.1496, 0.0000, 0.3753, 0.4695,
+         0.0000, 0.1003]], grad_fn=&lt;ReluBackward0&gt;)
 </pre></div>
 </div>
 </section>
@@ -1062,23 +1063,23 @@ accessible using your model’s <code class="docutils literal notranslate"><span
 )
 
 
-Layer: linear_relu_stack.0.weight | Size: torch.Size([512, 784]) | Values : tensor([[-0.0055,  0.0174,  0.0059,  ..., -0.0258,  0.0149, -0.0036],
-        [-0.0007, -0.0013, -0.0002,  ...,  0.0276,  0.0132, -0.0269]],
+Layer: linear_relu_stack.0.weight | Size: torch.Size([512, 784]) | Values : tensor([[ 0.0123,  0.0067,  0.0232,  ...,  0.0351, -0.0315, -0.0327],
+        [-0.0104, -0.0055,  0.0201,  ...,  0.0073,  0.0152, -0.0053]],
        device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
 
-Layer: linear_relu_stack.0.bias | Size: torch.Size([512]) | Values : tensor([-0.0166, -0.0005], device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
+Layer: linear_relu_stack.0.bias | Size: torch.Size([512]) | Values : tensor([0.0096, 0.0149], device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
 
-Layer: linear_relu_stack.2.weight | Size: torch.Size([512, 512]) | Values : tensor([[ 0.0217,  0.0074,  0.0434,  ..., -0.0373, -0.0112, -0.0421],
-        [ 0.0192,  0.0359, -0.0300,  ...,  0.0217,  0.0066,  0.0385]],
+Layer: linear_relu_stack.2.weight | Size: torch.Size([512, 512]) | Values : tensor([[-0.0183,  0.0330, -0.0225,  ..., -0.0258,  0.0128,  0.0146],
+        [-0.0420, -0.0052,  0.0283,  ...,  0.0025,  0.0050, -0.0020]],
        device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
 
-Layer: linear_relu_stack.2.bias | Size: torch.Size([512]) | Values : tensor([0.0344, 0.0258], device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
+Layer: linear_relu_stack.2.bias | Size: torch.Size([512]) | Values : tensor([0.0155, 0.0195], device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
 
-Layer: linear_relu_stack.4.weight | Size: torch.Size([10, 512]) | Values : tensor([[-0.0208, -0.0277, -0.0385,  ..., -0.0186,  0.0126,  0.0243],
-        [-0.0406,  0.0369, -0.0179,  ...,  0.0415,  0.0360, -0.0293]],
+Layer: linear_relu_stack.4.weight | Size: torch.Size([10, 512]) | Values : tensor([[-0.0178,  0.0440,  0.0027,  ..., -0.0411, -0.0431, -0.0187],
+        [-0.0421,  0.0405, -0.0429,  ..., -0.0191,  0.0103,  0.0372]],
        device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
 
-Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([0.0051, 0.0017], device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
+Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([0.0059, 0.0076], device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
 </pre></div>
 </div>
 <hr class="docutils"/>
@@ -1088,7 +1089,7 @@ Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([0.00
 <ul class="simple">
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/nn.html">torch.nn API</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.493 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.499 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-basics-buildmodel-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/76d764ad694d0795e494a1edbfb068a6/buildmodel_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">buildmodel_tutorial.ipynb</span></code></a></p>
