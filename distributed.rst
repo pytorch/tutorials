@@ -186,7 +186,6 @@ Custom Extensions
    intermediate/ddp_tutorial
    intermediate/dist_tuto
    intermediate/FSDP_tutorial
-   intermediate/FSDP_adavnced_tutorial
    intermediate/TCPStore_libuv_backend
    intermediate/TP_tutorial
    intermediate/pipelining_tutorial
