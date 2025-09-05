@@ -10,14 +10,14 @@ how to reduce cold start compilation times while retaining (almost) full compila
 just-in-time (JiT) compilation.
 
 This recipe shows how to apply similar principles when compiling a model ahead-of-time (AoT). If you
-are not familiar with AOTInductor and `torch.export`, we recommend you to check out [this tutorial](https://docs.pytorch.org/tutorials/recipes/torch_export_aoti_python.html).
+are not familiar with AOTInductor and ``torch.export``, we recommend you to check out [this tutorial](https://docs.pytorch.org/tutorials/recipes/torch_export_aoti_python.html).
 
 Prerequisites
 ----------------
 
 * Pytorch 2.6 or later
 * Familiarity with regional compilation
-* Familiarity with AOTInductor and `torch.export`
+* Familiarity with AOTInductor and ``torch.export``
 
 Setup
 -----
@@ -85,7 +85,7 @@ class Model(torch.nn.Module):
         self.layers = torch.nn.ModuleList([Layer() for _ in range(64)])
 
     def forward(self, x):
-        # In regional compilation, the self.linear is outside of the scope of `torch.compile`.
+        # In regional compilation, the self.linear is outside of the scope of ``torch.compile``.
         x = self.linear(x)
         for layer in self.layers:
             x = layer(x)
@@ -96,7 +96,7 @@ class Model(torch.nn.Module):
 # Since we're compiling the model ahead-of-time, we need to prepare representative
 # input examples, that we expect the model to see during actual deployments.
 # 
-# Let's create an instance of `Model` and pass it some sample input data.
+# Let's create an instance of ``Model`` and pass it some sample input data.
 # 
 
 model = Model().cuda()
@@ -105,8 +105,8 @@ output = model(input)
 print(f"{output.shape=}")
 
 ####################################################
-# Now, let's compile our model ahead-of-time. We will use `input` created above to pass
-# to `torch.export`. This will yield a `torch.export.ExportedProgram` which we can compile.
+# Now, let's compile our model ahead-of-time. We will use ``input`` created above to pass
+# to ``torch.export``. This will yield a ``torch.export.ExportedProgram`` which we can compile.
 
 path = torch._inductor.aoti_compile_and_package(
     torch.export.export(model, args=(input,))
@@ -136,7 +136,7 @@ path = torch._inductor.aoti_compile_and_package(
 )
 
 ###################################################
-# An exported program (``torch.export.ExportedProgram``) contains the Tensor computation,
+# An exported program (```torch.export.ExportedProgram```) contains the Tensor computation,
 # a state_dict containing tensor values of all lifted parameters and buffer alongside 
 # other metadata. We specify the ``aot_inductor.package_constants_in_so`` to be ``False`` to
 # not serialize the model parameters in the generated artifact.
@@ -168,7 +168,7 @@ print(f"{output_regional_compiled.shape=}")
 ###################################################
 # Next, let's measure the compilation time of the full model and the regional compilation.
 #
-# ``torch.compile`` is a JIT compiler, which means that it compiles on the first invocation.
+# ```torch.compile``` is a JIT compiler, which means that it compiles on the first invocation.
 # In the code below, we measure the total time spent in the first invocation. While this method is not
 # precise, it provides a good estimate since the majority of the time is spent in
 # compilation.
