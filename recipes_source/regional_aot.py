@@ -113,7 +113,7 @@ path = torch._inductor.aoti_compile_and_package(
 )
 
 ####################################################
-# We can load from this `path` and use it to perform inference.
+# We can load from this ``path`` and use it to perform inference.
 
 compiled_binary = torch._inductor.aoti_load_package(path)
 output_compiled = compiled_binary(input)
@@ -136,7 +136,7 @@ path = torch._inductor.aoti_compile_and_package(
 )
 
 ###################################################
-# An exported program (```torch.export.ExportedProgram```) contains the Tensor computation,
+# An exported program (``torch.export.ExportedProgram``) contains the Tensor computation,
 # a state_dict containing tensor values of all lifted parameters and buffer alongside 
 # other metadata. We specify the ``aot_inductor.package_constants_in_so`` to be ``False`` to
 # not serialize the model parameters in the generated artifact.
@@ -168,7 +168,7 @@ print(f"{output_regional_compiled.shape=}")
 ###################################################
 # Next, let's measure the compilation time of the full model and the regional compilation.
 #
-# ```torch.compile``` is a JIT compiler, which means that it compiles on the first invocation.
+# ``torch.compile`` is a JIT compiler, which means that it compiles on the first invocation.
 # In the code below, we measure the total time spent in the first invocation. While this method is not
 # precise, it provides a good estimate since the majority of the time is spent in
 # compilation.
