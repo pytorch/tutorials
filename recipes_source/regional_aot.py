@@ -3,21 +3,21 @@
 Reducing AoT cold start compilation time with regional compilation
 ============================================================================
 
-**Author:** `Sayak Paul <https://github.com/sayakpaul>`, `Charles Bensimon <https://github.com/cbensimon>`, `Angela Yi <https://github.com/angelay>`
+**Author:** `Sayak Paul <https://github.com/sayakpaul>`, `Charles Bensimon <https://github.com/cbensimon>`, `Angela Yi <https://github.com/angelayi>`
 
 In our [regional compilation recipe](https://docs.pytorch.org/tutorials/recipes/regional_compilation.html), we showed
 how to reduce cold start compilation times while retaining (almost) full compilation benefits. This was demonstrated for
 just-in-time (JiT) compilation.
 
 This recipe shows how to apply similar principles when compiling a model ahead-of-time (AoT). If you
-are not familiar with AoT and `torch.export`, we recommend you to check out [this tutorial](https://docs.pytorch.org/tutorials/recipes/torch_export_aoti_python.html).
+are not familiar with AOTInductor and `torch.export`, we recommend you to check out [this tutorial](https://docs.pytorch.org/tutorials/recipes/torch_export_aoti_python.html).
 
 Prerequisites
 ----------------
 
 * Pytorch 2.6 or later
 * Familiarity with regional compilation
-* Familiarity with AoT and `torch.export`
+* Familiarity with AOTInductor and `torch.export`
 
 Setup
 -----
@@ -109,9 +109,7 @@ print(f"{output.shape=}")
 # to `torch.export`. This will yield a `torch.export.ExportedProgram` which we can compile.
 
 path = torch._inductor.aoti_compile_and_package(
-    torch.export.export(
-        model, args=input, kwargs={},
-    )
+    torch.export.export(model, args=(input,))
 )
 
 ####################################################
@@ -130,15 +128,11 @@ print(f"{output_compiled.shape=}")
 
 model = Model().cuda()
 path = torch._inductor.aoti_compile_and_package(
-    torch.export.export(
-        model.layers[0], 
-        args=input, 
-        kwargs={},
-        inductor_configs={
-            # compile artifact w/o saving params in the artifact
-            "aot_inductor.package_constants_in_so": False,
-        }
-    )
+    torch.export.export(model.layers[0], args=(input,)),
+    inductor_configs={
+        # compile artifact w/o saving params in the artifact
+        "aot_inductor.package_constants_in_so": False,
+    }
 )
 
 ###################################################
@@ -197,10 +191,9 @@ def aot_compile_model(regional=False):
     path = torch._inductor.aoti_compile_and_package(
         torch.export.export(
             model.layers[0] if regional else model, 
-            args=input, 
-            kwargs={},
-            inductor_configs=inductor_configs,
-        )
+            args=(input,)
+        ),
+        inductor_configs=inductor_configs,
     )
 
     if regional:
