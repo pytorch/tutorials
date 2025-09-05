@@ -5,9 +5,9 @@ Reducing AoT cold start compilation time with regional compilation
 
 **Author:** `Sayak Paul <https://github.com/sayakpaul>`, `Charles Bensimon <https://github.com/cbensimon>`, `Angela Yi <https://github.com/angelayi>`
 
-In our [regional compilation recipe](https://docs.pytorch.org/tutorials/recipes/regional_compilation.html), we showed
+In the [regional compilation recipe](https://docs.pytorch.org/tutorials/recipes/regional_compilation.html), we showed
 how to reduce cold start compilation times while retaining (almost) full compilation benefits. This was demonstrated for
-just-in-time (JiT) compilation.
+just-in-time (JIT) compilation.
 
 This recipe shows how to apply similar principles when compiling a model ahead-of-time (AoT). If you
 are not familiar with AOTInductor and ``torch.export``, we recommend you to check out [this tutorial](https://docs.pytorch.org/tutorials/recipes/torch_export_aoti_python.html).
@@ -38,7 +38,7 @@ from time import perf_counter
 # Steps
 # -----
 #
-# In this recipe, we will follow pretty much the same steps as the regional compilation recipe mentioned above:
+# In this recipe, we will follow the same steps as the regional compilation recipe mentioned above:
 #
 # 1. Import all necessary libraries.
 # 2. Define and initialize a neural network with repeated regions.
@@ -137,7 +137,7 @@ path = torch._inductor.aoti_compile_and_package(
 
 ###################################################
 # An exported program (``torch.export.ExportedProgram``) contains the Tensor computation,
-# a state_dict containing tensor values of all lifted parameters and buffer alongside 
+# a ``state_dict`` containing tensor values of all lifted parameters and buffer alongside 
 # other metadata. We specify the ``aot_inductor.package_constants_in_so`` to be ``False`` to
 # not serialize the model parameters in the generated artifact.
 #
@@ -156,7 +156,7 @@ output_regional_compiled = model(input)
 print(f"{output_regional_compiled.shape=}")
 
 #####################################################
-# Just like JiT regional compilation, compiling regions within a model ahead-of-time
+# Just like JIT regional compilation, compiling regions within a model ahead-of-time
 # leads to significantly reduced cold start times. The actual number will vary from
 # model to model.
 #
@@ -234,5 +234,5 @@ assert regional_compilation_latency < full_model_compilation_latency
 # -----------
 #
 # This recipe shows how to control the cold start time when compiling your 
-# model ahead-of-time.This becomes effective when your model has repeated
-# blocks, like typically seen in large generative models.
+# model ahead-of-time. This becomes effective when your model has repeated
+# blocks, which is typically seen in large generative models.
