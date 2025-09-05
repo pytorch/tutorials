@@ -152,6 +152,9 @@ for layer in model.layers:
     )
     layer.forward = compiled_layer
 
+output_regional_compiled = model(input)
+print(f"{output_regional_compiled.shape=}")
+
 #####################################################
 # Just like JiT regional compilation, compiling regions within a model ahead-of-time
 # leads to significantly reduced cold start times. The actual number will vary from
@@ -171,56 +174,65 @@ for layer in model.layers:
 # compilation.
 
 
-def measure_latency(fn, input):
-    # Reset the compiler caches to ensure no reuse between different runs
-    torch.compiler.reset()
-    with torch._inductor.utils.fresh_inductor_cache():
-        start = perf_counter()
-        fn(input)
-        torch.cuda.synchronize()
-        end = perf_counter()
-        return end - start
+def measure_compile_time(input, regional=False):
+    start = perf_counter()
+    model = aot_compile_load_model(regional=regional)
+    torch.cuda.synchronize()
+    end = perf_counter()
+    # make sure the model works.
+    _ = model(input)
+    return end - start
 
-def aot_compile_model(regional=False):
+def aot_compile_load_model(regional=False) -> torch.nn.Module:
     input = torch.randn(10, 10, device="cuda")
     model = Model().cuda()
     
     inductor_configs = {}
     if regional:
         inductor_configs = {"aot_inductor.package_constants_in_so": False}
-    path = torch._inductor.aoti_compile_and_package(
-        torch.export.export(
-            model.layers[0] if regional else model, 
-            args=(input,)
-        ),
-        inductor_configs=inductor_configs,
-    )
-
-    if regional:
-        for layer in model.layers:
-            compiled_layer = torch._inductor.aoti_load_package(path)
-            compiled_layer.load_constants(
-                layer.state_dict(), check_full_update=True, user_managed=True
-            )
-            layer.forward = compiled_layer
-    else:
-        compiled_layer = torch._inductor.aoti_load_package(path)
     
+    # Reset the compiler caches to ensure no reuse between different runs
+    torch.compiler.reset()
+    with torch._inductor.utils.fresh_inductor_cache():
+        path = torch._inductor.aoti_compile_and_package(
+            torch.export.export(
+                model.layers[0] if regional else model, 
+                args=(input,)
+            ),
+            inductor_configs=inductor_configs,
+        )
+
+        if regional:
+            for layer in model.layers:
+                compiled_layer = torch._inductor.aoti_load_package(path)
+                compiled_layer.load_constants(
+                    layer.state_dict(), check_full_update=True, user_managed=True
+                )
+                layer.forward = compiled_layer
+        else:
+            model = torch._inductor.aoti_load_package(path)
     return model
 
 input = torch.randn(10, 10, device="cuda")
-full_model_compilation_latency = measure_latency(aot_compile_model(), input)
+full_model_compilation_latency = measure_compile_time(input, regional=False)
 print(f"Full model compilation time = {full_model_compilation_latency:.2f} seconds")
 
-regional_compilation_latency = measure_latency(aot_compile_model(regional=True), input)
+regional_compilation_latency = measure_compile_time(input, regional=True)
 print(f"Regional compilation time = {regional_compilation_latency:.2f} seconds")
 
 assert regional_compilation_latency < full_model_compilation_latency
 
 ############################################################################
+# There may also be layers in a model incompatible with compilation. So, 
+# full compilation will result in a fragmented computation graph resulting
+# in potential latency degradation. In these case, regional compilation
+# can be beneficial.
+# 
+
+############################################################################
 # Conclusion
 # -----------
 #
-# This recipe shows how to control the cold start time when compiling your model ahead-of-time.
-# This becomes effective when your model has repeated blocks, like typically seen in large generative
-# models.
+# This recipe shows how to control the cold start time when compiling your 
+# model ahead-of-time.This becomes effective when your model has repeated
+# blocks, like typically seen in large generative models.
