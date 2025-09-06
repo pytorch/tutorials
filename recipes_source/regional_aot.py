@@ -32,8 +32,6 @@ available.
    This feature is available starting with the 2.6 release.
 """
 
-from time import perf_counter
-
 ######################################################################
 # Steps
 # -----
@@ -46,13 +44,16 @@ from time import perf_counter
 #
 # First, let's import the necessary libraries for loading our data:
 #
-#
 
 import torch
 torch.set_grad_enabled(False)
 
+from time import perf_counter
 
-##########################################################
+###################################################################################
+# Defining the Neural Network
+# ---------------------------
+# 
 # We will use the same neural network structure as the regional compilation recipe.
 #
 # We will use a network, composed of repeated layers. This mimics a
@@ -92,7 +93,10 @@ class Model(torch.nn.Module):
         return x
 
 
-####################################################
+##################################################################################
+# Compiling the model ahead-of-time
+# ---------------------------------
+# 
 # Since we're compiling the model ahead-of-time, we need to prepare representative
 # input examples, that we expect the model to see during actual deployments.
 # 
@@ -104,7 +108,7 @@ input = torch.randn(10, 10, device="cuda")
 output = model(input)
 print(f"{output.shape=}")
 
-####################################################
+###############################################################################################
 # Now, let's compile our model ahead-of-time. We will use ``input`` created above to pass
 # to ``torch.export``. This will yield a ``torch.export.ExportedProgram`` which we can compile.
 
@@ -112,14 +116,17 @@ path = torch._inductor.aoti_compile_and_package(
     torch.export.export(model, args=(input,))
 )
 
-####################################################
+#################################################################
 # We can load from this ``path`` and use it to perform inference.
 
 compiled_binary = torch._inductor.aoti_load_package(path)
 output_compiled = compiled_binary(input)
 print(f"{output_compiled.shape=}")
 
-###################################################
+######################################################################################
+# Compiling _regions_ of the model ahead-of-time
+# ----------------------------------------------
+# 
 # Compiling model regions ahead-of-time, on the other hand, requires a few key changes.
 #
 # Since the compute pattern is shared by all the blocks that
@@ -166,13 +173,10 @@ print(f"{output_regional_compiled.shape=}")
 # reducing the cold start times.
 
 ###################################################
+# Measuring compilation time
+# --------------------------
 # Next, let's measure the compilation time of the full model and the regional compilation.
 #
-# ``torch.compile`` is a JIT compiler, which means that it compiles on the first invocation.
-# In the code below, we measure the total time spent in the first invocation. While this method is not
-# precise, it provides a good estimate since the majority of the time is spent in
-# compilation.
-
 
 def measure_compile_time(input, regional=False):
     start = perf_counter()
