@@ -1042,11 +1042,12 @@ When models grow larger, more aggressive techniques might be useful:</p>
 <script type="application/ld+json">
       {
          "@context": "https://schema.org",
-         "@type": "TechArticle",
+         "@type": "Article",
          "name": "Training \u201creal-world\u201d models with DDP",
          "headline": "Training \u201creal-world\u201d models with DDP",
          "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
          "url": "/intermediate/ddp_series_minGPT.html",
+         "articleBody": "Introduction || What is DDP || Single-Node Multi-GPU Training || Fault Tolerance || Multi-Node training || minGPT Training Training \u201creal-world\u201d models with DDP# Authors: Suraj Subramanian What you will learn Best practices when writing a distributed training script Increased flexibility with saving/loading artifacts in the cloud When DDP is NOT suitable View the code used in this tutorial on GitHub Prerequisites PyTorch installed with CUDA on all machines Familiarity with multi-GPU training and torchrun [Optional] Familiarity with multinode training 2 or more TCP-reachable GPU machines for multi-node training (this tutorial uses AWS p3.2xlarge instances) Follow along with the video below or on youtube. In this video, we will review the process of training a GPT model in multinode DDP. We first clone the minGPT repo and refactor the Trainer to resemble the structure we have used in this series. Watch the video for details on these changes. We use hydra to centrally manage all the configurations for our training run. Once the code has been refactored, we run it first on a single-node with 4 GPUs, and then on a slurm cluster. Files used for training# trainer.py includes the Trainer class that runs the distributed training iterations on the model with the provided dataset. model.py defines the model architecture. char_dataset.py contains the Dataset class for a character-level dataset. gpt2_train_cfg.yaml contains the configurations for data, model, optimizer, and training run. main.py is the entry point to the training job. It sets up the DDP process group, reads all the configurations and runs the training job. Saving and Loading from the cloud# In the video above, we save training snapshots directly to the cloud. This gives us the flexibility to continue training from any node that has access to the cloud bucket. Using Mixed Precision# To speed things up, you might be able to use Mixed Precision to train your models. In Mixed Precision, some parts of the training process are carried out in reduced precision, while other steps that are more sensitive to precision drops are maintained in FP32 precision. When is DDP not enough?# A typical training run\u2019s memory footprint consists of model weights, activations, gradients, the input batch, and the optimizer state. Since DDP replicates the model on each GPU, it only works when GPUs have sufficient capacity to accomodate the full footprint. When models grow larger, more aggressive techniques might be useful: Activation checkpointing: Instead of saving intermediate activations during the forward pass, the activations are recomputed during the backward pass. In this approach, we run more compute but save on memory footprint. Fully-Sharded Data Parallel: Here the model is not replicated but \u201csharded\u201d across all the GPUs, and computation is overlapped with communication in the forward and backward passes. Read our blog to learn how we trained a 1 Trillion parameter model with FSDP. Further Reading# Multi-Node training with DDP (previous tutorial in this series) Mixed Precision training Fully-Sharded Data Parallel tutorial Training a 1T parameter model with FSDP",
          "author": {
            "@type": "Organization",
            "name": "PyTorch Contributors",
@@ -1057,8 +1058,8 @@ When models grow larger, more aggressive techniques might be useful:</p>
            "@type": "WebPage",
            "@id": "/intermediate/ddp_series_minGPT.html"
          },
-         "datePublished": "",
-         "dateModified": ""
+         "datePublished": "2023-01-01T00:00:00Z",
+         "dateModified": "2023-01-01T00:00:00Z"
        }
    </script>
 </body>
