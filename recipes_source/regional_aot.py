@@ -27,9 +27,6 @@ available.
 .. code-block:: sh
 
    pip install torch
-
-.. note::
-   This feature is available starting with the 2.6 release.
 """
 
 ######################################################################
