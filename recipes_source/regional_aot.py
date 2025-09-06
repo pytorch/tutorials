@@ -50,7 +50,7 @@ from time import perf_counter
 ###################################################################################
 # Defining the Neural Network
 # ---------------------------
-# 
+#
 # We will use the same neural network structure as the regional compilation recipe.
 #
 # We will use a network, composed of repeated layers. This mimics a
@@ -93,12 +93,12 @@ class Model(torch.nn.Module):
 ##################################################################################
 # Compiling the model ahead-of-time
 # ---------------------------------
-# 
+#
 # Since we're compiling the model ahead-of-time, we need to prepare representative
 # input examples, that we expect the model to see during actual deployments.
-# 
+#
 # Let's create an instance of ``Model`` and pass it some sample input data.
-# 
+#
 
 model = Model().cuda()
 input = torch.randn(10, 10, device="cuda")
@@ -123,7 +123,7 @@ print(f"{output_compiled.shape=}")
 ######################################################################################
 # Compiling _regions_ of the model ahead-of-time
 # ----------------------------------------------
-# 
+#
 # Compiling model regions ahead-of-time, on the other hand, requires a few key changes.
 #
 # Since the compute pattern is shared by all the blocks that
@@ -141,13 +141,13 @@ path = torch._inductor.aoti_compile_and_package(
 
 ###################################################
 # An exported program (``torch.export.ExportedProgram``) contains the Tensor computation,
-# a ``state_dict`` containing tensor values of all lifted parameters and buffer alongside 
+# a ``state_dict`` containing tensor values of all lifted parameters and buffer alongside
 # other metadata. We specify the ``aot_inductor.package_constants_in_so`` to be ``False`` to
 # not serialize the model parameters in the generated artifact.
 #
 # Now, when loading the compiled binary, we can reuse the existing parameters of
 # each block. This lets us take advantage of the compiled binary obtained above.
-# 
+#
 
 for layer in model.layers:
     compiled_layer = torch._inductor.aoti_load_package(path)
@@ -187,17 +187,17 @@ def measure_compile_time(input, regional=False):
 def aot_compile_load_model(regional=False) -> torch.nn.Module:
     input = torch.randn(10, 10, device="cuda")
     model = Model().cuda()
-    
+
     inductor_configs = {}
     if regional:
         inductor_configs = {"aot_inductor.package_constants_in_so": False}
-    
+
     # Reset the compiler caches to ensure no reuse between different runs
     torch.compiler.reset()
     with torch._inductor.utils.fresh_inductor_cache():
         path = torch._inductor.aoti_compile_and_package(
             torch.export.export(
-                model.layers[0] if regional else model, 
+                model.layers[0] if regional else model,
                 args=(input,)
             ),
             inductor_configs=inductor_configs,
@@ -224,16 +224,16 @@ print(f"Regional compilation time = {regional_compilation_latency:.2f} seconds")
 assert regional_compilation_latency < full_model_compilation_latency
 
 ############################################################################
-# There may also be layers in a model incompatible with compilation. So, 
+# There may also be layers in a model incompatible with compilation. So,
 # full compilation will result in a fragmented computation graph resulting
 # in potential latency degradation. In these case, regional compilation
 # can be beneficial.
-# 
+#
 
 ############################################################################
 # Conclusion
 # -----------
 #
-# This recipe shows how to control the cold start time when compiling your 
+# This recipe shows how to control the cold start time when compiling your
 # model ahead-of-time. This becomes effective when your model has repeated
 # blocks, which is typically seen in large generative models.
