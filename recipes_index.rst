@@ -333,6 +333,13 @@ from our full-length tutorials.
    :link: recipes/distributed_comm_debug_mode.html
    :tags: Distributed-Training
 
+.. customcarditem::
+   :header: Reducing AoT cold start compilation time with regional compilation
+   :card_description: Learn how to use regional compilation to control AoT cold start compile time
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: recipes/regional_aot.html
+   :tags: Model-Optimization
+
 .. End of tutorial card section
 
 .. -----------------------------------------
@@ -378,6 +385,7 @@ from our full-length tutorials.
    recipes/torch_compile_caching_tutorial
    recipes/torch_compile_caching_configuration_tutorial
    recipes/regional_compilation
+   recipes/regional_aot
    recipes/intel_extension_for_pytorch.html
    recipes/intel_neural_compressor_for_pytorch
    recipes/distributed_device_mesh
