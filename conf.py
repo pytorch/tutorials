@@ -266,22 +266,6 @@ if os.getenv("GALLERY_PATTERN"):
         r"/(?!" + re.escape(os.getenv("GALLERY_PATTERN")) + r")[^/]+$"
     )
 
-# Add 404.html to each gallery directory and all subdirectories
-for i, gallery_dir in enumerate(sphinx_gallery_conf["gallery_dirs"]):
-    # Add 404.html to the main gallery directory
-    html_additional_pages[f"{gallery_dir}/404"] = "404.html"
-
-    # Add 404.html to all subdirectories in the corresponding source directory
-    source_dir = Path(sphinx_gallery_conf["examples_dirs"][i])
-    if source_dir.exists():
-        # Find all subdirectories in the source directory
-        for subdir in source_dir.rglob("*"):
-            if subdir.is_dir() and subdir != source_dir:
-                # Calculate the relative path and corresponding gallery path
-                relative_path = subdir.relative_to(source_dir)
-                gallery_subdir = f"{gallery_dir}/{relative_path}"
-                html_additional_pages[f"{gallery_subdir}/404"] = "404.html"
-
 for i in range(len(sphinx_gallery_conf["examples_dirs"])):
     gallery_dir = Path(sphinx_gallery_conf["gallery_dirs"][i])
     source_dir = Path(sphinx_gallery_conf["examples_dirs"][i])
