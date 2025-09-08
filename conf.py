@@ -270,7 +270,7 @@ if os.getenv("GALLERY_PATTERN"):
 for i, gallery_dir in enumerate(sphinx_gallery_conf["gallery_dirs"]):
     # Add 404.html to the main gallery directory
     html_additional_pages[f"{gallery_dir}/404"] = "404.html"
-    
+
     # Add 404.html to all subdirectories in the corresponding source directory
     source_dir = Path(sphinx_gallery_conf["examples_dirs"][i])
     if source_dir.exists():
