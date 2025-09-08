@@ -158,10 +158,6 @@ html_meta = {
     "author": "PyTorch Contributors",
 }
 
-html_additional_pages = {
-    "404": "404.html",
-}
-
 # -- Sphinx-gallery configuration --------------------------------------------
 
 sphinx_gallery_conf = {
