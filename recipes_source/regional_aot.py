@@ -5,12 +5,12 @@ Reducing AoT cold start compilation time with regional compilation
 
 **Author:** `Sayak Paul <https://github.com/sayakpaul>`_, `Charles Bensimon <https://github.com/cbensimon>`_, `Angela Yi <https://github.com/angelayi>`_
 
-In the [regional compilation recipe](https://docs.pytorch.org/tutorials/recipes/regional_compilation.html), we showed
+In the `regional compilation recipe <https://docs.pytorch.org/tutorials/recipes/regional_compilation.html>`__, we showed
 how to reduce cold start compilation times while retaining (almost) full compilation benefits. This was demonstrated for
 just-in-time (JIT) compilation.
 
 This recipe shows how to apply similar principles when compiling a model ahead-of-time (AoT). If you
-are not familiar with AOTInductor and ``torch.export``, we recommend you to check out [this tutorial](https://docs.pytorch.org/tutorials/recipes/torch_export_aoti_python.html).
+are not familiar with AOTInductor and ``torch.export``, we recommend you to check out `this tutorial <https://docs.pytorch.org/tutorials/recipes/torch_export_aoti_python.html>`__.
 
 Prerequisites
 ----------------
