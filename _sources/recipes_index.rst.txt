@@ -34,7 +34,7 @@ from our full-length tutorials.
    :header: Defining a Neural Network
    :card_description: Learn how to use PyTorch's torch.nn package to create and define a neural network for the MNIST dataset.
    :image: _static/img/thumbnails/cropped/defining-a-network.PNG
-   :link: recipesrecipes/defining_a_neural_network.html
+   :link: recipes/recipes/defining_a_neural_network.html
    :tags: Basics
 
 .. customcarditem::
