@@ -34,6 +34,7 @@ redirects = {
     "receipes/quantization.html": "../index.html",
     "receipes/receipes/dynamic_quantization.html": "../index.html",
     "advanced/torch_script_custom_classes": "../index.html",
+    "advanced/cpp_extension.html": "https://docs.pytorch.org/tutorials/advanced/custom_ops_landing_page.html",
     "beginner/Intro_to_TorchScript_tutorial.html": "../index.html",
     "prototype/torchscript_freezing.html": "../index.html",
 }

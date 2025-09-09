@@ -65,13 +65,6 @@ C++ extensions and dispatcher usage.
    :tags: Extending-PyTorch,Frontend-APIs
 
 .. customcarditem::
-   :header: Custom C++ and CUDA Extensions
-   :card_description: Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights.
-   :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
-   :link: advanced/cpp_extension.html
-   :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
-
-.. customcarditem::
    :header: Registering a Dispatched Operator in C++
    :card_description: The dispatcher is an internal component of PyTorch which is responsible for figuring out what code should actually get run when you call a function like torch::add.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
