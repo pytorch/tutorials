@@ -60,12 +60,9 @@ We'll begin with similar boilerplate code as in the `CIFAR-10 tutorial <https://
         transform=transform)
 
     # dataloaders
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=4,
-                                            shuffle=True, num_workers=2)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True)
 
-
-    testloader = torch.utils.data.DataLoader(testset, batch_size=4,
-                                            shuffle=False, num_workers=2)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=4, shuffle=False)
 
     # constant for classes
     classes = ('T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
