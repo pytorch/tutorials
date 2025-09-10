@@ -3,7 +3,7 @@ Supporting Custom C++ Classes in torch.compile/torch.export
 
 
 This tutorial is a follow-on to the
-:doc:`custom C++ classes <torch_script_custom_classes>` tutorial, and
+:doc:`custom C++ classes <custom_classes>` tutorial, and
 introduces additional steps that are needed to support custom C++ classes in
 torch.compile/torch.export.
 
@@ -30,7 +30,7 @@ Concretely, there are a few steps:
        states returned by ``__obj_flatten__``.
 
 Here is a breakdown of the diff. Following the guide in
-:doc:`Extending TorchScript with Custom C++ Classes <torch_script_custom_classes>`,
+:doc:`Extending TorchScript with Custom C++ Classes <custom_classes>`,
 we can create a thread-safe tensor queue and build it.
 
 .. code-block:: cpp
