@@ -37,4 +37,5 @@ redirects = {
     "recipes/bundled_inputs.html": "../index.html",
     "recipes/recipes_index.html": "../recipes_index.html",
     "recipes/torchserve_vertexai_tutorial.html": "../index.html",
+    "unstable_source/vulkan_workflow.rst": "../index.html",
 }
