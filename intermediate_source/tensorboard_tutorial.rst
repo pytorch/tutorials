@@ -156,7 +156,7 @@ Now running
 
 ::
 
-    tensorboard --logdir=runs
+    PYTHONWARNINGS="ignore:pkg_resources is deprecated as an API:UserWarning" tensorboard --logdir=runs
 
 from the command line and then navigating to `http://localhost:6006 <http://localhost:6006>`_
 should show the following.
