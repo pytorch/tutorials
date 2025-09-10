@@ -158,9 +158,7 @@ html_meta = {
     "author": "PyTorch Contributors",
 }
 
-html_additional_pages = {
-    "404": "404.html",
-}
+
 
 # -- Sphinx-gallery configuration --------------------------------------------
 
@@ -190,6 +188,11 @@ sphinx_gallery_conf = {
         "filters": [".jenkins/custom_pandoc_filter.py"],
     },
 }
+
+html_additional_pages = {
+    "404": "404.html",
+}
+
 
 html_baseurl = "https://pytorch.org/tutorials/"  # needed for sphinx-sitemap
 sitemap_locales = [None]
