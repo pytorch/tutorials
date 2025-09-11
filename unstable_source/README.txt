@@ -2,7 +2,7 @@ Prototype Tutorials
 ------------------
 1. distributed_rpc_profiling.rst
            Profiling PyTorch RPC-Based Workloads
-           https://github.com/pytorch/tutorials/blob/main/prototype_source/distributed_rpc_profiling.rst
+           https://github.com/pytorch/tutorials/blob/main/unstable_source/distributed_rpc_profiling.rst
 
 2. flight_recorder_tutorial.rst
 	   Flight Recorder User Guide
@@ -10,4 +10,4 @@ Prototype Tutorials
 
 3. python_extension_autoload.rst
 	   Autoloading Out-of-Tree Extension
-	   https://pytorch.org/tutorials/prototype/python_extension_autoload.html
+	   https://github.com/pytorch/tutorials/blob/main/unstable_source/python_extension_autoload.rst
