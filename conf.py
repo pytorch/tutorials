@@ -158,9 +158,7 @@ html_meta = {
     "author": "PyTorch Contributors",
 }
 
-html_additional_pages = {
-    "404": "404.html",
-}
+
 
 # -- Sphinx-gallery configuration --------------------------------------------
 
@@ -170,9 +168,9 @@ sphinx_gallery_conf = {
         "intermediate_source",
         "advanced_source",
         "recipes_source",
-        "prototype_source",
+        "unstable_source",
     ],
-    "gallery_dirs": ["beginner", "intermediate", "advanced", "recipes", "prototype"],
+    "gallery_dirs": ["beginner", "intermediate", "advanced", "recipes", "unstable"],
     "filename_pattern": re.compile(SPHINX_SHOULD_RUN),
     "promote_jupyter_magic": True,
     "backreferences_dir": None,
@@ -191,6 +189,11 @@ sphinx_gallery_conf = {
     },
 }
 
+html_additional_pages = {
+    "404": "404.html",
+}
+
+
 html_baseurl = "https://pytorch.org/tutorials/"  # needed for sphinx-sitemap
 sitemap_locales = [None]
 sitemap_excludes = [
@@ -202,7 +205,6 @@ sitemap_url_scheme = "{link}"
 html_theme_options = {
     "navigation_with_keys": False,
     "analytics_id": "GTM-T8XT4PS",
-    "pytorch_project": "tutorials",
     "logo": {
         "text": "",
     },
@@ -233,6 +235,7 @@ html_theme_options = {
     "navbar_start": ["pytorch_version"],
     "navbar_center": "navbar-nav",
     "display_version": True,
+    "pytorch_project": "tutorials",
 }
 
 theme_variables = pytorch_sphinx_theme2.get_theme_variables()
@@ -247,7 +250,7 @@ html_context = {
     "github_version": "main",
     "doc_path": ".",
     "library_links": theme_variables.get("library_links", []),
-    "pytorch_project": "tutorials",
+    #"pytorch_project": "tutorials",
 }
 
 
