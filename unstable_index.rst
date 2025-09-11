@@ -171,7 +171,6 @@ decide if we want to upgrade the level of commitment or to fail fast.
    unstable/inductor_cpp_wrapper_tutorial
    unstable/inductor_windows
    unstable/vmap_recipe
-   unstable/vulkan_workflow
    unstable/nestedtensor
    unstable/maskedtensor_overview
    unstable/maskedtensor_sparsity
