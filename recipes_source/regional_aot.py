@@ -236,4 +236,6 @@ assert regional_compilation_latency < full_model_compilation_latency
 #
 # This recipe shows how to control the cold start time when compiling your
 # model ahead-of-time. This becomes effective when your model has repeated
-# blocks, which is typically seen in large generative models.
+# blocks, which is typically seen in large generative models. We used this
+# recipe on various models to speed up real-time performance. Learn more
+# `here <https://huggingface.co/blog/zerogpu-aoti>`__.
