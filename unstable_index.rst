@@ -45,15 +45,6 @@ decide if we want to upgrade the level of commitment or to fail fast.
    :link: unstable/semi_structured_sparse.html
    :tags: Model-Optimiziation
 
-.. Modules
-
-.. customcarditem::
-   :header: Skipping Module Parameter Initialization in PyTorch 1.10
-   :card_description: Describes skipping parameter initialization during module construction in PyTorch 1.10, avoiding wasted computation.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: unstable/skip_param_init.html
-   :tags: Modules
-
 .. vmap
 
 .. customcarditem::
