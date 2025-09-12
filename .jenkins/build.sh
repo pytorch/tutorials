@@ -22,9 +22,8 @@ sudo apt-get install -y pandoc
 #Install PyTorch Nightly for test.
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
 # Install 2.9 to merge all 2.9 PRs - uncomment to install nightly binaries (update the version as needed).
-sudo pip uninstall -y torch torchvision torchaudio torchtext torchdata torchrl tensordict fbgemm-gpu torchrec
+sudo pip uninstall -y torch torchvision torchaudio torchdata fbgemm-gpu torchrec
 pip3 install torch==2.9.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/test/cu130
-pip3 install torchrl==0.10.0 tensordict==0.10.0
 # sudo pip3 install fbgemm-gpu==1.2.0 torchrec==1.2.0 --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu126
 # Install two language tokenizers for Translation with TorchText tutorial
 python -m spacy download en_core_web_sm
