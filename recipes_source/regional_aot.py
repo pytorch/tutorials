@@ -3,7 +3,7 @@
 Reducing AoT cold start compilation time with regional compilation
 ============================================================================
 
-**Author:** `Sayak Paul <https://github.com/sayakpaul>`_, `Charles Bensimon <https://github.com/cbensimon>`_, `Angela Yi <https://github.com/angelayi>`_
+**Author:** `Sayak Paul <https://huggingface.co/sayakpaul>`_, `Charles Bensimon <https://huggingface.co/cbensimon>`_, `Angela Yi <https://github.com/angelayi>`_
 
 In the `regional compilation recipe <https://docs.pytorch.org/tutorials/recipes/regional_compilation.html>`__, we showed
 how to reduce cold start compilation times while retaining (almost) full compilation benefits. This was demonstrated for
