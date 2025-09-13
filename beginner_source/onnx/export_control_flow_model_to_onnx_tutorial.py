@@ -96,19 +96,6 @@ try:
 except Exception as e:
     print(e)
 
-###############################################################################
-# Using :func:`torch.onnx.export` with JIT Tracing
-# ----------------------------------------
-#
-# When exporting the model using :func:`torch.onnx.export` with the dynamo=True
-# argument, the exporter defaults to using JIT tracing. This fallback allows
-# the model to export, but the resulting ONNX graph may not faithfully represent
-# the original model logic due to the limitations of tracing.
-
-
-onnx_program = torch.onnx.export(model, (x,), dynamo=True) 
-print(onnx_program.model)
-
 
 ###############################################################################
 # Suggested Patch: Refactoring with :func:`torch.cond`
