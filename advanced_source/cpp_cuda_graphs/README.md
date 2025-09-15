@@ -16,8 +16,10 @@ $ make
 ```
 
 where `/path/to/libtorch` should be the path to the unzipped _LibTorch_
-distribution, which you can get from the [PyTorch
-homepage](https://pytorch.org/get-started/locally/).
+distribution or PyTorch's CMake prefix path
+`python -c "import torch; print(torch.utils.cmake_prefix_path)"`.
+Please see [PyTorch homepage](https://pytorch.org/get-started/locally/)
+for installation instructions.
 
 Execute the compiled binary to train the model:
 
