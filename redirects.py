@@ -38,4 +38,5 @@ redirects = {
     "recipes/recipes_index.html": "../recipes_index.html",
     "recipes/torchserve_vertexai_tutorial.html": "../index.html",
     "unstable_source/vulkan_workflow.rst": "../index.html",
+    "unstable/skip_param_init.html": "https://docs.pytorch.org/tutorials/recipes/recipes/module_load_state_dict_tips.html",
 }
