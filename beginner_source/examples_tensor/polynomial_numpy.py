@@ -37,7 +37,7 @@ for t in range(2000):
     if t % 100 == 99:
         print(t, loss)
 
-    # Backprop to compute gradients of a, b, c, d with respect to loss
+    # Backprop to compute gradients of loss with respect to parameters a, b, c, d
     grad_y_pred = 2.0 * (y_pred - y)
     grad_a = grad_y_pred.sum()
     grad_b = (grad_y_pred * x).sum()
