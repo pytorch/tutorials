@@ -367,7 +367,6 @@ from our full-length tutorials.
    recipes/recipes/timer_quick_start
    recipes/torch_compile_backend_ipex
    recipes/zero_redundancy_optimizer
-   recipes/cuda_rpc
    recipes/distributed_comm_debug_mode
    recipes/torch_export_challenges_solutions
    recipes/recipes/benchmark
