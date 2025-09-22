@@ -1,11 +1,31 @@
+.. _cpp-frontend-tutorial:
+
 Using the PyTorch C++ Frontend
 ==============================
+
+**Author:** `Peter Goldsborough <https://github.com/goldsborough>`_
+
+.. grid:: 2
+
+    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+       :class-card: card-prerequisites
+
+       * How to build a C++ application that utilizes the PyTorch C++ frontend
+       * How to define and train neural networks from C++ using PyTorch abstractions
+
+    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+       :class-card: card-prerequisites
+
+       * PyTorch 1.5 or later
+       * Basic understanding of C++ programming
+       * Basic Ubuntu Linux environment with CMake >= 3.5; similar commands will work in a MacOS / Windows environment
+       * (Optional) A CUDA-based GPU for the GPU training sections
 
 The PyTorch C++ frontend is a pure C++ interface to the PyTorch machine learning
 framework. While the primary interface to PyTorch naturally is Python, this
 Python API sits atop a substantial C++ codebase providing foundational data
 structures and functionality such as tensors and automatic differentiation. The
-C++ frontend exposes a pure C++11 API that extends this underlying C++ codebase
+C++ frontend exposes a pure C++17 API that extends this underlying C++ codebase
 with tools required for machine learning training and inference. This includes a
 built-in collection of common components for neural network modeling; an API to
 extend this collection with custom modules; a library of popular optimization
@@ -137,14 +157,14 @@ on we'll use this ``CMakeLists.txt`` file:
 
 .. code-block:: cmake
 
-  cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+  cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
   project(dcgan)
 
   find_package(Torch REQUIRED)
 
   add_executable(dcgan dcgan.cpp)
   target_link_libraries(dcgan "${TORCH_LIBRARIES}")
-  set_property(TARGET dcgan PROPERTY CXX_STANDARD 14)
+  set_property(TARGET dcgan PROPERTY CXX_STANDARD 17)
 
 .. note::
 
@@ -859,7 +879,7 @@ stacks them into a single tensor along the first dimension:
 
 Note that the MNIST dataset should be located in the ``./mnist`` directory
 relative to wherever you execute the training binary from. You can use `this
-script <https://gist.github.com/goldsborough/6dd52a5e01ed73a642c1e772084bcd03>`_
+script <https://gist.github.com/jbschlosser/94347505df6188f8764793ee29fd1bdd>`_
 to download the MNIST dataset.
 
 Next, we create a data loader and pass it this dataset. To make a new data
