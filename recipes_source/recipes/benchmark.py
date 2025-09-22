@@ -884,5 +884,5 @@ print(delta)
 #
 # Take a look at these other recipes to continue your learning:
 #
-# -  `PyTorch Profiler <https://pytorch.org/tutorials/recipes/recipes/profiler.html>`_
+# -  `PyTorch Profiler <https://docs.pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`_
 #
