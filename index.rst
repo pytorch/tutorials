@@ -100,6 +100,13 @@ Welcome to PyTorch Tutorials
    :tags: Getting-Started
 
 .. customcarditem::
+   :header: Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors
+   :card_description: Learn the subtleties of requires_grad, retain_grad, leaf, and non-leaf tensors
+   :image: _static/img/thumbnails/cropped/understanding_leaf_vs_nonleaf.png
+   :link: beginner/understanding_leaf_vs_nonleaf_tutorial.html
+   :tags: Getting-Started
+
+.. customcarditem::
    :header: Visualizing Gradients in PyTorch
    :card_description: Visualize the gradient flow of a network.
    :image: _static/img/thumbnails/cropped/visualizing_gradients_tutorial.png
@@ -394,15 +401,8 @@ Welcome to PyTorch Tutorials
    :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
 
 .. customcarditem::
-   :header: Custom C++ and CUDA Extensions
-   :card_description: Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights.
-   :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
-   :link: advanced/cpp_extension.html
-   :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
-
-.. customcarditem::
    :header: Autograd in C++ Frontend
-   :card_description: The autograd package helps build flexible and dynamic nerural netorks. In this tutorial, exploreseveral examples of doing autograd in PyTorch C++ frontend
+   :card_description: The autograd package helps build flexible and dynamic neural netorks. In this tutorial, explore several examples of doing autograd in PyTorch C++ frontend
    :image: _static/img/thumbnails/cropped/Autograd-in-Cpp-Frontend.png
    :link: advanced/cpp_autograd.html
    :tags: Frontend-APIs,C++

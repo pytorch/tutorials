@@ -144,12 +144,12 @@ extensions = [
 ]
 
 intersphinx_mapping = {
-    "torch": ("https://pytorch.org/docs/stable/", None),
-    "tensordict": ("https://pytorch.github.io/tensordict/stable", None),
-    "torchrl": ("https://pytorch.org/rl/stable", None),
-    "torchaudio": ("https://pytorch.org/audio/stable/", None),
-    "torchtext": ("https://pytorch.org/text/stable/", None),
-    "torchvision": ("https://pytorch.org/vision/stable/", None),
+    "torch": ("https://docs.pytorch.org/docs/stable/", None),
+    "tensordict": ("https://docs.pytorch.org/tensordict/stable", None),
+    "torchrl": ("https://docs.pytorch.org/rl/stable", None),
+    "torchaudio": ("https://docs.pytorch.org/audio/stable/", None),
+    "torchtext": ("https://docs.pytorch.org/text/stable/", None),
+    "torchvision": ("https://docs.pytorch.org/vision/stable/", None),
 }
 
 html_meta = {
@@ -158,9 +158,7 @@ html_meta = {
     "author": "PyTorch Contributors",
 }
 
-html_additional_pages = {
-    "404": "404.html",
-}
+
 
 # -- Sphinx-gallery configuration --------------------------------------------
 
@@ -181,7 +179,7 @@ sphinx_gallery_conf = {
     "show_signature": False,
     "first_notebook_cell": (
         "# For tips on running notebooks in Google Colab, see\n"
-        "# https://pytorch.org/tutorials/beginner/colab\n"
+        "# https://docs.pytorch.org/tutorials/beginner/colab\n"
         "%matplotlib inline"
     ),
     "ignore_pattern": r"_torch_export_nightly_tutorial.py",
@@ -191,7 +189,12 @@ sphinx_gallery_conf = {
     },
 }
 
-html_baseurl = "https://pytorch.org/tutorials/"  # needed for sphinx-sitemap
+html_additional_pages = {
+    "404": "404.html",
+}
+
+
+html_baseurl = "https://docs.pytorch.org/tutorials/"  # needed for sphinx-sitemap
 sitemap_locales = [None]
 sitemap_excludes = [
     "search.html",
@@ -233,6 +236,7 @@ html_theme_options = {
     "navbar_center": "navbar-nav",
     "display_version": True,
     "pytorch_project": "tutorials",
+    "canonical_url": "https://docs.pytorch.org/tutorials/",
 }
 
 theme_variables = pytorch_sphinx_theme2.get_theme_variables()

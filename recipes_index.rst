@@ -34,7 +34,7 @@ from our full-length tutorials.
    :header: Defining a Neural Network
    :card_description: Learn how to use PyTorch's torch.nn package to create and define a neural network for the MNIST dataset.
    :image: _static/img/thumbnails/cropped/defining-a-network.PNG
-   :link: recipesrecipes/defining_a_neural_network.html
+   :link: recipes/recipes/defining_a_neural_network.html
    :tags: Basics
 
 .. customcarditem::
@@ -333,6 +333,13 @@ from our full-length tutorials.
    :link: recipes/distributed_comm_debug_mode.html
    :tags: Distributed-Training
 
+.. customcarditem::
+   :header: Reducing AoT cold start compilation time with regional compilation
+   :card_description: Learn how to use regional compilation to control AoT cold start compile time
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: recipes/regional_aot.html
+   :tags: Model-Optimization
+
 .. End of tutorial card section
 
 .. -----------------------------------------
@@ -360,7 +367,6 @@ from our full-length tutorials.
    recipes/recipes/timer_quick_start
    recipes/torch_compile_backend_ipex
    recipes/zero_redundancy_optimizer
-   recipes/cuda_rpc
    recipes/distributed_comm_debug_mode
    recipes/torch_export_challenges_solutions
    recipes/recipes/benchmark
@@ -378,6 +384,7 @@ from our full-length tutorials.
    recipes/torch_compile_caching_tutorial
    recipes/torch_compile_caching_configuration_tutorial
    recipes/regional_compilation
+   recipes/regional_aot
    recipes/intel_extension_for_pytorch.html
    recipes/intel_neural_compressor_for_pytorch
    recipes/distributed_device_mesh
