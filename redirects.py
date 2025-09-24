@@ -4,6 +4,7 @@ redirects = {
     "advanced/static_quantization_tutorial.html": "../index.html",
     "advanced/super_resolution_with_onnxruntime.html": "../index.html",
     "advanced/torch_script_custom_classes": "../index.html",
+    "advanced_source/static_quantization_tutorial.rst": "../index.html",
     "beginner/Intro_to_TorchScript_tutorial.html": "../index.html",
     "beginner/deploy_seq2seq_hybrid_frontend_tutorial.html": "../index.html",
     "beginner/flava_finetuning_tutorial.html": "../index.html",
@@ -40,4 +41,5 @@ redirects = {
     "recipes/torchserve_vertexai_tutorial.html": "../index.html",
     "unstable_source/vulkan_workflow.rst": "../index.html",
     "unstable/skip_param_init.html": "https://docs.pytorch.org/tutorials/recipes/recipes/module_load_state_dict_tips.html",
+    "unstable_source/backend_config_tutorial.rst": "../index.html",
 }
