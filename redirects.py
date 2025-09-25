@@ -1,5 +1,6 @@
 redirects = {
     "advanced/cpp_extension.html": "https://docs.pytorch.org/tutorials/advanced/custom_ops_landing_page.html",
+    "advanced/cpp_cuda_graphs.html": "../index.html",
     "advanced/dynamic_quantization_tutorial.html": "../index.html",
     "advanced/static_quantization_tutorial.html": "../index.html",
     "advanced/super_resolution_with_onnxruntime.html": "../index.html",
