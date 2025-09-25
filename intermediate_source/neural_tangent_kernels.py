@@ -13,7 +13,7 @@ composable function transforms for PyTorch.
 
 .. note::
 
-   This tutorial requires PyTorch 2.0.0 or later.
+   This tutorial requires PyTorch 2.6.0 or later.
 
 Setup
 -----
@@ -24,7 +24,12 @@ First, some setup. Let's define a simple CNN that we wish to compute the NTK of.
 import torch
 import torch.nn as nn
 from torch.func import functional_call, vmap, vjp, jvp, jacrev
-device = 'cuda' if torch.cuda.device_count() > 0 else 'cpu'
+
+if torch.accelerator.is_available() and torch.accelerator.device_count() > 0:
+    device = torch.accelerator.current_accelerator()
+else:
+    device = torch.device("cpu")
+
 
 class CNN(nn.Module):
     def __init__(self):
