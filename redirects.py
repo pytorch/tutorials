@@ -1,9 +1,11 @@
 redirects = {
     "advanced/cpp_extension.html": "https://docs.pytorch.org/tutorials/advanced/custom_ops_landing_page.html",
+    "advanced/cpp_cuda_graphs.html": "../index.html",
     "advanced/dynamic_quantization_tutorial.html": "../index.html",
     "advanced/static_quantization_tutorial.html": "../index.html",
     "advanced/super_resolution_with_onnxruntime.html": "../index.html",
     "advanced/torch_script_custom_classes": "../index.html",
+    "advanced_source/static_quantization_tutorial.rst": "../index.html",
     "beginner/Intro_to_TorchScript_tutorial.html": "../index.html",
     "beginner/deploy_seq2seq_hybrid_frontend_tutorial.html": "../index.html",
     "beginner/flava_finetuning_tutorial.html": "../index.html",
@@ -31,6 +33,7 @@ redirects = {
     "prototype/pt2e_quantizer.html": "https://docs.pytorch.org/ao/main/tutorials_source/pt2e_quantizer.html",
     "prototype/quantization_in_pytorch_2_0_export_tutorial.html": "../index.html",
     "prototype/torchscript_freezing.html": "../index.html",
+    "recipes_source/cuda_rpc.rst": "../index.html",
     "receipes/fuse.html": "../index.html",
     "receipes/quantization.html": "../index.html",
     "receipes/receipes/dynamic_quantization.html": "../index.html",
@@ -38,4 +41,7 @@ redirects = {
     "recipes/recipes_index.html": "../recipes_index.html",
     "recipes/torchserve_vertexai_tutorial.html": "../index.html",
     "recipes/aws.html": "../index.html",
+    "unstable_source/vulkan_workflow.rst": "../index.html",
+    "unstable/skip_param_init.html": "https://docs.pytorch.org/tutorials/recipes/recipes/module_load_state_dict_tips.html",
+    "unstable_source/backend_config_tutorial.rst": "../index.html",
 }
