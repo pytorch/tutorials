@@ -184,21 +184,6 @@ from our full-length tutorials.
    :link: recipes/xeon_run_cpu.html
    :tags: Model-Optimization
 
-.. customcarditem::
-   :header: PyTorch Inference Performance Tuning on AWS Graviton Processors
-   :card_description: Tips for achieving the best inference performance on AWS Graviton CPUs
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: recipes/inference_tuning_on_aws_graviton.html
-   :tags: Model-Optimization
-
-.. Leverage Advanced Matrix Extensions
-
-.. customcarditem::
-   :header: Leverage Intel® Advanced Matrix Extensions
-   :card_description: Learn to leverage Intel® Advanced Matrix Extensions.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: recipes/amx.html
-   :tags: Model-Optimization
 
 .. (beta) Utilizing Torch Function modes with torch.compile
 
@@ -375,8 +360,6 @@ from our full-length tutorials.
    recipes/recipes/swap_tensors
    recipes/torch_export_aoti_python
    recipes/recipes/tensorboard_with_pytorch
-   recipes/inference_tuning_on_aws_graviton
-   recipes/amx
    recipes/torch_compile_torch_function_modes
    recipes/compiling_optimizer_lr_scheduler
    recipes/foreach_map
