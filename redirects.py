@@ -8,6 +8,8 @@ redirects = {
     "advanced_source/static_quantization_tutorial.rst": "../index.html",
     "beginner/Intro_to_TorchScript_tutorial.html": "../index.html",
     "beginner/deploy_seq2seq_hybrid_frontend_tutorial.html": "../index.html",
+    "beginner/hybrid_frontend_tutorial": "../index.html",
+    "beginner/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.html": "../../index.html",
     "beginner/flava_finetuning_tutorial.html": "../index.html",
     "beginner/ptcheat.html": "../index.html",
     "intermediate/FSDP_adavnced_tutorial.html": "https://docs.pytorch.org/tutorials/intermediate/FSDP_advanced_tutorial.html",
