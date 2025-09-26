@@ -60,7 +60,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Explicit horizontal fusion with foreach_map and torch.compile" href="foreach_map.html" />
-    <link rel="prev" title="Leverage Intel® Advanced Matrix Extensions" href="amx.html" />
+    <link rel="prev" title="(Beta) PyTorch Inference Performance Tuning on AWS Graviton Processors" href="inference_tuning_on_aws_graviton.html" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -972,7 +972,6 @@ document.write(`
 <li class="toctree-l1"><a class="reference internal" href="torch_export_aoti_python.html"><code class="docutils literal notranslate"><span class="pre">torch.export</span></code> AOTInductor Tutorial for Python runtime (Beta)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/tensorboard_with_pytorch.html">How to use TensorBoard with PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inference_tuning_on_aws_graviton.html">(Beta) PyTorch Inference Performance Tuning on AWS Graviton Processors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="amx.html">Leverage Intel® Advanced Matrix Extensions</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">(beta) Utilizing Torch Function modes with torch.compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="compiling_optimizer_lr_scheduler.html">(beta) Running the compiled optimizer with an LR Scheduler</a></li>
 <li class="toctree-l1"><a class="reference internal" href="foreach_map.html">Explicit horizontal fusion with foreach_map and torch.compile</a></li>
@@ -1197,7 +1196,7 @@ of calling torch function on every op invocation.</p>
 <ul class="simple">
 <li><p>See <a class="reference external" href="https://pytorch.org/docs/stable/notes/extending.html#extending-all-torch-api-with-modes">Extending Torch API with Modes</a>  for other examples and background on Torch Function modes.</p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 9.873 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 9.952 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-torch-compile-torch-function-modes-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/d036a4d61563d6157e333f7e5b20b091/torch_compile_torch_function_modes.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">torch_compile_torch_function_modes.ipynb</span></code></a></p>
@@ -1255,12 +1254,12 @@ of calling torch function on every op invocation.</p>
 
 <div class="prev-next-area">
     <a class="left-prev"
-       href="amx.html"
+       href="inference_tuning_on_aws_graviton.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Leverage Intel® Advanced Matrix Extensions</p>
+        <p class="prev-next-title">(Beta) PyTorch Inference Performance Tuning on AWS Graviton Processors</p>
       </div>
     </a>
     <a class="right-next"
@@ -1299,12 +1298,12 @@ of calling torch function on every op invocation.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="amx.html"
+       href="inference_tuning_on_aws_graviton.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Leverage Intel® Advanced Matrix Extensions</p>
+        <p class="prev-next-title">(Beta) PyTorch Inference Performance Tuning on AWS Graviton Processors</p>
       </div>
     </a>
     <a class="right-next"
@@ -1554,7 +1553,7 @@ of calling torch function on every op invocation.</p>
        "headline": "(beta) Utilizing Torch Function modes with torch.compile",
        "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
        "url": "/recipes/torch_compile_torch_function_modes.html",
-       "articleBody": "Note Go to the end to download the full example code. (beta) Utilizing Torch Function modes with torch.compile# Author: Michael Lazos This recipe covers how to use a key torch extensibility point,torch function modes, in tandem with torch.compile to override the behavior of torch operators, also know as ops, at trace time, with no runtime overhead. Note This recipe requires PyTorch 2.7.0 or later. Rewriting a torch op (torch.add -\u003e torch.mul)# For this example, we\u2019ll use torch function modes to rewrite occurences of addition with multiply instead. This type of override can be common if a certain backend has a custom implementation that should be dispatched for a given op. import torch # exit cleanly if we are on a device that doesn\u0027t support ``torch.compile`` if torch.cuda.get_device_capability() \u003c (7, 0): print(\"Exiting because torch.compile is not supported on this device.\") import sys sys.exit(0) from torch.overrides import BaseTorchFunctionMode # Define our mode, Note: ``BaseTorchFunctionMode`` # implements the actual invocation of func(..) class AddToMultiplyMode(BaseTorchFunctionMode): def __torch_function__(self, func, types, args=(), kwargs=None): if func == torch.Tensor.add: func = torch.mul return super().__torch_function__(func, types, args, kwargs) @torch.compile() def test_fn(x, y): return x + y * x # Note: infix operators map to torch.Tensor.* methods x = torch.rand(2, 2) y = torch.rand_like(x) with AddToMultiplyMode(): z = test_fn(x, y) assert torch.allclose(z, x * y * x) # The mode can also be used within the compiled region as well like this: @torch.compile() def test_fn(x, y): with AddToMultiplyMode(): return x + y * x # Note: infix operators map to torch.Tensor.* methods x = torch.rand(2, 2) y = torch.rand_like(x) z = test_fn(x, y) assert torch.allclose(z, x * y * x) Conclusion# In this recipe we demonstrated how to override the behavior of torch.* operators using torch function modes from within torch.compile. This enables users to utilize the extensibility benefits of torch function modes without the runtime overhead of calling torch function on every op invocation. See Extending Torch API with Modes for other examples and background on Torch Function modes. Total running time of the script: (0 minutes 9.873 seconds) Download Jupyter notebook: torch_compile_torch_function_modes.ipynb Download Python source code: torch_compile_torch_function_modes.py Download zipped: torch_compile_torch_function_modes.zip",
+       "articleBody": "Note Go to the end to download the full example code. (beta) Utilizing Torch Function modes with torch.compile# Author: Michael Lazos This recipe covers how to use a key torch extensibility point,torch function modes, in tandem with torch.compile to override the behavior of torch operators, also know as ops, at trace time, with no runtime overhead. Note This recipe requires PyTorch 2.7.0 or later. Rewriting a torch op (torch.add -\u003e torch.mul)# For this example, we\u2019ll use torch function modes to rewrite occurences of addition with multiply instead. This type of override can be common if a certain backend has a custom implementation that should be dispatched for a given op. import torch # exit cleanly if we are on a device that doesn\u0027t support ``torch.compile`` if torch.cuda.get_device_capability() \u003c (7, 0): print(\"Exiting because torch.compile is not supported on this device.\") import sys sys.exit(0) from torch.overrides import BaseTorchFunctionMode # Define our mode, Note: ``BaseTorchFunctionMode`` # implements the actual invocation of func(..) class AddToMultiplyMode(BaseTorchFunctionMode): def __torch_function__(self, func, types, args=(), kwargs=None): if func == torch.Tensor.add: func = torch.mul return super().__torch_function__(func, types, args, kwargs) @torch.compile() def test_fn(x, y): return x + y * x # Note: infix operators map to torch.Tensor.* methods x = torch.rand(2, 2) y = torch.rand_like(x) with AddToMultiplyMode(): z = test_fn(x, y) assert torch.allclose(z, x * y * x) # The mode can also be used within the compiled region as well like this: @torch.compile() def test_fn(x, y): with AddToMultiplyMode(): return x + y * x # Note: infix operators map to torch.Tensor.* methods x = torch.rand(2, 2) y = torch.rand_like(x) z = test_fn(x, y) assert torch.allclose(z, x * y * x) Conclusion# In this recipe we demonstrated how to override the behavior of torch.* operators using torch function modes from within torch.compile. This enables users to utilize the extensibility benefits of torch function modes without the runtime overhead of calling torch function on every op invocation. See Extending Torch API with Modes for other examples and background on Torch Function modes. Total running time of the script: (0 minutes 9.952 seconds) Download Jupyter notebook: torch_compile_torch_function_modes.ipynb Download Python source code: torch_compile_torch_function_modes.py Download zipped: torch_compile_torch_function_modes.zip",
        "author": {
          "@type": "Organization",
          "name": "PyTorch Contributors",
