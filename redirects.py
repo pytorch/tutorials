@@ -40,6 +40,8 @@ redirects = {
     "recipes/bundled_inputs.html": "../index.html",
     "recipes/inference_tuning_on_aws_graviton.html": "../index.html",
     "recipes/recipes_index.html": "../recipes_index.html",
+    "recipes/intel_extension_for_pytorch.html": "../index.html",
+    "recipes/torch_compile_backend_ipex.html": "../index.html",
     "recipes/torchserve_vertexai_tutorial.html": "../index.html",
     "recipes/amx.html": "../index.html",
     "unstable_source/vulkan_workflow.rst": "../index.html",

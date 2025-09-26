@@ -88,13 +88,6 @@ from our full-length tutorials.
    :tags: Basics
 
 .. customcarditem::
-   :header: Torch Compile IPEX Backend
-   :card_description: Learn how to use torch.compile IPEX backend
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: recipes/torch_compile_backend_ipex.html
-   :tags: Basics
-
-.. customcarditem::
    :header: Dynamic Compilation Control with ``torch.compiler.set_stance``
    :card_description: Learn how to use torch.compiler.set_stance
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
@@ -254,15 +247,6 @@ from our full-length tutorials.
    :card_description: Learn how to use regional compilation to control cold start compile time
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: recipes/regional_compilation.html
-   :tags: Model-Optimization
-
-.. Intel(R) Extension for PyTorch*
-
-.. customcarditem::
-   :header: Intel® Extension for PyTorch*
-   :card_description: Introduction of Intel® Extension for PyTorch*
-   :image: _static/img/thumbnails/cropped/profiler.png
-   :link: recipes/intel_extension_for_pytorch.html
    :tags: Model-Optimization
 
 .. Intel(R) Neural Compressor for PyTorch*
