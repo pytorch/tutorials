@@ -39,6 +39,7 @@ redirects = {
     "receipes/quantization.html": "../index.html",
     "receipes/receipes/dynamic_quantization.html": "../index.html",
     "recipes/bundled_inputs.html": "../index.html",
+    "recipes/inference_tuning_on_aws_graviton.html": "../index.html",
     "recipes/recipes_index.html": "../recipes_index.html",
     "recipes/torchserve_vertexai_tutorial.html": "../index.html",
     "recipes/amx.html": "../index.html",
