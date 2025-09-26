@@ -16,6 +16,7 @@ redirects = {
     "intermediate/quantized_transfer_learning_tutorial.html": "../index.html",
     "intermediate/torchserve_with_ipex.html": "../index.html",
     "intermediate/torchserve_with_ipex_2.html": "../index.html",
+    "intermediate/tiatoolbox_tutorial.html": "../index.html",
     "prototype/backend_config_tutorial.html": "../index.html",
     "prototype/flight_recorder_tutorial.html": "https://docs.pytorch.org/tutorials/unstable/flight_recorder_tutorial.html",
     "prototype/fx_graph_mode_ptq_dynamic.html": "../index.html",
