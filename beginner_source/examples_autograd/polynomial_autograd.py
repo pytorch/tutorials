@@ -39,6 +39,7 @@ b = torch.randn((), dtype=dtype, requires_grad=True)
 c = torch.randn((), dtype=dtype, requires_grad=True)
 d = torch.randn((), dtype=dtype, requires_grad=True)
 
+initial_loss = 1.
 learning_rate = 1e-5
 for t in range(5000):
     # Forward pass: compute predicted y using operations on Tensors.
