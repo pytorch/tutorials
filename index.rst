@@ -150,12 +150,6 @@ Welcome to PyTorch Tutorials
    :link: intermediate/spatial_transformer_tutorial.html
    :tags: Image/Video
 
-.. customcarditem::
-   :header: Inference on Whole Slide Images with TIAToolbox
-   :card_description: Learn how to use the TIAToolbox to perform inference on whole slide images.
-   :image: _static/img/thumbnails/cropped/TIAToolbox-Tutorial.png
-   :link: intermediate/tiatoolbox_tutorial.html
-   :tags: Image/Video
 
 .. customcarditem::
    :header: Semi-Supervised Learning Tutorial Based on USB
