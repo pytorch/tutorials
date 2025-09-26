@@ -331,10 +331,8 @@ from our full-length tutorials.
    recipes/recipes/amp_recipe
    recipes/recipes/tuning_guide
    recipes/recipes/xeon_run_cpu
-   recipes/recipes/intel_extension_for_pytorch
    recipes/compiling_optimizer
    recipes/recipes/timer_quick_start
-   recipes/torch_compile_backend_ipex
    recipes/zero_redundancy_optimizer
    recipes/distributed_comm_debug_mode
    recipes/torch_export_challenges_solutions
@@ -352,7 +350,6 @@ from our full-length tutorials.
    recipes/torch_compile_caching_configuration_tutorial
    recipes/regional_compilation
    recipes/regional_aot
-   recipes/intel_extension_for_pytorch.html
    recipes/intel_neural_compressor_for_pytorch
    recipes/distributed_device_mesh
    recipes/distributed_checkpoint_recipe
