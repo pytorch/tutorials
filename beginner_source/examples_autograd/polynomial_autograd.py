@@ -49,7 +49,7 @@ for t in range(5000):
     # Now loss is a Tensor of shape (1,)
     # loss.item() gets the scalar value held in the loss.
     loss = (y_pred - y).pow(2).sum()
-    
+
     # Calculare initial loss, so we can report loss relative to it
     if t==0:
         initial_loss=loss.item()
