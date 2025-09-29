@@ -262,7 +262,6 @@ We can now put all the pieces together and run it:
             # read frame
             image = picam2.capture_image("main")
 
-            #image.show()
 
             # preprocess
             input_tensor = preprocess(image)
