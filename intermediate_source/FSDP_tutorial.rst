@@ -4,7 +4,7 @@ Getting Started with Fully Sharded Data Parallel (FSDP2)
 **Author**: `Wei Feng <https://github.com/weifengpy>`__, `Will Constable <https://github.com/wconstab>`__, `Yifan Mao <https://github.com/mori360>`__
 
 .. note::
-   |edit| Check out the code in this tutorial from `pytorch/examples <https://github.com/pytorch/examples/tree/main/distributed/FSDP2>`_. FSDP1 will be deprecated. The old tutorial can be found `here <https://docs.pytorch.org/tutorials/intermediate/FSDP1_tutorial.html>`_.
+   |edit| Check out the code in this tutorial from `pytorch/examples <https://github.com/pytorch/examples/tree/main/distributed/FSDP2>`_. FSDP1 is deprecated. FSDP1 tutorials are archived in `[1] <https://docs.pytorch.org/tutorials/intermediate/FSDP1_tutorial.html>`_ and `[2] <https://docs.pytorch.org/tutorials/intermediate/FSDP_advanced_tutorial.html>`_
 
 How FSDP2 works
 --------------
@@ -73,7 +73,7 @@ Model Initialization
     #  )
 
 We can inspect the nested wrapping with ``print(model)``. ``FSDPTransformer`` is a joint class of `Transformer <https://github.com/pytorch/examples/blob/70922969e70218458d2a945bf86fd8cc967fc6ea/distributed/FSDP2/model.py#L100>`_ and `FSDPModule
-<​https://docs.pytorch.org/docs/main/distributed.fsdp.fully_shard.html#torch.distributed.fsdp.FSDPModule>`_. The same thing happens to `FSDPTransformerBlock <https://github.com/pytorch/examples/blob/70922969e70218458d2a945bf86fd8cc967fc6ea/distributed/FSDP2/model.py#L76C7-L76C18>`_. All FSDP2 public APIs are exposed through ``FSDPModule``. For example, users can call ``model.unshard()`` to manually control all-gather schedules. See "explicit prefetching" below for details.
+<https://docs.pytorch.org/docs/main/distributed.fsdp.fully_shard.html#torch.distributed.fsdp.FSDPModule>`_. The same thing happens to `FSDPTransformerBlock <https://github.com/pytorch/examples/blob/70922969e70218458d2a945bf86fd8cc967fc6ea/distributed/FSDP2/model.py#L76C7-L76C18>`_. All FSDP2 public APIs are exposed through ``FSDPModule``. For example, users can call ``model.unshard()`` to manually control all-gather schedules. See "explicit prefetching" below for details.
 
 **model.parameters() as DTensor**: ``fully_shard`` shards parameters across ranks, and convert ``model.parameters()`` from plain ``torch.Tensor`` to DTensor to represent sharded parameters. FSDP2 shards on dim-0 by default so DTensor placements are `Shard(dim=0)`. Say we have N ranks and a parameter with N rows before sharding. After sharding, each rank will have 1 row of the parameter. We can inspect sharded parameters using ``param.to_local()``.
 
@@ -240,7 +240,7 @@ We showcase how to convert a full state dict into a DTensor state dict for loadi
 * For the 1st time, it creates checkpoints for the model and optimizer
 * For the 2nd time, it loads from the previous checkpoint to resume training
 
-**Loading state dicts**: We initialize the model under meta device and call ``fully_shard`` to convert ``model.parameters()`` from plain ``torch.Tensor`` to DTensor. After reading the full state dict from torch.load, we can call `distributed_tensor <https://docs.pytorch.org/docs/stable/distributed.tensor.html#torch.distributed.tensor.distribute_tensor>`_ to convert plain ``torch.Tensor`` into DTensor, using the same placements and device mesh from ``model.state_dict()``. Finally we can call `model.load_state_dict <https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.load_state_dict>`_ to load DTensor state dicts into the model.
+**Loading state dicts**: We initialize the model under meta device and call ``fully_shard`` to convert ``model.parameters()`` from plain ``torch.Tensor`` to DTensor. After reading the full state dict from torch.load, we can call `distribute_tensor <https://docs.pytorch.org/docs/stable/distributed.tensor.html#torch.distributed.tensor.distribute_tensor>`_ to convert plain ``torch.Tensor`` into DTensor, using the same placements and device mesh from ``model.state_dict()``. Finally we can call `model.load_state_dict <https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.load_state_dict>`_ to load DTensor state dicts into the model.
 
 .. code-block:: python
 
