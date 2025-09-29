@@ -22,6 +22,12 @@ as our running example. The network will have four parameters, and will be train
 gradient descent to fit random data by minimizing the Euclidean distance
 between the network output and the true output.
 
+To run the tutorials below, make sure you have the `torch`_
+and `numpy`_ packages installed.
+
+.. _torch: https://github.com/pytorch/pytorch
+.. _numpy: https://github.com/numpy/numpy
+
 .. contents:: Table of Contents
    :local:
 
