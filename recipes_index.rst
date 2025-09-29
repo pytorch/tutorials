@@ -88,13 +88,6 @@ from our full-length tutorials.
    :tags: Basics
 
 .. customcarditem::
-   :header: Torch Compile IPEX Backend
-   :card_description: Learn how to use torch.compile IPEX backend
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: recipes/torch_compile_backend_ipex.html
-   :tags: Basics
-
-.. customcarditem::
    :header: Dynamic Compilation Control with ``torch.compiler.set_stance``
    :card_description: Learn how to use torch.compiler.set_stance
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
@@ -184,21 +177,6 @@ from our full-length tutorials.
    :link: recipes/xeon_run_cpu.html
    :tags: Model-Optimization
 
-.. customcarditem::
-   :header: PyTorch Inference Performance Tuning on AWS Graviton Processors
-   :card_description: Tips for achieving the best inference performance on AWS Graviton CPUs
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: recipes/inference_tuning_on_aws_graviton.html
-   :tags: Model-Optimization
-
-.. Leverage Advanced Matrix Extensions
-
-.. customcarditem::
-   :header: Leverage Intel® Advanced Matrix Extensions
-   :card_description: Learn to leverage Intel® Advanced Matrix Extensions.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
-   :link: recipes/amx.html
-   :tags: Model-Optimization
 
 .. (beta) Utilizing Torch Function modes with torch.compile
 
@@ -269,15 +247,6 @@ from our full-length tutorials.
    :card_description: Learn how to use regional compilation to control cold start compile time
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: recipes/regional_compilation.html
-   :tags: Model-Optimization
-
-.. Intel(R) Extension for PyTorch*
-
-.. customcarditem::
-   :header: Intel® Extension for PyTorch*
-   :card_description: Introduction of Intel® Extension for PyTorch*
-   :image: _static/img/thumbnails/cropped/profiler.png
-   :link: recipes/intel_extension_for_pytorch.html
    :tags: Model-Optimization
 
 .. Intel(R) Neural Compressor for PyTorch*
@@ -362,10 +331,8 @@ from our full-length tutorials.
    recipes/recipes/amp_recipe
    recipes/recipes/tuning_guide
    recipes/recipes/xeon_run_cpu
-   recipes/recipes/intel_extension_for_pytorch
    recipes/compiling_optimizer
    recipes/recipes/timer_quick_start
-   recipes/torch_compile_backend_ipex
    recipes/zero_redundancy_optimizer
    recipes/distributed_comm_debug_mode
    recipes/torch_export_challenges_solutions
@@ -375,8 +342,6 @@ from our full-length tutorials.
    recipes/recipes/swap_tensors
    recipes/torch_export_aoti_python
    recipes/recipes/tensorboard_with_pytorch
-   recipes/inference_tuning_on_aws_graviton
-   recipes/amx
    recipes/torch_compile_torch_function_modes
    recipes/compiling_optimizer_lr_scheduler
    recipes/foreach_map
@@ -385,7 +350,6 @@ from our full-length tutorials.
    recipes/torch_compile_caching_configuration_tutorial
    recipes/regional_compilation
    recipes/regional_aot
-   recipes/intel_extension_for_pytorch.html
    recipes/intel_neural_compressor_for_pytorch
    recipes/distributed_device_mesh
    recipes/distributed_checkpoint_recipe
