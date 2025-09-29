@@ -65,7 +65,7 @@ import torchvision.transforms as transforms
 
 ########################################################################
 # .. note::
-#     If you are running this tutorial on Windows or MacOS and encounter a 
+#     If you are running this tutorial on Windows or MacOS and encounter a
 #     BrokenPipeError or RuntimeError related to multiprocessing, try setting
 #     the num_worker of torch.utils.data.DataLoader() to 0.
 
