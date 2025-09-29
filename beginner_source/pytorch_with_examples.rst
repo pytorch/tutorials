@@ -22,10 +22,6 @@ as our running example. The network will have four parameters, and will be train
 gradient descent to fit random data by minimizing the Euclidean distance
 between the network output and the true output.
 
-.. note::
-   You can browse the individual examples at the
-   :ref:`end of this page <examples-download>`.
-
 .. contents:: Table of Contents
    :local:
 
@@ -215,73 +211,3 @@ times when defining the forward pass.
 We can easily implement this model as a Module subclass:
 
 .. includenodoc:: /beginner/examples_nn/dynamic_net.py
-
-
-.. _examples-download:
-
-Examples
-~~~~~~~~
-
-You can browse the above examples here.
-
-Tensors
--------
-
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-
-   /beginner/examples_tensor/polynomial_numpy
-   /beginner/examples_tensor/polynomial_tensor
-
-.. galleryitem:: /beginner/examples_tensor/polynomial_numpy.py
-
-.. galleryitem:: /beginner/examples_tensor/polynomial_tensor.py
-
-.. raw:: html
-
-    <div style='clear:both'></div>
-
-Autograd
---------
-
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-
-   /beginner/examples_autograd/polynomial_autograd
-   /beginner/examples_autograd/polynomial_custom_function
-
-
-.. galleryitem:: /beginner/examples_autograd/polynomial_autograd.py
-
-.. galleryitem:: /beginner/examples_autograd/polynomial_custom_function.py
-
-.. raw:: html
-
-    <div style='clear:both'></div>
-
-``nn`` module
---------------
-
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-
-   /beginner/examples_nn/polynomial_nn
-   /beginner/examples_nn/polynomial_optim
-   /beginner/examples_nn/polynomial_module
-   /beginner/examples_nn/dynamic_net
-
-
-.. galleryitem:: /beginner/examples_nn/polynomial_nn.py
-
-.. galleryitem:: /beginner/examples_nn/polynomial_optim.py
-
-.. galleryitem:: /beginner/examples_nn/polynomial_module.py
-
-.. galleryitem:: /beginner/examples_nn/dynamic_net.py
-
-.. raw:: html
-
-    <div style='clear:both'></div>
