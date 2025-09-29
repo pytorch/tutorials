@@ -1,10 +1,10 @@
-Real Time Inference on Raspberry Pi 4 (30 fps!)
+Real Time Inference on Raspberry Pi 4 and 5 (40 fps!)
 =================================================
 **Author**: `Tristan Rice <https://github.com/d4l3k>`_
 
-PyTorch has out of the box support for Raspberry Pi 4. This tutorial will guide
-you on how to setup a Raspberry Pi 4 for running PyTorch and run a MobileNet v2
-classification model in real time (30 fps+) on the CPU.
+PyTorch has out of the box support for Raspberry Pi 4 and 5. This tutorial will guide
+you on how to setup a Raspberry Pi for running PyTorch and run a MobileNet v2
+classification model in real time (30-40 fps) on the CPU.
 
 This was all tested with Raspberry Pi 4 Model B 4GB but should work with the 2GB
 variant as well as on the 3B with reduced performance.
@@ -12,9 +12,9 @@ variant as well as on the 3B with reduced performance.
 .. image:: https://user-images.githubusercontent.com/909104/153093710-bc736b6f-69d9-4a50-a3e8-9f2b2c9e04fd.gif
 
 Prerequisites
-~~~~~~~~~~~~~~~~
+---------------
 
-To follow this tutorial you'll need a Raspberry Pi 4, a camera for it and all
+To follow this tutorial you'll need a Raspberry Pi 4 or 5, a camera for it and all
 the other standard accessories.
 
 * `Raspberry Pi 4 Model B 2GB+ <https://www.raspberrypi.com/products/raspberry-pi-4-model-b/>`_
@@ -25,12 +25,12 @@ the other standard accessories.
 * SD card read/writer
 
 
-Raspberry Pi 4 Setup
-~~~~~~~~~~~~~~~~~~~~~~~
+Raspberry Pi Setup
+----------------------
 
 PyTorch only provides pip packages for Arm 64bit (aarch64) so you'll need to install a 64 bit version of the OS on your Raspberry Pi
 
-You can download the latest arm64 Raspberry Pi OS from https://downloads.raspberrypi.org/raspios_arm64/images/ and install it via rpi-imager.
+You'll need to install the `official rpi-imager <https://www.raspberrypi.com/software/>`_ to install Rasbperry Pi OS.
 
 **32-bit Raspberry Pi OS will not work.**
 
@@ -45,7 +45,12 @@ Time to put your sdcard in your Raspberry Pi, connect the camera and boot it up.
 .. image:: https://user-images.githubusercontent.com/909104/152869862-c239c980-b089-4bd5-84eb-0a1e5cf22df2.png
 
 
-Once that boots and you complete the initial setup you'll need to edit the ``/boot/config.txt`` file to enable the camera.
+Raspberry Pi 4 Config
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you're using a Raspberry Pi 4, you'll need some additional config changes. These changes are not required on Raspberry Pi 5.
+
+Once the OS boots and you complete the initial setup you'll need to edit the ``/boot/config.txt`` file to enable the camera.
 
 .. code:: toml
 
@@ -55,21 +60,17 @@ Once that boots and you complete the initial setup you'll need to edit the ``/bo
     # This needs to be at least 128M for the camera processing, if it's bigger you can just leave it as is.
     gpu_mem=128
 
-    # You need to commment/remove the existing camera_auto_detect line since this causes issues with OpenCV/V4L2 capture.
-    #camera_auto_detect=1
+And then reboot. 
 
-And then reboot. After you reboot the video4linux2 device ``/dev/video0`` should exist.
-
-Installing PyTorch and OpenCV
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Installing PyTorch and picamera2
+-------------------------------
 
 PyTorch and all the other libraries we need have ARM 64-bit/aarch64 variants so you can just install them via pip and have it work like any other Linux system.
 
 .. code:: shell
 
-    $ pip install torch torchvision torchaudio
-    $ pip install opencv-python
-    $ pip install numpy --upgrade
+    $ sudo apt install -y python3-picamera2 python3-libcamera
+    $ pip install torch torchvision --break-system-packages
 
 .. image:: https://user-images.githubusercontent.com/909104/152874260-95a7a8bd-0f9b-438a-9c0b-5b67729e233f.png
 
@@ -84,41 +85,49 @@ We can now check that everything installed correctly:
 
 
 Video Capture
-~~~~~~~~~~~~~~
+-------------------
 
-For video capture we're going to be using OpenCV to stream the video frames
-instead of the more common ``picamera``. `picamera` isn't available on 64-bit
-Raspberry Pi OS and it's much slower than OpenCV. OpenCV directly accesses the
-``/dev/video0`` device to grab frames.
+Test the camera is working first, by running ``libcamera-hello`` in a terminal.
+
+For video capture we're going to be using picamera2 to capture the video frames.
 
 The model we're using (MobileNetV2) takes in image sizes of ``224x224`` so we
-can request that directly from OpenCV at 36fps. We're targeting 30fps for the
+can request that directly from picamera2 at 36fps. We're targeting 30fps for the
 model but we request a slightly higher framerate than that so there's always
 enough frames.
 
 .. code:: python
 
-  import cv2
-  from PIL import Image
+    from picamera2 import Picamera2
+  
+    picam2 = Picamera2()
+    
+    # print available sensor modes
+    print(picam2.sensor_modes)
+    
+    config = picam2.create_still_configuration(main={
+        "size": (224, 224), 
+        "format": "BGR888",
+    }, display="main")
+    picam2.configure(config)
+    picam2.set_controls({"FrameRate": 36})
+    picam2.start()
 
-  cap = cv2.VideoCapture(0)
-  cap.set(cv2.CAP_PROP_FRAME_WIDTH, 224)
-  cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 224)
-  cap.set(cv2.CAP_PROP_FPS, 36)
-
-OpenCV returns a ``numpy`` array in BGR so we need to read and do a bit of
-shuffling to get it into the expected RGB format.
+To capture the frames we can call ``capture_image`` to return a ``PIL.Image``
+object that we can use with PyTorch.
 
 .. code:: python
 
-    ret, image = cap.read()
-    # convert opencv output from BGR to RGB
-    image = image[:, :, [2, 1, 0]]
+    # read frame
+    image = picam2.capture_image("main")
+  
+    # show frame for testing
+    image.show()
 
 This data reading and processing takes about ``3.5 ms``.
 
 Image Preprocessing
-~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 We need to take the frames and transform them into the format the model expects. This is the same processing as you would do on any machine with the standard torchvision transforms.
 
@@ -139,7 +148,7 @@ We need to take the frames and transform them into the format the model expects.
     input_batch = input_tensor.unsqueeze(0)
 
 Model Choices
-~~~~~~~~~~~~~~~
+----------------
 
 There's a number of models you can choose from to use with different performance
 characteristics. Not all models provide a ``qnnpack`` pretrained variant so for
@@ -178,7 +187,7 @@ Raspberry Pi 4 Benchmark Results:
 +--------------------+------+-----------------------+-----------------------+--------------------+
 
 MobileNetV2: Quantization and JIT
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------
 
 For optimal performance we want a model that's quantized and fused. Quantized
 means that it does the computation using int8 which is much more performant than
@@ -208,7 +217,7 @@ We then want to jit the model to reduce Python overhead and fuse any ops. Jit gi
     net = torch.jit.script(net)
 
 Putting It Together
-~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
 We can now put all the pieces together and run it:
 
@@ -217,18 +226,23 @@ We can now put all the pieces together and run it:
     import time
 
     import torch
-    import numpy as np
     from torchvision import models, transforms
-
-    import cv2
-    from PIL import Image
+    from picamera2 import Picamera2
 
     torch.backends.quantized.engine = 'qnnpack'
 
-    cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 224)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 224)
-    cap.set(cv2.CAP_PROP_FPS, 36)
+    picam2 = Picamera2()
+
+    # print available sensor modes
+    print(picam2.sensor_modes)
+
+    config = picam2.create_still_configuration(main={
+        "size": (224, 224), 
+        "format": "BGR888",
+    }, display="main")
+    picam2.configure(config)
+    picam2.set_controls({"FrameRate": 36})
+    picam2.start()
 
     preprocess = transforms.Compose([
         transforms.ToTensor(),
@@ -246,13 +260,9 @@ We can now put all the pieces together and run it:
     with torch.no_grad():
         while True:
             # read frame
-            ret, image = cap.read()
-            if not ret:
-                raise RuntimeError("failed to read frame")
+            image = picam2.capture_image("main")
 
-            # convert opencv output from BGR to RGB
-            image = image[:, :, [2, 1, 0]]
-            permuted = image
+            #image.show()
 
             # preprocess
             input_tensor = preprocess(image)
@@ -263,6 +273,7 @@ We can now put all the pieces together and run it:
             # run model
             output = net(input_batch)
             # do something with output ...
+            print(output.argmax())
 
             # log model performance
             frame_count += 1
@@ -272,7 +283,8 @@ We can now put all the pieces together and run it:
                 last_logged = now
                 frame_count = 0
 
-Running it shows that we're hovering at ~30 fps.
+
+Running it shows that we're hovering at ~30 fps on a Raspberry Pi 4 and ~41 fps on a Raspberry Pi 5.
 
 .. image:: https://user-images.githubusercontent.com/909104/152892609-7d115705-3ec9-4f8d-beed-a51711503a32.png
 
@@ -312,7 +324,7 @@ Detecting a mug:
 
 
 Troubleshooting: Performance
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------
 
 PyTorch by default will use all of the cores available. If you have anything
 running in the background on the Raspberry Pi it may cause contention with the
@@ -329,7 +341,7 @@ increases best case latency to ``72 ms`` from ``60 ms`` but eliminates the
 latency spikes of ``128 ms``.
 
 Next Steps
-~~~~~~~~~~~~~
+------------
 
 You can create your own model or fine tune an existing one. If you fine tune on
 one of the models from
