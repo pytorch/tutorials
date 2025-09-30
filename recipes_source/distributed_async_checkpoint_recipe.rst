@@ -263,7 +263,7 @@ checkpoint requests users can take advantage of direct memory access to speed up
             if checkpoint_future is not None:
                 # waits for checkpointing to finish, avoiding queuing more then one checkpoint request at a time
                 checkpoint_future.result()
-            dcp.async_save(state_dict, storage_writer=writer, checkpoint_id=f"{CHECKPOINT_DIR}_step{step}")
+            checkpoint_future = dcp.async_save(state_dict, storage_writer=writer, checkpoint_id=f"{CHECKPOINT_DIR}_step{step}")
 
         cleanup()
 
