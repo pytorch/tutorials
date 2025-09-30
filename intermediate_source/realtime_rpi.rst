@@ -60,7 +60,7 @@ Once the OS boots and you complete the initial setup you'll need to edit the ``/
     # This needs to be at least 128M for the camera processing, if it's bigger you can just leave it as is.
     gpu_mem=128
 
-And then reboot. 
+And then reboot.
 
 Installing PyTorch and picamera2
 -------------------------------
@@ -99,14 +99,14 @@ enough frames.
 .. code:: python
 
     from picamera2 import Picamera2
-  
+
     picam2 = Picamera2()
-    
+
     # print available sensor modes
     print(picam2.sensor_modes)
-    
+
     config = picam2.create_still_configuration(main={
-        "size": (224, 224), 
+        "size": (224, 224),
         "format": "BGR888",
     }, display="main")
     picam2.configure(config)
@@ -120,7 +120,7 @@ object that we can use with PyTorch.
 
     # read frame
     image = picam2.capture_image("main")
-  
+
     # show frame for testing
     image.show()
 
@@ -237,7 +237,7 @@ We can now put all the pieces together and run it:
     print(picam2.sensor_modes)
 
     config = picam2.create_still_configuration(main={
-        "size": (224, 224), 
+        "size": (224, 224),
         "format": "BGR888",
     }, display="main")
     picam2.configure(config)
