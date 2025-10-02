@@ -27,8 +27,7 @@ sudo apt-get install -y pandoc
 # sudo pip3 install fbgemm-gpu==1.1.0 torchrec==1.0.0 --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu124
 # pip3 install torch==2.7.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu126
 # Install two language tokenizers for Translation with TorchText tutorial
-python -m spacy download en_core_web_sm
-python -m spacy download de_core_news_sm
+pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.4.0/en_core_web_sm-3.4.0-py3-none-any.whl
 
 awsv2 -i
 awsv2 configure set default.s3.multipart_threshold 5120MB
