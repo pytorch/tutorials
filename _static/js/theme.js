@@ -219,7 +219,24 @@ document.addEventListener('DOMContentLoaded', function() {
       var tutorialUrlArray = $("#tutorial-type").text().split('/');
       tutorialUrlArray[0] = tutorialUrlArray[0] + "_source"
 
-      var githubLink = "https://github.com/pytorch/tutorials/blob/main/" + tutorialUrlArray.join("/") + ".py";
+      // Get configurable repository settings from conf.py
+      // If tutorial_repo_config is not defined in conf.py, window.repoConfig will be undefined
+      // and we'll fallback to the original PyTorch tutorial links
+
+      // Default to PyTorch tutorials for backward compatibility
+      var defaultGithubRepo = "pytorch/tutorials";
+      var defaultGithubBranch = "main";
+      var defaultColabRepo = "pytorch/tutorials";
+      var defaultColabBranch = "gh-pages";
+
+      // Use configured values from window.repoConfig or fallback to defaults
+      // This ensures backward compatibility when tutorial_repo_config is not defined
+      var githubRepo = (window.repoConfig && window.repoConfig.github_repo) || defaultGithubRepo;
+      var githubBranch = (window.repoConfig && window.repoConfig.github_branch) || defaultGithubBranch;
+      var colabRepo = (window.repoConfig && window.repoConfig.colab_repo) || defaultColabRepo;
+      var colabBranch = (window.repoConfig && window.repoConfig.colab_branch) || defaultColabBranch;
+
+      var githubLink = "https://github.com/" + githubRepo + "/blob/" + githubBranch + "/" + tutorialUrlArray.join("/") + ".py";
 
       // Find the notebook download link by checking for .ipynb extension
       var notebookLinks = $(".reference.download");
@@ -236,11 +253,11 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       var notebookDownloadPath = notebookLink.split('_downloads')[1],
-          colabLink = "https://colab.research.google.com/github/pytorch/tutorials/blob/gh-pages/_downloads" + notebookDownloadPath;
+          colabLink = "https://colab.research.google.com/github/" + colabRepo + "/blob/" + colabBranch + "/_downloads" + notebookDownloadPath;
 
-      $("#google-colab-link").wrap("<a href=" + colabLink + " data-behavior='call-to-action-event' data-response='Run in Google Colab' target='_blank'/>");
-      $("#download-notebook-link").wrap("<a href=" + notebookLink + " data-behavior='call-to-action-event' data-response='Download Notebook'/>");
-      $("#github-view-link").wrap("<a href=" + githubLink + " data-behavior='call-to-action-event' data-response='View on Github' target='_blank'/>");
+      $("#colab-link").attr("href", colabLink);
+      $("#notebook-link").attr("href", notebookLink);
+      $("#github-link").attr("href", githubLink);
 
       // Hide the original download links and signature
       $(".sphx-glr-footer").hide();
