@@ -430,6 +430,13 @@ Welcome to PyTorch Tutorials
    :tags: Extending-PyTorch,Frontend-APIs
 
 .. customcarditem::
+   :header: Control Flow Operator Tutorial
+   :card_description: Native control flow with torch.compile, make complex models first-class citizens in PyTorch.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate_source/torch_controlflow_tutorial.html
+   :tags: Model-Optimization
+
+.. customcarditem::
    :header: Custom Function Tutorial: Fusing Convolution and Batch Norm
    :card_description: Learn how to create a custom autograd Function that fuses batch norm into a convolution to improve memory usage.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
