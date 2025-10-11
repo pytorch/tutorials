@@ -38,6 +38,7 @@ from torch._higher_order_ops.cond import cond
 from torch._higher_order_ops.scan import scan
 from torch._higher_order_ops.associative_scan import associative_scan
 from torch._higher_order_ops.while_loop import while_loop
+torch._dynamo.config.capture_scalar_outputs = True
 
 ######################################################################
 # Part 1: Basic Inference Examples
@@ -289,49 +290,166 @@ print("Unfiltered tensort:\n", xs)
 print("Filtered tensor:\n", xs_filtered)
 print('-'*80)
 
-######################################################################
-# RNN implemented with scan
+###############################################################################
+# RNNs implemented with scan
 # -------------------------
 #
-# RNNs can be implemented efficiently with the ``scan`` operator,
-# making them a first-class citizen in PyTorch.
-# In this section, we will implement a simple RNN
-######################################################################
-class AdvancedRNNExample(torch.nn.Module):
-    def __init__(self, Wih, bih, Whh, bhh):
-        super(AdvancedRNNExample, self).__init__()
-        self.Wih = Wih
-        self.bih = bih
-        self.Whh = Whh
-        self.bhh = bhh
+# RNNs can be implemented either with for-loops, the ``scan`` operator,
+# or by writing custom CUDA kernels.
+# However, depending on the dynamics the RNNs, creating a custom CUDA kernels
+# may be very time consuming and error prone. Especially, because not only the
+# forward path needs to be implemented, but the backward path as well, which
+# can become very complex.
+# The ``scan`` operator allows to aleviate this additional effort and makes
+# RNNs a first-class citizen in PyTorch.
+# In this section, we will show how an LSTM can be implemented in the three
+# ways described above. We will also measure the execution time for the 
+# forward and backward propagtion.
+###############################################################################
+class LSTM_forloop(torch.nn.Module):
+    def __init__(self, input_size, hidden_size):
+        super(LSTM_forloop, self).__init__()
+        
+        self.lstm_cell = torch.nn.LSTMCell(input_size, hidden_size)
+        
+    # Implementation adopted from 
+    # https://docs.pytorch.org/docs/stable/generated/torch.nn.LSTMCell.html
+    def forward(self, init: torch.Tensor, xs: torch.Tensor):
+        # The input `xs` has the time as the first dimsion
+        output = []
+        for i in range(xs.size()[0]):
+            hx, cx = self.lstm_cell(xs[i], init)
+            init = (hx, cx)
+            output.append(hx)
+        output = torch.stack(output, dim=0)
+        return output
+    
+class LSTM_scan(torch.nn.Module):
+    def __init__(self, Wii, bii, Whi, bhi, Wif, bif, Whf, bhf, Wig, big, Whg, bhg, Wio, bio, Who, bho):
+        super(LSTM_scan, self).__init__()
+        self.Wii = Wii.clone()
+        self.bii = bii.clone()
+        self.Whi = Whi.clone()
+        self.bhi = bhi.clone()
+        self.Wif = Wif.clone()
+        self.bif = bif.clone()
+        self.Whf = Whf.clone()
+        self.bhf = bhf.clone()
+        self.Wig = Wig.clone()
+        self.big = big.clone()
+        self.Whg = Whg.clone()
+        self.bhg = bhg.clone()
+        self.Wio = Wio.clone()
+        self.bio = bio.clone()
+        self.Who = Who.clone()
+        self.bho = bho.clone()
         
     def forward(self, init: torch.Tensor, xs: torch.Tensor):
-        def rnn_combine(carry, x):
-            h = torch.tanh(x @ self.Wih + self.bih + carry @ self.Whh + self.bhh)
-            return h + 0., h
+        def lstm_combine(carry, x):
+            h, c = carry
+            
+            i = torch.sigmoid(x @ self.Wii + self.bii + h @ self.Whi + self.bhi)
+            f = torch.sigmoid(x @ self.Wif + self.bif + h @ self.Whf + self.bhf)
+            g = torch.tanh(x @ self.Wig + self.big + h @ self.Whg + self.bhg)
+            o = torch.sigmoid(x @ self.Wio + self.bio + h @ self.Who + self.bho)
+            
+            c_new = f * c + i * g
+            h_new = o * torch.tanh(c_new)
+            
+            # return (h_new, c_new.clone()), h_new.clone()
+            return (h_new, c_new + 0.), h_new + 0.
         
-        carry, outs = scan(rnn_combine, init, xs, dim=0)
+        carry, outs = scan(lstm_combine, init, xs, dim=0)
         
         return carry, outs
-
-# Define the inputs
-xs = torch.randn(4, 3, requires_grad=True)
-init = torch.zeros(5, requires_grad=True)
-
-# Define the RNN with pure PyTorch
-rnn = torch.nn.RNN(3, 5)
-result_pytorch, _ = rnn(xs)
-
-model = AdvancedRNNExample(rnn.weight_ih_l0.T, rnn.bias_ih_l0, 
-                           rnn.weight_hh_l0.T, rnn.bias_hh_l0)
-_, result = model(init, xs)
-
 print('='*80)
 print('Example: RNN with scan')
-print("torch.nn.RNN result:\n", result_pytorch)
-print("RNN implemented with scan:\n", result)
-torch.testing.assert_close(result_pytorch, result)
-print('-'*80)
+
+from time import perf_counter
+def time_fn(fn, args, warm_up=1):
+    t_initial = -1.
+    for ind in range(warm_up):
+        t_start = perf_counter() 
+        result = fn(*args)
+        t_stop = perf_counter()
+        if ind == 0:
+            t_initial = t_stop - t_start
+
+    t_start = perf_counter() 
+    result = fn(*args)
+    t_stop = perf_counter()
+    t_run = t_stop - t_start
+    return result, t_initial, t_run
+
+for time_steps in [3, 20, 100]:
+
+    # Define the inputs
+    # time_steps = 3
+    warm_up_cycles = 3
+    # input_size = 15
+    input_size = 50
+    # hidden_size = 20
+    hidden_size = 200
+    xs = torch.randn(time_steps, input_size, requires_grad=True)  # (time_steps, batch, input_size)
+    h = torch.randn(hidden_size)  # (batch, hidden_size)
+    c = torch.randn(hidden_size)
+    init = (h, c)
+
+    # Define the for-loop LSTM model
+    lstm_forloop = LSTM_forloop(input_size, hidden_size)
+    lstm_forloop_comp = torch.compile(lstm_forloop, fullgraph=True)
+
+    # Define the LSTM using CUDA kernels
+    lstm_forloop_state_dict = lstm_forloop.state_dict()
+    lstm_cuda_state_dict = {}
+    for key, value in lstm_forloop_state_dict.items():
+        new_key = key.replace('lstm_cell.', '') + '_l0'
+        lstm_cuda_state_dict[new_key] = value.clone()
+    lstm_cuda = torch.nn.LSTM(input_size, hidden_size)
+    lstm_cuda.load_state_dict(lstm_cuda_state_dict)
+
+    # Define the LSTM model using scan
+    Wii, Wif, Wig, Wio = torch.chunk(lstm_cuda.weight_ih_l0, 4)
+    Whi, Whf, Whg, Who = torch.chunk(lstm_cuda.weight_hh_l0, 4)
+    bii, bif, big, bio = torch.chunk(lstm_cuda.bias_ih_l0, 4)
+    bhi, bhf, bhg, bho = torch.chunk(lstm_cuda.bias_hh_l0, 4)
+    lstm_scan = LSTM_scan(
+                    Wii.T, bii,
+                    Whi.T, bhi,
+                    
+                    Wif.T, bif,
+                    Whf.T, bhf,
+                    
+                    Wig.T, big,
+                    Whg.T, bhg,
+                    
+                    Wio.T, bio,
+                    Who.T, bho,
+                    )
+    lstm_scan_comp = torch.compile(lstm_scan, fullgraph=True)
+
+    # Run the models, time them and check for equivalence
+    result_forloop, time_initial_forloop, time_run_forloop = time_fn(lstm_forloop, (init, xs), warm_up=warm_up_cycles)
+    result_forloop_comp, time_initial_forloop_comp, time_run_forloop_comp = time_fn(lstm_forloop_comp, (init, xs), warm_up=warm_up_cycles)
+    result_cuda, time_initial_cuda, time_run_cuda = time_fn(lstm_cuda, (xs.clone(), (init[0].clone().unsqueeze(0), init[1].clone().unsqueeze(0))), warm_up=warm_up_cycles)
+    result_scan, time_initial_scan, time_run_scan = time_fn(lstm_scan, ((init[0].clone().unsqueeze(0), init[1].clone().unsqueeze(0)), xs.clone()), warm_up=warm_up_cycles)
+    result_scan_comp, time_initial_scan_comp, time_run_scan_comp = time_fn(lstm_scan_comp, ((init[0].clone().unsqueeze(0), init[1].clone().unsqueeze(0)), xs.clone()), warm_up=warm_up_cycles)
+
+    torch.testing.assert_close(result_forloop, result_forloop_comp)
+    torch.testing.assert_close(result_forloop, result_cuda[0])
+    torch.testing.assert_close(result_forloop, result_scan[1][:, 0, :])
+    torch.testing.assert_close(result_forloop, result_scan_comp[1][:, 0, :])
+    print('-'*80)
+    print(f'T={time_steps}:')
+    print(f'Compile times:\n\
+For-Loop        : {time_initial_forloop_comp:.5f}\n\
+Scan            : {time_initial_scan_comp:.5f}\n')
+    print(f'Run times       :\n\
+For-Loop        : {time_run_forloop:.5f} \n\
+For-Loop compile: {time_run_forloop_comp:.5f} \n\
+CUDA            : {time_run_cuda:.5f} \n\
+Scan            : {time_run_scan:.5f} \n\
+Scan compile    : {time_run_scan_comp:.5f}')
 
 ###############################################################################
 # Kernel of a state space model implemented with associative_scan
@@ -364,129 +482,8 @@ model = AdvancedAssociativeScanExample()
 result = model(xs)
 
 print('='*80)
-print('Example: RNN with scan')
+print('Example: Advanced associative_scan')
 print("SSM kernel implemented with associative_scan:\n", result)
-print('-'*80)
-
-###############################################################################
-# Part 3: Autograd Examples
-# =========================
-#
-# This section shows how control flow operators integrate with PyTorch’s
-# autograd feature. Most operators, except the ``while_loop``,
-# implement a backward function to compute the gradients. Hence, they can 
-# be used in differentiable computations.
-###############################################################################
-
-###############################################################################
-# Gradients through cond
-# ----------------------
-#
-# This example shows the gradient propagation through a ``cond``.
-# To do so, we will reuse the CondExample from above
-###############################################################################
-# Define the inputs
-xs = torch.tensor([-3.], requires_grad=True)
-
-# Compute the ground truth
-result_pytorch = xs.cos() if xs.sum() > 0 else xs.sin()
-
-# Compute the cond results
-model = CondExample()
-result = model(xs)
-
-print('='*80)
-print('Example: cond')
-print("Native PyTorch:\n", result_pytorch)
-print("Result with cond:\n", result)
-torch.testing.assert_close(result_pytorch, result)
-print("")
-
-# Compute the ground truth gradients.
-# The false_fn is used in the example above and the gradient for 
-# the sin() function is the cos() function.
-# Therefore, we expect the gradients output to be xs.cos()
-grad_pytorch = xs.cos()
-
-# Compute the gradients of the cond result
-grad = torch.autograd.grad(result, xs)[0]
-
-print("Gradient of PyTorch:\n", grad_pytorch)
-print("Gradient of cond:\n", grad)
-torch.testing.assert_close(grad_pytorch, grad)
-print('-'*80)
-
-###############################################################################
-# Gradients through map
-# ---------------------
-#
-# Here we compute gradients through a ``map`` call.
-# To do so, we will reuse the MapExample from above
-###############################################################################
-# Define the inputs
-xs = torch.arange(5, dtype=torch.float32, requires_grad=True)
-y = torch.tensor(2)
-
-# Compute the ground truth
-result_pytorch = xs ** y
-
-# Compute the cond results
-model = MapExample()
-result = model(xs, y)
-
-print('='*80)
-print('Example: map')
-print("Native PyTorch result:\n", xs ** y)
-print("map result:\n", result)
-torch.testing.assert_close(result_pytorch, result)
-
-grad_pytorch = xs * 2
-grad_init = torch.ones_like(xs)
-grad = torch.autograd.grad(result, xs, grad_init)[0]
-
-# The map function computes x ** y for each element, where y = 2
-# Therefore, we expect the correct gradients to be x * 2
-print("Gradient of PyTorch:\n", grad_pytorch)
-print("Gradient of cond:\n", grad)
-torch.testing.assert_close(grad_pytorch, grad)
-print('-'*80)
-
-###############################################################################
-# Gradient through RNN
-# --------------------
-#
-# In this section, we will demonstrate the gradient computation 
-# through an RNN implemented with the scan operator.
-# For this example, we will reuse the AdvancedRNNExample 
-###############################################################################
-# Define the inputs
-xs = torch.randn(4, 3, requires_grad=True)
-init = torch.zeros(5, requires_grad=True)
-
-# Define the RNN with pure PyTorch
-rnn = torch.nn.RNN(3, 5)
-result_pytorch, _ = rnn(xs)
-
-model = AdvancedRNNExample(rnn.weight_ih_l0.T, rnn.bias_ih_l0, 
-                           rnn.weight_hh_l0.T, rnn.bias_hh_l0)
-_, result = model(init, xs)
-
-print('='*80)
-print('Example: RNN with scan')
-print("torch.nn.RNN result:\n", result_pytorch)
-print("RNN implemented with scan:\n", result)
-torch.testing.assert_close(result_pytorch, result)
-
-grad_init = torch.ones_like(result_pytorch)
-grad_pytorch = torch.autograd.grad(result_pytorch, xs, grad_init)[0]
-grad = torch.autograd.grad(result, xs, grad_init)[0]
-
-# The map function computes x ** y for each element, where y = 2
-# Therefore, we expect the correct gradients to be x * 2
-print("Gradient of PyTorch:\n", grad_pytorch)
-print("Gradient of cond:\n", grad)
-torch.testing.assert_close(grad_pytorch, grad)
-
 print('-'*80)
 
 ################################################################################
