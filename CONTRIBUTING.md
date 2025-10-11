@@ -357,9 +357,7 @@ Submit the changes as a PR to the main branch of
 1. Make sure all CI checks are passing.
 
 Once you submit your PR, you can see a generated Netlify preview of your
-build. You can see an example Netlify preview at the following URL:
-
->  <https://deploy-preview-954--pytorch-tutorials-preview.netlify.app/>
+build.
 
 
 ## Do not merge the PR yourself ##
