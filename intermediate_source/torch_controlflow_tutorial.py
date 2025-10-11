@@ -381,70 +381,68 @@ def time_fn(fn, args, warm_up=1):
     t_run = t_stop - t_start
     return result, t_initial, t_run
 
-for time_steps in [3, 20, 100]:
+# Define the inputs
+time_steps = 20
+warm_up_cycles = 3
+# input_size = 15
+input_size = 50
+# hidden_size = 20
+hidden_size = 200
+xs = torch.randn(time_steps, input_size, requires_grad=True)  # (time_steps, batch, input_size)
+h = torch.randn(hidden_size)  # (batch, hidden_size)
+c = torch.randn(hidden_size)
+init = (h, c)
 
-    # Define the inputs
-    # time_steps = 3
-    warm_up_cycles = 3
-    # input_size = 15
-    input_size = 50
-    # hidden_size = 20
-    hidden_size = 200
-    xs = torch.randn(time_steps, input_size, requires_grad=True)  # (time_steps, batch, input_size)
-    h = torch.randn(hidden_size)  # (batch, hidden_size)
-    c = torch.randn(hidden_size)
-    init = (h, c)
+# Define the for-loop LSTM model
+lstm_forloop = LSTM_forloop(input_size, hidden_size)
+lstm_forloop_comp = torch.compile(lstm_forloop, fullgraph=True)
 
-    # Define the for-loop LSTM model
-    lstm_forloop = LSTM_forloop(input_size, hidden_size)
-    lstm_forloop_comp = torch.compile(lstm_forloop, fullgraph=True)
+# Define the LSTM using CUDA kernels
+lstm_forloop_state_dict = lstm_forloop.state_dict()
+lstm_cuda_state_dict = {}
+for key, value in lstm_forloop_state_dict.items():
+    new_key = key.replace('lstm_cell.', '') + '_l0'
+    lstm_cuda_state_dict[new_key] = value.clone()
+lstm_cuda = torch.nn.LSTM(input_size, hidden_size)
+lstm_cuda.load_state_dict(lstm_cuda_state_dict)
 
-    # Define the LSTM using CUDA kernels
-    lstm_forloop_state_dict = lstm_forloop.state_dict()
-    lstm_cuda_state_dict = {}
-    for key, value in lstm_forloop_state_dict.items():
-        new_key = key.replace('lstm_cell.', '') + '_l0'
-        lstm_cuda_state_dict[new_key] = value.clone()
-    lstm_cuda = torch.nn.LSTM(input_size, hidden_size)
-    lstm_cuda.load_state_dict(lstm_cuda_state_dict)
+# Define the LSTM model using scan
+Wii, Wif, Wig, Wio = torch.chunk(lstm_cuda.weight_ih_l0, 4)
+Whi, Whf, Whg, Who = torch.chunk(lstm_cuda.weight_hh_l0, 4)
+bii, bif, big, bio = torch.chunk(lstm_cuda.bias_ih_l0, 4)
+bhi, bhf, bhg, bho = torch.chunk(lstm_cuda.bias_hh_l0, 4)
+lstm_scan = LSTM_scan(
+                Wii.T, bii,
+                Whi.T, bhi,
+                
+                Wif.T, bif,
+                Whf.T, bhf,
+                
+                Wig.T, big,
+                Whg.T, bhg,
+                
+                Wio.T, bio,
+                Who.T, bho,
+                )
+lstm_scan_comp = torch.compile(lstm_scan, fullgraph=True)
 
-    # Define the LSTM model using scan
-    Wii, Wif, Wig, Wio = torch.chunk(lstm_cuda.weight_ih_l0, 4)
-    Whi, Whf, Whg, Who = torch.chunk(lstm_cuda.weight_hh_l0, 4)
-    bii, bif, big, bio = torch.chunk(lstm_cuda.bias_ih_l0, 4)
-    bhi, bhf, bhg, bho = torch.chunk(lstm_cuda.bias_hh_l0, 4)
-    lstm_scan = LSTM_scan(
-                    Wii.T, bii,
-                    Whi.T, bhi,
-                    
-                    Wif.T, bif,
-                    Whf.T, bhf,
-                    
-                    Wig.T, big,
-                    Whg.T, bhg,
-                    
-                    Wio.T, bio,
-                    Who.T, bho,
-                    )
-    lstm_scan_comp = torch.compile(lstm_scan, fullgraph=True)
+# Run the models, time them and check for equivalence
+result_forloop, time_initial_forloop, time_run_forloop = time_fn(lstm_forloop, (init, xs), warm_up=warm_up_cycles)
+result_forloop_comp, time_initial_forloop_comp, time_run_forloop_comp = time_fn(lstm_forloop_comp, (init, xs), warm_up=warm_up_cycles)
+result_cuda, time_initial_cuda, time_run_cuda = time_fn(lstm_cuda, (xs.clone(), (init[0].clone().unsqueeze(0), init[1].clone().unsqueeze(0))), warm_up=warm_up_cycles)
+result_scan, time_initial_scan, time_run_scan = time_fn(lstm_scan, ((init[0].clone().unsqueeze(0), init[1].clone().unsqueeze(0)), xs.clone()), warm_up=warm_up_cycles)
+result_scan_comp, time_initial_scan_comp, time_run_scan_comp = time_fn(lstm_scan_comp, ((init[0].clone().unsqueeze(0), init[1].clone().unsqueeze(0)), xs.clone()), warm_up=warm_up_cycles)
 
-    # Run the models, time them and check for equivalence
-    result_forloop, time_initial_forloop, time_run_forloop = time_fn(lstm_forloop, (init, xs), warm_up=warm_up_cycles)
-    result_forloop_comp, time_initial_forloop_comp, time_run_forloop_comp = time_fn(lstm_forloop_comp, (init, xs), warm_up=warm_up_cycles)
-    result_cuda, time_initial_cuda, time_run_cuda = time_fn(lstm_cuda, (xs.clone(), (init[0].clone().unsqueeze(0), init[1].clone().unsqueeze(0))), warm_up=warm_up_cycles)
-    result_scan, time_initial_scan, time_run_scan = time_fn(lstm_scan, ((init[0].clone().unsqueeze(0), init[1].clone().unsqueeze(0)), xs.clone()), warm_up=warm_up_cycles)
-    result_scan_comp, time_initial_scan_comp, time_run_scan_comp = time_fn(lstm_scan_comp, ((init[0].clone().unsqueeze(0), init[1].clone().unsqueeze(0)), xs.clone()), warm_up=warm_up_cycles)
-
-    torch.testing.assert_close(result_forloop, result_forloop_comp)
-    torch.testing.assert_close(result_forloop, result_cuda[0])
-    torch.testing.assert_close(result_forloop, result_scan[1][:, 0, :])
-    torch.testing.assert_close(result_forloop, result_scan_comp[1][:, 0, :])
-    print('-'*80)
-    print(f'T={time_steps}:')
-    print(f'Compile times:\n\
+torch.testing.assert_close(result_forloop, result_forloop_comp)
+torch.testing.assert_close(result_forloop, result_cuda[0])
+torch.testing.assert_close(result_forloop, result_scan[1][:, 0, :])
+torch.testing.assert_close(result_forloop, result_scan_comp[1][:, 0, :])
+print('-'*80)
+print(f'T={time_steps}:')
+print(f'Compile times:\n\
 For-Loop        : {time_initial_forloop_comp:.5f}\n\
 Scan            : {time_initial_scan_comp:.5f}\n')
-    print(f'Run times       :\n\
+print(f'Run times       :\n\
 For-Loop        : {time_run_forloop:.5f} \n\
 For-Loop compile: {time_run_forloop_comp:.5f} \n\
 CUDA            : {time_run_cuda:.5f} \n\
