@@ -356,12 +356,25 @@ class LSTM_scan(torch.nn.Module):
             c_new = f * c + i * g
             h_new = o * torch.tanh(c_new)
             
-            # return (h_new, c_new.clone()), h_new.clone()
-            return (h_new, c_new + 0.), h_new + 0.
+            return (h_new, c_new.clone()), h_new.clone()
         
         carry, outs = scan(lstm_combine, init, xs, dim=0)
-        
         return carry, outs
+    
+class LSTM_scan_cell(torch.nn.Module):
+    def __init__(self, state_dict):
+        super(LSTM_scan_cell, self).__init__()
+        self.lstm_cell = torch.nn.LSTMCell(input_size, hidden_size)
+        self.lstm_cell.load_state_dict(state_dict)
+        
+    def forward(self, init: torch.Tensor, xs: torch.Tensor):
+        def lstm_combine(carry, x):
+            hx, cx = self.lstm_cell(x, carry)
+            return (hx, cx.clone()), hx.clone()
+        
+        carry, outs = scan(lstm_combine, init, xs, dim=0)
+        return carry, outs
+    
 print('='*80)
 print('Example: RNN with scan')
 
@@ -384,10 +397,8 @@ def time_fn(fn, args, warm_up=1):
 # Define the inputs
 time_steps = 20
 warm_up_cycles = 3
-# input_size = 15
-input_size = 50
-# hidden_size = 20
-hidden_size = 200
+input_size = 15
+hidden_size = 20
 xs = torch.randn(time_steps, input_size, requires_grad=True)  # (time_steps, batch, input_size)
 h = torch.randn(hidden_size)  # (batch, hidden_size)
 c = torch.randn(hidden_size)
@@ -426,28 +437,43 @@ lstm_scan = LSTM_scan(
                 )
 lstm_scan_comp = torch.compile(lstm_scan, fullgraph=True)
 
+# Define the LSTM model using scan and LSTMCell
+rnn_scan_cell_state_dict = {}
+for key, value in lstm_forloop_state_dict.items():
+    new_key = key.replace('lstm_cell.', '')
+    rnn_scan_cell_state_dict[new_key] = value.clone()
+lstm_scan_cell = LSTM_scan_cell(rnn_scan_cell_state_dict)
+lstm_scan_cell_comp = torch.compile(lstm_scan_cell, fullgraph=True)
+
 # Run the models, time them and check for equivalence
 result_forloop, time_initial_forloop, time_run_forloop = time_fn(lstm_forloop, (init, xs), warm_up=warm_up_cycles)
 result_forloop_comp, time_initial_forloop_comp, time_run_forloop_comp = time_fn(lstm_forloop_comp, (init, xs), warm_up=warm_up_cycles)
 result_cuda, time_initial_cuda, time_run_cuda = time_fn(lstm_cuda, (xs.clone(), (init[0].clone().unsqueeze(0), init[1].clone().unsqueeze(0))), warm_up=warm_up_cycles)
 result_scan, time_initial_scan, time_run_scan = time_fn(lstm_scan, ((init[0].clone().unsqueeze(0), init[1].clone().unsqueeze(0)), xs.clone()), warm_up=warm_up_cycles)
 result_scan_comp, time_initial_scan_comp, time_run_scan_comp = time_fn(lstm_scan_comp, ((init[0].clone().unsqueeze(0), init[1].clone().unsqueeze(0)), xs.clone()), warm_up=warm_up_cycles)
+result_scan_cell, time_initial_scan_cell, time_run_scan_cell = time_fn(lstm_scan_cell, ((init[0].clone(), init[1].clone()), xs.clone()), warm_up=warm_up_cycles)
+result_scan_cell_comp, time_initial_scan_cell_comp, time_run_scan_cell_comp = time_fn(lstm_scan_cell_comp, ((init[0].clone(), init[1].clone()), xs.clone()), warm_up=warm_up_cycles)
 
 torch.testing.assert_close(result_forloop, result_forloop_comp)
 torch.testing.assert_close(result_forloop, result_cuda[0])
 torch.testing.assert_close(result_forloop, result_scan[1][:, 0, :])
 torch.testing.assert_close(result_forloop, result_scan_comp[1][:, 0, :])
-print('-'*80)
+torch.testing.assert_close(result_forloop, result_scan_cell[1])
+torch.testing.assert_close(result_forloop, result_scan_cell_comp[1])
+
 print(f'T={time_steps}:')
-print(f'Compile times:\n\
-For-Loop        : {time_initial_forloop_comp:.5f}\n\
-Scan            : {time_initial_scan_comp:.5f}\n')
-print(f'Run times       :\n\
-For-Loop        : {time_run_forloop:.5f} \n\
-For-Loop compile: {time_run_forloop_comp:.5f} \n\
-CUDA            : {time_run_cuda:.5f} \n\
-Scan            : {time_run_scan:.5f} \n\
-Scan compile    : {time_run_scan_comp:.5f}')
+print(f'Compile times       :\n\
+For-Loop            : {time_initial_forloop_comp:.5f}\n\
+Scan                : {time_initial_scan_comp:.5f}\n\
+Scan Cell           : {time_initial_scan_cell_comp:.5f}\n')
+print(f'Run times           :\n\
+For-Loop            : {time_run_forloop:.5f}\n\
+For-Loop compile.   : {time_run_forloop_comp:.5f}\n\
+CUDA                : {time_run_cuda:.5f}\n\
+Scan                : {time_run_scan:.5f}\n\
+Scan compile        : {time_run_scan_comp:.5f}\n\
+Scan RNNCell        : {time_run_scan_cell:.5f}\n\
+Scan RNNCell compile: {time_run_scan_cell_comp:.5f}')
 
 ###############################################################################
 # Kernel of a state space model implemented with associative_scan
