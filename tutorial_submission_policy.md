@@ -49,9 +49,9 @@ interested in contributing a tutorial, please follow these steps:
        description of the PR, explain why the changes are needed and
        how they improve the tutorial.
 
-   * These issues will be triaged by PyTorch maintainers on a case-by-case basis. 
+   * These issues will be triaged by PyTorch maintainers on a case-by-case basis.
    * Link any supporting materials including discussions in other repositories.
-     
+
 1. **Await Approval:**
    * Wait for a response from the PyTorch Tutorials maintainers. A PyTorch
      tutorial maintainer will review your proposal and
@@ -59,7 +59,7 @@ interested in contributing a tutorial, please follow these steps:
      A comment and an **approved** label will be added to your issue
      by a maintainer. The review process for new tutorial PRs submitted
      without the corresponding issue may take longer.
-     
+
 1. **Adhere to writing and styling guidelines:**
    * Once approved, follow the guidelines outlined in [CONTRIBUTING.md](https://github.com/pytorch/tutorials/blob/main/CONTRIBUTING.md)
      and use the provided [template](https://github.com/pytorch/tutorials/blob/main/beginner_source/template_tutorial.py) for creating your tutorial.
@@ -70,7 +70,7 @@ interested in contributing a tutorial, please follow these steps:
      multiple GPU, parallel/distributed training, or requires extended
      execution time (25 minutes or more), we prefer submissions
      in Python file format.
-     
+
 ## Maintaining Tutorials
 
 When you submit a new tutorial, we encourage you to keep it in sync
@@ -78,7 +78,7 @@ with the latest PyTorch updates and features. Additionally, we may
 contact you to review any PRs, issues, and other related matters to
 ensure the tutorial remains a valuable resource.
 
-Please note the following: 
+Please note the following:
 
 * If a tutorial breaks against the main branch, it will
   be excluded from the build and an issue will be filed against it,
@@ -91,8 +91,7 @@ Please note the following:
 ## Deleting Stale Tutorials
 
 A tutorial might be considered stale when it no longer aligns with
-the latest PyTorch updates, features, or best practices or best
-practices:
+the latest PyTorch updates, features, or best practices:
 
 * The tutorial is no longer functional due to changes in PyTorch or
   its dependencies

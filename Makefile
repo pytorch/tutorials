@@ -61,27 +61,6 @@ download:
 	wget -nv -N https://s3.amazonaws.com/pytorch-tutorial-assets/cornell_movie_dialogs_corpus_v2.zip -P $(DATADIR)
 	unzip $(ZIPOPTS) $(DATADIR)/cornell_movie_dialogs_corpus_v2.zip -d beginner_source/data/
 
-	# Download model for advanced_source/dynamic_quantization_tutorial.py
-	wget -nv -N https://s3.amazonaws.com/pytorch-tutorial-assets/word_language_model_quantize.pth -P $(DATADIR)
-	cp $(DATADIR)/word_language_model_quantize.pth advanced_source/data/word_language_model_quantize.pth
-
-	# Download data for advanced_source/dynamic_quantization_tutorial.py
-	wget -nv -N https://s3.amazonaws.com/pytorch-tutorial-assets/wikitext-2.zip -P $(DATADIR)
-	unzip $(ZIPOPTS) $(DATADIR)/wikitext-2.zip -d advanced_source/data/
-
-	# Download model for advanced_source/static_quantization_tutorial.py
-	wget -nv -N https://download.pytorch.org/models/mobilenet_v2-b0353104.pth -P $(DATADIR)
-	cp $(DATADIR)/mobilenet_v2-b0353104.pth advanced_source/data/mobilenet_pretrained_float.pth
-
-
-	# Download model for prototype_source/graph_mode_static_quantization_tutorial.py
-	wget -nv -N https://download.pytorch.org/models/resnet18-5c106cde.pth -P $(DATADIR)
-	cp $(DATADIR)/resnet18-5c106cde.pth prototype_source/data/resnet18_pretrained_float.pth
-
-	# Download vocab for beginner_source/flava_finetuning_tutorial.py
-	wget -nv -N http://dl.fbaipublicfiles.com/pythia/data/vocab.tar.gz -P $(DATADIR)
-	tar $(TAROPTS) -xzf $(DATADIR)/vocab.tar.gz -C ./beginner_source/data/
-
 	# Download PennFudanPed dataset for intermediate_source/torchvision_tutorial.py
 	wget https://www.cis.upenn.edu/~jshi/ped_html/PennFudanPed.zip -P $(DATADIR)
 	unzip -o $(DATADIR)/PennFudanPed.zip -d intermediate_source/data/

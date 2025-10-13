@@ -361,4 +361,3 @@ See also:
 
 * `PyTorch Performance Tuning Guide <https://pytorch.org/tutorials/recipes/recipes/tuning_guide.html#cpu-specific-optimizations>`__
 * `PyTorch Multiprocessing Best Practices <https://pytorch.org/docs/stable/notes/multiprocessing.html#cpu-in-multiprocessing>`__
-* Grokking PyTorch Intel CPU performance: `Part 1 <https://pytorch.org/tutorials/intermediate/torchserve_with_ipex>`__  `Part 2 <https://pytorch.org/tutorials/intermediate/torchserve_with_ipex_2>`__
