@@ -675,7 +675,7 @@ Welcome to PyTorch Tutorials
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
-   :header: Distributed Training with Monarch and TorchTitan
+   :header: Interactive Distributed Applications with Monarch
    :card_description: Learn how to spin up distributed applications using Monarch's singler controller model
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/monarch_distributed_tutorial.html
