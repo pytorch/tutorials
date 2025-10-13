@@ -674,6 +674,13 @@ Welcome to PyTorch Tutorials
    :link: intermediate/TCPStore_libuv_backend.html
    :tags: Parallel-and-Distributed-Training
 
+.. customcarditem::
+   :header: Distributed Training with Monarch and TorchTitan
+   :card_description: Learn how to spin up distributed applications using Monarch's singler controller model
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/monarch_distributed_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
 .. Edge
 
 .. customcarditem::
