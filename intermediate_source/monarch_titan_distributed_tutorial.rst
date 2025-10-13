@@ -9,6 +9,7 @@ Introduction
 
 As deep learning models continue to grow in size and complexity, training them efficiently requires coordinating computation across multiple GPUs and nodes.
 In this tutorial, you will learn how to easily set up and run large-scale distributed workflows using Monarch's actor framework together with TorchTitan, on a SLURM-managed cluster.
+Monarch will allow us to drive a large cluster of machines (organized into a mesh), as if developing on a single host, single process environment.
 
 What is Monarch?
 ^^^^^^^^^^^^^^^^
@@ -23,26 +24,25 @@ Monarch is an actor framework designed to streamline the development of distribu
 
 For more details, see the `Monarch documentation <https://meta-pytorch.org/monarch/generated/examples/getting_started.html>`_.
 
-Why Use Monarch with TorchTitan?
+Why Use Monarch?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 TorchTitan is a PyTorch native library for pre-training at scale.
-While TorchTitan provides excellent primitives for distributed training, launching and managing these jobs across clusters can be complex. Monarch addresses this with:
+While TorchTitan provides excellent primitives for distributed training, launching and managing these jobs across clusters can slow down iteration. Monarch addresses this with:
 
 1. **Simplified cluster interaction**: Reserve and manage compute resources with simple async Python calls instead of writing bash scripts
 2. **Interactive development**: Modify and re-run training code on existing allocations without waiting for new resources
 3. **Unified workflow**: Seamlessly move between local testing and cluster execution with the same code
-4. **Failure supervision**: Handle errors and failures gracefully, with fine-grained recovery options from the controller
 
 Prerequisites
 -------------
 
-To run this tutorial, you must have:
+We rely on a nightly build of Titan for this tutorial, so please ensure that other Torch libraries are tracking nightly builds:
 
 1. **Monarch nightly installed:**
    `Install script <https://github.com/meta-pytorch/monarch/blob/main/scripts/install_nightly.py>`_
 2. **TorchTitan nightly installed:**
-   `TorchTitan install instructions <https://github.com/pytorch/torchtitan?tab=readme-ov-fileightly-builds>`_
+   `TorchTitan install instructions <https://github.com/pytorch/torchtitan?tab=readme-ov-file#nightly-builds>`_
 3. **A valid Titan model config** and **tokenizer** in your working directory (e.g., ``debug_model.toml`` from `TorchTitan configs <https://github.com/pytorch/torchtitan/blob/main/torchtitan/models/llama3/train_configs/debug_model.toml>`_).
 4. **SLURM cluster access:**
 
@@ -317,11 +317,13 @@ This is where Monarch's power becomes most apparent.
 **Monarch Highlights**:
 
 1. **Interactive iteration**: After reserving the machine allocation, you can adjust your logic
-   and re-spawn actors, without requesting new resources.
+   and re-spawn actors, without requesting new resources. SLURM's shared filesystem ensures
+   that framework/workspace changes are synchronized across workers.
 2. **Transparent logging**: All logs from remote workers stream back to your
    client in real-time, making debugging feel like local execution
 
-Workflow:
+**Workflow**:
+
     Reserve Machines → Create Proc Mesh → Configure Logging → Spawn Actors → Train → Cleanup
 
 .. code-block:: python
@@ -430,14 +432,13 @@ Finally, we tie everything together in a main function that kicks off the workfl
 
         logger.info("Workflow completed!")
 
-Summary
--------
+Conclusion
+-----------
 
 Congrats! In this tutorial, you learned how to combine Monarch's actor framework with
 TorchTitan for scalable distributed training.
 
 **Further Reading**
 
-- Monarch also integrates with TorchFT to provide per-step fault-tolerance across replicated workers.
-You can find a comprehensive `proof of concept <https://github.com/meta-pytorch/torchft/tree/main/torchft/examples/slurm>`_ of this integration in the TorchFT repo.
+- Monarch also integrates with TorchFT to provide per-step fault-tolerance across replicated workers. You can find a comprehensive `proof of concept <https://github.com/meta-pytorch/torchft/tree/main/examples/monarch>`_ of this integration in the TorchFT repo.
 - For an interactive notebook covering similar topics to this tutorial, please consult `this Monarch example <https://github.com/meta-pytorch/monarch/blob/main/examples/slurm_titan.ipynb>`_.
