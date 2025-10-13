@@ -198,14 +198,14 @@ environment.
                 logger.info(f"{self.uid} trainer cleaned up")
 
 Actor endpoints can be invoked in a variety of patterns. We'll explore a concrete example in `Step 4: Execute the Training Workflow`_,
-but here are some common usages:
+but here is some pseudocode with common usages:
 
 .. code-block:: python
 
     try:
-        # where mesh0 is 4 nodes * 8 GPUs
-        proc_mesh = mesh0.spawn_procs({"gpus": 32})
-        trainer_actors = proc_mesh.spawn(...)
+        # where mesh0 is made of N nodes, each node having 8 GPUs
+        proc_mesh = mesh0.spawn_procs({"gpus": 8})
+        trainer_actors = proc_mesh.spawn("trainers", TrainerActor, ...)
 
         # Call on all ranks
         await trainer_actors.ping_rank.call()
