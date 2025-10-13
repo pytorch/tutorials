@@ -6,8 +6,6 @@
 **Author:** William Wen
 """
 
-import warnings
-
 ######################################################################
 # ``torch.compile`` is the new way to speed up your PyTorch code!
 # ``torch.compile`` makes PyTorch code run faster by
@@ -15,18 +13,33 @@ import warnings
 # while requiring minimal code changes.
 #
 # This tutorial covers an end-to-end example of training and evaluating a
-# real model with ``torch.compile``. For a gentler introduction to ``torch.compile``,
-# please check out our ```torch.compile`` tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__.
+# real model with ``torch.compile``. For a gentle introduction to ``torch.compile``,
+# please check out `the introduction to ``torch.compile`` tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__.
 #
 # **Required pip Dependencies**
 #
 # - ``torch >= 2.0``
 # - ``torchvision``
+#
+# .. grid:: 2
+#
+#     .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+#        :class-card: card-prerequisites
+#
+#        * How to apply ``torch.compile`` to a real model
+#        * ``torch.compile`` speedups on a real model
+#        * ``torch.compile``'s first few iterations are expected to be slower due to compilation overhead
+#
+#     .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+#        :class-card: card-prerequisites
+#
+#        * `Introduction to ``torch.compile`` <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__
 
 # NOTE: a modern NVIDIA GPU (H100, A100, or V100) is recommended for this tutorial in
 # order to reproduce the speedup numbers shown below and documented elsewhere.
 
 import torch
+import warnings
 
 gpu_ok = False
 if torch.cuda.is_available():
@@ -88,7 +101,10 @@ def init_model():
 
 model = init_model()
 
-model_opt = torch.compile(model, mode="reduce-overhead")
+# Note that we generally recommend directly compiling a torch.nn.Module by calling
+# its .compile() method.
+model_opt = init_model()
+model_opt.compile(mode="reduce-overhead")
 
 inp = generate_data(16)[0]
 with torch.no_grad():
@@ -175,6 +191,9 @@ print("~" * 10)
 
 model = init_model()
 opt = torch.optim.Adam(model.parameters())
+
+# Note that because we are compiling a regular Python function, we do not
+# call any .compile() method.
 train_opt = torch.compile(train, mode="reduce-overhead")
 
 compile_times = []
@@ -202,3 +221,20 @@ print("~" * 10)
 # We remark that the speedup numbers presented in this tutorial are for
 # demonstration purposes only. Official speedup values can be seen at the
 # `TorchInductor performance dashboard <https://hud.pytorch.org/benchmark/compilers>`__.
+
+######################################################################
+# Conclusion
+# ------------
+#
+# In this tutorial, we applied ``torch.compile`` to training and inference on a real model,
+# demonstrating speedups.
+#
+# Importantly, we note that the first few iterations of a compiled model
+# are slower than eager mode due to compilation overhead, but subsequent iterations are expected to
+# have speedups.
+#
+# For a gentle introduction to ``torch.compile``, please check out `the introduction to ``torch.compile`` tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__.
+#
+# To troubleshoot issues and to gain a deeper understanding of how to apply ``torch.compile`` to your code, check out `the ``torch.compile`` programming model <https://docs.pytorch.org/docs/main/compile/programming_model.html>`__.
+#
+# We hope that you will give ``torch.compile`` a try!
