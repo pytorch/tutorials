@@ -68,6 +68,7 @@ The JobTrait design pattern allows for interfacing with custom schedulers, such 
     def create_slurm_job(
         mesh_name: str,
         num_nodes: int,
+        gpus_per_node: int,
         time_limit: str = "06:00:00"
     ) -> SlurmJob:
         """
@@ -76,6 +77,7 @@ The JobTrait design pattern allows for interfacing with custom schedulers, such 
                        A JobTrait can consist of multiple meshes, and
                        Monarch allows for re-attaching to ongoing jobs.
             num_nodes: Number of nodes allocated per mesh
+            gpus_per_node: Number of GPUs per node in the mesh
 
             Note: SlurmJob is just one instance of a Monarch scheduler interface.
                   Consult the JobTrait documentation to find one that's right for your usecase.
@@ -85,6 +87,7 @@ The JobTrait design pattern allows for interfacing with custom schedulers, such 
             meshes={mesh_name: num_nodes},
             job_name=default_job_name,
             time_limit=time_limit,
+            gpus_per_nodes=gpus_per_node,
             # ... additional args can be passed here
         )
 
@@ -202,23 +205,26 @@ but here are some common usages:
     try:
         # where mesh0 is 4 nodes * 8 GPUs
         proc_mesh = mesh0.spawn_procs({"gpus": 32})
-        trainer_actor = proc_mesh.spawn(...)
+        trainer_actors = proc_mesh.spawn(...)
 
         # Call on all ranks
-        await trainer_actor.ping_rank.call()
+        await trainer_actors.ping_rank.call()
 
         # Call-and-forget on all ranks
-        trainer_actor.ping_rank.broadcast()
+        trainer_actors.ping_rank.broadcast()
 
         # Call on ONE random rank
-        await trainer_actor.ping_rank.choose()
+        await trainer_actors.ping_rank.choose()
+
+        # Call on the first 3 ranks of node 0
+        await trainer_actors.slice(hosts=0, gpus=slice(0, 3)).ping_rank.call()
 
     except Exception as e:
         # handle SupervisionEvents from remote actor failures
         pass
 
 Remote actor endpoints can also utilize Python native breakpoints, enabling interactive debugging sessions.
-For a complete deep-dive into Monarch debuggers, `refer to the documentation <https://meta-pytorch.org/monarch/generated/examples/debugging.html>`_.
+For a complete deep-dive into Monarch debuggers, please `refer to the documentation <https://meta-pytorch.org/monarch/generated/examples/debugging.html>`_.
 
 .. code-block:: python
 
@@ -266,7 +272,7 @@ and some of the training hyperparameters.
         gpus_per_node: int = 8
 
 TorchTitan uses a JobConfig object to control all aspects of training.
-Here we create a function that builds this configuration from our RunParams.
+Here we create a function that parses this configuration from our RunParams.
 
 .. code-block:: python
 
@@ -338,14 +344,13 @@ This is where Monarch's power becomes most apparent.
         try:
             # 1. Create a SLURM job with N nodes
             #    This leverages Monarch to reserve a persistent machine allocation
-            slurm_job = create_slurm_job(mesh_name, RunParams.num_nodes)
+            slurm_job = create_slurm_job(mesh_name, RunParams.num_nodes, RunParams.gpus_per_node)
             job_state = slurm_job.state()
 
             # 2. Create a process mesh on the machine allocation
             #    This creates one process per GPU across all allocated nodes
             logger.info("Creating process mesh...")
-            total_gpus = RunParams.gpus_per_node * RunParams.num_nodes
-            proc_mesh = job_state.mesh0.spawn_procs({"gpus": total_gpus})
+            proc_mesh = job_state.mesh0.spawn_procs({"gpus": RunParams.gpus_per_node})
 
             # 3. Configure remote logging behavior
             #    - stream_to_client: Forward all remote logs to your local console
@@ -435,7 +440,7 @@ Finally, we tie everything together in a main function that kicks off the workfl
 Conclusion
 -----------
 
-Congrats! In this tutorial, you learned how to combine Monarch's actor framework with
+Congrats! In this tutorial, you learned how to apply Monarch's actor framework with
 TorchTitan for scalable distributed training.
 
 **Further Reading**
