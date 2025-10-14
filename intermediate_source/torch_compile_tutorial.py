@@ -6,17 +6,6 @@ Introduction to ``torch.compile``
 **Author:** William Wen
 """
 
-# sphinx_gallery_start_ignore
-# to clear torch logs format
-import torch
-import os
-os.environ["TORCH_LOGS_FORMAT"] = ""
-torch._logging._internal.DEFAULT_FORMATTER = (
-    torch._logging._internal._default_formatter()
-)
-torch._logging._internal._init_logs()
-# sphinx_gallery_end_ignore
-
 ######################################################################
 # ``torch.compile`` is the new way to speed up your PyTorch code!
 # ``torch.compile`` makes PyTorch code run faster by
@@ -36,15 +25,15 @@ torch._logging._internal._init_logs()
 # our previous PyTorch compiler solution,
 # `TorchScript <https://pytorch.org/docs/stable/jit.html>`__.
 #
-# For an end-to-end example on a real model, check out our `end-to-end ``torch.compile`` tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_full_example.html>`__.
+# For an end-to-end example on a real model, check out our `end-to-end torch.compile tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_full_example.html>`__.
 #
-# To troubleshoot issues and to gain a deeper understanding of how to apply ``torch.compile`` to your code, check out `the ``torch.compile`` programming model <https://docs.pytorch.org/docs/main/compile/programming_model.html>`__.
+# To troubleshoot issues and to gain a deeper understanding of how to apply ``torch.compile`` to your code, check out `the torch.compile programming model <https://docs.pytorch.org/docs/main/compile/programming_model.html>`__.
 #
 # **Contents**
 #
 # .. contents::
 #     :local:
-
+#
 # **Required pip dependencies for this tutorial**
 #
 # - ``torch >= 2.0``
@@ -64,6 +53,16 @@ torch._logging._internal._init_logs()
 # The following code will print out the PyTorch ops that ``torch.compile`` traced.
 
 import torch
+
+# sphinx_gallery_start_ignore
+# to clear torch logs format
+import os
+os.environ["TORCH_LOGS_FORMAT"] = ""
+torch._logging._internal.DEFAULT_FORMATTER = (
+    torch._logging._internal._default_formatter()
+)
+torch._logging._internal._init_logs()
+# sphinx_gallery_end_ignore
 
 torch._logging.set_logs(graph_code=True)
 
@@ -141,7 +140,7 @@ print(mod2(torch.randn(3, 3)))
 # -----------------------
 #
 # Now let's demonstrate how ``torch.compile`` speeds up a simple PyTorch example.
-# For a demonstration on a more complex model, see our `end-to-end ``torch.compile`` tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_full_example.html>`__.
+# For a demonstration on a more complex model, see our `end-to-end torch.compile tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_full_example.html>`__.
 
 
 def foo3(x):
@@ -215,7 +214,7 @@ print("~" * 10)
 # and the amount of data is large, then the bottleneck would be
 # GPU compute and the observed speedup may be less significant.
 #
-# To see speedups on a real model, check out our `end-to-end ``torch.compile`` tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_full_example.html>`__.
+# To see speedups on a real model, check out our `end-to-end torch.compile tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_full_example.html>`__.
 
 ######################################################################
 # Benefits over TorchScript
@@ -392,10 +391,10 @@ bar_fixed(inp1, -inp2)
 # In order to serialize graphs or to run graphs on different (i.e. Python-less)
 # environments, consider using ``torch.export`` instead (from PyTorch 2.1+).
 # One important restriction is that ``torch.export`` does not support graph breaks. Please check
-# `this tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html>`__
+# `the torch.export tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html>`__
 # for more details on ``torch.export``.
 #
-# Check out our `section on graph breaks in the ``torch.compile`` programming model <https://docs.pytorch.org/docs/main/compile/programming_model.graph_breaks_index.html>`__
+# Check out our `section on graph breaks in the torch.compile programming model <https://docs.pytorch.org/docs/main/compile/programming_model.graph_breaks_index.html>`__
 # for tips on how to work around graph breaks.
 
 ######################################################################
@@ -406,7 +405,7 @@ bar_fixed(inp1, -inp2)
 # Are you looking for tips on how to best use ``torch.compile``?
 # Or maybe you simply want to learn more about the inner workings of ``torch.compile``?
 #
-# Check out `the ``torch.compile`` programming model <https://docs.pytorch.org/docs/main/compile/programming_model.html>`__.
+# Check out `the torch.compile programming model <https://docs.pytorch.org/docs/main/compile/programming_model.html>`__.
 
 ######################################################################
 # Conclusion
@@ -416,8 +415,8 @@ bar_fixed(inp1, -inp2)
 # basic usage, demonstrating speedups over eager mode, comparing to TorchScript,
 # and briefly describing graph breaks.
 #
-# For an end-to-end example on a real model, check out our `end-to-end ``torch.compile`` tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_full_example.html>`__.
+# For an end-to-end example on a real model, check out our `end-to-end torch.compile tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_full_example.html>`__.
 #
-# To troubleshoot issues and to gain a deeper understanding of how to apply ``torch.compile`` to your code, check out `the ``torch.compile`` programming model <https://docs.pytorch.org/docs/main/compile/programming_model.html>`__.
+# To troubleshoot issues and to gain a deeper understanding of how to apply ``torch.compile`` to your code, check out `the torch.compile programming model <https://docs.pytorch.org/docs/main/compile/programming_model.html>`__.
 #
 # We hope that you will give ``torch.compile`` a try!

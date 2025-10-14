@@ -14,7 +14,7 @@
 #
 # This tutorial covers an end-to-end example of training and evaluating a
 # real model with ``torch.compile``. For a gentle introduction to ``torch.compile``,
-# please check out `the introduction to ``torch.compile`` tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__.
+# please check out `the introduction to torch.compile tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__.
 #
 # **Required pip Dependencies**
 #
@@ -33,7 +33,7 @@
 #     .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
 #        :class-card: card-prerequisites
 #
-#        * `Introduction to ``torch.compile`` <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__
+#        * `Introduction to torch.compile <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__
 
 # NOTE: a modern NVIDIA GPU (H100, A100, or V100) is recommended for this tutorial in
 # order to reproduce the speedup numbers shown below and documented elsewhere.
@@ -233,8 +233,8 @@ print("~" * 10)
 # are slower than eager mode due to compilation overhead, but subsequent iterations are expected to
 # have speedups.
 #
-# For a gentle introduction to ``torch.compile``, please check out `the introduction to ``torch.compile`` tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__.
+# For a gentle introduction to ``torch.compile``, please check out `the introduction to torch.compile tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__.
 #
-# To troubleshoot issues and to gain a deeper understanding of how to apply ``torch.compile`` to your code, check out `the ``torch.compile`` programming model <https://docs.pytorch.org/docs/main/compile/programming_model.html>`__.
+# To troubleshoot issues and to gain a deeper understanding of how to apply ``torch.compile`` to your code, check out `the torch.compile programming model <https://docs.pytorch.org/docs/main/compile/programming_model.html>`__.
 #
 # We hope that you will give ``torch.compile`` a try!
