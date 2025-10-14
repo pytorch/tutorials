@@ -1,0 +1,1523 @@
+
+<!DOCTYPE html>
+
+<html data-content_root="../" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="2022-07-20T23:02:43+00:00" property="article:modified_time"/>
+<title>Interactive Distributed Applications with Monarch — PyTorch Tutorials 2.8.0+cu128 documentation</title>
+<script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+<!-- Loaded before other Sphinx assets -->
+<link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet"/>
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet"/>
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet"/>
+<link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet"/>
+<link as="font" crossorigin="" href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="" href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="" href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" rel="preload" type="font/woff2"/>
+<link href="../_static/pygments.css?v=536c50fe" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/theme.css?v=047068a3" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery.css?v=d2d258e8" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-binder.css?v=f4aeca0c" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-dataframe.css?v=2082cf3c" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css?v=91adb8b6" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<!-- Pre-loaded scripts that we'll load fully later -->
+<link as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
+<link as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
+<script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/documentation_options.js?v=bffbcef7"></script>
+<script src="../_static/doctools.js?v=888ff710"></script>
+<script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+<script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="../_static/copybutton.js?v=f281be69"></script>
+<script src="../_static/katex.min.js?v=be8ff15f"></script>
+<script src="../_static/auto-render.min.js?v=ad136472"></script>
+<script src="../_static/katex_autorenderer.js?v=bebc588a"></script>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<script>DOCUMENTATION_OPTIONS.pagename = 'intermediate/monarch_distributed_tutorial';</script>
+<link href="https://docs.pytorch.org/tutorials/intermediate/monarch_distributed_tutorial.html" rel="canonical"/>
+<link href="../genindex.html" rel="index" title="Index"/>
+<link href="../search.html" rel="search" title="Search"/>
+<link href="../advanced/rpc_ddp_tutorial.html" rel="next" title="Combining Distributed DataParallel with Distributed RPC Framework"/>
+<link href="rpc_async_execution.html" rel="prev" title="Implementing Batch RPC Processing Using Asynchronous Executions"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="en" name="docsearch:language"/>
+<meta content="Jul 20, 2022" name="docbuild:last-update"/>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
+<script>
+  if (window.location.hostname === 'docs.pytorch.org' || window.location.hostname === 'docs-preview.pytorch.org') {
+    const script = document.createElement('script');
+    script.src = 'https://cmp.osano.com/16A0DbT9yDNIaQkvZ/31b1b91a-e0b6-47ea-bde2-7f2bd13dbe5c/osano.js?variant=one';
+    document.head.appendChild(script);
+  }
+</script>
+<script>
+  // Cookie banner for non-LF projects
+  document.addEventListener('DOMContentLoaded', function () {
+    // Hide cookie banner on local environments and LF owned docs
+    if (window.location.hostname === 'localhost' ||
+      window.location.hostname === '0.0.0.0' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === 'docs.pytorch.org' ||
+      window.location.hostname === 'docs-preview.pytorch.org' ||
+      window.location.hostname.startsWith('192.168.')) {
+      const banner = document.querySelector('.cookie-banner-wrapper');
+      if (banner) {
+        banner.style.display = 'none';
+      }
+    }
+  });
+</script>
+<!-- Conditional CSS for header and footer height adjustment -->
+<link crossorigin="anonymous" href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<script src="../_static/js/theme.js" type="text/javascript"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&amp;display=swap" rel="stylesheet"/>
+<meta content="../_static/img/pytorch_seo.png" property="og:image"/>
+<link crossorigin="anonymous" href="../_static/webfonts/all.min.css" rel="stylesheet"/>
+<meta content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval' blob:;" http-equiv="Content-Security-Policy"/>
+<meta content="tutorials" name="pytorch_project"/>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS" style="display:none;visibility:hidden" width="0"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<!-- Google Tag Manager -->
+<script>(function (w, d, s, l, i) {
+    w[l] = w[l] || []; w[l].push({
+      'gtm.start':
+        new Date().getTime(), event: 'gtm.js'
+    }); var f = d.getElementsByTagName(s)[0],
+      j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+        'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+    j.onload = function () {
+      window.dispatchEvent(new Event('gtm_loaded'));
+      console.log('GTM loaded successfully');
+    };
+  })(window, document, 'script', 'dataLayer', 'GTM-T8XT4PS');
+</script>
+<!-- End Google Tag Manager -->
+<!-- Facebook Pixel Code -->
+<script>
+  !function (f, b, e, v, n, t, s) {
+    if (f.fbq) return; n = f.fbq = function () {
+      n.callMethod ?
+        n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+    };
+    if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+    n.queue = []; t = b.createElement(e); t.async = !0;
+    t.src = v; s = b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t, s)
+  }(window, document, 'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '243028289693773');
+  fbq('track', 'PageView');
+</script>
+<script>
+  document.documentElement.setAttribute('data-version', 'v2.8.0+cu128');
+</script>
+<noscript>
+<img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView&amp;noscript=1" width="1"/>
+</noscript>
+<script>
+  function gtag() {
+    window.dataLayer.push(arguments);
+  }
+</script>
+<!-- End Facebook Pixel Code -->
+<!-- Repository configuration for tutorials -->
+<script>
+  // Define repository configuration for tutorial buttons using existing html_context variables
+  // Only injected when tutorial buttons are shown AND github variables are defined
+  // If either condition is false, JavaScript will fallback to default PyTorch tutorial links
+  window.repoConfig = {
+    github_repo: "pytorch/tutorials",
+    github_branch: "main",
+    colab_repo: "pytorch/tutorials",
+    colab_branch: ""
+  };
+</script>
+<!-- Script to Fix scrolling -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Fix anchor scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href').substring(1);
+        const targetElement = document.getElementById(targetId);
+
+        if (targetElement) {
+          const headerHeight =
+            (document.querySelector('.header-holder') ? document.querySelector('.header-holder').offsetHeight : 0) +
+            (document.querySelector('.bd-header') ? document.querySelector('.bd-header').offsetHeight : 0) + 20;
+
+          const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+          window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+          });
+
+          // Update URL hash without scrolling
+          history.pushState(null, null, '#' + targetId);
+        }
+      });
+    });
+  });
+</script>
+<script async="" src="https://cse.google.com/cse.js?cx=e65585f8c3ea1440e"></script>
+<meta content="width=device-width, initial-scale=1" name="viewport">
+<meta content="en" name="docsearch:language">
+<meta content="Jul 20, 2022" name="docbuild:last-update"/>
+</meta></meta></head>
+<body class="pytorch-body" data-feedback-url="https://github.com/pytorch/tutorials">
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+<div class="header-container-wrapper">
+<div class="header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<div class="main-menu">
+<ul>
+<li class="main-menu-item">
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+<span>Learn</span>
+</a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/get-started/locally">
+<span class="dropdown-title">Get Started</span>
+</a>
+<a class="nav-dropdown-item" href="https://docs.pytorch.org/tutorials">
+<span class="dropdown-title">Tutorials</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/basics/intro.html">
+<span class="dropdown-title">Learn the Basics</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/recipes/recipes_index.html">
+<span class="dropdown-title">PyTorch Recipes</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/introyt.html">
+<span class="dropdown-title">Intro to PyTorch - YouTube Series</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/webinars/">
+<span class="dropdown-title">Webinars</span>
+</a>
+</div>
+</div>
+</li>
+<li class="main-menu-item">
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+<span>Community</span>
+</a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://landscape.pytorch.org/" target="_blank">
+<span class="dropdown-title">Landscape</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/join-ecosystem">
+<span class="dropdown-title">Join the Ecosystem</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/community-hub/">
+<span class="dropdown-title">Community Hub</span>
+</a>
+<a class="nav-dropdown-item" href="https://discuss.pytorch.org/">
+<span class="dropdown-title">Forums</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/resources">
+<span class="dropdown-title">Developer Resources</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/contributor-awards/">
+<span class="dropdown-title">Contributor Awards</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/community-events/">
+<span class="dropdown-title">Community Events</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/programs/ambassadors/">
+<span class="dropdown-title">PyTorch Ambassadors</span>
+</a>
+</div>
+</div>
+</li>
+<li class="main-menu-item">
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+<span>Projects</span>
+</a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/projects/pytorch/">
+<span class="dropdown-title">PyTorch</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/projects/vllm/">
+<span class="dropdown-title">vLLM</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/projects/deepspeed/">
+<span class="dropdown-title">DeepSpeed</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/projects/host-your-project/">
+<span class="dropdown-title">Host Your Project</span>
+</a>
+</div>
+</div>
+</li>
+<li class="main-menu-item">
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+<span> Docs</span>
+</a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://docs.pytorch.org/docs/stable/index.html">
+<span class="dropdown-title">PyTorch</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/domains">
+<span class="dropdown-title">Domains</span>
+</a>
+</div>
+</div>
+</li>
+<li class="main-menu-item">
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+<span>Blogs &amp; News</span>
+</a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/blog/">
+<span class="dropdown-title">Blog</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/announcements">
+<span class="dropdown-title">Announcements</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/case-studies/">
+<span class="dropdown-title">Case Studies</span>
+<a class="nav-dropdown-item" href="https://pytorch.org/events">
+<span class="dropdown-title">Events</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/newsletter">
+<span class="dropdown-title">Newsletter</span>
+</a>
+</a></div>
+</div></li>
+<li class="main-menu-item">
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+<span>About</span>
+</a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/foundation">
+<span class="dropdown-title">PyTorch Foundation</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/members">
+<span class="dropdown-title">Members</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/governing-board">
+<span class="dropdown-title">Governing Board</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tac">
+<span class="dropdown-title">Technical Advisory Council</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/credits">
+<span class="dropdown-title">Cloud Credit Program</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/staff">
+<span class="dropdown-title">Staff</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/contact">
+<span class="dropdown-title">Contact</span>
+</a>
+</div>
+</div>
+</li>
+<li class="main-menu-item">
+<div class="no-dropdown main-menu-button">
+<a data-cta="join" href="https://pytorch.org/join">
+                JOIN
+              </a>
+</div>
+</li>
+</ul>
+</div>
+<a class="main-menu-open-button" data-behavior="open-mobile-menu" href="#">
+<i class="fa-solid fa-ellipsis"></i>
+</a>
+</div>
+</div>
+</div>
+<!-- Begin Mobile Menu -->
+<div class="mobile-main-menu">
+<div class="container-fluid">
+<div class="header-container-wrapper">
+<div class="mobile-main-menu-header-container">
+<a class="main-menu-close-button" data-behavior="close-mobile-menu" href="#">
+</a>
+</div>
+</div>
+</div>
+<div class="mobile-main-menu-links-container">
+<div class="main-menu">
+<ul>
+<li class="resources-mobile-menu-title">
+<a>Learn</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/get-started/locally">Get Started</a>
+</li>
+<li>
+<a href="https://docs.pytorch.org/tutorials">Tutorials</a>
+</li>
+<li>
+<a href="https://pytorch.org/tutorials/beginner/basics/intro.html">Learn the Basics</a>
+</li>
+<li>
+<a href="https://pytorch.org/tutorials/recipes/recipes_index.html">PyTorch Recipes</a>
+</li>
+<li>
+<a href="https://pytorch.org/tutorials/beginner/introyt.html">Introduction to PyTorch - YouTube Series</a>
+</li>
+<li>
+<a href="https://pytorch.org/webinars/">Webinars</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>Community</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://landscape.pytorch.org/">Landscape</a>
+</li>
+<li>
+<a href="https://pytorch.org/join-ecosystem">Join the Ecosystem</a>
+</li>
+<li>
+<a href="https://pytorch.org/community-hub/">Community Hub</a>
+</li>
+<li>
+<a href="https://discuss.pytorch.org/">Forums</a>
+</li>
+<li>
+<a href="https://pytorch.org/resources">Developer Resources</a>
+</li>
+<li>
+<a href="https://pytorch.org/contributor-awards/">Contributor Awards</a>
+</li>
+<li>
+<a href="https://pytorch.org/community-events/">Community Events</a>
+</li>
+<li>
+<a href="https://pytorch.org/programs/ambassadors/">PyTorch Ambassadors</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>Projects</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/projects/pytorch/">PyTorch</a>
+</li>
+<li>
+<a href="https://pytorch.org/projects/vllm/">vLLM</a>
+</li>
+<li>
+<a href="https://pytorch.org/projects/deepspeed/">DeepSpeed</a>
+</li>
+<li>
+<a href="https://pytorch.org/projects/host-your-project/">Host Your Project</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>Docs</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://docs.pytorch.org/docs/stable/index.html">PyTorch</a>
+</li>
+<li>
+<a href="https://pytorch.org/domains">Domains</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>Blog &amp; News</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li>
+<a href="https://pytorch.org/announcements">Announcements</a>
+</li>
+<li>
+<a href="https://pytorch.org/case-studies/">Case Studies</a>
+</li>
+<li>
+<a href="https://pytorch.org/events">Events</a>
+</li>
+<li>
+<a href="https://pytorch.org/newsletter">Newsletter</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>About</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/foundation">PyTorch Foundation</a>
+</li>
+<li>
+<a href="https://pytorch.org/members">Members</a>
+</li>
+<li>
+<a href="https://pytorch.org/governing-board">Governing Board</a>
+</li>
+<li>
+<a href="https://pytorch.org/tac">Technical Advisory Council</a>
+</li>
+<li>
+<a href="https://pytorch.org/credits">Cloud Credit Program</a>
+</li>
+<li>
+<a href="https://pytorch.org/staff">Staff</a>
+</li>
+<li>
+<a href="https://pytorch.org/contact">Contact</a>
+</li>
+</ul>
+</ul>
+</div>
+</div>
+</div>
+<!-- End Mobile Menu -->
+<body data-bs-root-margin="0px 0px -60%" data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-default-mode="" data-offset="180">
+<div class="skip-link d-print-none" id="pst-skip-link"><a href="#main-content">Skip to main content</a></div>
+<div id="pst-scroll-pixel-helper"></div>
+<button class="btn rounded-pill" id="pst-back-to-top" type="button">
+<i class="fa-solid fa-arrow-up"></i>Back to top</button>
+<input class="sidebar-toggle" id="pst-primary-sidebar-checkbox" type="checkbox"/>
+<label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+<input class="sidebar-toggle" id="pst-secondary-sidebar-checkbox" type="checkbox"/>
+<label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+<div class="search-button__wrapper">
+<div class="search-button__overlay"></div>
+<div class="search-button__search-container">
+<form action="../search.html" class="bd-search d-flex align-items-center" method="get">
+<i class="fa-solid fa-magnifying-glass"></i>
+<input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="search-input" name="q" placeholder="Search the docs ..." spellcheck="false" type="search"/>
+<span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+</div>
+<div class="pst-async-banner-revealer d-none">
+<aside aria-label="Version warning" class="d-none d-print-none" id="bd-header-version-warning"></aside>
+</div>
+<header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+<button aria-label="Site navigation" class="pst-navbar-icon sidebar-toggle primary-toggle">
+<span class="fa-solid fa-bars"></span>
+</button>
+<div class="navbar-header-items__start">
+<div class="navbar-item">
+<a class="version" href="../index.html">v2.8.0+cu128</a>
+</div>
+</div>
+<div class="navbar-header-items">
+<div class="me-auto navbar-header-items__center">
+<div class="navbar-item">
+<nav>
+<ul class="bd-navbar-elements navbar-nav">
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../intro.html">
+    Intro
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../compilers_index.html">
+    Compilers
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../domains.html">
+    Domains
+  </a>
+</li>
+<li class="nav-item current active">
+<a class="nav-link nav-internal" href="../distributed.html">
+    Distributed
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../deep-dive.html">
+    Deep Dive
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../extension.html">
+    Extension
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../ecosystem.html">
+    Ecosystem
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../recipes_index.html">
+    Recipes
+  </a>
+</li>
+</ul>
+</nav></div>
+</div>
+<div class="navbar-header-items__end">
+<div class="navbar-item">
+<form action="../search.html" class="bd-search d-flex align-items-center" method="get">
+<i class="fa-solid fa-magnifying-glass"></i>
+<input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="search-input" name="q" placeholder="Search the docs ..." spellcheck="false" type="search"/>
+<span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+</div>
+<div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+<div class="navbar-item"><ul aria-label="Icon Links" class="navbar-icon-links">
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://x.com/PyTorch" rel="noopener" target="_blank" title="X"><i aria-hidden="true" class="fa-brands fa-x-twitter fa-lg"></i>
+<span class="sr-only">X</span></a>
+</li>
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://github.com/pytorch/tutorials" rel="noopener" target="_blank" title="GitHub"><i aria-hidden="true" class="fa-brands fa-github fa-lg"></i>
+<span class="sr-only">GitHub</span></a>
+</li>
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://dev-discuss.pytorch.org/" rel="noopener" target="_blank" title="Discourse"><i aria-hidden="true" class="fa-brands fa-discourse fa-lg"></i>
+<span class="sr-only">Discourse</span></a>
+</li>
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://pypi.org/project/torch/" rel="noopener" target="_blank" title="PyPi"><i aria-hidden="true" class="fa-brands fa-python fa-lg"></i>
+<span class="sr-only">PyPi</span></a>
+</li>
+</ul></div>
+</div>
+</div>
+<button aria-label="On this page" class="pst-navbar-icon sidebar-toggle secondary-toggle">
+<span class="fa-solid fa-outdent"></span>
+</button>
+</div>
+</header>
+<div class="bd-container">
+<div class="bd-container__inner bd-page-width">
+<div class="bd-sidebar-primary bd-sidebar">
+<div class="sidebar-header-items sidebar-primary__section">
+<div class="sidebar-header-items__center">
+<div class="navbar-item">
+<nav>
+<ul class="bd-navbar-elements navbar-nav">
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../intro.html">
+    Intro
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../compilers_index.html">
+    Compilers
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../domains.html">
+    Domains
+  </a>
+</li>
+<li class="nav-item current active">
+<a class="nav-link nav-internal" href="../distributed.html">
+    Distributed
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../deep-dive.html">
+    Deep Dive
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../extension.html">
+    Extension
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../ecosystem.html">
+    Ecosystem
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../recipes_index.html">
+    Recipes
+  </a>
+</li>
+</ul>
+</nav></div>
+</div>
+<div class="sidebar-header-items__end">
+<div class="navbar-item">
+<form action="../search.html" class="bd-search d-flex align-items-center" method="get">
+<i class="fa-solid fa-magnifying-glass"></i>
+<input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="search-input" name="q" placeholder="Search the docs ..." spellcheck="false" type="search"/>
+<span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+</div>
+<div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+<div class="navbar-item"><ul aria-label="Icon Links" class="navbar-icon-links">
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://x.com/PyTorch" rel="noopener" target="_blank" title="X"><i aria-hidden="true" class="fa-brands fa-x-twitter fa-lg"></i>
+<span class="sr-only">X</span></a>
+</li>
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://github.com/pytorch/tutorials" rel="noopener" target="_blank" title="GitHub"><i aria-hidden="true" class="fa-brands fa-github fa-lg"></i>
+<span class="sr-only">GitHub</span></a>
+</li>
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://dev-discuss.pytorch.org/" rel="noopener" target="_blank" title="Discourse"><i aria-hidden="true" class="fa-brands fa-discourse fa-lg"></i>
+<span class="sr-only">Discourse</span></a>
+</li>
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://pypi.org/project/torch/" rel="noopener" target="_blank" title="PyPi"><i aria-hidden="true" class="fa-brands fa-python fa-lg"></i>
+<span class="sr-only">PyPi</span></a>
+</li>
+</ul></div>
+</div>
+</div>
+<div class="sidebar-primary-items__start sidebar-primary__section">
+<div class="sidebar-primary-item">
+<nav aria-label="Section Navigation" class="bd-docs-nav bd-links">
+<p aria-level="1" class="bd-links__title" role="heading">Section Navigation</p>
+<div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../beginner/dist_overview.html">PyTorch Distributed Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/ddp_series_intro.html">Distributed Data Parallel in PyTorch - Video Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel (FSDP2)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TCPStore_libuv_backend.html">Introduction to Libuv TCPStore Backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TP_tutorial.html">Large Scale Transformer model training with Tensor Parallel (TP)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipelining_tutorial.html">Introduction to Distributed Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="process_group_cpp_extension_tutorial.html">Customize Process Group Backends Using Cpp Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Interactive Distributed Applications with Monarch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/generic_join.html">Distributed Training with Uneven Inputs Using the Join Context Manager</a></li>
+</ul>
+</div>
+</nav></div>
+</div>
+<div class="sidebar-primary-items__end sidebar-primary__section">
+</div>
+<div id="rtd-footer-container"></div>
+</div>
+<main class="bd-main" id="main-content" role="main">
+<div class="bd-content">
+<div class="bd-article-container">
+<div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+<div class="header-article-items__start">
+<div class="header-article-item">
+<nav aria-label="Breadcrumb" class="d-print-none">
+<ul class="bd-breadcrumbs">
+<li class="breadcrumb-item breadcrumb-home">
+<a aria-label="Home" class="nav-link" href="../index.html">
+<i class="fa-solid fa-home"></i>
+</a>
+</li>
+<li class="breadcrumb-item"><a class="nav-link" href="../distributed.html">Distributed</a></li>
+<li aria-current="page" class="breadcrumb-item active">Interactive...</li>
+</ul>
+</nav>
+</div>
+</div>
+<div class="header-article-items__end">
+<div class="header-article-item">
+<div class="rating">
+    Rate this Page
+    <div class="stars">
+<span class="star" data-behavior="tutorial-rating" data-count="1" data-value="1">★</span>
+<span class="star" data-behavior="tutorial-rating" data-count="2" data-value="2">★</span>
+<span class="star" data-behavior="tutorial-rating" data-count="3" data-value="3">★</span>
+<span class="star" data-behavior="tutorial-rating" data-count="4" data-value="4">★</span>
+<span class="star" data-behavior="tutorial-rating" data-count="5" data-value="5">★</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="searchbox"></div>
+<article class="bd-article" id="pytorch-article">
+<!-- Hidden breadcrumb schema for SEO only -->
+<div itemscope="" itemtype="https://schema.org/BreadcrumbList" style="display:none;">
+<div itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem">
+<link href="../distributed.html" itemprop="item"/>
+<meta content="Distributed" itemprop="name"/>
+<meta content="1" itemprop="position"/>
+</div>
+<div itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem">
+<meta content="Interactive Distributed Applications with Monarch" itemprop="name"/>
+<meta content="2" itemprop="position"/>
+</div>
+</div>
+<script>
+      if ((window.location.href.indexOf("/unstable/") != -1) && (window.location.href.indexOf("/unstable/unstable_index") < 1)) {
+        var div = '<div class="prototype-banner"><i class="fa fa-flask" aria-hidden="true"></i> <strong>Unstable feature:</strong> Not typically available in binary distributions like PyPI. Early stage for feedback and testing.</div>'
+        document.addEventListener('DOMContentLoaded', function () {
+          document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div);
+        });
+      }
+    </script>
+<div class="pytorch-call-to-action-links">
+<div id="tutorial-type">intermediate/monarch_distributed_tutorial</div>
+<a data-behavior="call-to-action-event" data-response="Run in Google Colab" id="colab-link" target="_blank">
+<div id="google-colab-link">
+<img class="call-to-action-img" src="../_static/img/pytorch-colab.svg"/>
+<div class="call-to-action-desktop-view">Run in Google Colab</div>
+<div class="call-to-action-mobile-view">Colab</div>
+</div>
+</a>
+<a data-behavior="call-to-action-event" data-response="Download Notebook" id="notebook-link">
+<div id="download-notebook-link">
+<img class="call-to-action-notebook-img" src="../_static/img/pytorch-download.svg"/>
+<div class="call-to-action-desktop-view">Download Notebook</div>
+<div class="call-to-action-mobile-view">Notebook</div>
+</div>
+</a>
+<a data-behavior="call-to-action-event" data-response="View on Github" id="github-link" target="_blank">
+<div id="github-view-link">
+<img class="call-to-action-img" src="../_static/img/pytorch-github.svg"/>
+<div class="call-to-action-desktop-view">View on GitHub</div>
+<div class="call-to-action-mobile-view">GitHub</div>
+</div>
+</a>
+</div>
+<div id="searchbox"></div>
+<article class="bd-article">
+<section id="interactive-distributed-applications-with-monarch">
+<h1>Interactive Distributed Applications with Monarch<a class="headerlink" href="#interactive-distributed-applications-with-monarch" title="Link to this heading">#</a></h1>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/amirafzali">Amir Afzali</a></p>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">#</a></h2>
+<p>As deep learning models continue to grow in size and complexity, training them efficiently requires coordinating computation across multiple GPUs and nodes.
+In this tutorial, you will learn how to easily set up and run large-scale distributed workflows using Monarch’s actor framework together with TorchTitan, on a SLURM-managed cluster.
+Monarch will allow us to drive a large cluster of machines (organized into a mesh), as if developing on a single host, single process environment.</p>
+<section id="what-is-monarch">
+<h3>What is Monarch?<a class="headerlink" href="#what-is-monarch" title="Link to this heading">#</a></h3>
+<p>Monarch is an actor framework designed to streamline the development of distributed applications. At its core, Monarch provides:</p>
+<ul class="simple">
+<li><p><strong>Actor-based programming model</strong>: Encapsulate stateful computations in actors that can run on remote processes and machines</p></li>
+<li><p><strong>Process mesh abstractions</strong>: Easily manage and coordinate distributed processes across your cluster, with scalable Actor messaging</p></li>
+<li><p><strong>Fault tolerance</strong>: Actors and processes form a tree and failures propagate up the tree, providing good default error behavior and enabling fine-grained fault recovery.</p></li>
+<li><p><strong>Flexible resource management</strong>: Support for multiple cluster schedulers including SLURM, Kubernetes, custom host management, and local processes</p></li>
+<li><p><strong>Integrated monitoring</strong>: Stream logs from remote processes back to your client for easy debugging and aggregation</p></li>
+</ul>
+<p>For more details, see the <a class="reference external" href="https://meta-pytorch.org/monarch/generated/examples/getting_started.html">Monarch documentation</a>.</p>
+</section>
+<section id="why-use-monarch">
+<h3>Why Use Monarch?<a class="headerlink" href="#why-use-monarch" title="Link to this heading">#</a></h3>
+<p>TorchTitan is a PyTorch native library for pre-training at scale.
+While TorchTitan provides excellent primitives for distributed training, launching and managing these jobs across clusters can slow down iteration. Monarch addresses this with:</p>
+<ol class="arabic simple">
+<li><p><strong>Simplified cluster interaction</strong>: Reserve and manage compute resources with simple async Python calls instead of writing bash scripts</p></li>
+<li><p><strong>Interactive development</strong>: Modify and re-run training code on existing allocations without waiting for new resources</p></li>
+<li><p><strong>Unified workflow</strong>: Seamlessly move between local testing and cluster execution with the same code</p></li>
+</ol>
+</section>
+</section>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
+<p>We rely on a nightly build of Titan for this tutorial, so please ensure that other Torch libraries are tracking nightly builds:</p>
+<ol class="arabic simple">
+<li><p><strong>Monarch nightly installed:</strong>
+<a class="reference external" href="https://github.com/meta-pytorch/monarch/blob/main/scripts/install_nightly.py">Install script</a></p></li>
+<li><p><strong>TorchTitan nightly installed:</strong>
+<a class="reference external" href="https://github.com/pytorch/torchtitan?tab=readme-ov-file#nightly-builds">TorchTitan install instructions</a></p></li>
+<li><p><strong>A valid Titan model config</strong> and <strong>tokenizer</strong> in your working directory (e.g., <code class="docutils literal notranslate"><span class="pre">debug_model.toml</span></code> from <a class="reference external" href="https://github.com/pytorch/torchtitan/blob/main/torchtitan/models/llama3/train_configs/debug_model.toml">TorchTitan configs</a>).</p></li>
+<li><p><strong>SLURM cluster access:</strong></p>
+<ul class="simple">
+<li><p>Sufficient permissions to reserve nodes and launch jobs.</p></li>
+<li><p>CUDA environment configured for distributed GPU training.</p></li>
+</ul>
+</li>
+</ol>
+<p>Now let’s implement this step by step!</p>
+</section>
+<section id="step-1-reserve-machine-resources">
+<h2>Step 1: Reserve Machine Resources<a class="headerlink" href="#step-1-reserve-machine-resources" title="Link to this heading">#</a></h2>
+<p>First, we’ll define a function to programmatically reserve a machine allocation.</p>
+<p><strong>Monarch Highlight</strong>: Instead of submitting an SBATCH script, you can reserve and manage resources interactively from Python.
+The JobTrait design pattern allows for interfacing with custom schedulers, such as SLURM and Kubernetes, through a consistent API.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">monarch.job</span><span class="w"> </span><span class="kn">import</span> <span class="n">SlurmJob</span><span class="p">,</span> <span class="n">JobTrait</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">create_slurm_job</span><span class="p">(</span>
+    <span class="n">mesh_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">num_nodes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">gpus_per_node</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"06:00:00"</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SlurmJob</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Args:</span>
+<span class="sd">        mesh_name: Name assigned to the primary mesh for this example.</span>
+<span class="sd">                   A JobTrait can consist of multiple meshes, and</span>
+<span class="sd">                   Monarch allows for re-attaching to ongoing jobs.</span>
+<span class="sd">        num_nodes: Number of nodes allocated per mesh</span>
+<span class="sd">        gpus_per_node: Number of GPUs per node in the mesh</span>
+
+<span class="sd">        Note: SlurmJob is just one instance of a Monarch scheduler interface.</span>
+<span class="sd">              Consult the JobTrait documentation to find one that's right for your usecase.</span>
+<span class="sd">    """</span>
+    <span class="n">default_job_name</span> <span class="o">=</span> <span class="s2">"monarch_titan"</span>
+    <span class="k">return</span> <span class="n">SlurmJob</span><span class="p">(</span>
+        <span class="n">meshes</span><span class="o">=</span><span class="p">{</span><span class="n">mesh_name</span><span class="p">:</span> <span class="n">num_nodes</span><span class="p">},</span>
+        <span class="n">job_name</span><span class="o">=</span><span class="n">default_job_name</span><span class="p">,</span>
+        <span class="n">time_limit</span><span class="o">=</span><span class="n">time_limit</span><span class="p">,</span>
+        <span class="n">gpus_per_nodes</span><span class="o">=</span><span class="n">gpus_per_node</span><span class="p">,</span>
+        <span class="c1"># ... additional args can be passed here</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-2-define-the-trainer-actor">
+<h2>Step 2: Define the Trainer Actor<a class="headerlink" href="#step-2-define-the-trainer-actor" title="Link to this heading">#</a></h2>
+<p>Now we create a Monarch Actor that wraps TorchTitan’s Trainer. This is the
+key abstraction that allows TorchTitan to run in Monarch’s distributed
+environment.</p>
+<p><strong>Monarch Highlight</strong>: The Actor pattern provides several benefits:</p>
+<ol class="arabic simple">
+<li><p><strong>Remote execution</strong>: Methods marked with @endpoint can be called remotely</p></li>
+<li><p><strong>Lifecycle management</strong>: Monarch handles initialization, execution, and cleanup</p></li>
+<li><p><strong>Error handling</strong>: Exceptions are properly propagated back to the client, enabling progressive error handling</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">monarch.actor</span><span class="w"> </span><span class="kn">import</span> <span class="n">Actor</span><span class="p">,</span> <span class="n">current_rank</span><span class="p">,</span> <span class="n">endpoint</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">monarch.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_env_for_distributed</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchtitan.tools.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">init_logger</span><span class="p">,</span> <span class="n">logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchtitan.train</span><span class="w"> </span><span class="kn">import</span> <span class="n">Trainer</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TrainerActor</span><span class="p">(</span><span class="n">Actor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Monarch Actor wrapper for TorchTitan's Trainer.</span>
+
+<span class="sd">    This actor encapsulates a complete TorchTitan training process, handling</span>
+<span class="sd">    initialization, training loop execution, and cleanup. Each instance runs</span>
+<span class="sd">    on a single GPU in the distributed training job.</span>
+
+<span class="sd">    The actor's lifetime:</span>
+<span class="sd">        1. __init__: Initialize with job configuration</span>
+<span class="sd">        2. start_training:</span>
+<span class="sd">           Execute the training loop</span>
+<span class="sd">           Destroy process group and release resources</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        job_config: TorchTitan configuration for this trainer</span>
+<span class="sd">        uid: Unique identifier for logging (includes rank)</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job_config</span><span class="p">:</span> <span class="s2">"JobConfig"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Initialize the trainer actor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            job_config: TorchTitan JobConfig with training parameters</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">job_config</span> <span class="o">=</span> <span class="n">job_config</span>
+
+        <span class="c1"># current_rank() provides access to this actor's rank in the process mesh</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">=</span> <span class="n">current_rank</span><span class="p">()</span><span class="o">.</span><span class="n">rank</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uid</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"[trainer_</span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2">]"</span>
+
+    <span class="nd">@endpoint</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ping_rank</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">            A dummy logging function we will use for demonstration purposes.</span>
+<span class="sd">        """</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2"> Ping!"</span><span class="p">)</span>
+
+    <span class="nd">@endpoint</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">start_training</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Execute the TorchTitan training loop.</span>
+
+<span class="sd">        This remote endpoint:</span>
+<span class="sd">        1. Initializes TorchTitan's logger</span>
+<span class="sd">        2. Creates a Trainer instance with the job configuration</span>
+<span class="sd">        3. Runs the training loop</span>
+<span class="sd">        4. Handles cleanup and error conditions</span>
+
+<span class="sd">        The @endpoint decorator makes this method callable from the Monarch</span>
+<span class="sd">        client, even though it runs on a remote GPU node.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: Any exception from TorchTitan training is propagated</span>
+<span class="sd">                      back to the client</span>
+<span class="sd">        """</span>
+        <span class="n">init_logger</span><span class="p">()</span>
+        <span class="n">trainer</span><span class="p">:</span> <span class="n">Trainer</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Initialize TorchTitan trainer</span>
+            <span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">job_config</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2"> initialized successfully and starting training"</span><span class="p">)</span>
+
+            <span class="c1"># Run the training loop</span>
+            <span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2"> training failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">trainer</span><span class="p">:</span>
+                <span class="n">trainer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="c1"># Note: error is propagated back to the controller</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Training completed successfully</span>
+            <span class="n">trainer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2"> training completed successfully"</span><span class="p">)</span>
+
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="c1"># Clean up distributed process group</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">destroy_process_group</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2"> trainer cleaned up"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Actor endpoints can be invoked in a variety of patterns. We’ll explore a concrete example in <a class="reference internal" href="#step-4-execute-the-training-workflow">Step 4: Execute the Training Workflow</a>,
+but here is some pseudocode with common usages:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+    <span class="c1"># where mesh0 is made of N nodes, each node having 8 GPUs</span>
+    <span class="n">proc_mesh</span> <span class="o">=</span> <span class="n">mesh0</span><span class="o">.</span><span class="n">spawn_procs</span><span class="p">({</span><span class="s2">"gpus"</span><span class="p">:</span> <span class="mi">8</span><span class="p">})</span>
+    <span class="n">trainer_actors</span> <span class="o">=</span> <span class="n">proc_mesh</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="s2">"trainers"</span><span class="p">,</span> <span class="n">TrainerActor</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+
+    <span class="c1"># Call on all ranks</span>
+    <span class="k">await</span> <span class="n">trainer_actors</span><span class="o">.</span><span class="n">ping_rank</span><span class="o">.</span><span class="n">call</span><span class="p">()</span>
+
+    <span class="c1"># Call-and-forget on all ranks</span>
+    <span class="n">trainer_actors</span><span class="o">.</span><span class="n">ping_rank</span><span class="o">.</span><span class="n">broadcast</span><span class="p">()</span>
+
+    <span class="c1"># Call on ONE random rank</span>
+    <span class="k">await</span> <span class="n">trainer_actors</span><span class="o">.</span><span class="n">ping_rank</span><span class="o">.</span><span class="n">choose</span><span class="p">()</span>
+
+    <span class="c1"># Call on the first 3 ranks of node 0</span>
+    <span class="k">await</span> <span class="n">trainer_actors</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="n">hosts</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">gpus</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">ping_rank</span><span class="o">.</span><span class="n">call</span><span class="p">()</span>
+
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="c1"># handle SupervisionEvents from remote actor failures</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>Remote actor endpoints can also utilize Python native breakpoints, enabling interactive debugging sessions.
+For a complete deep-dive into Monarch debuggers, please <a class="reference external" href="https://meta-pytorch.org/monarch/generated/examples/debugging.html">refer to the documentation</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@endpoint</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ping_debuggable_rank</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2"> Ping!"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">breakpoint</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2"> Pong!"</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-3-define-training-parameters">
+<h2>Step 3: Define Training Parameters<a class="headerlink" href="#step-3-define-training-parameters" title="Link to this heading">#</a></h2>
+<p>Next, we define some common parameters for our training job and cluster resources.
+This configuration determines both the scale of training (number of nodes and GPUs),
+and some of the training hyperparameters.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RunParams</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Configuration for cluster resources and training parameters.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        training_steps: Number of training iterations to run</span>
+<span class="sd">        model_config: Path to TorchTitan model configuration file</span>
+<span class="sd">        tokenizer: Path to tokenizer directory</span>
+<span class="sd">        dataset: Dataset to use for training (e.g., 'c4', 'c4_test')</span>
+<span class="sd">        num_nodes: Number of compute nodes to request</span>
+<span class="sd">        gpus_per_node: Number of GPUs per node</span>
+
+<span class="sd">    Adjust these values based on your model size and available resources.</span>
+<span class="sd">    """</span>
+
+    <span class="n">training_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="n">model_config</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"debug_model.toml"</span>
+    <span class="n">tokenizer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"tokenizer"</span>
+    <span class="n">dataset</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"c4"</span>
+    <span class="n">num_nodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">gpus_per_node</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span>
+</pre></div>
+</div>
+<p>TorchTitan uses a JobConfig object to control all aspects of training.
+Here we create a function that parses this configuration from our RunParams.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchtitan.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigManager</span><span class="p">,</span> <span class="n">JobConfig</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">make_job_config</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">JobConfig</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Create a TorchTitan JobConfig from RunParams.</span>
+
+<span class="sd">    This function constructs the complete training configuration, including</span>
+<span class="sd">    parallelism settings, model architecture, and dataset paths</span>
+<span class="sd">    """</span>
+    <span class="c1"># Calculate total parallelism based on cluster size</span>
+    <span class="n">data_parallel_shard_degree</span> <span class="o">=</span> <span class="n">RunParams</span><span class="o">.</span><span class="n">num_nodes</span> <span class="o">*</span> <span class="n">RunParams</span><span class="o">.</span><span class="n">gpus_per_node</span>
+    <span class="n">output_path</span> <span class="o">=</span> <span class="s2">"./outputs"</span>
+    <span class="c1"># Construct paths relative to script directory</span>
+    <span class="n">script_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+
+    <span class="c1"># Build argument list for TorchTitan's ConfigManager</span>
+    <span class="c1"># These override defaults from the model config file</span>
+    <span class="n">default_args</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">"--job.config_file"</span><span class="p">,</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">script_dir</span><span class="p">,</span> <span class="n">RunParams</span><span class="o">.</span><span class="n">model_config</span><span class="p">),</span>
+        <span class="s2">"--model.tokenizer_path"</span><span class="p">,</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">script_dir</span><span class="p">,</span> <span class="n">RunParams</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">),</span>
+        <span class="s2">"--parallelism.data_parallel_shard_degree"</span><span class="p">,</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">data_parallel_shard_degree</span><span class="p">),</span>
+        <span class="s2">"--training.steps"</span><span class="p">,</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">RunParams</span><span class="o">.</span><span class="n">training_steps</span><span class="p">),</span>
+        <span class="s2">"--training.dataset"</span><span class="p">,</span>
+        <span class="n">RunParams</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span>
+        <span class="s2">"--job.dump_folder"</span><span class="p">,</span>
+        <span class="n">output_path</span><span class="p">,</span>
+        <span class="c1"># continue to configure as needed</span>
+    <span class="p">]</span>
+    <span class="n">config_manager</span> <span class="o">=</span> <span class="n">ConfigManager</span><span class="p">()</span>
+    <span class="n">job_config</span> <span class="o">=</span> <span class="n">config_manager</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">default_args</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">job_config</span>
+</pre></div>
+</div>
+</section>
+<section id="step-4-execute-the-training-workflow">
+<h2>Step 4: Execute the Training Workflow<a class="headerlink" href="#step-4-execute-the-training-workflow" title="Link to this heading">#</a></h2>
+<p>With all components defined, we now orchestrate the complete workflow.
+This is where Monarch’s power becomes most apparent.</p>
+<p><strong>Monarch Highlights</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>Interactive iteration</strong>: After reserving the machine allocation, you can adjust your logic
+and re-spawn actors, without requesting new resources. SLURM’s shared filesystem ensures
+that framework/workspace changes are synchronized across workers.</p></li>
+<li><p><strong>Transparent logging</strong>: All logs from remote workers stream back to your
+client in real-time, making debugging feel like local execution</p></li>
+</ol>
+<p><strong>Workflow</strong>:</p>
+<blockquote>
+<div><p>Reserve Machines → Create Proc Mesh → Configure Logging → Spawn Actors → Train → Cleanup</p>
+</div></blockquote>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_training</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Execute the complete distributed training workflow.</span>
+<span class="sd">    """</span>
+    <span class="n">job_config</span> <span class="o">=</span> <span class="n">make_job_config</span><span class="p">()</span>
+    <span class="n">slurm_job</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">mesh_name</span> <span class="o">=</span> <span class="s2">"mesh0"</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># 1. Create a SLURM job with N nodes</span>
+        <span class="c1">#    This leverages Monarch to reserve a persistent machine allocation</span>
+        <span class="n">slurm_job</span> <span class="o">=</span> <span class="n">create_slurm_job</span><span class="p">(</span><span class="n">mesh_name</span><span class="p">,</span> <span class="n">RunParams</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">,</span> <span class="n">RunParams</span><span class="o">.</span><span class="n">gpus_per_node</span><span class="p">)</span>
+        <span class="n">job_state</span> <span class="o">=</span> <span class="n">slurm_job</span><span class="o">.</span><span class="n">state</span><span class="p">()</span>
+
+        <span class="c1"># 2. Create a process mesh on the machine allocation</span>
+        <span class="c1">#    This creates one process per GPU across all allocated nodes</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Creating process mesh..."</span><span class="p">)</span>
+        <span class="n">proc_mesh</span> <span class="o">=</span> <span class="n">job_state</span><span class="o">.</span><span class="n">mesh0</span><span class="o">.</span><span class="n">spawn_procs</span><span class="p">({</span><span class="s2">"gpus"</span><span class="p">:</span> <span class="n">RunParams</span><span class="o">.</span><span class="n">gpus_per_node</span><span class="p">})</span>
+
+        <span class="c1"># 3. Configure remote logging behavior</span>
+        <span class="c1">#    - stream_to_client: Forward all remote logs to your local console</span>
+        <span class="c1">#    - aggregate_window_sec: Batch logs for efficiency</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Configuring logging..."</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">proc_mesh</span><span class="o">.</span><span class="n">logging_option</span><span class="p">(</span>
+            <span class="n">stream_to_client</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="c1"># aggregate_window_sec=None  # Uncomment to disable log batching</span>
+        <span class="p">)</span>
+
+        <span class="c1"># 4. Setup environment for torch.distributed</span>
+        <span class="c1">#    This configures torch.distributed across all processes in the mesh</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Setting up distributed environment..."</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">setup_env_for_distributed</span><span class="p">(</span><span class="n">proc_mesh</span><span class="p">)</span>
+
+        <span class="c1"># 5. Spawn TrainerActor on each GPU</span>
+        <span class="c1">#    Each process in the mesh creates its own TrainerActor instance</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Spawning trainer actors..."</span><span class="p">)</span>
+        <span class="n">trainer</span> <span class="o">=</span> <span class="n">proc_mesh</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span>
+            <span class="s2">"trainer_actor"</span><span class="p">,</span>  <span class="c1"># Name for the actor group</span>
+            <span class="n">TrainerActor</span><span class="p">,</span>  <span class="c1"># Actor class to instantiate</span>
+            <span class="n">job_config</span><span class="p">,</span>  <span class="c1"># Arguments to __init__</span>
+        <span class="p">)</span>
+
+        <span class="c1"># 6. Execute the training job across all actors</span>
+        <span class="c1">#    The .call() method invokes start_training() on all actors in parallel</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Starting distributed training..."</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">trainer</span><span class="o">.</span><span class="n">start_training</span><span class="o">.</span><span class="n">call</span><span class="p">()</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Training completed successfully!"</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Training workflow failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="c1"># Always clean up the machine allocation</span>
+        <span class="k">if</span> <span class="n">slurm_job</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">cleanup_job</span><span class="p">(</span><span class="n">slurm_job</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-5-clean-up-resources">
+<h2>Step 5: Clean Up Resources<a class="headerlink" href="#step-5-clean-up-resources" title="Link to this heading">#</a></h2>
+<p>After training completes (or if you’re done experimenting), it’s important
+to free up cluster resources by terminating the SLURM job.</p>
+<p><strong>Monarch Highlight</strong>: While you can keep allocations alive for multiple
+training runs during development, always remember to release cluster resources.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">cleanup_job</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">JobTrait</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    This function cancels the SLURM job, releasing all reserved nodes back</span>
+<span class="sd">    to the cluster for other users.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        job: A JobTrait, like the one returned from create_slurm_job()</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The job will also terminate automatically when the configured TTL</span>
+<span class="sd">        is exceeded, but explicit cleanup is recommended for long-running</span>
+<span class="sd">        notebooks or scripts.</span>
+<span class="sd">    """</span>
+    <span class="n">job</span><span class="o">.</span><span class="n">kill</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Job terminated successfully"</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-6-run-the-complete-pipeline">
+<h2>Step 6: Run the Complete Pipeline<a class="headerlink" href="#step-6-run-the-complete-pipeline" title="Link to this heading">#</a></h2>
+<p>Finally, we tie everything together in a main function that kicks off the workflow</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Run the complete workflow: reserve resources, train, and cleanup.</span>
+<span class="sd">    """</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Starting Monarch + TorchTitan Distributed Training"</span><span class="p">)</span>
+
+    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">execute_training</span><span class="p">())</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Workflow completed!"</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h2>
+<p>Congrats! In this tutorial, you learned how to apply Monarch’s actor framework with
+TorchTitan for scalable distributed training.</p>
+<p><strong>Further Reading</strong></p>
+<ul class="simple">
+<li><p>Monarch also integrates with TorchFT to provide per-step fault-tolerance across replicated workers. You can find a comprehensive <a class="reference external" href="https://github.com/meta-pytorch/torchft/tree/main/examples/monarch">proof of concept</a> of this integration in the TorchFT repo.</p></li>
+<li><p>For an interactive notebook covering similar topics to this tutorial, please consult <a class="reference external" href="https://github.com/meta-pytorch/monarch/blob/main/examples/slurm_titan.ipynb">this Monarch example</a>.</p></li>
+</ul>
+</section>
+</section>
+</article>
+</article>
+<footer class="bd-footer-article">
+<div class="footer-article-items footer-article__inner">
+<div class="footer-article-item">
+<div class="feedback">
+<div class="rating">
+    Rate this Page
+    <div class="stars">
+<span class="star" data-behavior="tutorial-rating" data-count="1" data-value="1">★</span>
+<span class="star" data-behavior="tutorial-rating" data-count="2" data-value="2">★</span>
+<span class="star" data-behavior="tutorial-rating" data-count="3" data-value="3">★</span>
+<span class="star" data-behavior="tutorial-rating" data-count="4" data-value="4">★</span>
+<span class="star" data-behavior="tutorial-rating" data-count="5" data-value="5">★</span>
+</div>
+</div>
+<div class="feedback-send">
+<button class="feedback-btn" data-bs-placement="bottom" data-bs-title="Create a GitHub Issue" data-bs-toggle="tooltip" data-gtm="feedback-btn-click" onclick="openGitHubIssue()">Send Feedback
+    </button>
+</div>
+</div>
+<div class="prev-next-area">
+<a class="left-prev" href="rpc_async_execution.html" title="previous page">
+<i class="fa-solid fa-angle-left"></i>
+<div class="prev-next-info">
+<p class="prev-next-subtitle">previous</p>
+<p class="prev-next-title">Implementing Batch RPC Processing Using Asynchronous Executions</p>
+</div>
+</a>
+<a class="right-next" href="../advanced/rpc_ddp_tutorial.html" title="next page">
+<div class="prev-next-info">
+<p class="prev-next-subtitle">next</p>
+<p class="prev-next-title">Combining Distributed DataParallel with Distributed RPC Framework</p>
+</div>
+<i class="fa-solid fa-angle-right"></i>
+</a>
+</div>
+<div class="footer-info">
+<p class="copyright">
+    
+      
+        © Copyright 2024, PyTorch.
+      
+      <br/>
+</p>
+<p class="theme-version">
+    Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+  </p>
+</div>
+</div>
+</div>
+</footer>
+<footer class="prev-next-footer d-print-none">
+<div class="prev-next-area">
+<a class="left-prev" href="rpc_async_execution.html" title="previous page">
+<i class="fa-solid fa-angle-left"></i>
+<div class="prev-next-info">
+<p class="prev-next-subtitle">previous</p>
+<p class="prev-next-title">Implementing Batch RPC Processing Using Asynchronous Executions</p>
+</div>
+</a>
+<a class="right-next" href="../advanced/rpc_ddp_tutorial.html" title="next page">
+<div class="prev-next-info">
+<p class="prev-next-subtitle">next</p>
+<p class="prev-next-title">Combining Distributed DataParallel with Distributed RPC Framework</p>
+</div>
+<i class="fa-solid fa-angle-right"></i>
+</a>
+</div>
+</footer>
+</div>
+<div class="bd-sidebar-secondary bd-toc">
+<div class="sidebar-secondary-items sidebar-secondary__inner">
+<div class="sidebar-secondary-item">
+<div class="page-toc tocsection onthispage" id="pst-page-navigation-heading-2">
+<i class="fa-solid fa-list"></i> On this page
+  </div>
+<nav aria-labelledby="pst-page-navigation-heading-2" class="bd-toc-nav page-toc">
+<ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-is-monarch">What is Monarch?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-use-monarch">Why Use Monarch?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-reserve-machine-resources">Step 1: Reserve Machine Resources</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-define-the-trainer-actor">Step 2: Define the Trainer Actor</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-define-training-parameters">Step 3: Define Training Parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-execute-the-training-workflow">Step 4: Execute the Training Workflow</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-5-clean-up-resources">Step 5: Clean Up Resources</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-6-run-the-complete-pipeline">Step 6: Run the Complete Pipeline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusion">Conclusion</a></li>
+</ul>
+</nav></div>
+<div class="sidebar-secondary-item">
+<div class="sidebar-heading">PyTorch Libraries</div>
+<ul style="list-style-type: none; padding: 0; padding-bottom: 80px;">
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/ao" style="color: var(--pst-color-text-muted)">torchao</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchrec" style="color: var(--pst-color-text-muted)">torchrec</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchft" style="color: var(--pst-color-text-muted)">torchft</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchcodec" style="color: var(--pst-color-text-muted)">TorchCodec</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/vision" style="color: var(--pst-color-text-muted)">torchvision</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/executorch" style="color: var(--pst-color-text-muted)">ExecuTorch</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/xla" style="color: var(--pst-color-text-muted)">PyTorch on XLA Devices</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<footer class="bd-footer-content">
+</footer>
+</main>
+</div>
+</div>
+<!-- Scripts loaded after <body> so the DOM is not blocked -->
+<script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+<div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+<div class="container">
+<div class="row">
+<div class="col-md-4">
+<h2>Docs</h2>
+<p>Access comprehensive developer documentation for PyTorch</p>
+<a class="with-right-arrow" href="https://docs.pytorch.org/docs/stable/index.html">View Docs</a>
+</div>
+<div class="col-md-4">
+<h2>Tutorials</h2>
+<p>Get in-depth tutorials for beginners and advanced developers</p>
+<a class="with-right-arrow" href="https://docs.pytorch.org/tutorials">View Tutorials</a>
+</div>
+<div class="col-md-4">
+<h2>Resources</h2>
+<p>Find development resources and get your questions answered</p>
+<a class="with-right-arrow" href="https://pytorch.org/resources">View Resources</a>
+</div>
+</div>
+</div>
+</div>
+<footer class="site-footer">
+<div class="container footer-container">
+<div class="newsletter" id="newsletter">
+<p class="newsletter__title is-style-max-width-800"><strong>Stay in touch</strong> for updates, event info, and
+        the latest news</p>
+<script charset="utf-8" src="//js.hsforms.net/forms/embed/v2.js" type="text/javascript"></script>
+<script>
+        hbspt.forms.create({
+          region: "na1",
+          portalId: "8112310",
+          formId: "2fb2231c-000b-4ec5-88a0-1ab242549c9e"
+        });
+      </script>
+<p class="newsletter__privacy">By submitting this form, I consent to receive marketing emails from the LF and its
+        projects regarding their events, training, research, developments, and related announcements. I understand that
+        I can unsubscribe at any time using the links in the footers of the emails I receive. <a href="https://www.linuxfoundation.org/privacy/">Privacy Policy</a>.</p>
+</div>
+<div class="lf-grid">
+<ul class="social-links">
+<li><a href="https://www.facebook.com/pytorch" target="_blank" title="PyTorch on Facebook">
+<svg aria-label="Facebook" viewbox="-0.51 -0.26 26.45 26.45" xmlns="http://www.w3.org/2000/svg">
+<path d="M25.497 13.075c0-2.45-.698-4.848-2.011-6.911a12.765 12.765 0 0 0-5.398-4.73A12.671 12.671 0 0 0 11.008.38a12.705 12.705 0 0 0-6.529 2.95A12.827 12.827 0 0 0 .563 9.358a12.896 12.896 0 0 0-.07 7.201 12.831 12.831 0 0 0 3.801 6.103 12.709 12.709 0 0 0 6.471 3.078v-8.957H7.53v-3.708h3.235v-2.824c0-3.213 1.903-4.988 4.813-4.988.956.014 1.909.097 2.852.25V8.67h-1.607a1.83 1.83 0 0 0-1.518.497 1.854 1.854 0 0 0-.561 1.505v2.404h3.535l-.563 3.708h-2.97v8.957a12.725 12.725 0 0 0 7.697-4.337 12.87 12.87 0 0 0 3.054-8.328z" fill="currentColor"></path>
+</svg>
+</a></li>
+<li><a href="https://twitter.com/pytorch" target="_blank" title="PyTorch on X">
+<svg aria-label="X" viewbox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+<path d="M178.57 127.15 290.27 0h-26.46l-97.03 110.38L89.34 0H0l117.13 166.93L0 300.25h26.46l102.4-116.59 81.8 116.59h89.34M36.01 19.54H76.66l187.13 262.13h-40.66" fill="currentColor"></path>
+</svg>
+</a></li>
+<li><a href="https://www.youtube.com/pytorch" target="_blank" title="PyTorch on YouTube">
+<svg aria-label="YouTube" viewbox="0.21 0.27 34.45 25.07" xmlns="http://www.w3.org/2000/svg">
+<path d="M33.729 6.084s-.327-2.33-1.317-3.356a4.691 4.691 0 0 0-3.32-1.432c-4.634-.34-11.589-.34-11.589-.34h-.014s-6.954 0-11.59.342a4.692 4.692 0 0 0-3.32 1.432c-.993 1.025-1.315 3.354-1.315 3.354a52.189 52.189 0 0 0-.331 5.473v2.566c.014 1.829.125 3.656.331 5.472 0 0 .322 2.33 1.316 3.36 1.26 1.345 2.916 1.3 3.653 1.445 2.65.26 11.263.34 11.263.34s6.96-.01 11.597-.353a4.691 4.691 0 0 0 3.32-1.432c.993-1.026 1.316-3.356 1.316-3.356.206-1.817.316-3.644.33-5.473v-2.57a52.26 52.26 0 0 0-.33-5.472zM14.076 17.232V7.729l8.951 4.768-8.95 4.735z" fill="currentColor"></path>
+</svg>
+</a></li>
+<li><a href="https://www.linkedin.com/company/pytorch" target="_blank" title="PyTorch on LinkedIn">
+<svg aria-label="LinkedIn" viewbox="-10.23 -10.23 531.96 531.96" xmlns="http://www.w3.org/2000/svg">
+<rect fill="currentColor" height="512" rx="0" width="512"></rect>
+<circle cx="142" cy="138" fill="#000" r="37"></circle>
+<path d="M244 194v198M142 194v198" stroke="#000" stroke-width="66"></path>
+<path d="M276 282c0-20 13-40 36-40 24 0 33 18 33 45v105h66V279c0-61-32-89-76-89-34 0-51 19-59 32" fill="#000"></path>
+</svg>
+</a></li>
+<li><a href="https://pytorch.slack.com" target="_blank" title="PyTorch Slack">
+<svg aria-label="Slack" viewbox="0.16 -0.03 21.19 21.19" xmlns="http://www.w3.org/2000/svg">
+<path d="M4.896 13.27a2.147 2.147 0 0 1-2.141 2.142A2.147 2.147 0 0 1 .613 13.27c0-1.178.963-2.141 2.142-2.141h2.141v2.141zm1.08 0c0-1.178.962-2.141 2.141-2.141s2.142.963 2.142 2.141v5.363a2.147 2.147 0 0 1-2.142 2.141 2.147 2.147 0 0 1-2.141-2.142V13.27zm2.141-8.6a2.147 2.147 0 0 1-2.141-2.14c0-1.18.962-2.142 2.141-2.142s2.142.963 2.142 2.141v2.142H8.117zm0 1.08c1.179 0 2.141.962 2.141 2.141a2.147 2.147 0 0 1-2.141 2.142H2.755A2.147 2.147 0 0 1 .613 7.89c0-1.179.963-2.141 2.142-2.141h5.362zm8.599 2.141c0-1.179.963-2.141 2.141-2.141 1.179 0 2.143.962 2.143 2.14a2.147 2.147 0 0 1-2.142 2.142h-2.141V7.89zm-1.08 0a2.147 2.147 0 0 1-2.141 2.142 2.147 2.147 0 0 1-2.141-2.142V2.53c0-1.178.962-2.141 2.141-2.141s2.142.963 2.142 2.141v5.362zm-2.141 8.6c1.179 0 2.142.962 2.142 2.14a2.147 2.147 0 0 1-2.142 2.142 2.147 2.147 0 0 1-2.141-2.141V16.49h2.141zm0-1.08a2.147 2.147 0 0 1-2.141-2.141c0-1.179.962-2.142 2.141-2.142h5.362c1.179 0 2.142.963 2.142 2.142a2.147 2.147 0 0 1-2.142 2.142h-5.362z" fill="currentColor">
+</path>
+</svg>
+</a></li>
+<li><a href="https://pytorch.org/wechat" title="PyTorch on WeChat">
+<svg aria-label="WeChat" viewbox="0.14 -0.17 38.02 33.02" xmlns="http://www.w3.org/2000/svg">
+<path d="M26.289 10.976a12.972 12.972 0 0 0-8.742 3.53 10.386 10.386 0 0 0-3.224 8.795c-1.326-.164-2.535-.345-3.75-.448a2.332 2.332 0 0 0-1.273.216c-1.18.666-2.311 1.418-3.652 2.255.246-1.112.405-2.087.687-3.024a1.15 1.15 0 0 0-.523-1.52C1.737 17.902.02 13.601 1.307 9.165c1.189-4.1 4.11-6.587 8.077-7.884A13.54 13.54 0 0 1 24.18 5.617a10.135 10.135 0 0 1 2.109 5.359zM10.668 9.594a1.564 1.564 0 0 0-2.095-1.472 1.52 1.52 0 0 0-.895 1.964 1.502 1.502 0 0 0 1.391.966 1.545 1.545 0 0 0 1.598-1.46v.002zm8.15-1.566a1.567 1.567 0 0 0-1.528 1.543 1.528 1.528 0 0 0 1.571 1.492 1.52 1.52 0 0 0 1.375-2.117 1.518 1.518 0 0 0-1.415-.919l-.003.001z" fill="currentColor">
+</path>
+<path d="M33.914 32.137c-1.075-.478-2.062-1.196-3.11-1.306-1.049-.11-2.145.494-3.24.605a10.821 10.821 0 0 1-8.781-2.864c-4.682-4.33-4.013-10.97 1.403-14.518 4.811-3.154 11.874-2.102 15.268 2.273a8.671 8.671 0 0 1-1.002 12.095c-1.046.929-1.422 1.693-.751 2.917.102.257.174.525.213.798zM21.68 20.292a1.264 1.264 0 1 0 .01-2.528 1.264 1.264 0 0 0-.01 2.528zm7.887-2.526a1.266 1.266 0 0 0-1.256 1.21 1.247 1.247 0 1 0 1.256-1.21z" fill="currentColor">
+</path>
+</svg>
+</a></li>
+</ul>
+</div>
+<div class="privacy-policy">
+<div class="copyright">
+<p>
+          © PyTorch. Copyright © The Linux Foundation®. All rights reserved. The Linux Foundation has registered
+          trademarks and uses trademarks. For more information, including terms of use, privacy policy, and trademark
+          usage, please see our <a href="https://www.linuxfoundation.org/legal/policies">Policies</a> page. <a href="https://www.linuxfoundation.org/trademark-usage">Trademark Usage</a>. <a href="http://www.linuxfoundation.org/privacy">Privacy Policy</a>.
+        </p>
+</div>
+</div>
+</div>
+</footer>
+<div class="cookie-banner-wrapper">
+<div class="container">
+<p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+<img class="close-button" src="../_static/img/pytorch-x.svg"/>
+</div>
+</div>
+<footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+<div class="footer-items__start">
+<div class="footer-item">
+<p class="copyright">
+    
+      © Copyright 2024, PyTorch.
+      <br/>
+</p>
+</div>
+<div class="footer-item">
+<p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+</p>
+</div>
+</div>
+<div class="footer-items__end">
+<div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+</div>
+</div>
+</footer>
+<script type="application/ld+json">
+    {
+       "@context": "https://schema.org",
+       "@type": "Article",
+       "name": "Interactive Distributed Applications with Monarch",
+       "headline": "Interactive Distributed Applications with Monarch",
+       "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
+       "url": "/intermediate/monarch_distributed_tutorial.html",
+       "articleBody": "Interactive Distributed Applications with Monarch# Author: Amir Afzali Introduction# As deep learning models continue to grow in size and complexity, training them efficiently requires coordinating computation across multiple GPUs and nodes. In this tutorial, you will learn how to easily set up and run large-scale distributed workflows using Monarch\u2019s actor framework together with TorchTitan, on a SLURM-managed cluster. Monarch will allow us to drive a large cluster of machines (organized into a mesh), as if developing on a single host, single process environment. What is Monarch?# Monarch is an actor framework designed to streamline the development of distributed applications. At its core, Monarch provides: Actor-based programming model: Encapsulate stateful computations in actors that can run on remote processes and machines Process mesh abstractions: Easily manage and coordinate distributed processes across your cluster, with scalable Actor messaging Fault tolerance: Actors and processes form a tree and failures propagate up the tree, providing good default error behavior and enabling fine-grained fault recovery. Flexible resource management: Support for multiple cluster schedulers including SLURM, Kubernetes, custom host management, and local processes Integrated monitoring: Stream logs from remote processes back to your client for easy debugging and aggregation For more details, see the Monarch documentation. Why Use Monarch?# TorchTitan is a PyTorch native library for pre-training at scale. While TorchTitan provides excellent primitives for distributed training, launching and managing these jobs across clusters can slow down iteration. Monarch addresses this with: Simplified cluster interaction: Reserve and manage compute resources with simple async Python calls instead of writing bash scripts Interactive development: Modify and re-run training code on existing allocations without waiting for new resources Unified workflow: Seamlessly move between local testing and cluster execution with the same code Prerequisites# We rely on a nightly build of Titan for this tutorial, so please ensure that other Torch libraries are tracking nightly builds: Monarch nightly installed: Install script TorchTitan nightly installed: TorchTitan install instructions A valid Titan model config and tokenizer in your working directory (e.g., debug_model.toml from TorchTitan configs). SLURM cluster access: Sufficient permissions to reserve nodes and launch jobs. CUDA environment configured for distributed GPU training. Now let\u2019s implement this step by step! Step 1: Reserve Machine Resources# First, we\u2019ll define a function to programmatically reserve a machine allocation. Monarch Highlight: Instead of submitting an SBATCH script, you can reserve and manage resources interactively from Python. The JobTrait design pattern allows for interfacing with custom schedulers, such as SLURM and Kubernetes, through a consistent API. from monarch.job import SlurmJob, JobTrait def create_slurm_job( mesh_name: str, num_nodes: int, gpus_per_node: int, time_limit: str = \"06:00:00\" ) -\u003e SlurmJob: \"\"\" Args: mesh_name: Name assigned to the primary mesh for this example. A JobTrait can consist of multiple meshes, and Monarch allows for re-attaching to ongoing jobs. num_nodes: Number of nodes allocated per mesh gpus_per_node: Number of GPUs per node in the mesh Note: SlurmJob is just one instance of a Monarch scheduler interface. Consult the JobTrait documentation to find one that\u0027s right for your usecase. \"\"\" default_job_name = \"monarch_titan\" return SlurmJob( meshes={mesh_name: num_nodes}, job_name=default_job_name, time_limit=time_limit, gpus_per_nodes=gpus_per_node, # ... additional args can be passed here ) Step 2: Define the Trainer Actor# Now we create a Monarch Actor that wraps TorchTitan\u2019s Trainer. This is the key abstraction that allows TorchTitan to run in Monarch\u2019s distributed environment. Monarch Highlight: The Actor pattern provides several benefits: Remote execution: Methods marked with @endpoint can be called remotely Lifecycle management: Monarch handles initialization, execution, and cleanup Error handling: Exceptions are properly propagated back to the client, enabling progressive error handling import torch from monarch.actor import Actor, current_rank, endpoint from monarch.utils import setup_env_for_distributed from torchtitan.tools.logging import init_logger, logger from torchtitan.train import Trainer class TrainerActor(Actor): \"\"\" Monarch Actor wrapper for TorchTitan\u0027s Trainer. This actor encapsulates a complete TorchTitan training process, handling initialization, training loop execution, and cleanup. Each instance runs on a single GPU in the distributed training job. The actor\u0027s lifetime: 1. __init__: Initialize with job configuration 2. start_training: Execute the training loop Destroy process group and release resources Attributes: job_config: TorchTitan configuration for this trainer uid: Unique identifier for logging (includes rank) \"\"\" def __init__(self, job_config: \"JobConfig\") -\u003e None: \"\"\" Initialize the trainer actor. Args: job_config: TorchTitan JobConfig with training parameters \"\"\" self.job_config = job_config # current_rank() provides access to this actor\u0027s rank in the process mesh self.rank = current_rank().rank self.uid = f\"[trainer_{rank}]\" @endpoint async def ping_rank(self) -\u003e None: \"\"\" A dummy logging function we will use for demonstration purposes. \"\"\" logger.info(f\"{self.uid} Ping!\") @endpoint async def start_training(self) -\u003e None: \"\"\" Execute the TorchTitan training loop. This remote endpoint: 1. Initializes TorchTitan\u0027s logger 2. Creates a Trainer instance with the job configuration 3. Runs the training loop 4. Handles cleanup and error conditions The @endpoint decorator makes this method callable from the Monarch client, even though it runs on a remote GPU node. Raises: Exception: Any exception from TorchTitan training is propagated back to the client \"\"\" init_logger() trainer: Trainer | None = None try: # Initialize TorchTitan trainer trainer = Trainer(self.job_config) logger.info(f\"{self.uid} initialized successfully and starting training\") # Run the training loop trainer.train() except Exception as e: logger.error(f\"{self.uid} training failed: {e}\") if trainer: trainer.close() # Note: error is propagated back to the controller raise e else: # Training completed successfully trainer.close() logger.info(f\"{self.uid} training completed successfully\") finally: # Clean up distributed process group torch.distributed.destroy_process_group() logger.info(f\"{self.uid} trainer cleaned up\") Actor endpoints can be invoked in a variety of patterns. We\u2019ll explore a concrete example in Step 4: Execute the Training Workflow, but here is some pseudocode with common usages: try: # where mesh0 is made of N nodes, each node having 8 GPUs proc_mesh = mesh0.spawn_procs({\"gpus\": 8}) trainer_actors = proc_mesh.spawn(\"trainers\", TrainerActor, ...) # Call on all ranks await trainer_actors.ping_rank.call() # Call-and-forget on all ranks trainer_actors.ping_rank.broadcast() # Call on ONE random rank await trainer_actors.ping_rank.choose() # Call on the first 3 ranks of node 0 await trainer_actors.slice(hosts=0, gpus=slice(0, 3)).ping_rank.call() except Exception as e: # handle SupervisionEvents from remote actor failures pass Remote actor endpoints can also utilize Python native breakpoints, enabling interactive debugging sessions. For a complete deep-dive into Monarch debuggers, please refer to the documentation. @endpoint async def ping_debuggable_rank(self) -\u003e None: logger.info(f\"{self.uid} Ping!\") if self.rank == 0: breakpoint() logger.info(f\"{self.uid} Pong!\") Step 3: Define Training Parameters# Next, we define some common parameters for our training job and cluster resources. This configuration determines both the scale of training (number of nodes and GPUs), and some of the training hyperparameters. from dataclasses import dataclass @dataclass class RunParams: \"\"\" Configuration for cluster resources and training parameters. Attributes: training_steps: Number of training iterations to run model_config: Path to TorchTitan model configuration file tokenizer: Path to tokenizer directory dataset: Dataset to use for training (e.g., \u0027c4\u0027, \u0027c4_test\u0027) num_nodes: Number of compute nodes to request gpus_per_node: Number of GPUs per node Adjust these values based on your model size and available resources. \"\"\" training_steps: int = 50 model_config: str = \"debug_model.toml\" tokenizer: str = \"tokenizer\" dataset: str = \"c4\" num_nodes: int = 2 gpus_per_node: int = 8 TorchTitan uses a JobConfig object to control all aspects of training. Here we create a function that parses this configuration from our RunParams. import os from torchtitan.config import ConfigManager, JobConfig def make_job_config() -\u003e JobConfig: \"\"\" Create a TorchTitan JobConfig from RunParams. This function constructs the complete training configuration, including parallelism settings, model architecture, and dataset paths \"\"\" # Calculate total parallelism based on cluster size data_parallel_shard_degree = RunParams.num_nodes * RunParams.gpus_per_node output_path = \"./outputs\" # Construct paths relative to script directory script_dir = os.getcwd() # Build argument list for TorchTitan\u0027s ConfigManager # These override defaults from the model config file default_args = [ \"--job.config_file\", os.path.join(script_dir, RunParams.model_config), \"--model.tokenizer_path\", os.path.join(script_dir, RunParams.tokenizer), \"--parallelism.data_parallel_shard_degree\", str(data_parallel_shard_degree), \"--training.steps\", str(RunParams.training_steps), \"--training.dataset\", RunParams.dataset, \"--job.dump_folder\", output_path, # continue to configure as needed ] config_manager = ConfigManager() job_config = config_manager.parse_args(default_args) return job_config Step 4: Execute the Training Workflow# With all components defined, we now orchestrate the complete workflow. This is where Monarch\u2019s power becomes most apparent. Monarch Highlights: Interactive iteration: After reserving the machine allocation, you can adjust your logic and re-spawn actors, without requesting new resources. SLURM\u2019s shared filesystem ensures that framework/workspace changes are synchronized across workers. Transparent logging: All logs from remote workers stream back to your client in real-time, making debugging feel like local execution Workflow: Reserve Machines \u2192 Create Proc Mesh \u2192 Configure Logging \u2192 Spawn Actors \u2192 Train \u2192 Cleanup async def execute_training() -\u003e None: \"\"\" Execute the complete distributed training workflow. \"\"\" job_config = make_job_config() slurm_job = None mesh_name = \"mesh0\" try: # 1. Create a SLURM job with N nodes # This leverages Monarch to reserve a persistent machine allocation slurm_job = create_slurm_job(mesh_name, RunParams.num_nodes, RunParams.gpus_per_node) job_state = slurm_job.state() # 2. Create a process mesh on the machine allocation # This creates one process per GPU across all allocated nodes logger.info(\"Creating process mesh...\") proc_mesh = job_state.mesh0.spawn_procs({\"gpus\": RunParams.gpus_per_node}) # 3. Configure remote logging behavior # - stream_to_client: Forward all remote logs to your local console # - aggregate_window_sec: Batch logs for efficiency logger.info(\"Configuring logging...\") await proc_mesh.logging_option( stream_to_client=True, # aggregate_window_sec=None # Uncomment to disable log batching ) # 4. Setup environment for torch.distributed # This configures torch.distributed across all processes in the mesh logger.info(\"Setting up distributed environment...\") await setup_env_for_distributed(proc_mesh) # 5. Spawn TrainerActor on each GPU # Each process in the mesh creates its own TrainerActor instance logger.info(\"Spawning trainer actors...\") trainer = proc_mesh.spawn( \"trainer_actor\", # Name for the actor group TrainerActor, # Actor class to instantiate job_config, # Arguments to __init__ ) # 6. Execute the training job across all actors # The .call() method invokes start_training() on all actors in parallel logger.info(\"Starting distributed training...\") await trainer.start_training.call() logger.info(\"Training completed successfully!\") except Exception as e: logger.error(f\"Training workflow failed: {e}\") finally: # Always clean up the machine allocation if slurm_job: await cleanup_job(slurm_job) Step 5: Clean Up Resources# After training completes (or if you\u2019re done experimenting), it\u2019s important to free up cluster resources by terminating the SLURM job. Monarch Highlight: While you can keep allocations alive for multiple training runs during development, always remember to release cluster resources. async def cleanup_job(job: JobTrait) -\u003e None: \"\"\" This function cancels the SLURM job, releasing all reserved nodes back to the cluster for other users. Args: job: A JobTrait, like the one returned from create_slurm_job() Note: The job will also terminate automatically when the configured TTL is exceeded, but explicit cleanup is recommended for long-running notebooks or scripts. \"\"\" job.kill() logger.info(\"Job terminated successfully\") Step 6: Run the Complete Pipeline# Finally, we tie everything together in a main function that kicks off the workflow import asyncio if __name__ == \"__main__\": \"\"\" Run the complete workflow: reserve resources, train, and cleanup. \"\"\" logger.info(\"Starting Monarch + TorchTitan Distributed Training\") asyncio.run(execute_training()) logger.info(\"Workflow completed!\") Conclusion# Congrats! In this tutorial, you learned how to apply Monarch\u2019s actor framework with TorchTitan for scalable distributed training. Further Reading Monarch also integrates with TorchFT to provide per-step fault-tolerance across replicated workers. You can find a comprehensive proof of concept of this integration in the TorchFT repo. For an interactive notebook covering similar topics to this tutorial, please consult this Monarch example.",
+       "author": {
+         "@type": "Organization",
+         "name": "PyTorch Contributors",
+         "url": "https://pytorch.org"
+       },
+       "image": "../_static/img/pytorch_seo.png",
+       "mainEntityOfPage": {
+         "@type": "WebPage",
+         "@id": "/intermediate/monarch_distributed_tutorial.html"
+       },
+       "datePublished": "2023-01-01T00:00:00Z",
+       "dateModified": "2023-01-01T00:00:00Z"
+     }
+ </script>
+<script>
+    // Tutorials Call to action event tracking
+    $("[data-behavior='call-to-action-event']").on('click', function () {
+      fbq('trackCustom', "Download", {
+        tutorialTitle: $('h1:first').text(),
+        downloadLink: this.href,
+        tutorialLink: window.location.href,
+        downloadTitle: $(this).attr("data-response")
+      });
+      if (typeof gtag === 'function') {
+        gtag('event', 'click', {
+          'event_category': $(this).attr("data-response"),
+          'event_label': $("h1").first().text(),
+          'tutorial_link': window.location.href
+        });
+      }
+    });
+  </script>
+</body>
+</body></html>
