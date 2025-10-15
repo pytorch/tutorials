@@ -1,0 +1,1420 @@
+
+<!DOCTYPE html>
+
+<html data-content_root="../" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="2022-07-20T23:02:43+00:00" property="article:modified_time"/>
+<title>torch.compile End-to-End Tutorial — PyTorch Tutorials 2.8.0+cu128 documentation</title>
+<script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+<!-- Loaded before other Sphinx assets -->
+<link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet"/>
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet"/>
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet"/>
+<link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet"/>
+<link as="font" crossorigin="" href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="" href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="" href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" rel="preload" type="font/woff2"/>
+<link href="../_static/pygments.css?v=536c50fe" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/theme.css?v=047068a3" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery.css?v=d2d258e8" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-binder.css?v=f4aeca0c" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-dataframe.css?v=2082cf3c" rel="stylesheet" type="text/css"/>
+<link href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css?v=91adb8b6" rel="stylesheet" type="text/css"/>
+<link href="../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<!-- Pre-loaded scripts that we'll load fully later -->
+<link as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
+<link as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
+<script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/documentation_options.js?v=bffbcef7"></script>
+<script src="../_static/doctools.js?v=888ff710"></script>
+<script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+<script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="../_static/copybutton.js?v=f281be69"></script>
+<script src="../_static/katex.min.js?v=be8ff15f"></script>
+<script src="../_static/auto-render.min.js?v=ad136472"></script>
+<script src="../_static/katex_autorenderer.js?v=bebc588a"></script>
+<script src="../_static/design-tabs.js?v=f930bc37"></script>
+<script>DOCUMENTATION_OPTIONS.pagename = 'intermediate/torch_compile_full_example';</script>
+<link href="https://docs.pytorch.org/tutorials/intermediate/torch_compile_full_example.html" rel="canonical"/>
+<link href="../genindex.html" rel="index" title="Index"/>
+<link href="../search.html" rel="search" title="Search"/>
+<link href="compiled_autograd_tutorial.html" rel="next" title="Compiled Autograd: Capturing a larger backward graph for torch.compile"/>
+<link href="torch_compile_tutorial.html" rel="prev" title="Introduction to torch.compile"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="en" name="docsearch:language"/>
+<meta content="Jul 20, 2022" name="docbuild:last-update"/>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
+<script>
+  if (window.location.hostname === 'docs.pytorch.org' || window.location.hostname === 'docs-preview.pytorch.org') {
+    const script = document.createElement('script');
+    script.src = 'https://cmp.osano.com/16A0DbT9yDNIaQkvZ/31b1b91a-e0b6-47ea-bde2-7f2bd13dbe5c/osano.js?variant=one';
+    document.head.appendChild(script);
+  }
+</script>
+<script>
+  // Cookie banner for non-LF projects
+  document.addEventListener('DOMContentLoaded', function () {
+    // Hide cookie banner on local environments and LF owned docs
+    if (window.location.hostname === 'localhost' ||
+      window.location.hostname === '0.0.0.0' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === 'docs.pytorch.org' ||
+      window.location.hostname === 'docs-preview.pytorch.org' ||
+      window.location.hostname.startsWith('192.168.')) {
+      const banner = document.querySelector('.cookie-banner-wrapper');
+      if (banner) {
+        banner.style.display = 'none';
+      }
+    }
+  });
+</script>
+<!-- Conditional CSS for header and footer height adjustment -->
+<link crossorigin="anonymous" href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<script src="../_static/js/theme.js" type="text/javascript"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&amp;display=swap" rel="stylesheet"/>
+<meta content="../_static/img/pytorch_seo.png" property="og:image"/>
+<link crossorigin="anonymous" href="../_static/webfonts/all.min.css" rel="stylesheet"/>
+<meta content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval' blob:;" http-equiv="Content-Security-Policy"/>
+<meta content="tutorials" name="pytorch_project"/>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS" style="display:none;visibility:hidden" width="0"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<!-- Google Tag Manager -->
+<script>(function (w, d, s, l, i) {
+    w[l] = w[l] || []; w[l].push({
+      'gtm.start':
+        new Date().getTime(), event: 'gtm.js'
+    }); var f = d.getElementsByTagName(s)[0],
+      j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+        'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+    j.onload = function () {
+      window.dispatchEvent(new Event('gtm_loaded'));
+      console.log('GTM loaded successfully');
+    };
+  })(window, document, 'script', 'dataLayer', 'GTM-T8XT4PS');
+</script>
+<!-- End Google Tag Manager -->
+<!-- Facebook Pixel Code -->
+<script>
+  !function (f, b, e, v, n, t, s) {
+    if (f.fbq) return; n = f.fbq = function () {
+      n.callMethod ?
+        n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+    };
+    if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+    n.queue = []; t = b.createElement(e); t.async = !0;
+    t.src = v; s = b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t, s)
+  }(window, document, 'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '243028289693773');
+  fbq('track', 'PageView');
+</script>
+<script>
+  document.documentElement.setAttribute('data-version', 'v2.8.0+cu128');
+</script>
+<noscript>
+<img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView&amp;noscript=1" width="1"/>
+</noscript>
+<script>
+  function gtag() {
+    window.dataLayer.push(arguments);
+  }
+</script>
+<!-- End Facebook Pixel Code -->
+<!-- Repository configuration for tutorials -->
+<script>
+  // Define repository configuration for tutorial buttons using existing html_context variables
+  // Only injected when tutorial buttons are shown AND github variables are defined
+  // If either condition is false, JavaScript will fallback to default PyTorch tutorial links
+  window.repoConfig = {
+    github_repo: "pytorch/tutorials",
+    github_branch: "main",
+    colab_repo: "pytorch/tutorials",
+    colab_branch: ""
+  };
+</script>
+<!-- Script to Fix scrolling -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Fix anchor scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href').substring(1);
+        const targetElement = document.getElementById(targetId);
+
+        if (targetElement) {
+          const headerHeight =
+            (document.querySelector('.header-holder') ? document.querySelector('.header-holder').offsetHeight : 0) +
+            (document.querySelector('.bd-header') ? document.querySelector('.bd-header').offsetHeight : 0) + 20;
+
+          const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+          window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+          });
+
+          // Update URL hash without scrolling
+          history.pushState(null, null, '#' + targetId);
+        }
+      });
+    });
+  });
+</script>
+<script async="" src="https://cse.google.com/cse.js?cx=e65585f8c3ea1440e"></script>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="en" name="docsearch:language"/>
+<meta content="Jul 20, 2022" name="docbuild:last-update">
+</meta></head>
+<body class="pytorch-body" data-feedback-url="https://github.com/pytorch/tutorials">
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+<div class="header-container-wrapper">
+<div class="header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<div class="main-menu">
+<ul>
+<li class="main-menu-item">
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+<span>Learn</span>
+</a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/get-started/locally">
+<span class="dropdown-title">Get Started</span>
+</a>
+<a class="nav-dropdown-item" href="https://docs.pytorch.org/tutorials">
+<span class="dropdown-title">Tutorials</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/basics/intro.html">
+<span class="dropdown-title">Learn the Basics</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/recipes/recipes_index.html">
+<span class="dropdown-title">PyTorch Recipes</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/introyt.html">
+<span class="dropdown-title">Intro to PyTorch - YouTube Series</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/webinars/">
+<span class="dropdown-title">Webinars</span>
+</a>
+</div>
+</div>
+</li>
+<li class="main-menu-item">
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+<span>Community</span>
+</a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://landscape.pytorch.org/" target="_blank">
+<span class="dropdown-title">Landscape</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/join-ecosystem">
+<span class="dropdown-title">Join the Ecosystem</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/community-hub/">
+<span class="dropdown-title">Community Hub</span>
+</a>
+<a class="nav-dropdown-item" href="https://discuss.pytorch.org/">
+<span class="dropdown-title">Forums</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/resources">
+<span class="dropdown-title">Developer Resources</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/contributor-awards/">
+<span class="dropdown-title">Contributor Awards</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/community-events/">
+<span class="dropdown-title">Community Events</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/programs/ambassadors/">
+<span class="dropdown-title">PyTorch Ambassadors</span>
+</a>
+</div>
+</div>
+</li>
+<li class="main-menu-item">
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+<span>Projects</span>
+</a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/projects/pytorch/">
+<span class="dropdown-title">PyTorch</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/projects/vllm/">
+<span class="dropdown-title">vLLM</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/projects/deepspeed/">
+<span class="dropdown-title">DeepSpeed</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/projects/host-your-project/">
+<span class="dropdown-title">Host Your Project</span>
+</a>
+</div>
+</div>
+</li>
+<li class="main-menu-item">
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+<span> Docs</span>
+</a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://docs.pytorch.org/docs/stable/index.html">
+<span class="dropdown-title">PyTorch</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/domains">
+<span class="dropdown-title">Domains</span>
+</a>
+</div>
+</div>
+</li>
+<li class="main-menu-item">
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+<span>Blogs &amp; News</span>
+</a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/blog/">
+<span class="dropdown-title">Blog</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/announcements">
+<span class="dropdown-title">Announcements</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/case-studies/">
+<span class="dropdown-title">Case Studies</span>
+<a class="nav-dropdown-item" href="https://pytorch.org/events">
+<span class="dropdown-title">Events</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/newsletter">
+<span class="dropdown-title">Newsletter</span>
+</a>
+</a></div>
+</div></li>
+<li class="main-menu-item">
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="with-down-arrow">
+<span>About</span>
+</a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/foundation">
+<span class="dropdown-title">PyTorch Foundation</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/members">
+<span class="dropdown-title">Members</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/governing-board">
+<span class="dropdown-title">Governing Board</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/tac">
+<span class="dropdown-title">Technical Advisory Council</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/credits">
+<span class="dropdown-title">Cloud Credit Program</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/staff">
+<span class="dropdown-title">Staff</span>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/contact">
+<span class="dropdown-title">Contact</span>
+</a>
+</div>
+</div>
+</li>
+<li class="main-menu-item">
+<div class="no-dropdown main-menu-button">
+<a data-cta="join" href="https://pytorch.org/join">
+                JOIN
+              </a>
+</div>
+</li>
+</ul>
+</div>
+<a class="main-menu-open-button" data-behavior="open-mobile-menu" href="#">
+<i class="fa-solid fa-ellipsis"></i>
+</a>
+</div>
+</div>
+</div>
+<!-- Begin Mobile Menu -->
+<div class="mobile-main-menu">
+<div class="container-fluid">
+<div class="header-container-wrapper">
+<div class="mobile-main-menu-header-container">
+<a class="main-menu-close-button" data-behavior="close-mobile-menu" href="#">
+</a>
+</div>
+</div>
+</div>
+<div class="mobile-main-menu-links-container">
+<div class="main-menu">
+<ul>
+<li class="resources-mobile-menu-title">
+<a>Learn</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/get-started/locally">Get Started</a>
+</li>
+<li>
+<a href="https://docs.pytorch.org/tutorials">Tutorials</a>
+</li>
+<li>
+<a href="https://pytorch.org/tutorials/beginner/basics/intro.html">Learn the Basics</a>
+</li>
+<li>
+<a href="https://pytorch.org/tutorials/recipes/recipes_index.html">PyTorch Recipes</a>
+</li>
+<li>
+<a href="https://pytorch.org/tutorials/beginner/introyt.html">Introduction to PyTorch - YouTube Series</a>
+</li>
+<li>
+<a href="https://pytorch.org/webinars/">Webinars</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>Community</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://landscape.pytorch.org/">Landscape</a>
+</li>
+<li>
+<a href="https://pytorch.org/join-ecosystem">Join the Ecosystem</a>
+</li>
+<li>
+<a href="https://pytorch.org/community-hub/">Community Hub</a>
+</li>
+<li>
+<a href="https://discuss.pytorch.org/">Forums</a>
+</li>
+<li>
+<a href="https://pytorch.org/resources">Developer Resources</a>
+</li>
+<li>
+<a href="https://pytorch.org/contributor-awards/">Contributor Awards</a>
+</li>
+<li>
+<a href="https://pytorch.org/community-events/">Community Events</a>
+</li>
+<li>
+<a href="https://pytorch.org/programs/ambassadors/">PyTorch Ambassadors</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>Projects</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/projects/pytorch/">PyTorch</a>
+</li>
+<li>
+<a href="https://pytorch.org/projects/vllm/">vLLM</a>
+</li>
+<li>
+<a href="https://pytorch.org/projects/deepspeed/">DeepSpeed</a>
+</li>
+<li>
+<a href="https://pytorch.org/projects/host-your-project/">Host Your Project</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>Docs</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://docs.pytorch.org/docs/stable/index.html">PyTorch</a>
+</li>
+<li>
+<a href="https://pytorch.org/domains">Domains</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>Blog &amp; News</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li>
+<a href="https://pytorch.org/announcements">Announcements</a>
+</li>
+<li>
+<a href="https://pytorch.org/case-studies/">Case Studies</a>
+</li>
+<li>
+<a href="https://pytorch.org/events">Events</a>
+</li>
+<li>
+<a href="https://pytorch.org/newsletter">Newsletter</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+<a>About</a>
+</li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/foundation">PyTorch Foundation</a>
+</li>
+<li>
+<a href="https://pytorch.org/members">Members</a>
+</li>
+<li>
+<a href="https://pytorch.org/governing-board">Governing Board</a>
+</li>
+<li>
+<a href="https://pytorch.org/tac">Technical Advisory Council</a>
+</li>
+<li>
+<a href="https://pytorch.org/credits">Cloud Credit Program</a>
+</li>
+<li>
+<a href="https://pytorch.org/staff">Staff</a>
+</li>
+<li>
+<a href="https://pytorch.org/contact">Contact</a>
+</li>
+</ul>
+</ul>
+</div>
+</div>
+</div>
+<!-- End Mobile Menu -->
+<body data-bs-root-margin="0px 0px -60%" data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-default-mode="" data-offset="180">
+<div class="skip-link d-print-none" id="pst-skip-link"><a href="#main-content">Skip to main content</a></div>
+<div id="pst-scroll-pixel-helper"></div>
+<button class="btn rounded-pill" id="pst-back-to-top" type="button">
+<i class="fa-solid fa-arrow-up"></i>Back to top</button>
+<input class="sidebar-toggle" id="pst-primary-sidebar-checkbox" type="checkbox"/>
+<label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+<input class="sidebar-toggle" id="pst-secondary-sidebar-checkbox" type="checkbox"/>
+<label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+<div class="search-button__wrapper">
+<div class="search-button__overlay"></div>
+<div class="search-button__search-container">
+<form action="../search.html" class="bd-search d-flex align-items-center" method="get">
+<i class="fa-solid fa-magnifying-glass"></i>
+<input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="search-input" name="q" placeholder="Search the docs ..." spellcheck="false" type="search"/>
+<span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+</div>
+<div class="pst-async-banner-revealer d-none">
+<aside aria-label="Version warning" class="d-none d-print-none" id="bd-header-version-warning"></aside>
+</div>
+<header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+<button aria-label="Site navigation" class="pst-navbar-icon sidebar-toggle primary-toggle">
+<span class="fa-solid fa-bars"></span>
+</button>
+<div class="navbar-header-items__start">
+<div class="navbar-item">
+<a class="version" href="../index.html">v2.8.0+cu128</a>
+</div>
+</div>
+<div class="navbar-header-items">
+<div class="me-auto navbar-header-items__center">
+<div class="navbar-item">
+<nav>
+<ul class="bd-navbar-elements navbar-nav">
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../intro.html">
+    Intro
+  </a>
+</li>
+<li class="nav-item current active">
+<a class="nav-link nav-internal" href="../compilers_index.html">
+    Compilers
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../domains.html">
+    Domains
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../distributed.html">
+    Distributed
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../deep-dive.html">
+    Deep Dive
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../extension.html">
+    Extension
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../ecosystem.html">
+    Ecosystem
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../recipes_index.html">
+    Recipes
+  </a>
+</li>
+</ul>
+</nav></div>
+</div>
+<div class="navbar-header-items__end">
+<div class="navbar-item">
+<form action="../search.html" class="bd-search d-flex align-items-center" method="get">
+<i class="fa-solid fa-magnifying-glass"></i>
+<input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="search-input" name="q" placeholder="Search the docs ..." spellcheck="false" type="search"/>
+<span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+</div>
+<div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+<div class="navbar-item"><ul aria-label="Icon Links" class="navbar-icon-links">
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://x.com/PyTorch" rel="noopener" target="_blank" title="X"><i aria-hidden="true" class="fa-brands fa-x-twitter fa-lg"></i>
+<span class="sr-only">X</span></a>
+</li>
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://github.com/pytorch/tutorials" rel="noopener" target="_blank" title="GitHub"><i aria-hidden="true" class="fa-brands fa-github fa-lg"></i>
+<span class="sr-only">GitHub</span></a>
+</li>
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://dev-discuss.pytorch.org/" rel="noopener" target="_blank" title="Discourse"><i aria-hidden="true" class="fa-brands fa-discourse fa-lg"></i>
+<span class="sr-only">Discourse</span></a>
+</li>
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://pypi.org/project/torch/" rel="noopener" target="_blank" title="PyPi"><i aria-hidden="true" class="fa-brands fa-python fa-lg"></i>
+<span class="sr-only">PyPi</span></a>
+</li>
+</ul></div>
+</div>
+</div>
+<button aria-label="On this page" class="pst-navbar-icon sidebar-toggle secondary-toggle">
+<span class="fa-solid fa-outdent"></span>
+</button>
+</div>
+</header>
+<div class="bd-container">
+<div class="bd-container__inner bd-page-width">
+<div class="bd-sidebar-primary bd-sidebar">
+<div class="sidebar-header-items sidebar-primary__section">
+<div class="sidebar-header-items__center">
+<div class="navbar-item">
+<nav>
+<ul class="bd-navbar-elements navbar-nav">
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../intro.html">
+    Intro
+  </a>
+</li>
+<li class="nav-item current active">
+<a class="nav-link nav-internal" href="../compilers_index.html">
+    Compilers
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../domains.html">
+    Domains
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../distributed.html">
+    Distributed
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../deep-dive.html">
+    Deep Dive
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../extension.html">
+    Extension
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../ecosystem.html">
+    Ecosystem
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../recipes_index.html">
+    Recipes
+  </a>
+</li>
+</ul>
+</nav></div>
+</div>
+<div class="sidebar-header-items__end">
+<div class="navbar-item">
+<form action="../search.html" class="bd-search d-flex align-items-center" method="get">
+<i class="fa-solid fa-magnifying-glass"></i>
+<input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="search-input" name="q" placeholder="Search the docs ..." spellcheck="false" type="search"/>
+<span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+</div>
+<div class="navbar-item">
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+<div class="navbar-item"><ul aria-label="Icon Links" class="navbar-icon-links">
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://x.com/PyTorch" rel="noopener" target="_blank" title="X"><i aria-hidden="true" class="fa-brands fa-x-twitter fa-lg"></i>
+<span class="sr-only">X</span></a>
+</li>
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://github.com/pytorch/tutorials" rel="noopener" target="_blank" title="GitHub"><i aria-hidden="true" class="fa-brands fa-github fa-lg"></i>
+<span class="sr-only">GitHub</span></a>
+</li>
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://dev-discuss.pytorch.org/" rel="noopener" target="_blank" title="Discourse"><i aria-hidden="true" class="fa-brands fa-discourse fa-lg"></i>
+<span class="sr-only">Discourse</span></a>
+</li>
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://pypi.org/project/torch/" rel="noopener" target="_blank" title="PyPi"><i aria-hidden="true" class="fa-brands fa-python fa-lg"></i>
+<span class="sr-only">PyPi</span></a>
+</li>
+</ul></div>
+</div>
+</div>
+<div class="sidebar-primary-items__start sidebar-primary__section">
+<div class="sidebar-primary-item">
+<nav aria-label="Section Navigation" class="bd-docs-nav bd-links">
+<p aria-level="1" class="bd-links__title" role="heading">Section Navigation</p>
+<div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">torch.compile</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="torch_compile_tutorial.html">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> End-to-End Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compiled_autograd_tutorial.html">Compiled Autograd: Capturing a larger backward graph for <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="inductor_debug_cpu.html">Inductor CPU backend debugging and profiling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/torch_compiler_set_stance_tutorial.html">Dynamic Compilation Control with <code class="docutils literal notranslate"><span class="pre">torch.compiler.set_stance</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/torch_export_challenges_solutions.html">Demonstration of torch.export flow, common challenges and the solutions to address them</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/compiling_optimizer.html">(beta) Compiling the optimizer with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/compiling_optimizer_lr_scheduler.html">(beta) Running the compiled optimizer with an LR Scheduler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/torch_compile_user_defined_triton_kernel_tutorial.html">Using User-Defined Triton Kernels with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/torch_compile_caching_tutorial.html">Compile Time Caching in <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/regional_compilation.html">Reducing torch.compile cold start compilation time with regional compilation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">torch.export</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="torch_export_tutorial.html">torch.export Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/torch_export_aoti_python.html"><code class="docutils literal notranslate"><span class="pre">torch.export</span></code> AOTInductor Tutorial for Python runtime (Beta)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/torch_export_challenges_solutions.html">Demonstration of torch.export flow, common challenges and the solutions to address them</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">ONNX</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../beginner/onnx/intro_onnx.html">Introduction to ONNX</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../beginner/onnx/export_simple_model_to_onnx_tutorial.html">Export a PyTorch model to ONNX</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../beginner/onnx/onnx_registry_tutorial.html">Extending the ONNX Exporter Operator Support</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../beginner/onnx/export_control_flow_model_to_onnx_tutorial.html">Export a model with control flow to ONNX</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Code Transforms with FX</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="torch_compile_conv_bn_fuser.html">Building a Convolution/Batch Norm fuser with torch.compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
+</ul>
+</div>
+</nav></div>
+</div>
+<div class="sidebar-primary-items__end sidebar-primary__section">
+</div>
+<div id="rtd-footer-container"></div>
+</div>
+<main class="bd-main" id="main-content" role="main">
+<div class="bd-content">
+<div class="bd-article-container">
+<div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+<div class="header-article-items__start">
+<div class="header-article-item">
+<nav aria-label="Breadcrumb" class="d-print-none">
+<ul class="bd-breadcrumbs">
+<li class="breadcrumb-item breadcrumb-home">
+<a aria-label="Home" class="nav-link" href="../index.html">
+<i class="fa-solid fa-home"></i>
+</a>
+</li>
+<li class="breadcrumb-item"><a class="nav-link" href="../compilers_index.html">Compilers</a></li>
+<li aria-current="page" class="breadcrumb-item active"><code...< li="">
+</code...<></li></ul>
+</nav>
+</div>
+</div>
+<div class="header-article-items__end">
+<div class="header-article-item">
+<div class="rating">
+    Rate this Page
+    <div class="stars">
+<span class="star" data-behavior="tutorial-rating" data-count="1" data-value="1">★</span>
+<span class="star" data-behavior="tutorial-rating" data-count="2" data-value="2">★</span>
+<span class="star" data-behavior="tutorial-rating" data-count="3" data-value="3">★</span>
+<span class="star" data-behavior="tutorial-rating" data-count="4" data-value="4">★</span>
+<span class="star" data-behavior="tutorial-rating" data-count="5" data-value="5">★</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="searchbox"></div>
+<article class="bd-article" id="pytorch-article">
+<!-- Hidden breadcrumb schema for SEO only -->
+<div itemscope="" itemtype="https://schema.org/BreadcrumbList" style="display:none;">
+<div itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem">
+<link href="../compilers_index.html" itemprop="item"/>
+<meta content="Compilers" itemprop="name"/>
+<meta content="1" itemprop="position"/>
+</div>
+<div itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem">
+<meta content="&lt;code class=" docutils="" itemprop="name" literal="" notranslate"=""/><span class="pre">torch.compile</span> End-to-End Tutorial"&gt;
+        <meta content="2" itemprop="position"/>
+</div>
+</div>
+<script>
+      if ((window.location.href.indexOf("/unstable/") != -1) && (window.location.href.indexOf("/unstable/unstable_index") < 1)) {
+        var div = '<div class="prototype-banner"><i class="fa fa-flask" aria-hidden="true"></i> <strong>Unstable feature:</strong> Not typically available in binary distributions like PyPI. Early stage for feedback and testing.</div>'
+        document.addEventListener('DOMContentLoaded', function () {
+          document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div);
+        });
+      }
+    </script>
+<div class="pytorch-call-to-action-links">
+<div id="tutorial-type">intermediate/torch_compile_full_example</div>
+<a data-behavior="call-to-action-event" data-response="Run in Google Colab" id="colab-link" target="_blank">
+<div id="google-colab-link">
+<img class="call-to-action-img" src="../_static/img/pytorch-colab.svg"/>
+<div class="call-to-action-desktop-view">Run in Google Colab</div>
+<div class="call-to-action-mobile-view">Colab</div>
+</div>
+</a>
+<a data-behavior="call-to-action-event" data-response="Download Notebook" id="notebook-link">
+<div id="download-notebook-link">
+<img class="call-to-action-notebook-img" src="../_static/img/pytorch-download.svg"/>
+<div class="call-to-action-desktop-view">Download Notebook</div>
+<div class="call-to-action-mobile-view">Notebook</div>
+</div>
+</a>
+<a data-behavior="call-to-action-event" data-response="View on Github" id="github-link" target="_blank">
+<div id="github-view-link">
+<img class="call-to-action-img" src="../_static/img/pytorch-github.svg"/>
+<div class="call-to-action-desktop-view">View on GitHub</div>
+<div class="call-to-action-mobile-view">GitHub</div>
+</div>
+</a>
+</div>
+<div id="searchbox"></div>
+<article class="bd-article">
+<div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="#sphx-glr-download-intermediate-torch-compile-full-example-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code.</p>
+</div>
+<section class="sphx-glr-example-title" id="torch-compile-end-to-end-tutorial">
+<span id="sphx-glr-intermediate-torch-compile-full-example-py"></span><h1><code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> End-to-End Tutorial<a class="headerlink" href="#torch-compile-end-to-end-tutorial" title="Link to this heading">#</a></h1>
+<p><strong>Author:</strong> William Wen</p>
+<p><code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> is the new way to speed up your PyTorch code!
+<code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> makes PyTorch code run faster by
+JIT-compiling PyTorch code into optimized kernels,
+while requiring minimal code changes.</p>
+<p>This tutorial covers an end-to-end example of training and evaluating a
+real model with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>. For a gentle introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>,
+please check out <a class="reference external" href="https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html">the introduction to torch.compile tutorial</a>.</p>
+<p><strong>Required pip Dependencies</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">torch</span> <span class="pre">&gt;=</span> <span class="pre">2.0</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">torchvision</span></code></p></li>
+</ul>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-2 sd-row-cols-xs-2 sd-row-cols-sm-2 sd-row-cols-md-2 sd-row-cols-lg-2 docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm card-prerequisites docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+<svg aria-hidden="true" class="sd-octicon sd-octicon-mortar-board" height="1.0em" version="1.1" viewbox="0 0 16 16" width="1.0em"><path d="M7.693 1.066a.747.747 0 0 1 .614 0l7.25 3.25a.75.75 0 0 1 0 1.368L13 6.831v2.794c0 1.024-.81 1.749-1.66 2.173-.893.447-2.075.702-3.34.702-.278 0-.55-.012-.816-.036a.75.75 0 0 1 .133-1.494c.22.02.45.03.683.03 1.082 0 2.025-.221 2.67-.543.69-.345.83-.682.83-.832V7.503L8.307 8.934a.747.747 0 0 1-.614 0L4 7.28v1.663c.296.105.575.275.812.512.438.438.688 1.059.688 1.796v3a.75.75 0 0 1-.75.75h-3a.75.75 0 0 1-.75-.75v-3c0-.737.25-1.358.688-1.796.237-.237.516-.407.812-.512V6.606L.443 5.684a.75.75 0 0 1 0-1.368ZM2.583 5 8 7.428 13.416 5 8 2.572ZM2.5 11.25v2.25H4v-2.25c0-.388-.125-.611-.25-.735a.697.697 0 0 0-.5-.203.707.707 0 0 0-.5.203c-.125.124-.25.347-.25.735Z"></path></svg> What you will learn</div>
+<ul class="simple">
+<li><p class="sd-card-text">How to apply <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> to a real model</p></li>
+<li><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> speedups on a real model</p></li>
+<li><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>’s first few iterations are expected to be slower due to compilation overhead</p></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm card-prerequisites docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+<svg aria-hidden="true" class="sd-octicon sd-octicon-list-unordered" height="1.0em" version="1.1" viewbox="0 0 16 16" width="1.0em"><path d="M5.75 2.5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5Zm0 5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5Zm0 5h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5ZM2 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm1-6a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM2 4a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg> Prerequisites</div>
+<ul class="simple">
+<li><p class="sd-card-text"><a class="reference external" href="https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html">Introduction to torch.compile</a></p></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># NOTE: a modern NVIDIA GPU (H100, A100, or V100) is recommended for this tutorial in</span>
+<span class="c1"># order to reproduce the speedup numbers shown below and documented elsewhere.</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="n">gpu_ok</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">():</span>
+    <span class="n">device_cap</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.get_device_capability.html#torch.cuda.get_device_capability" title="torch.cuda.get_device_capability"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">get_device_capability</span></a><span class="p">()</span>
+    <span class="k">if</span> <span class="n">device_cap</span> <span class="ow">in</span> <span class="p">((</span><span class="mi">7</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">0</span><span class="p">)):</span>
+        <span class="n">gpu_ok</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="k">if</span> <span class="ow">not</span> <span class="n">gpu_ok</span><span class="p">:</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="s2">"GPU is not NVIDIA V100, A100, or H100. Speedup numbers may be lower "</span>
+        <span class="s2">"than expected."</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/var/lib/workspace/intermediate_source/torch_compile_full_example.py:51: UserWarning:
+
+GPU is not NVIDIA V100, A100, or H100. Speedup numbers may be lower than expected.
+</pre></div>
+</div>
+<p>Let’s demonstrate how using <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> can speed up a real model.
+We will compare standard eager mode and
+<code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> by evaluating and training a <code class="docutils literal notranslate"><span class="pre">torchvision</span></code> model on random data.</p>
+<p>Before we start, we need to define some utility functions.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Returns the result of running `fn()` and the time it took for `fn()` to run,</span>
+<span class="c1"># in seconds. We use CUDA events and synchronization for the most accurate</span>
+<span class="c1"># measurements.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">timed</span><span class="p">(</span><span class="n">fn</span><span class="p">):</span>
+    <span class="n">start</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.Event.html#torch.cuda.Event" title="torch.cuda.Event"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Event</span></a><span class="p">(</span><span class="n">enable_timing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.Event.html#torch.cuda.Event" title="torch.cuda.Event"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Event</span></a><span class="p">(</span><span class="n">enable_timing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">start</span><span class="o">.</span><span class="n">record</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">fn</span><span class="p">()</span>
+    <span class="n">end</span><span class="o">.</span><span class="n">record</span><span class="p">()</span>
+    <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.synchronize.html#torch.cuda.synchronize" title="torch.cuda.synchronize"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span></a><span class="p">()</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">start</span><span class="o">.</span><span class="n">elapsed_time</span><span class="p">(</span><span class="n">end</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
+
+
+<span class="c1"># Generates random input and targets data for the model, where `b` is</span>
+<span class="c1"># batch size.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_data</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.randn.html#torch.randn" title="torch.randn"><span class="n">torch</span><span class="o">.</span><span class="n">randn</span></a><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">()</span><span class="o">.</span><span class="n">cuda</span><span class="p">(),</span>
+        <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.randint.html#torch.randint" title="torch.randint"><span class="n">torch</span><span class="o">.</span><span class="n">randint</span></a><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="p">(</span><span class="n">b</span><span class="p">,))</span><span class="o">.</span><span class="n">cuda</span><span class="p">(),</span>
+    <span class="p">)</span>
+
+
+<span class="n">N_ITERS</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchvision.models</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torchvision-models sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/vision/stable/models/generated/torchvision.models.densenet121.html#torchvision.models.densenet121" title="torchvision.models.densenet121"><span class="n">densenet121</span></a>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">init_model</span><span class="p">():</span>
+    <span class="k">return</span> <a class="sphx-glr-backref-module-torchvision-models sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/vision/stable/models/generated/torchvision.models.densenet121.html#torchvision.models.densenet121" title="torchvision.models.densenet121"><span class="n">densenet121</span></a><span class="p">()</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>First, let’s compare inference.</p>
+<p>Note that in the call to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>, we have the additional
+<code class="docutils literal notranslate"><span class="pre">mode</span></code> argument, which we will discuss below.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">init_model</span><span class="p">()</span>
+
+<span class="c1"># Note that we generally recommend directly compiling a torch.nn.Module by calling</span>
+<span class="c1"># its .compile() method.</span>
+<span class="n">model_opt</span> <span class="o">=</span> <span class="n">init_model</span><span class="p">()</span>
+<a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.compile" title="torch.nn.Module.compile"><span class="n">model_opt</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">"reduce-overhead"</span><span class="p">)</span>
+
+<span class="n">inp</span> <span class="o">=</span> <span class="n">generate_data</span><span class="p">(</span><span class="mi">16</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"eager:"</span><span class="p">,</span> <span class="n">timed</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">model</span><span class="p">(</span><span class="n">inp</span><span class="p">))[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"compile:"</span><span class="p">,</span> <span class="n">timed</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">model_opt</span><span class="p">(</span><span class="n">inp</span><span class="p">))[</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>eager: 0.36016641235351565
+/usr/local/lib/python3.10/dist-packages/torch/_inductor/compile_fx.py:282: UserWarning:
+
+TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
+
+compile: 48.33771484375
+</pre></div>
+</div>
+<p>Notice that <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> takes a lot longer to complete
+compared to eager. This is because <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> compiles
+the model into optimized kernels as it executes. In our example, the
+structure of the model doesn’t change, and so recompilation is not
+needed. So if we run our optimized model several more times, we should
+see a significant improvement compared to eager.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">eager_times</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_ITERS</span><span class="p">):</span>
+    <span class="n">inp</span> <span class="o">=</span> <span class="n">generate_data</span><span class="p">(</span><span class="mi">16</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">eager_time</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">model</span><span class="p">(</span><span class="n">inp</span><span class="p">))</span>
+    <span class="n">eager_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eager_time</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"eager eval time </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">eager_time</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"~"</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
+
+<span class="n">compile_times</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_ITERS</span><span class="p">):</span>
+    <span class="n">inp</span> <span class="o">=</span> <span class="n">generate_data</span><span class="p">(</span><span class="mi">16</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">compile_time</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">model_opt</span><span class="p">(</span><span class="n">inp</span><span class="p">))</span>
+    <span class="n">compile_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compile_time</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"compile eval time </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">compile_time</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"~"</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">eager_med</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">eager_times</span><span class="p">)</span>
+<span class="n">compile_med</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">compile_times</span><span class="p">)</span>
+<span class="n">speedup</span> <span class="o">=</span> <span class="n">eager_med</span> <span class="o">/</span> <span class="n">compile_med</span>
+<span class="k">assert</span> <span class="n">speedup</span> <span class="o">&gt;</span> <span class="mi">1</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"(eval) eager median: </span><span class="si">{</span><span class="n">eager_med</span><span class="si">}</span><span class="s2">, compile median: </span><span class="si">{</span><span class="n">compile_med</span><span class="si">}</span><span class="s2">, speedup: </span><span class="si">{</span><span class="n">speedup</span><span class="si">}</span><span class="s2">x"</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"~"</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>eager eval time 0: 0.01785139274597168
+eager eval time 1: 0.016256000518798826
+eager eval time 2: 0.015885279655456542
+eager eval time 3: 0.016882688522338866
+eager eval time 4: 0.01679974365234375
+eager eval time 5: 0.01574608039855957
+eager eval time 6: 0.015748096466064454
+eager eval time 7: 0.015774720191955565
+eager eval time 8: 0.016751615524291993
+eager eval time 9: 0.016784383773803712
+~~~~~~~~~~
+compile eval time 0: 0.6816378784179687
+compile eval time 1: 0.008481792449951172
+compile eval time 2: 0.008743935585021973
+compile eval time 3: 0.008031231880187988
+compile eval time 4: 0.00800051212310791
+compile eval time 5: 0.008044544219970704
+compile eval time 6: 0.008040448188781739
+compile eval time 7: 0.007971839904785156
+compile eval time 8: 0.00802406406402588
+compile eval time 9: 0.00799948787689209
+~~~~~~~~~~
+(eval) eager median: 0.01650380802154541, compile median: 0.008035840034484864, speedup: 2.0537750814751483x
+~~~~~~~~~~
+</pre></div>
+</div>
+<p>And indeed, we can see that running our model with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>
+results in a significant speedup. Speedup mainly comes from reducing Python overhead and
+GPU read/writes, and so the observed speedup may vary on factors such as model
+architecture and batch size. For example, if a model’s architecture is simple
+and the amount of data is large, then the bottleneck would be
+GPU compute and the observed speedup may be less significant.</p>
+<p>You may also see different speedup results depending on the chosen <code class="docutils literal notranslate"><span class="pre">mode</span></code>
+argument. The <code class="docutils literal notranslate"><span class="pre">"reduce-overhead"</span></code> mode uses CUDA graphs to further reduce
+the overhead of Python. For your own models,
+you may need to experiment with different modes to maximize speedup. You can
+read more about modes <a class="reference external" href="https://pytorch.org/get-started/pytorch-2.0/#user-experience">here</a>.</p>
+<p>You may might also notice that the second time we run our model with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> is significantly
+slower than the other runs, although it is much faster than the first run. This is because the <code class="docutils literal notranslate"><span class="pre">"reduce-overhead"</span></code>
+mode runs a few warm-up iterations for CUDA graphs.</p>
+<p>Now, let’s consider comparing training.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">init_model</span><span class="p">()</span>
+<a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="torch.optim.Adam"><span class="n">opt</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="torch.optim.Adam"><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.parameters" title="torch.nn.Module.parameters"><span class="n">model</span><span class="o">.</span><span class="n">parameters</span></a><span class="p">())</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">train</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam.zero_grad" title="torch.optim.Adam.zero_grad"><span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span></a><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">mod</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">loss</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="torch.nn.CrossEntropyLoss"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span></a><span class="p">()(</span><span class="n">pred</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+    <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam.step" title="torch.optim.Adam.step"><span class="n">opt</span><span class="o">.</span><span class="n">step</span></a><span class="p">()</span>
+
+
+<span class="n">eager_times</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_ITERS</span><span class="p">):</span>
+    <span class="n">inp</span> <span class="o">=</span> <span class="n">generate_data</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">eager_time</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">train</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">inp</span><span class="p">))</span>
+    <span class="n">eager_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eager_time</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"eager train time </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">eager_time</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"~"</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">init_model</span><span class="p">()</span>
+<a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="torch.optim.Adam"><span class="n">opt</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam" title="torch.optim.Adam"><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.parameters" title="torch.nn.Module.parameters"><span class="n">model</span><span class="o">.</span><span class="n">parameters</span></a><span class="p">())</span>
+
+<span class="c1"># Note that because we are compiling a regular Python function, we do not</span>
+<span class="c1"># call any .compile() method.</span>
+<span class="n">train_opt</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"reduce-overhead"</span><span class="p">)</span>
+
+<span class="n">compile_times</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_ITERS</span><span class="p">):</span>
+    <span class="n">inp</span> <span class="o">=</span> <span class="n">generate_data</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">compile_time</span> <span class="o">=</span> <span class="n">timed</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">train_opt</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">inp</span><span class="p">))</span>
+    <span class="n">compile_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compile_time</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"compile train time </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">compile_time</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"~"</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
+
+<span class="n">eager_med</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">eager_times</span><span class="p">)</span>
+<span class="n">compile_med</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">compile_times</span><span class="p">)</span>
+<span class="n">speedup</span> <span class="o">=</span> <span class="n">eager_med</span> <span class="o">/</span> <span class="n">compile_med</span>
+<span class="k">assert</span> <span class="n">speedup</span> <span class="o">&gt;</span> <span class="mi">1</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"(train) eager median: </span><span class="si">{</span><span class="n">eager_med</span><span class="si">}</span><span class="s2">, compile median: </span><span class="si">{</span><span class="n">compile_med</span><span class="si">}</span><span class="s2">, speedup: </span><span class="si">{</span><span class="n">speedup</span><span class="si">}</span><span class="s2">x"</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"~"</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>eager train time 0: 0.28427981567382815
+eager train time 1: 0.04984012985229492
+eager train time 2: 0.04780854415893555
+eager train time 3: 0.04749619293212891
+eager train time 4: 0.04880486297607422
+eager train time 5: 0.04770716857910156
+eager train time 6: 0.04859801483154297
+eager train time 7: 0.04779315185546875
+eager train time 8: 0.04907414245605469
+eager train time 9: 0.048611328125
+~~~~~~~~~~
+compile train time 0: 139.62390625
+compile train time 1: 7.02879150390625
+compile train time 2: 0.022916095733642578
+compile train time 3: 0.022106111526489256
+compile train time 4: 0.021346303939819337
+compile train time 5: 0.021373952865600586
+compile train time 6: 0.02132169532775879
+compile train time 7: 0.021344255447387696
+compile train time 8: 0.021329919815063478
+compile train time 9: 0.021320703506469727
+~~~~~~~~~~
+(train) eager median: 0.04860467147827148, compile median: 0.02136012840270996, speedup: 2.275485922271188x
+~~~~~~~~~~
+</pre></div>
+</div>
+<p>Again, we can see that <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> takes longer in the first
+iteration, as it must compile the model, but in subsequent iterations, we see
+significant speedups compared to eager.</p>
+<p>We remark that the speedup numbers presented in this tutorial are for
+demonstration purposes only. Official speedup values can be seen at the
+<a class="reference external" href="https://hud.pytorch.org/benchmark/compilers">TorchInductor performance dashboard</a>.</p>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h2>
+<p>In this tutorial, we applied <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> to training and inference on a real model,
+demonstrating speedups.</p>
+<p>Importantly, we note that the first few iterations of a compiled model
+are slower than eager mode due to compilation overhead, but subsequent iterations are expected to
+have speedups.</p>
+<p>For a gentle introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>, please check out <a class="reference external" href="https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html">the introduction to torch.compile tutorial</a>.</p>
+<p>To troubleshoot issues and to gain a deeper understanding of how to apply <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> to your code, check out <a class="reference external" href="https://docs.pytorch.org/docs/main/compile/programming_model.html">the torch.compile programming model</a>.</p>
+<p>We hope that you will give <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> a try!</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (3 minutes 19.463 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-torch-compile-full-example-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/cf1148cb3c2260353d407c20256391cd/torch_compile_full_example.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">torch_compile_full_example.ipynb</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/9563ce28e48bb09db22ec0071539f25a/torch_compile_full_example.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">torch_compile_full_example.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-zip docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/43b18f26a804521120218f3a9d5ec40c/torch_compile_full_example.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">torch_compile_full_example.zip</span></code></a></p>
+</div>
+</div>
+</section>
+</section>
+</article>
+</article>
+<footer class="bd-footer-article">
+<div class="footer-article-items footer-article__inner">
+<div class="footer-article-item">
+<div class="feedback">
+<div class="rating">
+    Rate this Page
+    <div class="stars">
+<span class="star" data-behavior="tutorial-rating" data-count="1" data-value="1">★</span>
+<span class="star" data-behavior="tutorial-rating" data-count="2" data-value="2">★</span>
+<span class="star" data-behavior="tutorial-rating" data-count="3" data-value="3">★</span>
+<span class="star" data-behavior="tutorial-rating" data-count="4" data-value="4">★</span>
+<span class="star" data-behavior="tutorial-rating" data-count="5" data-value="5">★</span>
+</div>
+</div>
+<div class="feedback-send">
+<button class="feedback-btn" data-bs-placement="bottom" data-bs-title="Create a GitHub Issue" data-bs-toggle="tooltip" data-gtm="feedback-btn-click" onclick="openGitHubIssue()">Send Feedback
+    </button>
+</div>
+</div>
+<div class="prev-next-area">
+<a class="left-prev" href="torch_compile_tutorial.html" title="previous page">
+<i class="fa-solid fa-angle-left"></i>
+<div class="prev-next-info">
+<p class="prev-next-subtitle">previous</p>
+<p class="prev-next-title">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></p>
+</div>
+</a>
+<a class="right-next" href="compiled_autograd_tutorial.html" title="next page">
+<div class="prev-next-info">
+<p class="prev-next-subtitle">next</p>
+<p class="prev-next-title">Compiled Autograd: Capturing a larger backward graph for <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></p>
+</div>
+<i class="fa-solid fa-angle-right"></i>
+</a>
+</div>
+<div class="footer-info">
+<p class="copyright">
+    
+      
+        © Copyright 2024, PyTorch.
+      
+      <br/>
+</p>
+<p class="theme-version">
+    Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+  </p>
+</div>
+</div>
+</div>
+</footer>
+<footer class="prev-next-footer d-print-none">
+<div class="prev-next-area">
+<a class="left-prev" href="torch_compile_tutorial.html" title="previous page">
+<i class="fa-solid fa-angle-left"></i>
+<div class="prev-next-info">
+<p class="prev-next-subtitle">previous</p>
+<p class="prev-next-title">Introduction to <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></p>
+</div>
+</a>
+<a class="right-next" href="compiled_autograd_tutorial.html" title="next page">
+<div class="prev-next-info">
+<p class="prev-next-subtitle">next</p>
+<p class="prev-next-title">Compiled Autograd: Capturing a larger backward graph for <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code></p>
+</div>
+<i class="fa-solid fa-angle-right"></i>
+</a>
+</div>
+</footer>
+</div>
+<div class="bd-sidebar-secondary bd-toc">
+<div class="sidebar-secondary-items sidebar-secondary__inner">
+<div class="sidebar-secondary-item">
+<div class="page-toc tocsection onthispage" id="pst-page-navigation-heading-2">
+<i class="fa-solid fa-list"></i> On this page
+  </div>
+<nav aria-labelledby="pst-page-navigation-heading-2" class="bd-toc-nav page-toc">
+<ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusion">Conclusion</a></li>
+</ul>
+</nav></div>
+<div class="sidebar-secondary-item">
+<div class="sidebar-heading">PyTorch Libraries</div>
+<ul style="list-style-type: none; padding: 0; padding-bottom: 80px;">
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/ao" style="color: var(--pst-color-text-muted)">torchao</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchrec" style="color: var(--pst-color-text-muted)">torchrec</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchft" style="color: var(--pst-color-text-muted)">torchft</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchcodec" style="color: var(--pst-color-text-muted)">TorchCodec</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/vision" style="color: var(--pst-color-text-muted)">torchvision</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/executorch" style="color: var(--pst-color-text-muted)">ExecuTorch</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/xla" style="color: var(--pst-color-text-muted)">PyTorch on XLA Devices</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<footer class="bd-footer-content">
+</footer>
+</main>
+</div>
+</div>
+<!-- Scripts loaded after <body> so the DOM is not blocked -->
+<script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+<div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+<div class="container">
+<div class="row">
+<div class="col-md-4">
+<h2>Docs</h2>
+<p>Access comprehensive developer documentation for PyTorch</p>
+<a class="with-right-arrow" href="https://docs.pytorch.org/docs/stable/index.html">View Docs</a>
+</div>
+<div class="col-md-4">
+<h2>Tutorials</h2>
+<p>Get in-depth tutorials for beginners and advanced developers</p>
+<a class="with-right-arrow" href="https://docs.pytorch.org/tutorials">View Tutorials</a>
+</div>
+<div class="col-md-4">
+<h2>Resources</h2>
+<p>Find development resources and get your questions answered</p>
+<a class="with-right-arrow" href="https://pytorch.org/resources">View Resources</a>
+</div>
+</div>
+</div>
+</div>
+<footer class="site-footer">
+<div class="container footer-container">
+<div class="newsletter" id="newsletter">
+<p class="newsletter__title is-style-max-width-800"><strong>Stay in touch</strong> for updates, event info, and
+        the latest news</p>
+<script charset="utf-8" src="//js.hsforms.net/forms/embed/v2.js" type="text/javascript"></script>
+<script>
+        hbspt.forms.create({
+          region: "na1",
+          portalId: "8112310",
+          formId: "2fb2231c-000b-4ec5-88a0-1ab242549c9e"
+        });
+      </script>
+<p class="newsletter__privacy">By submitting this form, I consent to receive marketing emails from the LF and its
+        projects regarding their events, training, research, developments, and related announcements. I understand that
+        I can unsubscribe at any time using the links in the footers of the emails I receive. <a href="https://www.linuxfoundation.org/privacy/">Privacy Policy</a>.</p>
+</div>
+<div class="lf-grid">
+<ul class="social-links">
+<li><a href="https://www.facebook.com/pytorch" target="_blank" title="PyTorch on Facebook">
+<svg aria-label="Facebook" viewbox="-0.51 -0.26 26.45 26.45" xmlns="http://www.w3.org/2000/svg">
+<path d="M25.497 13.075c0-2.45-.698-4.848-2.011-6.911a12.765 12.765 0 0 0-5.398-4.73A12.671 12.671 0 0 0 11.008.38a12.705 12.705 0 0 0-6.529 2.95A12.827 12.827 0 0 0 .563 9.358a12.896 12.896 0 0 0-.07 7.201 12.831 12.831 0 0 0 3.801 6.103 12.709 12.709 0 0 0 6.471 3.078v-8.957H7.53v-3.708h3.235v-2.824c0-3.213 1.903-4.988 4.813-4.988.956.014 1.909.097 2.852.25V8.67h-1.607a1.83 1.83 0 0 0-1.518.497 1.854 1.854 0 0 0-.561 1.505v2.404h3.535l-.563 3.708h-2.97v8.957a12.725 12.725 0 0 0 7.697-4.337 12.87 12.87 0 0 0 3.054-8.328z" fill="currentColor"></path>
+</svg>
+</a></li>
+<li><a href="https://twitter.com/pytorch" target="_blank" title="PyTorch on X">
+<svg aria-label="X" viewbox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+<path d="M178.57 127.15 290.27 0h-26.46l-97.03 110.38L89.34 0H0l117.13 166.93L0 300.25h26.46l102.4-116.59 81.8 116.59h89.34M36.01 19.54H76.66l187.13 262.13h-40.66" fill="currentColor"></path>
+</svg>
+</a></li>
+<li><a href="https://www.youtube.com/pytorch" target="_blank" title="PyTorch on YouTube">
+<svg aria-label="YouTube" viewbox="0.21 0.27 34.45 25.07" xmlns="http://www.w3.org/2000/svg">
+<path d="M33.729 6.084s-.327-2.33-1.317-3.356a4.691 4.691 0 0 0-3.32-1.432c-4.634-.34-11.589-.34-11.589-.34h-.014s-6.954 0-11.59.342a4.692 4.692 0 0 0-3.32 1.432c-.993 1.025-1.315 3.354-1.315 3.354a52.189 52.189 0 0 0-.331 5.473v2.566c.014 1.829.125 3.656.331 5.472 0 0 .322 2.33 1.316 3.36 1.26 1.345 2.916 1.3 3.653 1.445 2.65.26 11.263.34 11.263.34s6.96-.01 11.597-.353a4.691 4.691 0 0 0 3.32-1.432c.993-1.026 1.316-3.356 1.316-3.356.206-1.817.316-3.644.33-5.473v-2.57a52.26 52.26 0 0 0-.33-5.472zM14.076 17.232V7.729l8.951 4.768-8.95 4.735z" fill="currentColor"></path>
+</svg>
+</a></li>
+<li><a href="https://www.linkedin.com/company/pytorch" target="_blank" title="PyTorch on LinkedIn">
+<svg aria-label="LinkedIn" viewbox="-10.23 -10.23 531.96 531.96" xmlns="http://www.w3.org/2000/svg">
+<rect fill="currentColor" height="512" rx="0" width="512"></rect>
+<circle cx="142" cy="138" fill="#000" r="37"></circle>
+<path d="M244 194v198M142 194v198" stroke="#000" stroke-width="66"></path>
+<path d="M276 282c0-20 13-40 36-40 24 0 33 18 33 45v105h66V279c0-61-32-89-76-89-34 0-51 19-59 32" fill="#000"></path>
+</svg>
+</a></li>
+<li><a href="https://pytorch.slack.com" target="_blank" title="PyTorch Slack">
+<svg aria-label="Slack" viewbox="0.16 -0.03 21.19 21.19" xmlns="http://www.w3.org/2000/svg">
+<path d="M4.896 13.27a2.147 2.147 0 0 1-2.141 2.142A2.147 2.147 0 0 1 .613 13.27c0-1.178.963-2.141 2.142-2.141h2.141v2.141zm1.08 0c0-1.178.962-2.141 2.141-2.141s2.142.963 2.142 2.141v5.363a2.147 2.147 0 0 1-2.142 2.141 2.147 2.147 0 0 1-2.141-2.142V13.27zm2.141-8.6a2.147 2.147 0 0 1-2.141-2.14c0-1.18.962-2.142 2.141-2.142s2.142.963 2.142 2.141v2.142H8.117zm0 1.08c1.179 0 2.141.962 2.141 2.141a2.147 2.147 0 0 1-2.141 2.142H2.755A2.147 2.147 0 0 1 .613 7.89c0-1.179.963-2.141 2.142-2.141h5.362zm8.599 2.141c0-1.179.963-2.141 2.141-2.141 1.179 0 2.143.962 2.143 2.14a2.147 2.147 0 0 1-2.142 2.142h-2.141V7.89zm-1.08 0a2.147 2.147 0 0 1-2.141 2.142 2.147 2.147 0 0 1-2.141-2.142V2.53c0-1.178.962-2.141 2.141-2.141s2.142.963 2.142 2.141v5.362zm-2.141 8.6c1.179 0 2.142.962 2.142 2.14a2.147 2.147 0 0 1-2.142 2.142 2.147 2.147 0 0 1-2.141-2.141V16.49h2.141zm0-1.08a2.147 2.147 0 0 1-2.141-2.141c0-1.179.962-2.142 2.141-2.142h5.362c1.179 0 2.142.963 2.142 2.142a2.147 2.147 0 0 1-2.142 2.142h-5.362z" fill="currentColor">
+</path>
+</svg>
+</a></li>
+<li><a href="https://pytorch.org/wechat" title="PyTorch on WeChat">
+<svg aria-label="WeChat" viewbox="0.14 -0.17 38.02 33.02" xmlns="http://www.w3.org/2000/svg">
+<path d="M26.289 10.976a12.972 12.972 0 0 0-8.742 3.53 10.386 10.386 0 0 0-3.224 8.795c-1.326-.164-2.535-.345-3.75-.448a2.332 2.332 0 0 0-1.273.216c-1.18.666-2.311 1.418-3.652 2.255.246-1.112.405-2.087.687-3.024a1.15 1.15 0 0 0-.523-1.52C1.737 17.902.02 13.601 1.307 9.165c1.189-4.1 4.11-6.587 8.077-7.884A13.54 13.54 0 0 1 24.18 5.617a10.135 10.135 0 0 1 2.109 5.359zM10.668 9.594a1.564 1.564 0 0 0-2.095-1.472 1.52 1.52 0 0 0-.895 1.964 1.502 1.502 0 0 0 1.391.966 1.545 1.545 0 0 0 1.598-1.46v.002zm8.15-1.566a1.567 1.567 0 0 0-1.528 1.543 1.528 1.528 0 0 0 1.571 1.492 1.52 1.52 0 0 0 1.375-2.117 1.518 1.518 0 0 0-1.415-.919l-.003.001z" fill="currentColor">
+</path>
+<path d="M33.914 32.137c-1.075-.478-2.062-1.196-3.11-1.306-1.049-.11-2.145.494-3.24.605a10.821 10.821 0 0 1-8.781-2.864c-4.682-4.33-4.013-10.97 1.403-14.518 4.811-3.154 11.874-2.102 15.268 2.273a8.671 8.671 0 0 1-1.002 12.095c-1.046.929-1.422 1.693-.751 2.917.102.257.174.525.213.798zM21.68 20.292a1.264 1.264 0 1 0 .01-2.528 1.264 1.264 0 0 0-.01 2.528zm7.887-2.526a1.266 1.266 0 0 0-1.256 1.21 1.247 1.247 0 1 0 1.256-1.21z" fill="currentColor">
+</path>
+</svg>
+</a></li>
+</ul>
+</div>
+<div class="privacy-policy">
+<div class="copyright">
+<p>
+          © PyTorch. Copyright © The Linux Foundation®. All rights reserved. The Linux Foundation has registered
+          trademarks and uses trademarks. For more information, including terms of use, privacy policy, and trademark
+          usage, please see our <a href="https://www.linuxfoundation.org/legal/policies">Policies</a> page. <a href="https://www.linuxfoundation.org/trademark-usage">Trademark Usage</a>. <a href="http://www.linuxfoundation.org/privacy">Privacy Policy</a>.
+        </p>
+</div>
+</div>
+</div>
+</footer>
+<div class="cookie-banner-wrapper">
+<div class="container">
+<p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+<img class="close-button" src="../_static/img/pytorch-x.svg"/>
+</div>
+</div>
+<footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+<div class="footer-items__start">
+<div class="footer-item">
+<p class="copyright">
+    
+      © Copyright 2024, PyTorch.
+      <br/>
+</p>
+</div>
+<div class="footer-item">
+<p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+</p>
+</div>
+</div>
+<div class="footer-items__end">
+<div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+</div>
+</div>
+</footer>
+<script type="application/ld+json">
+    {
+       "@context": "https://schema.org",
+       "@type": "Article",
+       "name": "torch.compile End-to-End Tutorial",
+       "headline": "torch.compile End-to-End Tutorial",
+       "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
+       "url": "/intermediate/torch_compile_full_example.html",
+       "articleBody": "Note Go to the end to download the full example code. torch.compile End-to-End Tutorial# Author: William Wen torch.compile is the new way to speed up your PyTorch code! torch.compile makes PyTorch code run faster by JIT-compiling PyTorch code into optimized kernels, while requiring minimal code changes. This tutorial covers an end-to-end example of training and evaluating a real model with torch.compile. For a gentle introduction to torch.compile, please check out the introduction to torch.compile tutorial. Required pip Dependencies torch \u003e= 2.0 torchvision What you will learn How to apply torch.compile to a real model torch.compile speedups on a real model torch.compile\u2019s first few iterations are expected to be slower due to compilation overhead Prerequisites Introduction to torch.compile # NOTE: a modern NVIDIA GPU (H100, A100, or V100) is recommended for this tutorial in # order to reproduce the speedup numbers shown below and documented elsewhere. import torch import warnings gpu_ok = False if torch.cuda.is_available(): device_cap = torch.cuda.get_device_capability() if device_cap in ((7, 0), (8, 0), (9, 0)): gpu_ok = True if not gpu_ok: warnings.warn( \"GPU is not NVIDIA V100, A100, or H100. Speedup numbers may be lower \" \"than expected.\" ) /var/lib/workspace/intermediate_source/torch_compile_full_example.py:51: UserWarning: GPU is not NVIDIA V100, A100, or H100. Speedup numbers may be lower than expected. Let\u2019s demonstrate how using torch.compile can speed up a real model. We will compare standard eager mode and torch.compile by evaluating and training a torchvision model on random data. Before we start, we need to define some utility functions. # Returns the result of running `fn()` and the time it took for `fn()` to run, # in seconds. We use CUDA events and synchronization for the most accurate # measurements. def timed(fn): start = torch.cuda.Event(enable_timing=True) end = torch.cuda.Event(enable_timing=True) start.record() result = fn() end.record() torch.cuda.synchronize() return result, start.elapsed_time(end) / 1000 # Generates random input and targets data for the model, where `b` is # batch size. def generate_data(b): return ( torch.randn(b, 3, 128, 128).to().cuda(), torch.randint(1000, (b,)).cuda(), ) N_ITERS = 10 from torchvision.models import densenet121 def init_model(): return densenet121().cuda() First, let\u2019s compare inference. Note that in the call to torch.compile, we have the additional mode argument, which we will discuss below. model = init_model() # Note that we generally recommend directly compiling a torch.nn.Module by calling # its .compile() method. model_opt = init_model() model_opt.compile(mode=\"reduce-overhead\") inp = generate_data(16)[0] with torch.no_grad(): print(\"eager:\", timed(lambda: model(inp))[1]) print(\"compile:\", timed(lambda: model_opt(inp))[1]) eager: 0.36016641235351565 /usr/local/lib/python3.10/dist-packages/torch/_inductor/compile_fx.py:282: UserWarning: TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision(\u0027high\u0027)` for better performance. compile: 48.33771484375 Notice that torch.compile takes a lot longer to complete compared to eager. This is because torch.compile compiles the model into optimized kernels as it executes. In our example, the structure of the model doesn\u2019t change, and so recompilation is not needed. So if we run our optimized model several more times, we should see a significant improvement compared to eager. eager_times = [] for i in range(N_ITERS): inp = generate_data(16)[0] with torch.no_grad(): _, eager_time = timed(lambda: model(inp)) eager_times.append(eager_time) print(f\"eager eval time {i}: {eager_time}\") print(\"~\" * 10) compile_times = [] for i in range(N_ITERS): inp = generate_data(16)[0] with torch.no_grad(): _, compile_time = timed(lambda: model_opt(inp)) compile_times.append(compile_time) print(f\"compile eval time {i}: {compile_time}\") print(\"~\" * 10) import numpy as np eager_med = np.median(eager_times) compile_med = np.median(compile_times) speedup = eager_med / compile_med assert speedup \u003e 1 print( f\"(eval) eager median: {eager_med}, compile median: {compile_med}, speedup: {speedup}x\" ) print(\"~\" * 10) eager eval time 0: 0.01785139274597168 eager eval time 1: 0.016256000518798826 eager eval time 2: 0.015885279655456542 eager eval time 3: 0.016882688522338866 eager eval time 4: 0.01679974365234375 eager eval time 5: 0.01574608039855957 eager eval time 6: 0.015748096466064454 eager eval time 7: 0.015774720191955565 eager eval time 8: 0.016751615524291993 eager eval time 9: 0.016784383773803712 ~~~~~~~~~~ compile eval time 0: 0.6816378784179687 compile eval time 1: 0.008481792449951172 compile eval time 2: 0.008743935585021973 compile eval time 3: 0.008031231880187988 compile eval time 4: 0.00800051212310791 compile eval time 5: 0.008044544219970704 compile eval time 6: 0.008040448188781739 compile eval time 7: 0.007971839904785156 compile eval time 8: 0.00802406406402588 compile eval time 9: 0.00799948787689209 ~~~~~~~~~~ (eval) eager median: 0.01650380802154541, compile median: 0.008035840034484864, speedup: 2.0537750814751483x ~~~~~~~~~~ And indeed, we can see that running our model with torch.compile results in a significant speedup. Speedup mainly comes from reducing Python overhead and GPU read/writes, and so the observed speedup may vary on factors such as model architecture and batch size. For example, if a model\u2019s architecture is simple and the amount of data is large, then the bottleneck would be GPU compute and the observed speedup may be less significant. You may also see different speedup results depending on the chosen mode argument. The \"reduce-overhead\" mode uses CUDA graphs to further reduce the overhead of Python. For your own models, you may need to experiment with different modes to maximize speedup. You can read more about modes here. You may might also notice that the second time we run our model with torch.compile is significantly slower than the other runs, although it is much faster than the first run. This is because the \"reduce-overhead\" mode runs a few warm-up iterations for CUDA graphs. Now, let\u2019s consider comparing training. model = init_model() opt = torch.optim.Adam(model.parameters()) def train(mod, data): opt.zero_grad(True) pred = mod(data[0]) loss = torch.nn.CrossEntropyLoss()(pred, data[1]) loss.backward() opt.step() eager_times = [] for i in range(N_ITERS): inp = generate_data(16) _, eager_time = timed(lambda: train(model, inp)) eager_times.append(eager_time) print(f\"eager train time {i}: {eager_time}\") print(\"~\" * 10) model = init_model() opt = torch.optim.Adam(model.parameters()) # Note that because we are compiling a regular Python function, we do not # call any .compile() method. train_opt = torch.compile(train, mode=\"reduce-overhead\") compile_times = [] for i in range(N_ITERS): inp = generate_data(16) _, compile_time = timed(lambda: train_opt(model, inp)) compile_times.append(compile_time) print(f\"compile train time {i}: {compile_time}\") print(\"~\" * 10) eager_med = np.median(eager_times) compile_med = np.median(compile_times) speedup = eager_med / compile_med assert speedup \u003e 1 print( f\"(train) eager median: {eager_med}, compile median: {compile_med}, speedup: {speedup}x\" ) print(\"~\" * 10) eager train time 0: 0.28427981567382815 eager train time 1: 0.04984012985229492 eager train time 2: 0.04780854415893555 eager train time 3: 0.04749619293212891 eager train time 4: 0.04880486297607422 eager train time 5: 0.04770716857910156 eager train time 6: 0.04859801483154297 eager train time 7: 0.04779315185546875 eager train time 8: 0.04907414245605469 eager train time 9: 0.048611328125 ~~~~~~~~~~ compile train time 0: 139.62390625 compile train time 1: 7.02879150390625 compile train time 2: 0.022916095733642578 compile train time 3: 0.022106111526489256 compile train time 4: 0.021346303939819337 compile train time 5: 0.021373952865600586 compile train time 6: 0.02132169532775879 compile train time 7: 0.021344255447387696 compile train time 8: 0.021329919815063478 compile train time 9: 0.021320703506469727 ~~~~~~~~~~ (train) eager median: 0.04860467147827148, compile median: 0.02136012840270996, speedup: 2.275485922271188x ~~~~~~~~~~ Again, we can see that torch.compile takes longer in the first iteration, as it must compile the model, but in subsequent iterations, we see significant speedups compared to eager. We remark that the speedup numbers presented in this tutorial are for demonstration purposes only. Official speedup values can be seen at the TorchInductor performance dashboard. Conclusion# In this tutorial, we applied torch.compile to training and inference on a real model, demonstrating speedups. Importantly, we note that the first few iterations of a compiled model are slower than eager mode due to compilation overhead, but subsequent iterations are expected to have speedups. For a gentle introduction to torch.compile, please check out the introduction to torch.compile tutorial. To troubleshoot issues and to gain a deeper understanding of how to apply torch.compile to your code, check out the torch.compile programming model. We hope that you will give torch.compile a try! Total running time of the script: (3 minutes 19.463 seconds) Download Jupyter notebook: torch_compile_full_example.ipynb Download Python source code: torch_compile_full_example.py Download zipped: torch_compile_full_example.zip",
+       "author": {
+         "@type": "Organization",
+         "name": "PyTorch Contributors",
+         "url": "https://pytorch.org"
+       },
+       "image": "../_static/img/pytorch_seo.png",
+       "mainEntityOfPage": {
+         "@type": "WebPage",
+         "@id": "/intermediate/torch_compile_full_example.html"
+       },
+       "datePublished": "2023-01-01T00:00:00Z",
+       "dateModified": "2023-01-01T00:00:00Z"
+     }
+ </script>
+<script>
+    // Tutorials Call to action event tracking
+    $("[data-behavior='call-to-action-event']").on('click', function () {
+      fbq('trackCustom', "Download", {
+        tutorialTitle: $('h1:first').text(),
+        downloadLink: this.href,
+        tutorialLink: window.location.href,
+        downloadTitle: $(this).attr("data-response")
+      });
+      if (typeof gtag === 'function') {
+        gtag('event', 'click', {
+          'event_category': $(this).attr("data-response"),
+          'event_label': $("h1").first().text(),
+          'tutorial_link': window.location.href
+        });
+      }
+    });
+  </script>
+</body>
+</body></html>

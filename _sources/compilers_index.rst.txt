@@ -41,6 +41,13 @@ control, as well as third-party backend solutions.
    :tags: Model-Optimization,torch.compile
 
 .. customcarditem::
+   :header: torch.compile End-to-End Tutorial
+   :card_description: An example of applying torch.compile to a real model, demonstrating speedups.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torch_compile_full_example.html
+   :tags: Model-Optimization,torch.compile
+
+.. customcarditem::
    :header: Compiled Autograd: Capturing a larger backward graph for torch.compile
    :card_description: Learn how to use compiled autograd to capture a larger backward graph.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
@@ -177,6 +184,7 @@ control, as well as third-party backend solutions.
    :caption: torch.compile
 
    intermediate/torch_compile_tutorial
+   intermediate/torch_compile_full_example
    intermediate/compiled_autograd_tutorial
    intermediate/inductor_debug_cpu
    recipes/torch_compiler_set_stance_tutorial
