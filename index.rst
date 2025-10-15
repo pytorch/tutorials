@@ -537,6 +537,13 @@ Welcome to PyTorch Tutorials
    :tags: Model-Optimization
 
 .. customcarditem::
+   :header: torch.compile End-to-End Tutorial
+   :card_description: An example of applying torch.compile to a real model, demonstrating speedups.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torch_compile_full_example.html
+   :tags: Model-Optimization
+
+.. customcarditem::
    :header: Building a Convolution/Batch Norm fuser in torch.compile
    :card_description: Build a simple pattern matcher pass that fuses batch norm into convolution to improve performance during inference.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
