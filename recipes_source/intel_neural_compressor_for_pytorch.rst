@@ -158,4 +158,4 @@ To leverage accuracy-driven automatic tuning, a specified tuning space is necess
 Tutorials
 ---------
 
-More detailed tutorials are available in the official Intel® Neural Compressor `doc <https://intel.github.io/neural-compressor/latest/docs/source/Welcome.html>`_.
+More detailed tutorials are available in the official Intel® Neural Compressor `doc <https://www.intel.com/content/www/us/en/developer/tools/oneapi/neural-compressor.html>`_.
