@@ -85,7 +85,7 @@ print(random)
 
 
 #########################################################################
-# The fctory methods all do just what you’d expect - we have a tensor
+# The factory methods all do just what you’d expect - we have a tensor
 # full of zeros, another full of ones, and another with random values
 # between 0 and 1.
 # 

@@ -193,5 +193,6 @@ Custom Extensions
    intermediate/rpc_tutorial
    intermediate/rpc_param_server_tutorial
    intermediate/rpc_async_execution
+   intermediate/monarch_distributed_tutorial
    advanced/rpc_ddp_tutorial
    advanced/generic_join

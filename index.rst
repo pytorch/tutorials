@@ -150,12 +150,6 @@ Welcome to PyTorch Tutorials
    :link: intermediate/spatial_transformer_tutorial.html
    :tags: Image/Video
 
-.. customcarditem::
-   :header: Inference on Whole Slide Images with TIAToolbox
-   :card_description: Learn how to use the TIAToolbox to perform inference on whole slide images.
-   :image: _static/img/thumbnails/cropped/TIAToolbox-Tutorial.png
-   :link: intermediate/tiatoolbox_tutorial.html
-   :tags: Image/Video
 
 .. customcarditem::
    :header: Semi-Supervised Learning Tutorial Based on USB
@@ -543,6 +537,13 @@ Welcome to PyTorch Tutorials
    :tags: Model-Optimization
 
 .. customcarditem::
+   :header: torch.compile End-to-End Tutorial
+   :card_description: An example of applying torch.compile to a real model, demonstrating speedups.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torch_compile_full_example.html
+   :tags: Model-Optimization
+
+.. customcarditem::
    :header: Building a Convolution/Batch Norm fuser in torch.compile
    :card_description: Build a simple pattern matcher pass that fuses batch norm into convolution to improve performance during inference.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
@@ -678,6 +679,13 @@ Welcome to PyTorch Tutorials
    :card_description: TCPStore now uses a new server backend for faster connection and better scalability.
    :image: _static/img/thumbnails/cropped/Introduction-to-Libuv-Backend-TCPStore.png
    :link: intermediate/TCPStore_libuv_backend.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: Interactive Distributed Applications with Monarch
+   :card_description: Learn how to spin up distributed applications using Monarch's singler controller model
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/monarch_distributed_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. Edge
