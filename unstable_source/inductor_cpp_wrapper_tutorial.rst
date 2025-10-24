@@ -78,6 +78,7 @@ By turning on the C++ wrapper, the generated code for the ``call`` function beco
 ``inductor_entry_impl``:
 
 .. code:: python
+
     cpp_wrapper_src = (
     r'''
     #include <torch/csrc/inductor/cpp_wrapper/cpu.h>
@@ -147,6 +148,7 @@ Based on the same example code, the generated code for GPU will look like this:
 With the C++ wrapper turned on, the below equivalent C++ code will be generated:
 
 .. code:: python
+
     inductor_entry = CppWrapperCodeCache.load_pybinding(
         argtypes=["std::vector<AtenTensorHandle>"],
         main_code=cpp_wrapper_src,
@@ -181,7 +183,7 @@ motivation for this feature, detailed the experimental API used to enable it,
 and compared the generated outputs of the default Python wrapper and the new
 C++ wrapper on both CPU and GPU backends to illustrate their distinctions.
 
-# For more information on torch.compile, see
-#
-# .. _torch.compile tutorial: https://docs.pytorch.org/tutorials/intermediate/torch_compile_tutorial.html
-# .. TORCH_LOGS tutorial: https://docs.pytorch.org/tutorials/recipes/torch_logs.html
+.. For more information on torch.compile, see
+..
+.. .. _torch.compile tutorial: https://docs.pytorch.org/tutorials/intermediate/torch_compile_tutorial.html
+.. .. TORCH_LOGS tutorial: https://docs.pytorch.org/tutorials/recipes/torch_logs.html
