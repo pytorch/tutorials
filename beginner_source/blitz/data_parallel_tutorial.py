@@ -250,4 +250,3 @@ for data in rand_loader:
 # models on several GPUs. After each model finishes their job, DataParallel
 # collects and merges the results before returning it to you.
 #
-
