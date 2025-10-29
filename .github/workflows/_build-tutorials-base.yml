@@ -1,10 +1,13 @@
 name: Build tutorials
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
+  workflow_call:
+    inputs:
+      USE_NIGHTLY:
+        description: "Use nightly builds inside build.sh"
+        required: false
+        type: number
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}-${{ github.event_name == 'schedule' }}
@@ -73,6 +76,7 @@ jobs:
           COMMIT_ID: ${{ github.sha }}
           JOB_TYPE: worker
           COMMIT_SOURCE: ${{ github.ref }}
+          USE_NIGHTLY: ${{ inputs.USE_NIGHTLY }}
         run: |
           set -ex
 
@@ -85,6 +89,7 @@ jobs:
             -e COMMIT_ID \
             -e JOB_TYPE \
             -e COMMIT_SOURCE \
+            -e USE_NIGHTLY \
             --env-file="/tmp/github_env_${GITHUB_RUN_ID}" \
             --tty \
             --detach \
@@ -139,11 +144,12 @@ jobs:
         env:
           DOCKER_IMAGE: ${{ steps.calculate-docker-image.outputs.docker-image }}
           NUM_WORKERS: 15
-          WORKER_ID: ${{ matrix.shard }}
+          WORKER_ID: 0
           COMMIT_ID: ${{ github.sha }}
           JOB_TYPE: manager
           COMMIT_SOURCE: ${{ github.ref }}
           GITHUB_PYTORCHBOT_TOKEN: ${{ secrets.PYTORCHBOT_TOKEN }}
+          USE_NIGHTLY: ${{ inputs.USE_NIGHTLY }}
         run: |
           set -ex
 
@@ -157,6 +163,7 @@ jobs:
             -e JOB_TYPE \
             -e COMMIT_SOURCE \
             -e GITHUB_PYTORCHBOT_TOKEN \
+            -e USE_NIGHTLY \
             --env-file="/tmp/github_env_${GITHUB_RUN_ID}" \
             --tty \
             --detach \

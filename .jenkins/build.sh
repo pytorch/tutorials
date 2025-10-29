@@ -19,7 +19,13 @@ sudo apt-get install -y pandoc
 # NS: Path to python runtime should already be part of docker container
 # export PATH=/opt/conda/bin:$PATH
 
-#Install PyTorch Nightly for test.
+# Install PyTorch Nightly for test.
+if [ "$USE_NIGHTLY" -eq 1 ]; then
+  sudo pip uninstall -y torch
+  pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cu130
+  pip show torch
+fi
+
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
 # Install 2.5 to merge all 2.4 PRs - uncomment to install nightly binaries (update the version as needed).
 # sudo pip uninstall -y fbgemm-gpu torchrec
