@@ -7,7 +7,12 @@ on:
         description: "Use nightly builds inside build.sh"
         required: false
         type: number
-        default: false
+        default: 0
+      UPLOAD:
+        description: "Upload built docs to PR preview and main site"
+        required: false
+        type: number
+        default: 0
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}-${{ github.event_name == 'schedule' }}
@@ -77,6 +82,7 @@ jobs:
           JOB_TYPE: worker
           COMMIT_SOURCE: ${{ github.ref }}
           USE_NIGHTLY: ${{ inputs.USE_NIGHTLY }}
+          UPLOAD: ${{ inputs.UPLOAD }}
         run: |
           set -ex
 
@@ -90,6 +96,7 @@ jobs:
             -e JOB_TYPE \
             -e COMMIT_SOURCE \
             -e USE_NIGHTLY \
+            -e UPLOAD \
             --env-file="/tmp/github_env_${GITHUB_RUN_ID}" \
             --tty \
             --detach \
@@ -110,6 +117,7 @@ jobs:
     name: pytorch_tutorial_build_manager
     needs: worker
     runs-on: [self-hosted, linux.2xlarge]
+    if: ${{ inputs.UPLOAD == 1 }}
     environment: ${{ github.ref == 'refs/heads/main' && 'pytorchbot-env' || '' }}
     steps:
       - name: Setup SSH (Click me for login details)
