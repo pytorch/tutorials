@@ -21,8 +21,8 @@ sudo apt-get install -y pandoc
 
 # Install PyTorch Nightly for test.
 if [ "${USE_NIGHTLY:-0}" -eq 1 ]; then
-  sudo pip uninstall -y torch torchvision torchaudio
-  pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu130
+  sudo pip uninstall -y torch torchvision torchaudio fbgemm-gpu torchrec torchrl
+  pip install --pre torch torchvision torchaudio fbgemm-gpu torchrec torchrl --index-url https://download.pytorch.org/whl/nightly/cu130
   pip show torch
 fi
 
