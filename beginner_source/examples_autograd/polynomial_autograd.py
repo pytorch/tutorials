@@ -1,4 +1,4 @@
-r"""
+"""
 PyTorch: Tensors and autograd
 -------------------------------
 
