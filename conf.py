@@ -175,7 +175,7 @@ sphinx_gallery_conf = {
     "promote_jupyter_magic": True,
     "backreferences_dir": None,
     "write_computation_times": True,
-    "download_all_examples": False,
+    "download_all_examples": True,
     "show_signature": False,
     "first_notebook_cell": (
         "# For tips on running notebooks in Google Colab, see\n"
