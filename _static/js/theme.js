@@ -220,8 +220,6 @@ document.addEventListener('DOMContentLoaded', function() {
       tutorialUrlArray[0] = tutorialUrlArray[0] + "_source"
 
       // Get configurable repository settings from conf.py
-      // If tutorial_repo_config is not defined in conf.py, window.repoConfig will be undefined
-      // and we'll fallback to the original PyTorch tutorial links
 
       // Default to PyTorch tutorials for backward compatibility
       var defaultGithubRepo = "pytorch/tutorials";
