@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <meta property="article:modified_time" content="2022-07-20T23:02:43+00:00" />
-    <title>Inductor C++ Wrapper Tutorial &#8212; PyTorch Tutorials 2.9.0+cu128 documentation</title>
+    <title>TorchInductor C++ Wrapper Tutorial &#8212; PyTorch Tutorials 2.9.0+cu128 documentation</title>
   
   
   
@@ -994,7 +994,7 @@ document.write(`
         <i class="fa-solid fa-home"></i>
       </a>
     </li>
-    <li class="breadcrumb-item active" aria-current="page">Inductor...</li>
+    <li class="breadcrumb-item active" aria-current="page">TorchInducto...</li>
   </ul>
 </nav>
 </div>
@@ -1036,7 +1036,7 @@ document.write(`
     <div style="display:none;" itemscope itemtype="https://schema.org/BreadcrumbList">
       
       <div itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <meta itemprop="name" content="Inductor C++ Wrapper Tutorial">
+        <meta itemprop="name" content="TorchInductor C++ Wrapper Tutorial">
         <meta itemprop="position" content="1">
       </div>
     </div>
@@ -1084,8 +1084,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="inductor-c-wrapper-tutorial">
-<h1>Inductor C++ Wrapper Tutorial<a class="headerlink" href="#inductor-c-wrapper-tutorial" title="Link to this heading">#</a></h1>
+  <section id="torchinductor-c-wrapper-tutorial">
+<h1>TorchInductor C++ Wrapper Tutorial<a class="headerlink" href="#torchinductor-c-wrapper-tutorial" title="Link to this heading">#</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/chunyuan-w">Chunyuan Wu</a>, <a class="reference external" href="https://github.com/desertfire">Bin Bao</a>, <a class="reference external" href="https://github.com/jgong5">Jiong Gong</a></p>
 <section id="prerequisites">
 <h2>Prerequisites:<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
@@ -1095,70 +1095,106 @@ document.write(`
 </section>
 <section id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">#</a></h2>
-<p>Python, as the primary interface of PyTorch, is easy to use and efficient for development and debugging.
-The Inductor’s default wrapper generates Python code to invoke generated kernels and external kernels.
-However, in deployments requiring high performance, Python, as an interpreted language, runs relatively slower compared to compiled languages.</p>
-<p>We implemented an Inductor C++ wrapper by leveraging the PyTorch C++ APIs
-to generate pure C++ code that combines the generated and external kernels.
-This allows for the execution of each captured Dynamo graph in pure C++,
-thereby reducing the Python overhead within the graph.</p>
+<p>In <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>, the default backend <strong>TorchInductor</strong> emits Python wrapper
+code that manages memory allocation and kernel invocation. This design provides
+flexibility and ease of debugging, but the interpreted nature of Python
+introduces runtime overhead in performance-sensitive environments.</p>
+<p>To address this limitation, TorchInductor includes a specialized mode that
+generates <strong>C++ wrapper code</strong> in place of the Python wrapper, enabling faster
+execution with minimal Python involvement.</p>
 </section>
-<section id="enabling-the-api">
-<h2>Enabling the API<a class="headerlink" href="#enabling-the-api" title="Link to this heading">#</a></h2>
-<p>This feature is still in prototype stage. To activate this feature, add the following to your code:</p>
+<section id="enabling-the-c-wrapper-mode">
+<h2>Enabling the C++ wrapper mode<a class="headerlink" href="#enabling-the-c-wrapper-mode" title="Link to this heading">#</a></h2>
+<p>To enable this C++ wrapper mode for TorchInductor, add the following config to your code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch._inductor.config</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">config</span>
 <span class="n">config</span><span class="o">.</span><span class="n">cpp_wrapper</span> <span class="o">=</span> <span class="kc">True</span>
 </pre></div>
 </div>
-<p>This will speed up your models by reducing the Python overhead of the Inductor wrapper.</p>
 </section>
 <section id="example-code">
 <h2>Example code<a class="headerlink" href="#example-code" title="Link to this heading">#</a></h2>
-<p>We will use the below frontend code as an example:</p>
+<p>We will use the following model code as an example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch._inductor.config</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">config</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">fn</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span>
+<span class="n">config</span><span class="o">.</span><span class="n">cpp_wrapper</span> <span class="o">=</span> <span class="kc">True</span>
 
-<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">opt_fn</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">compile</span><span class="p">()(</span><span class="n">fn</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">opt_fn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+
+<span class="n">opt_fn</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">opt_fn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>For CPU</strong></p>
-<p>The main part of Inductor-generated code with the default Python wrapper will look like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">call</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
-    <span class="n">arg0_1</span><span class="p">,</span> <span class="o">=</span> <span class="n">args</span>
-    <span class="n">args</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-    <span class="n">assert_size_stride</span><span class="p">(</span><span class="n">arg0_1</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">))</span>
-    <span class="n">buf0</span> <span class="o">=</span> <span class="n">empty_strided</span><span class="p">((</span><span class="mi">19</span><span class="p">,</span> <span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-    <span class="n">cpp_fused_add_lift_fresh_0</span><span class="p">(</span><span class="n">c_void_p</span><span class="p">(</span><span class="n">constant0</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">()),</span> <span class="n">c_void_p</span><span class="p">(</span><span class="n">arg0_1</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">()),</span> <span class="n">c_void_p</span><span class="p">(</span><span class="n">buf0</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">()))</span>
-    <span class="k">del</span> <span class="n">arg0_1</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">buf0</span><span class="p">,</span> <span class="p">)</span>
+<p>The main part of TorchInductor-generated code with the default Python wrapper will look like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Runner</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partitions</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">partitions</span> <span class="o">=</span> <span class="n">partitions</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+        <span class="n">arg0_1</span><span class="p">,</span> <span class="n">arg1_1</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="n">assert_size_stride</span><span class="p">(</span><span class="n">arg0_1</span><span class="p">,</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">assert_size_stride</span><span class="p">(</span><span class="n">arg1_1</span><span class="p">,</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">buf0</span> <span class="o">=</span> <span class="n">empty_strided_cpu</span><span class="p">((),</span> <span class="p">(),</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">cpp_fused_add_sum_0</span><span class="p">(</span><span class="n">arg0_1</span><span class="p">,</span> <span class="n">arg1_1</span><span class="p">,</span> <span class="n">buf0</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">arg0_1</span>
+        <span class="k">del</span> <span class="n">arg1_1</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">buf0</span><span class="p">,</span> <span class="p">)</span>
 </pre></div>
 </div>
 <p>By turning on the C++ wrapper, the generated code for the <code class="docutils literal notranslate"><span class="pre">call</span></code> function becomes a C++ function
-<code class="docutils literal notranslate"><span class="pre">inductor_entry_cpp</span></code> of the C++ extension <code class="docutils literal notranslate"><span class="pre">module</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="p">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">inductor_entry_cpp</span><span class="p">(</span><span class="n">const</span> <span class="n">std</span><span class="p">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="o">&gt;&amp;</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span> <span class="n">arg0_1</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-    <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span> <span class="n">constant0</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
-    <span class="n">auto</span> <span class="n">buf0</span> <span class="o">=</span> <span class="n">at</span><span class="p">::</span><span class="n">empty_strided</span><span class="p">({</span><span class="mi">19</span><span class="n">L</span><span class="p">,</span> <span class="p">},</span> <span class="p">{</span><span class="mi">1</span><span class="n">L</span><span class="p">,</span> <span class="p">},</span> <span class="n">at</span><span class="p">::</span><span class="n">device</span><span class="p">(</span><span class="n">at</span><span class="p">::</span><span class="n">kCPU</span><span class="p">)</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">at</span><span class="p">::</span><span class="n">kFloat</span><span class="p">));</span>
-    <span class="n">cpp_fused_add_lift_fresh_0</span><span class="p">((</span><span class="n">long</span><span class="o">*</span><span class="p">)(</span><span class="n">constant0</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">()),</span> <span class="p">(</span><span class="nb">float</span><span class="o">*</span><span class="p">)(</span><span class="n">arg0_1</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">()),</span> <span class="p">(</span><span class="nb">float</span><span class="o">*</span><span class="p">)(</span><span class="n">buf0</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">()));</span>
-    <span class="n">arg0_1</span><span class="o">.</span><span class="n">reset</span><span class="p">();</span>
-    <span class="k">return</span> <span class="p">{</span><span class="n">buf0</span><span class="p">};</span>
-<span class="p">}</span>
+<code class="docutils literal notranslate"><span class="pre">inductor_entry_impl</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cpp_wrapper_src</span> <span class="o">=</span> <span class="p">(</span>
+<span class="sa">r</span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">#include &lt;torch/csrc/inductor/cpp_wrapper/cpu.h&gt;</span>
+<span class="sd">extern &quot;C&quot;  void  cpp_fused_add_sum_0(const float* in_ptr0,</span>
+<span class="sd">                    const float* in_ptr1,</span>
+<span class="sd">                    float* out_ptr0);</span>
+<span class="sd">CACHE_TORCH_DTYPE(float32);</span>
+<span class="sd">CACHE_TORCH_DEVICE(cpu);</span>
 
-<span class="n">module</span> <span class="o">=</span> <span class="n">CppWrapperCodeCache</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">cpp_wrapper_src</span><span class="p">,</span> <span class="s1">&#39;inductor_entry_cpp&#39;</span><span class="p">,</span> <span class="s1">&#39;c2buojsvlqbywxe3itb43hldieh4jqulk72iswa2awalwev7hjn2&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+<span class="sd">void inductor_entry_impl(</span>
+<span class="sd">    AtenTensorHandle*</span>
+<span class="sd">        input_handles, // array of input AtenTensorHandle; handles</span>
+<span class="sd">                        // are stolen; the array itself is borrowed</span>
+<span class="sd">    AtenTensorHandle*</span>
+<span class="sd">        output_handles  // array for writing output AtenTensorHandle; handles</span>
+<span class="sd">                        // will be stolen by the caller; the array itself is</span>
+<span class="sd">                        // borrowed)</span>
+<span class="sd">) {</span>
+<span class="sd">    py::gil_scoped_release_simple release;</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_wrap_func</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">g</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
-        <span class="n">args_tensor</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>
-        <span class="n">constants_tensor</span> <span class="o">=</span> <span class="p">[</span><span class="n">constant0</span><span class="p">]</span>
-        <span class="n">args_tensor</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">constants_tensor</span><span class="p">)</span>
+<span class="sd">    auto inputs = steal_from_raw_handles_to_raii_handles(input_handles, 2);</span>
+<span class="sd">    auto arg0_1 = std::move(inputs[0]);</span>
+<span class="sd">    auto arg1_1 = std::move(inputs[1]);</span>
+<span class="sd">    static constexpr int64_t *int_array_0=nullptr;</span>
+<span class="sd">    AtenTensorHandle buf0_handle;</span>
+<span class="sd">    AOTI_TORCH_ERROR_CODE_CHECK(aoti_torch_empty_strided(0, int_array_0, int_array_0, cached_torch_dtype_float32, cached_torch_device_type_cpu,  0, &amp;buf0_handle));</span>
+<span class="sd">    RAIIAtenTensorHandle buf0(buf0_handle);</span>
+<span class="sd">    cpp_fused_add_sum_0((const float*)(arg0_1.data_ptr()), (const float*)(arg1_1.data_ptr()), (float*)(buf0.data_ptr()));</span>
+<span class="sd">    arg0_1.reset();</span>
+<span class="sd">    arg1_1.reset();</span>
+<span class="sd">    output_handles[0] = buf0.release();</span>
+<span class="sd">} // inductor_entry_impl</span>
+<span class="sd">...</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="n">args_tensor</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">g</span>
-<span class="n">call</span> <span class="o">=</span> <span class="n">_wrap_func</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">inductor_entry_cpp</span><span class="p">)</span>
+<span class="n">inductor_entry</span> <span class="o">=</span> <span class="n">CppWrapperCodeCache</span><span class="o">.</span><span class="n">load_pybinding</span><span class="p">(</span>
+    <span class="n">argtypes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;std::vector&lt;AtenTensorHandle&gt;&quot;</span><span class="p">],</span>
+    <span class="n">main_code</span><span class="o">=</span><span class="n">cpp_wrapper_src</span><span class="p">,</span>
+    <span class="n">device_type</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+    <span class="n">num_outputs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">kernel_code</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">call</span> <span class="o">=</span> <span class="n">_wrap_func</span><span class="p">(</span><span class="n">inductor_entry</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>For GPU</strong></p>
@@ -1179,48 +1215,39 @@ thereby reducing the Python overhead within the graph.</p>
 </pre></div>
 </div>
 <p>With the C++ wrapper turned on, the below equivalent C++ code will be generated:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="p">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">inductor_entry_cpp</span><span class="p">(</span><span class="n">const</span> <span class="n">std</span><span class="p">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="o">&gt;&amp;</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span> <span class="n">arg0_1</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-    <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span> <span class="n">constant0</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
-
-    <span class="n">at</span><span class="p">::</span><span class="n">cuda</span><span class="p">::</span><span class="n">CUDAGuard</span> <span class="n">device_guard</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
-    <span class="n">auto</span> <span class="n">buf0</span> <span class="o">=</span> <span class="n">at</span><span class="p">::</span><span class="n">empty_strided</span><span class="p">({</span><span class="mi">19</span><span class="n">L</span><span class="p">,</span> <span class="p">},</span> <span class="p">{</span><span class="mi">1</span><span class="n">L</span><span class="p">,</span> <span class="p">},</span> <span class="n">at</span><span class="p">::</span><span class="n">TensorOptions</span><span class="p">(</span><span class="n">c10</span><span class="p">::</span><span class="n">Device</span><span class="p">(</span><span class="n">at</span><span class="p">::</span><span class="n">kCUDA</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">at</span><span class="p">::</span><span class="n">kFloat</span><span class="p">));</span>
-    <span class="o">//</span> <span class="n">Source</span> <span class="n">Nodes</span><span class="p">:</span> <span class="p">[</span><span class="n">add</span><span class="p">,</span> <span class="n">tensor</span><span class="p">],</span> <span class="n">Original</span> <span class="n">ATen</span><span class="p">:</span> <span class="p">[</span><span class="n">aten</span><span class="o">.</span><span class="n">add</span><span class="p">,</span> <span class="n">aten</span><span class="o">.</span><span class="n">lift_fresh</span><span class="p">]</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">triton_poi_fused_add_lift_fresh_0</span> <span class="o">==</span> <span class="n">nullptr</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">triton_poi_fused_add_lift_fresh_0</span> <span class="o">=</span> <span class="n">loadKernel</span><span class="p">(</span><span class="s2">&quot;/tmp/torchinductor_user/mm/cmm6xjgijjffxjku4akv55eyzibirvw6bti6uqmfnruujm5cvvmw.cubin&quot;</span><span class="p">,</span> <span class="s2">&quot;triton_poi_fused_add_lift_fresh_0_0d1d2d3&quot;</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="n">CUdeviceptr</span> <span class="n">var_0</span> <span class="o">=</span> <span class="n">reinterpret_cast</span><span class="o">&lt;</span><span class="n">CUdeviceptr</span><span class="o">&gt;</span><span class="p">(</span><span class="n">constant0</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">());</span>
-    <span class="n">CUdeviceptr</span> <span class="n">var_1</span> <span class="o">=</span> <span class="n">reinterpret_cast</span><span class="o">&lt;</span><span class="n">CUdeviceptr</span><span class="o">&gt;</span><span class="p">(</span><span class="n">arg0_1</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">());</span>
-    <span class="n">CUdeviceptr</span> <span class="n">var_2</span> <span class="o">=</span> <span class="n">reinterpret_cast</span><span class="o">&lt;</span><span class="n">CUdeviceptr</span><span class="o">&gt;</span><span class="p">(</span><span class="n">buf0</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">());</span>
-    <span class="n">auto</span> <span class="n">var_3</span> <span class="o">=</span> <span class="mi">19</span><span class="p">;</span>
-    <span class="n">void</span><span class="o">*</span> <span class="n">kernel_args_var_0</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span><span class="o">&amp;</span><span class="n">var_0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">var_1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">var_2</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">var_3</span><span class="p">};</span>
-    <span class="n">cudaStream_t</span> <span class="n">stream0</span> <span class="o">=</span> <span class="n">at</span><span class="p">::</span><span class="n">cuda</span><span class="p">::</span><span class="n">getCurrentCUDAStream</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
-    <span class="n">launchKernel</span><span class="p">(</span><span class="n">triton_poi_fused_add_lift_fresh_0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">kernel_args_var_0</span><span class="p">,</span> <span class="n">stream0</span><span class="p">);</span>
-    <span class="n">arg0_1</span><span class="o">.</span><span class="n">reset</span><span class="p">();</span>
-    <span class="k">return</span> <span class="p">{</span><span class="n">buf0</span><span class="p">};</span>
-<span class="p">}</span>
-
-<span class="n">module</span> <span class="o">=</span> <span class="n">CppWrapperCodeCache</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">cpp_wrapper_src</span><span class="p">,</span> <span class="s1">&#39;inductor_entry_cpp&#39;</span><span class="p">,</span> <span class="s1">&#39;czbpeilh4qqmbyejdgsbpdfuk2ss5jigl2qjb7xs4gearrjvuwem&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">inductor_entry</span> <span class="o">=</span> <span class="n">CppWrapperCodeCache</span><span class="o">.</span><span class="n">load_pybinding</span><span class="p">(</span>
+    <span class="n">argtypes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;std::vector&lt;AtenTensorHandle&gt;&quot;</span><span class="p">],</span>
+    <span class="n">main_code</span><span class="o">=</span><span class="n">cpp_wrapper_src</span><span class="p">,</span>
+    <span class="n">device_type</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+    <span class="n">num_outputs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">kernel_code</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_wrap_func</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">g</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
-        <span class="n">args_tensor</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>
-        <span class="n">constants_tensor</span> <span class="o">=</span> <span class="p">[</span><span class="n">constant0</span><span class="p">]</span>
-        <span class="n">args_tensor</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">constants_tensor</span><span class="p">)</span>
+        <span class="n">input_tensors</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>
+        <span class="n">input_handles</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">_C</span><span class="o">.</span><span class="n">_aoti</span><span class="o">.</span><span class="n">unsafe_alloc_void_ptrs_from_tensors</span><span class="p">(</span><span class="n">input_tensors</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="n">args_tensor</span><span class="p">)</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">del</span> <span class="n">input_tensors</span>
+
+        <span class="n">output_handles</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">input_handles</span><span class="p">)</span>
+        <span class="n">output_tensors</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">_C</span><span class="o">.</span><span class="n">_aoti</span><span class="o">.</span><span class="n">alloc_tensors_by_stealing_from_void_ptrs</span><span class="p">(</span><span class="n">output_handles</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output_tensors</span>
+
     <span class="k">return</span> <span class="n">g</span>
-<span class="n">call</span> <span class="o">=</span> <span class="n">_wrap_func</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">inductor_entry_cpp</span><span class="p">)</span>
+
+<span class="n">call</span> <span class="o">=</span> <span class="n">_wrap_func</span><span class="p">(</span><span class="n">inductor_entry</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h2>
-<p>In this tutorial, we introduced a new C++ wrapper in TorchInductor to speed up your models with just two lines of code changes.
-We explained the motivation of this new feature and walked through the easy-to-use API to activate this experimental feature.
-Furthermore, we demonstrated the Inductor-generated code using the default Python wrapper and the new C++ wrapper on both CPU and GPU
-to visually showcase the difference between these two wrappers.</p>
-<p>This feature is still in prototype stage. If you have any feature requests or run into any issues, please file a bug report at <a class="reference external" href="https://github.com/pytorch/pytorch/issues">GitHub issues</a>.</p>
+<p>This tutorial introduced the <strong>C++ wrapper</strong> feature in TorchInductor, designed
+to improve model performance with minimal code modification. We described the
+motivation for this feature, detailed the experimental API used to enable it,
+and compared the generated outputs of the default Python wrapper and the new
+C++ wrapper on both CPU and GPU backends to illustrate their distinctions.</p>
 </section>
 </section>
 
@@ -1312,7 +1339,7 @@ to visually showcase the difference between these two wrappers.</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites:</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#enabling-the-api">Enabling the API</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#enabling-the-c-wrapper-mode">Enabling the C++ wrapper mode</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-code">Example code</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusion">Conclusion</a></li>
 </ul>
@@ -1529,11 +1556,11 @@ to visually showcase the difference between these two wrappers.</p>
     {
        "@context": "https://schema.org",
        "@type": "Article",
-       "name": "Inductor C++ Wrapper Tutorial",
-       "headline": "Inductor C++ Wrapper Tutorial",
+       "name": "TorchInductor C++ Wrapper Tutorial",
+       "headline": "TorchInductor C++ Wrapper Tutorial",
        "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
        "url": "/unstable/inductor_cpp_wrapper_tutorial.html",
-       "articleBody": "Inductor C++ Wrapper Tutorial# Author: Chunyuan Wu, Bin Bao, Jiong Gong Prerequisites:# torch.compile and TorchInductor concepts in PyTorch Introduction# Python, as the primary interface of PyTorch, is easy to use and efficient for development and debugging. The Inductor\u2019s default wrapper generates Python code to invoke generated kernels and external kernels. However, in deployments requiring high performance, Python, as an interpreted language, runs relatively slower compared to compiled languages. We implemented an Inductor C++ wrapper by leveraging the PyTorch C++ APIs to generate pure C++ code that combines the generated and external kernels. This allows for the execution of each captured Dynamo graph in pure C++, thereby reducing the Python overhead within the graph. Enabling the API# This feature is still in prototype stage. To activate this feature, add the following to your code: import torch._inductor.config as config config.cpp_wrapper = True This will speed up your models by reducing the Python overhead of the Inductor wrapper. Example code# We will use the below frontend code as an example: import torch def fn(x): return torch.tensor(list(range(2, 40, 2)), device=x.device) + x x = torch.randn(1) opt_fn = torch.compile()(fn) y = opt_fn(x) For CPU The main part of Inductor-generated code with the default Python wrapper will look like this: def call(args): arg0_1, = args args.clear() assert_size_stride(arg0_1, (1, ), (1, )) buf0 = empty_strided((19, ), (1, ), device=\u0027cpu\u0027, dtype=torch.float32) cpp_fused_add_lift_fresh_0(c_void_p(constant0.data_ptr()), c_void_p(arg0_1.data_ptr()), c_void_p(buf0.data_ptr())) del arg0_1 return (buf0, ) By turning on the C++ wrapper, the generated code for the call function becomes a C++ function inductor_entry_cpp of the C++ extension module: std::vector\u003cat::Tensor\u003e inductor_entry_cpp(const std::vector\u003cat::Tensor\u003e\u0026 args) { at::Tensor arg0_1 = args[0]; at::Tensor constant0 = args[1]; auto buf0 = at::empty_strided({19L, }, {1L, }, at::device(at::kCPU).dtype(at::kFloat)); cpp_fused_add_lift_fresh_0((long*)(constant0.data_ptr()), (float*)(arg0_1.data_ptr()), (float*)(buf0.data_ptr())); arg0_1.reset(); return {buf0}; } module = CppWrapperCodeCache.load(cpp_wrapper_src, \u0027inductor_entry_cpp\u0027, \u0027c2buojsvlqbywxe3itb43hldieh4jqulk72iswa2awalwev7hjn2\u0027, False) def _wrap_func(f): def g(args): args_tensor = [arg if isinstance(arg, torch.Tensor) else torch.tensor(arg) for arg in args] constants_tensor = [constant0] args_tensor.extend(constants_tensor) return f(args_tensor) return g call = _wrap_func(module.inductor_entry_cpp) For GPU Based on the same example code, the generated code for GPU will look like this: def call(args): arg0_1, = args args.clear() assert_size_stride(arg0_1, (1, ), (1, )) with torch.cuda._DeviceGuard(0): torch.cuda.set_device(0) # no-op to ensure context buf0 = empty_strided((19, ), (1, ), device=\u0027cuda\u0027, dtype=torch.float32) # Source Nodes: [add, tensor], Original ATen: [aten.add, aten.lift_fresh] stream0 = get_cuda_stream(0) triton_poi_fused_add_lift_fresh_0.run(constant0, arg0_1, buf0, 19, grid=grid(19), stream=stream0) run_intermediate_hooks(\u0027add\u0027, buf0) del arg0_1 return (buf0, ) With the C++ wrapper turned on, the below equivalent C++ code will be generated: std::vector\u003cat::Tensor\u003e inductor_entry_cpp(const std::vector\u003cat::Tensor\u003e\u0026 args) { at::Tensor arg0_1 = args[0]; at::Tensor constant0 = args[1]; at::cuda::CUDAGuard device_guard(0); auto buf0 = at::empty_strided({19L, }, {1L, }, at::TensorOptions(c10::Device(at::kCUDA, 0)).dtype(at::kFloat)); // Source Nodes: [add, tensor], Original ATen: [aten.add, aten.lift_fresh] if (triton_poi_fused_add_lift_fresh_0 == nullptr) { triton_poi_fused_add_lift_fresh_0 = loadKernel(\"/tmp/torchinductor_user/mm/cmm6xjgijjffxjku4akv55eyzibirvw6bti6uqmfnruujm5cvvmw.cubin\", \"triton_poi_fused_add_lift_fresh_0_0d1d2d3\"); } CUdeviceptr var_0 = reinterpret_cast\u003cCUdeviceptr\u003e(constant0.data_ptr()); CUdeviceptr var_1 = reinterpret_cast\u003cCUdeviceptr\u003e(arg0_1.data_ptr()); CUdeviceptr var_2 = reinterpret_cast\u003cCUdeviceptr\u003e(buf0.data_ptr()); auto var_3 = 19; void* kernel_args_var_0[] = {\u0026var_0, \u0026var_1, \u0026var_2, \u0026var_3}; cudaStream_t stream0 = at::cuda::getCurrentCUDAStream(0); launchKernel(triton_poi_fused_add_lift_fresh_0, 1, 1, 1, 1, 0, kernel_args_var_0, stream0); arg0_1.reset(); return {buf0}; } module = CppWrapperCodeCache.load(cpp_wrapper_src, \u0027inductor_entry_cpp\u0027, \u0027czbpeilh4qqmbyejdgsbpdfuk2ss5jigl2qjb7xs4gearrjvuwem\u0027, True) def _wrap_func(f): def g(args): args_tensor = [arg if isinstance(arg, torch.Tensor) else torch.tensor(arg) for arg in args] constants_tensor = [constant0] args_tensor.extend(constants_tensor) return f(args_tensor) return g call = _wrap_func(module.inductor_entry_cpp) Conclusion# In this tutorial, we introduced a new C++ wrapper in TorchInductor to speed up your models with just two lines of code changes. We explained the motivation of this new feature and walked through the easy-to-use API to activate this experimental feature. Furthermore, we demonstrated the Inductor-generated code using the default Python wrapper and the new C++ wrapper on both CPU and GPU to visually showcase the difference between these two wrappers. This feature is still in prototype stage. If you have any feature requests or run into any issues, please file a bug report at GitHub issues.",
+       "articleBody": "TorchInductor C++ Wrapper Tutorial# Author: Chunyuan Wu, Bin Bao, Jiong Gong Prerequisites:# torch.compile and TorchInductor concepts in PyTorch Introduction# In torch.compile, the default backend TorchInductor emits Python wrapper code that manages memory allocation and kernel invocation. This design provides flexibility and ease of debugging, but the interpreted nature of Python introduces runtime overhead in performance-sensitive environments. To address this limitation, TorchInductor includes a specialized mode that generates C++ wrapper code in place of the Python wrapper, enabling faster execution with minimal Python involvement. Enabling the C++ wrapper mode# To enable this C++ wrapper mode for TorchInductor, add the following config to your code: import torch._inductor.config as config config.cpp_wrapper = True Example code# We will use the following model code as an example: import torch import torch._inductor.config as config config.cpp_wrapper = True def fn(x, y): return (x + y).sum() device = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\") x = torch.randn(128, 128, device=device) y = torch.randn(128, 128, device=device) opt_fn = torch.compile(fn) result = opt_fn(x, y) For CPU The main part of TorchInductor-generated code with the default Python wrapper will look like this: class Runner: def __init__(self, partitions): self.partitions = partitions def call(self, args): arg0_1, arg1_1 = args args.clear() assert_size_stride(arg0_1, (128, 128), (128, 1)) assert_size_stride(arg1_1, (128, 128), (128, 1)) buf0 = empty_strided_cpu((), (), torch.float32) cpp_fused_add_sum_0(arg0_1, arg1_1, buf0) del arg0_1 del arg1_1 return (buf0, ) By turning on the C++ wrapper, the generated code for the call function becomes a C++ function inductor_entry_impl: cpp_wrapper_src = ( r\u0027\u0027\u0027 #include \u003ctorch/csrc/inductor/cpp_wrapper/cpu.h\u003e extern \"C\" void cpp_fused_add_sum_0(const float* in_ptr0, const float* in_ptr1, float* out_ptr0); CACHE_TORCH_DTYPE(float32); CACHE_TORCH_DEVICE(cpu); void inductor_entry_impl( AtenTensorHandle* input_handles, // array of input AtenTensorHandle; handles // are stolen; the array itself is borrowed AtenTensorHandle* output_handles // array for writing output AtenTensorHandle; handles // will be stolen by the caller; the array itself is // borrowed) ) { py::gil_scoped_release_simple release; auto inputs = steal_from_raw_handles_to_raii_handles(input_handles, 2); auto arg0_1 = std::move(inputs[0]); auto arg1_1 = std::move(inputs[1]); static constexpr int64_t *int_array_0=nullptr; AtenTensorHandle buf0_handle; AOTI_TORCH_ERROR_CODE_CHECK(aoti_torch_empty_strided(0, int_array_0, int_array_0, cached_torch_dtype_float32, cached_torch_device_type_cpu, 0, \u0026buf0_handle)); RAIIAtenTensorHandle buf0(buf0_handle); cpp_fused_add_sum_0((const float*)(arg0_1.data_ptr()), (const float*)(arg1_1.data_ptr()), (float*)(buf0.data_ptr())); arg0_1.reset(); arg1_1.reset(); output_handles[0] = buf0.release(); } // inductor_entry_impl ... \u0027\u0027\u0027 ) inductor_entry = CppWrapperCodeCache.load_pybinding( argtypes=[\"std::vector\u003cAtenTensorHandle\u003e\"], main_code=cpp_wrapper_src, device_type=\"cpu\", num_outputs=1, kernel_code=None, ) call = _wrap_func(inductor_entry) For GPU Based on the same example code, the generated code for GPU will look like this: def call(args): arg0_1, = args args.clear() assert_size_stride(arg0_1, (1, ), (1, )) with torch.cuda._DeviceGuard(0): torch.cuda.set_device(0) # no-op to ensure context buf0 = empty_strided((19, ), (1, ), device=\u0027cuda\u0027, dtype=torch.float32) # Source Nodes: [add, tensor], Original ATen: [aten.add, aten.lift_fresh] stream0 = get_cuda_stream(0) triton_poi_fused_add_lift_fresh_0.run(constant0, arg0_1, buf0, 19, grid=grid(19), stream=stream0) run_intermediate_hooks(\u0027add\u0027, buf0) del arg0_1 return (buf0, ) With the C++ wrapper turned on, the below equivalent C++ code will be generated: inductor_entry = CppWrapperCodeCache.load_pybinding( argtypes=[\"std::vector\u003cAtenTensorHandle\u003e\"], main_code=cpp_wrapper_src, device_type=\"cuda\", num_outputs=1, kernel_code=None, ) def _wrap_func(f): def g(args): input_tensors = [arg if isinstance(arg, torch.Tensor) else torch.tensor(arg, device=\u0027cpu\u0027) for arg in args] input_handles = torch._C._aoti.unsafe_alloc_void_ptrs_from_tensors(input_tensors) args.clear() del input_tensors output_handles = f(input_handles) output_tensors = torch._C._aoti.alloc_tensors_by_stealing_from_void_ptrs(output_handles) return output_tensors return g call = _wrap_func(inductor_entry) Conclusion# This tutorial introduced the C++ wrapper feature in TorchInductor, designed to improve model performance with minimal code modification. We described the motivation for this feature, detailed the experimental API used to enable it, and compared the generated outputs of the default Python wrapper and the new C++ wrapper on both CPU and GPU backends to illustrate their distinctions.",
        "author": {
          "@type": "Organization",
          "name": "PyTorch Contributors",
