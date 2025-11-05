@@ -107,6 +107,13 @@ Welcome to PyTorch Tutorials
    :tags: Getting-Started
 
 .. customcarditem::
+   :header: Accelerating PyTorch with CUDA
+   :card_description: Learn how to leverage CUDA for faster training and inference in PyTorch.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: beginner/cuda_tutorial.html
+   :tags: Getting-Started
+
+.. customcarditem::
    :header: Visualizing Gradients in PyTorch
    :card_description: Visualize the gradient flow of a network.
    :image: _static/img/thumbnails/cropped/visualizing_gradients_tutorial.png
