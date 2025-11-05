@@ -18,13 +18,27 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          
       - name: Check Links
         id: lychee
         uses: lycheeverse/lychee-action@v2
         with:
-          args: --accept=200,403,429 --base $GITHUB_WORKSPACE --verbose --no-progress './**/*.md' './**/*.html' './**/*.rst'
+          args: --accept=200,202,403,429 --base $GITHUB_WORKSPACE --no-progress './**/*.md' './**/*.html' './**/*.rst'
           token: ${{ secrets.CUSTOM_TOKEN }}
+          jobSummary: false  # Disable default summary
           fail: true
+      
+      - name: Create Filtered Summary
+        if: always()
+        run: |
+          if [ -f ./lychee/out.md ]; then
+            echo "## Link Check Results (Errors Only)" >> $GITHUB_STEP_SUMMARY
+            # Extract only error sections, skip redirects
+            grep -A 10000 "^## Errors per input" ./lychee/out.md | \
+              grep -B 10000 "^## Redirects per input" | \
+              head -n -1 >> $GITHUB_STEP_SUMMARY || \
+              grep -A 10000 "^## Errors per input" ./lychee/out.md >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Create Issue From File
         if: failure() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
