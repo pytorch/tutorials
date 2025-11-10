@@ -138,7 +138,7 @@ users would not need to manually create and manage shard group and replicate gro
     # HSDP: MeshShape(2, 4)
     mesh_2d = init_device_mesh("cuda", (2, 4), mesh_dim_names=("dp_replicate", "dp_shard"))
     model = FSDP(
-        ToyModel(), device_mesh=mesh_2d
+        ToyModel(), mesh=mesh_2d
     )
 
 Let's create a file named ``hsdp.py``.
