@@ -2,7 +2,7 @@
 Profiling your PyTorch Module
 -----------------------------
 
-**Author:** `Suraj Subramanian <https://github.com/suraj813>`_
+**Author:** `Suraj Subramanian <https://github.com/subramen>`_
 
 PyTorch includes a profiler API that is useful to identify the time and
 memory costs of various PyTorch operations in your code. Profiler can be
