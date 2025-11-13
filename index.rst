@@ -7,6 +7,7 @@ Welcome to PyTorch Tutorials
 * `Supporting Custom C++ Classes in torch.compile/torch.export <https://docs.pytorch.org/tutorials/advanced/custom_class_pt2.html>`__
 * `Accelerating torch.save and torch.load with GPUDirect Storage <https://docs.pytorch.org/tutorials/unstable/gpu_direct_storage.html>`__
 * `Getting Started with Fully Sharded Data Parallel (FSDP2) <https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__
+* `Interactive Distributed Applications with Monarch <https://docs.pytorch.org/tutorials/intermediate/monarch_distributed_tutorial.html>`__
 
 .. raw:: html
 
