@@ -688,6 +688,14 @@ Welcome to PyTorch Tutorials
    :link: intermediate/monarch_distributed_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
+
+.. customcarditem::
+   :header: Interactive Distributed Applications with Monarch
+   :card_description: Learn how to use Monarch's actor framework with TorchTitan to simplify large-scale distributed training across SLURM clusters.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/monarch_distributed_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
 .. Edge
 
 .. customcarditem::
