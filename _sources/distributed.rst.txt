@@ -16,6 +16,7 @@ PyTorch with each method having their advantages in certain use cases:
 * `Tensor Parallel (TP) <#learn-tp>`__
 * `Device Mesh <#device-mesh>`__
 * `Remote Procedure Call (RPC) distributed training <#learn-rpc>`__
+* `Monarch Framework <#learn-monarch>`__
 * `Custom Extensions <#custom-extensions>`__
 
 Read more about these options in `Distributed Overview <https://docs.pytorch.org/tutorials/beginner/dist_overview.html?utm_source=distr_landing>`__.
@@ -156,6 +157,22 @@ Learn RPC
 
         In this tutorial you will learn how to combine distributed data
         parallelism with distributed model parallelism.
+        +++
+        :octicon:`code;1em` Code
+
+.. _learn-monarch:
+
+Learn Monarch
+----------
+
+.. grid:: 3
+
+     .. grid-item-card:: :octicon:`file-code;1em`
+        Interactive Distributed Applications with Monarch
+        :link: https://docs.pytorch.org/tutorials/intermediate/monarch_distributed_tutorial.html
+        :link-type: url
+
+        Learn how to use Monarch's actor framework
         +++
         :octicon:`code;1em` Code
 
