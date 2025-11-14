@@ -75,7 +75,7 @@ print(model)
 # along with some `background operations <https://github.com/pytorch/pytorch/blob/270111b7b611d174967ed204776985cefca9c144/torch/nn/modules/module.py#L866>`_.
 # Do not call ``model.forward()`` directly!
 #
-# Calling the model on the input returns a 2-dimensional tensor with dim=0 corresponding to each output of 10 raw predicted values for each class, and dim=1 corresponding to the individual values of each output.
+# Calling the model on the input returns a 2-dimensional tensor with dim=0 corresponding to the batch dimension (one entry per example in the input) and dim=1 corresponding to the 10 raw predicted class scores (logits) for each example.
 # We get the prediction probabilities by passing it through an instance of the ``nn.Softmax`` module.
 
 X = torch.rand(1, 28, 28, device=device)
