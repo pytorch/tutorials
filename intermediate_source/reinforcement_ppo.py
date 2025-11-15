@@ -25,12 +25,12 @@ Key learnings:
 
 We will cover six crucial components of TorchRL:
 
-* `environments <https://pytorch.org/rl/reference/envs.html>`__
-* `transforms <https://pytorch.org/rl/reference/envs.html#transforms>`__
-* `models (policy and value function) <https://pytorch.org/rl/reference/modules.html>`__
-* `loss modules <https://pytorch.org/rl/reference/objectives.html>`__
-* `data collectors <https://pytorch.org/rl/reference/collectors.html>`__
-* `replay buffers <https://pytorch.org/rl/reference/data.html#replay-buffers>`__
+* `environments <https://docs.pytorch.org/rl/stable/reference/envs.html>`__
+* `transforms <https://docs.pytorch.org/rl/stable/reference/envs.html#transforms>`__
+* `models (policy and value function) <https://docs.pytorch.org/rl/stable/reference/modules.html>`__
+* `loss modules <https://docs.pytorch.org/rl/stable/reference/objectives.html>`__
+* `data collectors <https://docs.pytorch.org/rl/stable/reference/collectors.html>`__
+* `replay buffers <https://docs.pytorch.org/rl/stable/reference/data.html#replay-buffers>`__
 
 """
 
@@ -466,7 +466,7 @@ print("Running value:", value_module(env.reset()))
 # Data collector
 # --------------
 #
-# TorchRL provides a set of `DataCollector classes <https://pytorch.org/rl/reference/collectors.html>`__.
+# TorchRL provides a set of `DataCollector classes <https://docs.pytorch.org/rl/stable/reference/collectors.html>`__.
 # Briefly, these classes execute three operations: reset an environment,
 # compute an action given the latest observation, execute a step in the environment,
 # and repeat the last two steps until the environment signals a stop (or reaches

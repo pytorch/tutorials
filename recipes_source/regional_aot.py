@@ -3,7 +3,7 @@
 Reducing AoT cold start compilation time with regional compilation
 ============================================================================
 
-**Author:** `Sayak Paul <https://github.com/sayakpaul>`_, `Charles Bensimon <https://github.com/cbensimon>`_, `Angela Yi <https://github.com/angelayi>`_
+**Author:** `Sayak Paul <https://huggingface.co/sayakpaul>`_, `Charles Bensimon <https://huggingface.co/cbensimon>`_, `Angela Yi <https://github.com/angelayi>`_
 
 In the `regional compilation recipe <https://docs.pytorch.org/tutorials/recipes/regional_compilation.html>`__, we showed
 how to reduce cold start compilation times while retaining (almost) full compilation benefits. This was demonstrated for
@@ -236,4 +236,6 @@ assert regional_compilation_latency < full_model_compilation_latency
 #
 # This recipe shows how to control the cold start time when compiling your
 # model ahead-of-time. This becomes effective when your model has repeated
-# blocks, which is typically seen in large generative models.
+# blocks, which is typically seen in large generative models. We used this
+# recipe on various models to speed up real-time performance. Learn more
+# `here <https://huggingface.co/blog/zerogpu-aoti>`__.

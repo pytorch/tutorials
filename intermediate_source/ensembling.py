@@ -50,7 +50,7 @@ class SimpleMLP(nn.Module):
 # minibatch of size 64. Furthermore, lets say we want to combine the predictions
 # from 10 different models.
 
-device = 'cuda'
+device = torch.accelerator.current_accelerator()
 num_models = 10
 
 data = torch.randn(100, 64, 1, 28, 28, device=device)
