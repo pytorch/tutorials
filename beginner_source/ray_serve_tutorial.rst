@@ -1,40 +1,37 @@
 Serving PyTorch Models at Scale with Ray Serve
 ==============================================
-
 **Author:** `Ricardo Decal <https://github.com/crypdick>`_
 
-This tutorial introduces you to Ray Serve, a scalable framework for serving machine learning models in production.
-Ray Serve is part of `Ray Distributed <https://pytorch.org/projects/ray/>`_, which is a PyTorch Foundation project.
+This tutorial introduces `Ray Serve <https://docs.ray.io/en/latest/serve/index.html>`_, a scalable framework for serving machine learning models in production. Ray Serve is part of `Ray Distributed <https://pytorch.org/projects/ray/>`_, an open-source PyTorch Foundation project.
+
+Introduction
+------------
+
+`Ray Serve <https://docs.ray.io/en/latest/serve/index.html>`_ is an online serving library that helps you deploy machine learning models in production.
+
+Production-ready features
+*************************
+
+Ray Serve provides the following production-ready features:
+
+- Handle thousands of concurrent requests efficiently with dynamic request batching
+- Autoscale your endpoint to handle variable traffic
+- Buffer requests when the endpoint is busy
+- Compose multiple models along with business logic into a complete ML application
+- Gracefully heal the deployment when nodes are lost
+- Handle multi-node/multi-GPU serving
+- Flexibly allocate heterogenous compute resources and fractional GPUs
+- `LLM-specific features <https://docs.ray.io/en/latest/serve/llm/index.html>`_ such as response streaming, LoRA multiplexing, prefill-decode disaggregation, and more.
+
+Ray Serve also has LLM-specific features such as response streaming, model multiplexing, dynamic request batching, and more.
 
 In this tutorial, you'll learn how to:
 
 1. Deploy a PyTorch model as a web service using Ray Serve
-2. Scale your model serving with multiple replicas
+2. Scale the deployment with multiple replicas
 3. Use advanced features like autoscaling and request batching
 4. Compose multiple deployments into a complete ML application
 5. Handle concurrent requests efficiently
-
-What is Ray Serve?
-------------------
-
-`Ray Serve <https://docs.ray.io/en/latest/serve/index.html>`_ is a framework for building and deploying scalable ML applications.
-It provides a simple Python API for turning your PyTorch models into production-ready services that can handle thousands
-of concurrent requests.
-
-Ray Serve is designed for:
-
-- **Flexible ML Applications**: Build end-to-end ML pipelines with a programmable Python API
-- **Scalable Serving**: Easily scale from a laptop to a multi-node GPU cluster
-- **Production Features**: Dynamic request batching, response streaming, and autoscaling out of the box
-
-Key Features
-~~~~~~~~~~~~
-
-- **Response Streaming**: Stream results back to clients for long-running inference
-- **Dynamic Request Batching**: Automatically batch requests to maximize GPU utilization
-- **Multi-GPU Serving**: Distribute models across multiple GPUs and nodes
-- **Fractional GPU Usage**: Efficiently use GPU resources by allocating fractions to replicas
-- **Model Composition**: Chain multiple models together into complex pipelines
 
 Prerequisites
 -------------
@@ -516,14 +513,5 @@ Its Python-first API makes it easy to go from a trained model to a production se
 Next Steps
 ----------
 
-- Read the `Ray Serve documentation <https://docs.ray.io/en/latest/serve/index.html>`_ for more advanced features
-- Learn about `Ray <https://pytorch.org/projects/ray/>`_, the distributed computing framework that powers Ray Serve
-- Explore `response streaming <https://docs.ray.io/en/latest/serve/tutorials/streaming.html>`_ for long-running inference
-- Try `model multiplexing <https://docs.ray.io/en/latest/serve/model-multiplexing.html>`_ to serve multiple model versions
-
-Additional Resources
---------------------
-
-- `Ray Serve GitHub <https://github.com/ray-project/ray/tree/master/python/ray/serve>`_
-- `Ray Documentation <https://docs.ray.io/>`_
-- `PyTorch Projects - Ray <https://pytorch.org/projects/ray/>`_
+- For more information on Ray Serve, read the `Ray Serve documentation <https://docs.ray.io/en/latest/serve/index.html>`_.
+- Learn about `Ray Distributed <https://docs.ray.io/en/latest/ray-overview.html>`_, the distributed computing framework that powers Ray Serve.
