@@ -145,6 +145,7 @@ we are splitting before the before 4th transformer decoder layer, mirroring the 
 we can retrieve a ``PipelineStage`` by calling ``build_stage`` after this splitting is done.
 
 .. code:: python
+
    def tracer_model_split(model, example_input_microbatch) -> PipelineStage:
       pipe = pipeline(
          module=model,
