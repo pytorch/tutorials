@@ -104,7 +104,7 @@ print(input_image.size())
 ##################################################
 # nn.Flatten
 # ^^^^^^^^^^^^^^^^^^^^^^
-# We initialize the `nn.Flatten  <https://pytorch.org/docs/stable/generated/torch.nn.Flatten.html>`_
+# We initialize the `nn.Flatten  <https://docs.pytorch.org/docs/stable/generated/torch.nn.modules.flatten.Flatten.html>`_
 # layer to convert each 2D 28x28 image into a contiguous array of 784 pixel values (
 # the minibatch dimension (at dim=0) is maintained).
 
