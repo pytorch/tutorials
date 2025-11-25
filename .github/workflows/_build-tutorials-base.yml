@@ -1,0 +1,194 @@
+name: Build tutorials
+
+on:
+  workflow_call:
+    inputs:
+      USE_NIGHTLY:
+        description: "Use nightly builds inside build.sh"
+        required: false
+        type: number
+        default: 0
+      UPLOAD:
+        description: "Upload built docs to PR preview and main site"
+        required: false
+        type: number
+        default: 0
+
+jobs:
+  worker:
+    name: pytorch_tutorial_build_worker
+    strategy:
+      matrix:
+        include:
+          - { shard: 1, num_shards: 15, runner: "linux.g5.12xlarge.nvidia.gpu" }
+          - { shard: 2, num_shards: 15, runner: "linux.g5.4xlarge.nvidia.gpu" }
+          - { shard: 3, num_shards: 15, runner: "linux.g5.4xlarge.nvidia.gpu" }
+          - { shard: 4, num_shards: 15, runner: "linux.g5.4xlarge.nvidia.gpu" }
+          - { shard: 5, num_shards: 15, runner: "linux.g5.4xlarge.nvidia.gpu" }
+          - { shard: 6, num_shards: 15, runner: "linux.g5.4xlarge.nvidia.gpu" }
+          - { shard: 7, num_shards: 15, runner: "linux.g5.4xlarge.nvidia.gpu" }
+          - { shard: 8, num_shards: 15, runner: "linux.g5.4xlarge.nvidia.gpu" }
+          - { shard: 9, num_shards: 15, runner: "linux.g5.4xlarge.nvidia.gpu" }
+          - { shard: 10, num_shards: 15, runner: "linux.g5.4xlarge.nvidia.gpu" }
+          - { shard: 11, num_shards: 15, runner: "linux.g5.4xlarge.nvidia.gpu" }
+          - { shard: 12, num_shards: 15, runner: "linux.g5.4xlarge.nvidia.gpu" }
+          - { shard: 13, num_shards: 15, runner: "linux.g5.4xlarge.nvidia.gpu" }
+          - { shard: 14, num_shards: 15, runner: "linux.g5.4xlarge.nvidia.gpu" }
+          - { shard: 15, num_shards: 15, runner: "linux.g5.4xlarge.nvidia.gpu" }
+      fail-fast: false
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Setup SSH (Click me for login details)
+        uses: pytorch/test-infra/.github/actions/setup-ssh@main
+        with:
+          github-secret: ${{ secrets.GITHUB_TOKEN }}
+          instructions: |
+            All testing is done inside the container, to start an interactive session run:
+              docker exec -it $(docker container ps --format '{{.ID}}') bash
+
+      - name: Checkout Tutorials
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Linux
+        uses: pytorch/pytorch/.github/actions/setup-linux@main
+
+      - name: Install nvidia driver, nvidia-docker runtime, set GPU_FLAG
+        uses: pytorch/test-infra/.github/actions/setup-nvidia@main
+
+      - name: Calculate/build docker image
+        id: calculate-docker-image
+        uses: pytorch/test-infra/.github/actions/calculate-docker-image@main
+        with:
+          docker-image-name: tutorials
+
+      - name: Pull docker image
+        uses: pytorch/test-infra/.github/actions/pull-docker-image@main
+        with:
+          docker-image: ${{ steps.calculate-docker-image.outputs.docker-image }}
+
+      - name: Build
+        shell: bash
+        env:
+          DOCKER_IMAGE: ${{ steps.calculate-docker-image.outputs.docker-image }}
+          NUM_WORKERS: ${{ matrix.num_shards }}
+          WORKER_ID: ${{ matrix.shard }}
+          COMMIT_ID: ${{ github.sha }}
+          JOB_TYPE: worker
+          COMMIT_SOURCE: ${{ github.ref }}
+          USE_NIGHTLY: ${{ inputs.USE_NIGHTLY }}
+          UPLOAD: ${{ inputs.UPLOAD }}
+        run: |
+          set -ex
+
+          chmod +x ".jenkins/build.sh"
+
+          container_name=$(docker run \
+            ${GPU_FLAG:-} \
+            -e WORKER_ID \
+            -e NUM_WORKERS \
+            -e COMMIT_ID \
+            -e JOB_TYPE \
+            -e COMMIT_SOURCE \
+            -e USE_NIGHTLY \
+            -e UPLOAD \
+            --env-file="/tmp/github_env_${GITHUB_RUN_ID}" \
+            --tty \
+            --detach \
+            --shm-size=2gb \
+            --name="${container_name}" \
+            -v "${GITHUB_WORKSPACE}:/var/lib/workspace" \
+            -w /var/lib/workspace \
+            "${DOCKER_IMAGE}"
+          )
+
+          docker exec -u ci-user -t "${container_name}" sh -c ".jenkins/build.sh"
+
+      - name: Teardown Linux
+        uses: pytorch/test-infra/.github/actions/teardown-linux@main
+        if: always()
+
+  manager:
+    name: pytorch_tutorial_build_manager
+    needs: worker
+    runs-on: [self-hosted, linux.2xlarge]
+    if: ${{ inputs.UPLOAD == 1 }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'pytorchbot-env' || '' }}
+    steps:
+      - name: Setup SSH (Click me for login details)
+        uses: pytorch/test-infra/.github/actions/setup-ssh@main
+        with:
+          github-secret: ${{ secrets.GITHUB_TOKEN }}
+          instructions: |
+            All testing is done inside the container, to start an interactive session run:
+              docker exec -it $(docker container ps --format '{{.ID}}') bash
+
+      - name: Checkout Tutorials
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Linux
+        uses: pytorch/pytorch/.github/actions/setup-linux@main
+
+      - name: Calculate/build docker image
+        id: calculate-docker-image
+        uses: pytorch/test-infra/.github/actions/calculate-docker-image@main
+        with:
+          docker-image-name: tutorials
+
+      - name: Pull docker image
+        uses: pytorch/test-infra/.github/actions/pull-docker-image@main
+        with:
+          docker-image: ${{ steps.calculate-docker-image.outputs.docker-image }}
+
+      - name: Build
+        shell: bash
+        env:
+          DOCKER_IMAGE: ${{ steps.calculate-docker-image.outputs.docker-image }}
+          NUM_WORKERS: 15
+          WORKER_ID: 0
+          COMMIT_ID: ${{ github.sha }}
+          JOB_TYPE: manager
+          COMMIT_SOURCE: ${{ github.ref }}
+          GITHUB_PYTORCHBOT_TOKEN: ${{ secrets.PYTORCHBOT_TOKEN }}
+          USE_NIGHTLY: ${{ inputs.USE_NIGHTLY }}
+        run: |
+          set -ex
+
+          chmod +x ".jenkins/build.sh"
+
+          container_name=$(docker run \
+            ${GPU_FLAG:-} \
+            -e WORKER_ID \
+            -e NUM_WORKERS \
+            -e COMMIT_ID \
+            -e JOB_TYPE \
+            -e COMMIT_SOURCE \
+            -e GITHUB_PYTORCHBOT_TOKEN \
+            -e USE_NIGHTLY \
+            --env-file="/tmp/github_env_${GITHUB_RUN_ID}" \
+            --tty \
+            --detach \
+            --name="${container_name}" \
+            -v "${GITHUB_WORKSPACE}:/var/lib/workspace" \
+            -w /var/lib/workspace \
+            "${DOCKER_IMAGE}"
+          )
+
+          docker exec -u ci-user -t "${container_name}" sh -c ".jenkins/build.sh"
+
+      - name: Upload docs preview
+        uses: seemethere/upload-artifact-s3@v5
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          retention-days: 14
+          s3-bucket: doc-previews
+          if-no-files-found: error
+          path: docs
+          s3-prefix: pytorch/tutorials/${{ github.event.pull_request.number }}
+
+      - name: Teardown Linux
+        uses: pytorch/test-infra/.github/actions/teardown-linux@main
+        if: always()

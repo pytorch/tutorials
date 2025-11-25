@@ -7,6 +7,7 @@ Welcome to PyTorch Tutorials
 * `Supporting Custom C++ Classes in torch.compile/torch.export <https://docs.pytorch.org/tutorials/advanced/custom_class_pt2.html>`__
 * `Accelerating torch.save and torch.load with GPUDirect Storage <https://docs.pytorch.org/tutorials/unstable/gpu_direct_storage.html>`__
 * `Getting Started with Fully Sharded Data Parallel (FSDP2) <https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__
+* `Interactive Distributed Applications with Monarch <https://docs.pytorch.org/tutorials/intermediate/monarch_distributed_tutorial.html>`__
 
 .. raw:: html
 
@@ -537,6 +538,13 @@ Welcome to PyTorch Tutorials
    :tags: Model-Optimization
 
 .. customcarditem::
+   :header: torch.compile End-to-End Tutorial
+   :card_description: An example of applying torch.compile to a real model, demonstrating speedups.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torch_compile_full_example.html
+   :tags: Model-Optimization
+
+.. customcarditem::
    :header: Building a Convolution/Batch Norm fuser in torch.compile
    :card_description: Build a simple pattern matcher pass that fuses batch norm into convolution to improve performance during inference.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
@@ -672,6 +680,21 @@ Welcome to PyTorch Tutorials
    :card_description: TCPStore now uses a new server backend for faster connection and better scalability.
    :image: _static/img/thumbnails/cropped/Introduction-to-Libuv-Backend-TCPStore.png
    :link: intermediate/TCPStore_libuv_backend.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: Interactive Distributed Applications with Monarch
+   :card_description: Learn how to spin up distributed applications using Monarch's singler controller model
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/monarch_distributed_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
+
+.. customcarditem::
+   :header: Interactive Distributed Applications with Monarch
+   :card_description: Learn how to use Monarch's actor framework with TorchTitan to simplify large-scale distributed training across SLURM clusters.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/monarch_distributed_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. Edge

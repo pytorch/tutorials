@@ -12,6 +12,7 @@ redirects = {
     "beginner/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.html": "../../index.html",
     "beginner/flava_finetuning_tutorial.html": "../index.html",
     "beginner/ptcheat.html": "../index.html",
+    "beginner/audio_io_tutorial.html": "../index.html",
     "intermediate/FSDP_adavnced_tutorial.html": "https://docs.pytorch.org/tutorials/intermediate/FSDP_advanced_tutorial.html",
     "intermediate/dynamic_quantization_bert_tutorial.html": "../index.html",
     "intermediate/flask_rest_api_tutorial": "../index.html",
