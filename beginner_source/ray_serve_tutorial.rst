@@ -1,22 +1,18 @@
-Serving PyTorch Models at Scale with Ray Serve
+Serving PyTorch models at scale with Ray Serve
 ==============================================
 **Author:** `Ricardo Decal <https://github.com/crypdick>`_
 
 This tutorial introduces `Ray Serve <https://docs.ray.io/en/latest/serve/index.html>`_, a scalable framework for serving machine learning models in production. Ray Serve is part of `Ray Distributed <https://pytorch.org/projects/ray/>`_, an open-source PyTorch Foundation project.
 
-Introduction
-------------
-
-`Ray Serve <https://docs.ray.io/en/latest/serve/index.html>`_ is an online serving library that helps you deploy machine learning models in production.
 
 Production-ready features
-*************************
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Ray Serve provides the following production-ready features:
 
 - Handle thousands of concurrent requests efficiently with dynamic request batching
-- Autoscale your endpoint to handle variable traffic
-- Buffer requests when the endpoint is busy
+- Autoscale your endpoints in response to variable traffic
+- Buffer incoming requests when the endpoints are busy
 - Compose multiple models along with business logic into a complete ML application
 - Gracefully heal the deployment when nodes are lost
 - Handle multi-node/multi-GPU serving
@@ -45,14 +41,14 @@ This tutorial assumes basic familiarity with PyTorch and Python. You'll need to 
 Setup
 -----
 
-Let's start by importing the necessary libraries:
+Start by importing the necessary libraries:
 
 .. code-block:: python
 
    import asyncio
    import json
    import time
-   from typing import Any, Dict, List
+   from typing import Any
 
    import aiohttp
    import numpy as np
@@ -63,7 +59,7 @@ Let's start by importing the necessary libraries:
    from starlette.requests import Request
    from torchvision import transforms
 
-Part 1: Deploy a Simple PyTorch Model
+Part 1: Deploy a simple PyTorch model
 --------------------------------------
 
 We'll start with a simple convolutional neural network for MNIST digit classification.
@@ -96,7 +92,7 @@ First, let's define our model architecture:
            x = self.fc2(x)
            return nn.functional.log_softmax(x, dim=1)
 
-Creating a Ray Serve Deployment
+Creating a Ray Serve deployment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To deploy this model with Ray Serve, we wrap it in a class and add the ``@serve.deployment`` decorator.
@@ -116,7 +112,7 @@ The deployment handles incoming HTTP requests and runs inference:
            
            self.model.eval()
 
-       async def __call__(self, request: Request) -> Dict[str, Any]:
+       async def __call__(self, request: Request) -> dict[str, Any]:
            """Handle incoming HTTP requests"""
            # Parse the JSON request body
            data = await request.json()
@@ -125,7 +121,7 @@ The deployment handles incoming HTTP requests and runs inference:
            # Run inference
            return await self.predict(batch)
        
-       async def predict(self, batch: Dict[str, np.ndarray]) -> Dict[str, Any]:
+       async def predict(self, batch: dict[str, np.ndarray]) -> dict[str, Any]:
            """Run inference on a batch of images"""
            # Convert numpy array to tensor
            images = torch.tensor(batch["image"], dtype=torch.float32).to(self.device)
@@ -140,7 +136,7 @@ The deployment handles incoming HTTP requests and runs inference:
                "logits": logits.cpu().numpy().tolist()
            }
 
-Running the Deployment
+Running the deployment
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Now let's deploy and run our model:
@@ -153,7 +149,7 @@ Now let's deploy and run our model:
    # Start the Ray Serve application
    handle = serve.run(mnist_app, name="mnist_classifier")
 
-Testing the Deployment
+Testing the deployment
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Let's test our deployment with some random data:
@@ -168,13 +164,13 @@ Let's test our deployment with some random data:
    response = requests.post("http://localhost:8000/", json=json_request)
    print(f"Predictions: {response.json()['predicted_label']}")
 
-Part 2: Scaling with Multiple Replicas
+Part 2: Scaling with multiple replicas
 ---------------------------------------
 
 One of Ray Serve's key features is the ability to scale your deployment across multiple replicas.
 Each replica is an independent instance of your model that can handle requests in parallel.
 
-Configuring Replicas
+Configuring replicas
 ~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
@@ -197,7 +193,7 @@ Part 3: Autoscaling
 Ray Serve can automatically scale the number of replicas based on incoming traffic.
 This is useful for handling variable workloads without over-provisioning resources.
 
-Configuring Autoscaling
+Configuring autoscaling
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
@@ -221,7 +217,7 @@ With this configuration, Ray Serve will:
 - Scale up when requests arrive (targeting 10 concurrent requests per replica)
 - Scale down after 30 seconds of low traffic
 
-Testing Autoscaling with Concurrent Requests
+Testing autoscaling with concurrent requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To see autoscaling in action, we need to send many concurrent requests. Using ``aiohttp``,
@@ -263,13 +259,13 @@ we can fire requests asynchronously:
 This approach allows Ray Serve to buffer and batch process the requests efficiently,
 automatically scaling replicas as needed.
 
-Part 4: Dynamic Request Batching
+Part 4: Dynamic request batching
 ---------------------------------
 
 Dynamic request batching is a powerful optimization that groups multiple incoming requests
 and processes them together, maximizing GPU utilization.
 
-Implementing Batching
+Implementing batching
 ~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
@@ -286,7 +282,7 @@ Implementing Batching
            self.model.eval()
 
        @serve.batch(max_batch_size=32, batch_wait_timeout_s=0.1)
-       async def predict_batch(self, images: List[np.ndarray]) -> List[Dict[str, Any]]:
+       async def predict_batch(self, images: list[np.ndarray]) -> list[dict[str, Any]]:
            """Process a batch of images together"""
            print(f"Processing batch of size: {len(images)}")
            
@@ -310,7 +306,7 @@ Implementing Batching
                for pred, logit in zip(predictions, logits)
            ]
 
-       async def __call__(self, request: Request) -> Dict[str, Any]:
+       async def __call__(self, request: Request) -> dict[str, Any]:
            data = await request.json()
            batch = json.loads(data)
            
@@ -328,13 +324,13 @@ The ``@serve.batch`` decorator automatically:
 
 This can dramatically improve throughput, especially for GPU inference.
 
-Part 5: Composing Multiple Deployments
+Part 5: Composing multiple deployments
 ---------------------------------------
 
 Real-world ML applications often involve multiple steps: preprocessing, inference, and postprocessing.
 Ray Serve makes it easy to compose multiple deployments into a pipeline.
 
-Creating a Preprocessing Deployment
+Creating a preprocessing deployment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
@@ -348,7 +344,7 @@ Creating a Preprocessing Deployment
                transforms.Normalize((0.1307,), (0.3081,))  # MNIST mean and std
            ])
        
-       async def preprocess(self, images: List[np.ndarray]) -> np.ndarray:
+       async def preprocess(self, images: list[np.ndarray]) -> np.ndarray:
            """Preprocess a batch of images"""
            processed = []
            for img in images:
@@ -362,7 +358,7 @@ Creating a Preprocessing Deployment
            
            return np.stack(processed)
 
-Creating an Ingress Deployment
+Creating an ingress deployment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The ingress deployment orchestrates the pipeline, routing requests through preprocessing
@@ -377,7 +373,7 @@ and then to the model:
            self.preprocessor = preprocessor
            self.classifier = classifier
        
-       async def __call__(self, request: Request) -> Dict[str, Any]:
+       async def __call__(self, request: Request) -> dict[str, Any]:
            """Handle end-to-end inference"""
            # Parse request
            data = await request.json()
@@ -394,7 +390,7 @@ and then to the model:
            
            return result
 
-Deploying the Pipeline
+Deploying the pipeline
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
@@ -442,11 +438,11 @@ Ray Serve integrates seamlessly with FastAPI, giving you access to:
 
    app = FastAPI()
 
-   class PredictionRequest(BaseModel):
-       image: List[List[List[float]]]  # Batch of images
+  class PredictionRequest(BaseModel):
+      image: list[list[list[float]]]  # Batch of images
 
-   class PredictionResponse(BaseModel):
-       predicted_label: List[int]
+  class PredictionResponse(BaseModel):
+      predicted_label: list[int]
 
    @serve.deployment
    @serve.ingress(app)
@@ -510,7 +506,7 @@ In this tutorial, you learned how to:
 Ray Serve provides a powerful, flexible framework for serving PyTorch models at scale.
 Its Python-first API makes it easy to go from a trained model to a production service.
 
-Next Steps
+Next steps
 ----------
 
 - For more information on Ray Serve, read the `Ray Serve documentation <https://docs.ray.io/en/latest/serve/index.html>`_.
