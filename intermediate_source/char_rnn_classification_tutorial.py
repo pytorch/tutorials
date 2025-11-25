@@ -180,7 +180,7 @@ class NamesDataset(Dataset):
                 self.labels.append(label)
 
         # Create numerical representation of labels
-        # Store unique labels in alphabetical order and convert each label to its index
+        # Store unique labels and convert each label to its index in the label vocabulary
         self.labels_uniq = list(labels_set)
         for idx in range(len(self.labels)):
             temp_tensor = torch.tensor([self.labels_uniq.index(self.labels[idx])], dtype=torch.long)
