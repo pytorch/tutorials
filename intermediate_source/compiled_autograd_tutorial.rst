@@ -37,7 +37,7 @@ However, Compiled Autograd introduces its own limitations:
 * Added runtime overhead at the start of the backward for cache lookup
 * More prone to recompiles and graph breaks in dynamo due to the larger capture
 
-.. note:: Compiled Autograd is under active development and is not yet compatible with all existing PyTorch features. For the latest status on a particular feature, refer to `Compiled Autograd Landing Page <https://docs.google.com/document/d/11VucFBEewzqgkABIjebZIzMvrXr3BtcY1aGKpX61pJY>`_.
+.. note:: Compiled Autograd is under active development. While many restrictions have been lifted since its initial release, some features may still be evolving. If you encounter issues or have questions, please report them on the `PyTorch GitHub Issues <https://github.com/pytorch/pytorch/issues>`_ page.
 
 Setup
 -----
