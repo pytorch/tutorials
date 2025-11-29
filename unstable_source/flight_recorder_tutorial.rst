@@ -44,7 +44,7 @@ Flight Recorder consists of two core parts:
 
 - The collection portion: when enabled, information about collectives is recorded in an in-memory circular buffer. Upon job timeout, or on demand, the in-memory buffer can be retrieved or dumped to file.
 
-- An analyzer script is available in the `tools/flight_recorder <https://github.com/pytorch/pytorch/tree/main/tools/flight_recorder>`__ directory (details below).
+- An analyzer script is available in the `torch/distributed/flight_recorder <https://github.com/pytorch/pytorch/tree/main/torch/distributed/flight_recorder>`__ directory (details below).
    The analyzer script runs known heuristics using the collected data and attempts to automatically identify the underlying issue that caused the job to stall.
 
 Enabling Flight Recorder
@@ -169,7 +169,7 @@ The contents of a Flight Recorder ``unpickled`` file are shown below:
 Analyzing Flight Recorder Dumps
 -------------------------------
 
-We have convenient scripts available in `pytorch/tools/flight_recorder` directory for analyzing captured
+We have convenient scripts available in `pytorch/torch/distributed/flight_recorder <https://github.com/pytorch/pytorch/tree/main/torch/distributed/flight_recorder>`__ directory for analyzing captured
 data.
 
 To run the convenience script, follow these steps:
@@ -300,5 +300,5 @@ Conclusion
 In this tutorial, we have learned about a new PyTorch diagnostic tool called Flight Recorder.
 We have discussed how to enable Flight Recorder to collect diagnostic data from a machine.
 Additionally, we explored how to analyze the data captured from the Flight Recorder using a
-convenience script located in the `tools/flight_recorder <https://github.com/pytorch/pytorch/tree/main/tools/flight_recorder>`__
+convenience script located in the `torch/distributed/flight_recorder <https://github.com/pytorch/pytorch/tree/main/torch/distributed/flight_recorder>`__
 directory of the PyTorch repository.
