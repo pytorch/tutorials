@@ -108,6 +108,8 @@ Step 1: Partition the Transformer Model
 
 There are two different ways of partitioning the model:
 
+**Option 1: Manual Model Splitting**
+
 First is the manual mode in which we can manually create two instances of the model by deleting portions of
 attributes of the model. In this example for two stages (2 ranks), the model is cut in half.
 
@@ -139,10 +141,13 @@ As we can see the first stage does not have the layer norm or the output layer, 
 The second stage does not have the input embedding layers, but includes the output layers and the final four transformer blocks. The function
 then returns the ``PipelineStage`` for the current rank.
 
+**Option 2: Tracer-based Model Splitting**
+
 The second method is the tracer-based mode which automatically splits the model based on a ``split_spec`` argument. Using the pipeline specification, we can instruct
 ``torch.distributed.pipelining`` where to split the model. In the following code block,
-we are splitting before the before 4th transformer decoder layer, mirroring the manual split described above. Similarly,
-we can retrieve a ``PipelineStage`` by calling ``build_stage`` after this splitting is done.
+we are splitting before the 4th transformer decoder layer, mirroring the manual split described above. The ``split_spec`` dictionary
+specifies where to split the model by providing the module path (``"layers.4"``) and the split point type (``SplitPoint.BEGINNING``).
+Similarly, we can retrieve a ``PipelineStage`` by calling ``build_stage`` after this splitting is done.
 
 .. code:: python
 
