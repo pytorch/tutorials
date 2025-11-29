@@ -38,7 +38,6 @@ Introduction to ``torch.compile``
 #
 # - ``torch >= 2.0``
 # - ``numpy``
-# - ``scipy``
 #
 # **System requirements**
 # - A C++ compiler, such as ``g++``
