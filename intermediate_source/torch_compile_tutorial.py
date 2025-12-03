@@ -163,7 +163,7 @@ def timed(fn):
     result = fn()
     end.record()
     torch.cuda.synchronize()
-    return result, start.elapsed_time(end) / 1024
+    return result, start.elapsed_time(end) / 1000
 
 
 inp = torch.randn(4096, 4096).cuda()
