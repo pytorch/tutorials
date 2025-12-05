@@ -49,7 +49,7 @@ PATH = DATA_PATH / "mnist"
 
 PATH.mkdir(parents=True, exist_ok=True)
 
-URL = "https://github.com/pytorch/tutorials/raw/main/_static/"
+URL = "https://github.com/pytorch/tutorials/raw/refs/heads/main/_static/"
 FILENAME = "mnist.pkl.gz"
 
 if not (PATH / FILENAME).exists():
