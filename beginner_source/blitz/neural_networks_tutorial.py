@@ -78,7 +78,7 @@ class Net(nn.Module):
         # Fully connected layer F6: (N, 120) Tensor input,
         # and outputs a (N, 84) Tensor, it uses RELU activation function
         f6 = F.relu(self.fc2(f5))
-        # Gaussian layer OUTPUT: (N, 84) Tensor input, and
+        # Fully connected layer OUTPUT: (N, 84) Tensor input, and
         # outputs a (N, 10) Tensor
         output = self.fc3(f6)
         return output
