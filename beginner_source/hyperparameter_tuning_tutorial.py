@@ -44,8 +44,6 @@ Let’s start with the imports:
 
 """
 
-# %matplotlib inline
-
 from functools import partial
 import os
 import tempfile
@@ -57,19 +55,10 @@ import torch.optim as optim
 from torch.utils.data import random_split
 import torchvision
 import torchvision.transforms as transforms
-# sphinx_gallery_start_ignore
-# Fixes `AttributeError: '_LoggingTee' object has no attribute 'fileno'`.
-# This is only needed to run with sphinx-build.
-import sys
-if not hasattr(sys.stdout, "encoding"):
-    sys.stdout.encoding = "latin1"
-    sys.stdout.fileno = lambda: 0
-# sphinx_gallery_end_ignore
 import ray
 from ray import tune
 from ray.tune import Checkpoint
 from ray.tune.schedulers import ASHAScheduler
-import ray.cloudpickle as pickle
 
 ######################################################################
 # Most of the imports are needed for building the PyTorch model. Only the
@@ -135,10 +124,13 @@ class Net(nn.Module):
 # ``train_cifar(config, data_dir=None)``. The ``config`` parameter will
 # receive the hyperparameters we would like to train with. The
 # ``data_dir`` specifies the directory where we load and store the data,
-# so that multiple runs can share the same data source. We also load the
-# model and optimizer state at the start of the run, if a checkpoint is
-# provided. Further down in this tutorial you will find information on how
-# to save the checkpoint and what it is used for.
+# so that multiple runs can share the same data source. This is especially
+# useful in cluster environments, where you can mount a shared storage
+# (e.g. NFS) to this directory so that the data is not downloaded to each
+# node separately. We also load the model and optimizer state at the start
+# of the run, if a checkpoint is provided. Further down in this tutorial
+# you will find information on how to save the checkpoint and what it is
+# used for.
 #
 # .. code-block:: python
 #
@@ -147,9 +139,8 @@ class Net(nn.Module):
 #    checkpoint = tune.get_checkpoint()
 #    if checkpoint:
 #        with checkpoint.as_directory() as checkpoint_dir:
-#            data_path = Path(checkpoint_dir) / "data.pkl"
-#            with open(data_path, "rb") as fp:
-#                checkpoint_state = pickle.load(fp)
+#            checkpoint_path = Path(checkpoint_dir) / "checkpoint.pt"
+#            checkpoint_state = torch.load(checkpoint_path)
 #            start_epoch = checkpoint_state["epoch"]
 #            net.load_state_dict(checkpoint_state["net_state_dict"])
 #            optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
@@ -213,9 +204,8 @@ class Net(nn.Module):
 #        "optimizer_state_dict": optimizer.state_dict(),
 #    }
 #    with tempfile.TemporaryDirectory() as checkpoint_dir:
-#        data_path = Path(checkpoint_dir) / "data.pkl"
-#        with open(data_path, "wb") as fp:
-#            pickle.dump(checkpoint_data, fp)
+#        checkpoint_path = Path(checkpoint_dir) / "checkpoint.pt"
+#        torch.save(checkpoint_data, checkpoint_path)
 #
 #        checkpoint = Checkpoint.from_directory(checkpoint_dir)
 #        tune.report(
@@ -259,9 +249,8 @@ def train_cifar(config, data_dir=None):
     checkpoint = tune.get_checkpoint()
     if checkpoint:
         with checkpoint.as_directory() as checkpoint_dir:
-            data_path = Path(checkpoint_dir) / "data.pkl"
-            with open(data_path, "rb") as fp:
-                checkpoint_state = pickle.load(fp)
+            checkpoint_path = Path(checkpoint_dir) / "checkpoint.pt"
+            checkpoint_state = torch.load(checkpoint_path)
             start_epoch = checkpoint_state["epoch"]
             net.load_state_dict(checkpoint_state["net_state_dict"])
             optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
@@ -334,9 +323,8 @@ def train_cifar(config, data_dir=None):
             "optimizer_state_dict": optimizer.state_dict(),
         }
         with tempfile.TemporaryDirectory() as checkpoint_dir:
-            data_path = Path(checkpoint_dir) / "data.pkl"
-            with open(data_path, "wb") as fp:
-                pickle.dump(checkpoint_data, fp)
+            checkpoint_path = Path(checkpoint_dir) / "checkpoint.pt"
+            torch.save(checkpoint_data, checkpoint_path)
 
             checkpoint = Checkpoint.from_directory(checkpoint_dir)
             tune.report(
@@ -452,6 +440,7 @@ def test_accuracy(net, device="cpu"):
 
 def main(num_trials=10, max_num_epochs=10, gpus_per_trial=2):
     print("Starting hyperparameter tuning.")
+    ray.init()
     
     data_dir = os.path.abspath("./data")
     load_data(data_dir)
@@ -497,9 +486,8 @@ def main(num_trials=10, max_num_epochs=10, gpus_per_trial=2):
 
     best_checkpoint = best_result.checkpoint
     with best_checkpoint.as_directory() as checkpoint_dir:
-        data_path = Path(checkpoint_dir) / "data.pkl"
-        with open(data_path, "rb") as fp:
-            best_checkpoint_data = pickle.load(fp)
+        checkpoint_path = Path(checkpoint_dir) / "checkpoint.pt"
+        best_checkpoint_data = torch.load(checkpoint_path)
 
         best_trained_model.load_state_dict(best_checkpoint_data["net_state_dict"])
         test_acc = test_accuracy(best_trained_model, device)
