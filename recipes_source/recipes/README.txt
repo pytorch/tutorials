@@ -21,26 +21,22 @@ PyTorch Recipes
 	 Model Interpretability using Captum
          https://pytorch.org/tutorials/recipes/recipes/Captum_Recipe.html
 
-6. dynamic_quantization.py
-         Dynamic Quantization
-         https://pytorch.org/tutorials/recipes/recipes/dynamic_quantization.html
-
-7. warmstarting_model_using_parameters_from_a_different_model.py
+6. warmstarting_model_using_parameters_from_a_different_model.py
          Warmstarting models using parameters from different model
          https://pytorch.org/tutorials/recipes/recipes/warmstarting_model_using_parameters_from_a_different_model.html
 
-8. zeroing_out_gradients.py
+7. zeroing_out_gradients.py
          Zeroing out gradients
          https://pytorch.org/tutorials/recipes/recipes/zeroing_out_gradients.html
 
-9. mobile_perf.py
+8. mobile_perf.py
          PyTorch Mobile Performance Recipes
          https://pytorch.org/tutorials/recipes/mobile_perf.html
 
-10. amp_recipe.py
+9. amp_recipe.py
          Automatic Mixed Precision
          https://pytorch.org/tutorials/recipes/amp_recipe.html
 
-11. regional_compilation.py
+10. regional_compilation.py
 	Reducing torch.compile cold start compilation time with regional compilation
          https://pytorch.org/tutorials/recipes/regional_compilation.html
