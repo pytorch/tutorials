@@ -452,7 +452,6 @@ def test_accuracy(net, device="cpu"):
 
 def main(num_trials=10, max_num_epochs=10, gpus_per_trial=2):
     print("Starting hyperparameter tuning.")
-    ray.init(include_dashboard=False, runtime_env={"RAY_enable_open_telemetry": "0"})
     
     data_dir = os.path.abspath("./data")
     load_data(data_dir)
@@ -514,7 +513,7 @@ if __name__ == "__main__":
 ######################################################################
 # If you run the code, an example output could look like this:
 #
-# .. code-block:: text
+# .. code-block:: bash
 #
 #    Number of trials: 10/10 (10 TERMINATED)
 #    +-----+--------------+------+------+-------------+--------+---------+------------+
