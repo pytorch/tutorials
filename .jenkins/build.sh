@@ -22,7 +22,7 @@ sudo apt-get install -y pandoc
 # Install PyTorch Nightly for test.
 if [ "${USE_NIGHTLY:-0}" -eq 1 ]; then
   sudo pip uninstall -y torch torchvision torchaudio
-  pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu130
+  pip install torch==2.10 torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu130
   pip show torch
 fi
 
