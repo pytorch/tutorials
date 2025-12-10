@@ -69,7 +69,7 @@ from ray.tune.schedulers import ASHAScheduler
 
 def load_data(data_dir="./data"):
     transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+        [transforms.ToTensor(), transforms.Normalize((0.4914, 0.48216, 0.44653), (0.2022, 0.19932, 0.20086))]
     )
 
     trainset = torchvision.datasets.CIFAR10(
