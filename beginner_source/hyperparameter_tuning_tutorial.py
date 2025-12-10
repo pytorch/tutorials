@@ -7,35 +7,25 @@ and a highly accurate one. Often, simple decisions like choosing a
 different learning rate or changing a network layer size can
 dramatically impact model performance.
 
-Fortunately, there are tools that help with finding the best combination
-of parameters. `Ray Tune <https://docs.ray.io/en/latest/tune.html>`__ is
-an industry standard tool for distributed hyperparameter tuning. Ray
-Tune includes the latest hyperparameter search algorithms, integrates
-with various analysis libraries, and natively supports distributed
-training through `Ray’s distributed machine learning
-engine <https://ray.io/>`__.
+This page shows how to integrate `Ray
+Tune <https://docs.ray.io/en/latest/tune.html>`__ into your PyTorch
+training workflow for distributed hyperparameter tuning. It extends the
+PyTorch tutorial for training a CIFAR10 image classifier in the `CIFAR10
+tutorial (PyTorch
+documentation) <https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html>`__.
 
-In this tutorial, we will show you how to integrate Ray Tune into your
-PyTorch training workflow. We will extend `this tutorial from the
-PyTorch
-documentation <https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html>`__
-for training a CIFAR10 image classifier.
+Only minor modifications are needed. Specifically, this example wraps
+data loading and training in functions, makes some network parameters
+configurable, adds optional checkpointing, and defines the search space
+for model tuning.
 
-We only need to make minor modifications:
+To run this tutorial, install the following prerequisites:
 
-1. wrap data loading and training in functions,
-2. make some network parameters configurable,
-3. add checkpointing (optional),
-4. define the search space for the model tuning
+- ``ray[tune]`` – Distributed hyperparameter tuning library
+- ``torchvision`` – Data transforms for computer vision datasets
 
-To run this tutorial, please make sure the following packages are
-installed:
-
-- ``ray[tune]``: Distributed hyperparameter tuning library
-- ``torchvision``: For the data transformers
-
-Setup / Imports
----------------
+Setup and imports
+-----------------
 
 Let’s start with the imports:
 
@@ -86,8 +76,8 @@ def load_data(data_dir="./data"):
 # Configurable neural network
 # ---------------------------
 #
-# We can only tune parameters that are configurable. In this example, we
-# specify the layer sizes of the fully connected layers:
+# In this example, we specify the layer sizes of the fully connected
+# layers.
 
 class Net(nn.Module):
     def __init__(self, l1=120, l2=84):
@@ -109,24 +99,23 @@ class Net(nn.Module):
         return x
 
 ######################################################################
-# The train function
-# ------------------
+# Train function
+# --------------
 #
 # Now it gets interesting, because we introduce some changes to the
-# example `from the PyTorch
-# documentation <https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html>`__.
+# example from the `CIFAR10 tutorial (PyTorch
+# documentation) <https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html>`__.
 #
 # We wrap the training script in a function
 # ``train_cifar(config, data_dir=None)``. The ``config`` parameter
 # receives the hyperparameters we want to train with. The ``data_dir``
 # specifies the directory where we load and store the data, allowing
 # multiple runs to share the same data source. This is especially useful
-# in cluster environments where you can mount a shared storage (e.g. NFS)
-# to this directory, preventing the data from being downloaded to each
-# node separately. We also load the model and optimizer state at the start
-# of the run if a checkpoint is provided. Further down in this tutorial,
-# you will find information on how to save the checkpoint and what it is
-# used for.
+# in cluster environments where you can mount shared storage (for example
+# NFS), preventing the data from being downloaded to each node separately.
+# We also load the model and optimizer state at the start of the run if a
+# checkpoint is provided. Further down in this tutorial, you will find
+# information on how to save the checkpoint and what it is used for.
 #
 # .. code-block:: python
 #
@@ -158,9 +147,9 @@ class Net(nn.Module):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Image classification benefits largely from GPUs. Luckily, we can
-# continue to use PyTorch’s abstractions in Ray Tune. Thus, we can wrap
-# our model in ``nn.DataParallel`` to support data parallel training on
-# multiple GPUs:
+# continue to use PyTorch’s tools in Ray Tune. Thus, we can wrap our model
+# in ``nn.DataParallel`` to support data parallel training on multiple
+# GPUs:
 #
 # .. code-block:: python
 #
@@ -185,7 +174,7 @@ class Net(nn.Module):
 # GPUs. Notably, Ray also supports `fractional
 # GPUs <https://docs.ray.io/en/latest/ray-core/scheduling/accelerators.html#fractional-accelerators>`__
 # so we can share GPUs among trials, as long as the model still fits on
-# the GPU memory. We’ll come back to that later.
+# the GPU memory. We will return to that later.
 #
 # Communicating with Ray Tune
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -225,15 +214,11 @@ class Net(nn.Module):
 # enabling us to pause and resume training.
 #
 # To summarize, integrating Ray Tune into your PyTorch training requires
-# just a few key additions:
-#
-# - ``tune.report()`` to report metrics (and optionally checkpoints) to
-#   Ray Tune
-# - ``tune.get_checkpoint()`` to load a model from a checkpoint
-# - ``Checkpoint.from_directory()`` to create a checkpoint object from
-#   saved state
-#
-# The rest of your training code remains standard PyTorch!
+# just a few key additions: use ``tune.report()`` to report metrics (and
+# optionally checkpoints) to Ray Tune, ``tune.get_checkpoint()`` to load a
+# model from a checkpoint, and ``Checkpoint.from_directory()`` to create a
+# checkpoint object from saved state. The rest of your training code
+# remains standard PyTorch!
 #
 # Full training function
 # ~~~~~~~~~~~~~~~~~~~~~~
@@ -351,7 +336,7 @@ def train_cifar(config, data_dir=None):
 # -----------------
 #
 # Commonly the performance of a machine learning model is tested on a
-# hold-out test set with data that has not been used for training the
+# held-out test set with data that has not been used for training the
 # model. We also wrap this in a function:
 
 def test_accuracy(net, device="cpu"):
@@ -375,11 +360,11 @@ def test_accuracy(net, device="cpu"):
     return correct / total
 
 ######################################################################
-# The function also expects a ``device`` parameter, so we can do the test
+# The function also expects a ``device`` parameter so we can do the test
 # set validation on a GPU.
 #
-# Configuring the search space
-# ----------------------------
+# Search space configuration
+# --------------------------
 #
 # Lastly, we need to define Ray Tune’s search space. Here is an example:
 #
@@ -394,10 +379,9 @@ def test_accuracy(net, device="cpu"):
 #
 # The ``tune.choice()`` accepts a list of values that are uniformly
 # sampled from. In this example, the ``l1`` and ``l2`` parameters should
-# be powers of 2 between 4 and 256, so either 4, 8, 16, 32, 64, 128, or
-# 256. The ``lr`` (learning rate) should be uniformly sampled between
-# 0.0001 and 0.1. Lastly, the batch size is a choice between 2, 4, 8, and
-# 16.
+# be powers of 2 between 1 and 256: 1, 2, 4, 8, 16, 32, 64, 128, or 256.
+# The ``lr`` (learning rate) should be uniformly sampled between 0.0001
+# and 0.1. Lastly, the batch size is a choice between 2, 4, 8, and 16.
 #
 # For each trial, Ray Tune samples a combination of parameters from these
 # search spaces according to the search space configuration and search
@@ -439,13 +423,13 @@ def test_accuracy(net, device="cpu"):
 #    )
 #    results = tuner.fit()
 #
-# You can specify the number of CPUs, which are then available e.g. to
+# Specify the number of CPUs, which are then available, for example to
 # increase the ``num_workers`` of the PyTorch ``DataLoader`` instances.
 # The selected number of GPUs are made visible to PyTorch in each trial.
-# Trials do not have access to GPUs that haven’t been requested, so you
+# Trials do not have access to GPUs that have not been requested, so you
 # don’t need to worry about resource contention.
 #
-# You can also specify fractional GPUs (e.g., ``gpus_per_trial=0.5``),
+# You can specify fractional GPUs (for example, ``gpus_per_trial=0.5``),
 # which allows trials to share a GPU. Just ensure that the models fit
 # within the GPU memory.
 #
@@ -519,7 +503,7 @@ if __name__ == "__main__":
     main(num_trials=1, max_num_epochs=1, gpus_per_trial=0)
 
 ######################################################################
-# If you run the code, an example output could look like this:
+# Your output will look something like this:
 #
 # .. code-block:: bash
 #
@@ -548,4 +532,4 @@ if __name__ == "__main__":
 # performing trial achieved a validation accuracy of approximately 47%,
 # which could be confirmed on the test set.
 #
-# So that’s it! You can now tune the parameters of your PyTorch models.
+# You can now tune the parameters of your PyTorch models.
