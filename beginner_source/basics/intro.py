@@ -34,7 +34,7 @@ Running the Tutorial Code
 -------------------------
 You can run this tutorial in a couple of ways:
 
-- **In the cloud**: This is the easiest way to get started! Each section has a "Run in Microsoft Learn" and "Run in Google Colab" link at the top, which opens an integrated notebook in Microsoft Learn or Google Colab, respectively, with the code in a fully-hosted environment.
+- **In the cloud**: This is the easiest way to get started! Each section has a "Run in Google Colab" link at the top, which opens an integrated notebook in Google Colab with the code in a fully-hosted environment.
 - **Locally**: This option requires you to setup PyTorch and TorchVision first on your local machine (`installation instructions <https://pytorch.org/get-started/locally/>`_). Download the notebook or copy the code into your favorite IDE.
 
 
