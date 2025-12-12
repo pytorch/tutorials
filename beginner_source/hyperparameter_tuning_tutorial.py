@@ -2,6 +2,8 @@
 Hyperparameter tuning with Ray Tune
 ===================================
 
+**Author:** `Ricardo Decal <https://github.com/crypdick>`_
+
 This tutorial shows how to integrate Ray Tune into your PyTorch training
 workflow to perform scalable and efficient hyperparameter tuning.
 
