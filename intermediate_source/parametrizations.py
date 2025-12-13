@@ -4,6 +4,45 @@ Parametrizations Tutorial
 =========================
 **Author**: `Mario Lezcano <https://github.com/lezcano>`_
 
+What is a Parametrization?
+--------------------------
+
+In the context of neural networks, a **parametrization** is a transformation applied
+to the parameters (weights and biases) of a model before they are used in computations.
+Rather than using parameters directly as learned during training, we transform them
+through a function to enforce certain mathematical properties or constraints.
+
+**Why do we need parametrizations?**
+
+When training neural networks, we often want parameters to satisfy specific constraints:
+
+- **Orthogonal matrices** for stable recurrent networks
+- **Positive definite matrices** for covariance estimation
+- **Normalized weights** for improved training dynamics
+- **Sparse or structured weights** for model compression
+
+Without parametrizations, enforcing these constraints is challenging. We could use
+penalty methods (adding constraint violations to the loss), but these often fail in
+deep learning due to the complexity of the optimization landscape.
+
+**What problems do parametrizations solve?**
+
+1. **Hard constraints**: Parametrizations guarantee that constraints are always satisfied,
+   not just approximately. If you parametrize a weight to be orthogonal, it will be
+   orthogonal at every step of training.
+
+2. **Improved optimization**: By transforming the parameter space, we can make
+   optimization easier. For example, learning the norm and direction of a weight
+   separately (weight normalization) can accelerate training.
+
+3. **Regularization**: Constraining parameters can act as a powerful regularizer,
+   preventing overfitting and improving generalization.
+
+4. **Numerical stability**: Certain parametrizations (like orthogonal matrices in RNNs)
+   prevent gradient explosion/vanishing, making training more stable.
+
+**Real-world motivation**
+
 Regularizing deep-learning models is a surprisingly challenging task.
 Classical techniques such as penalty methods often fall short when applied
 on deep models due to the complexity of the function being optimized.
@@ -36,6 +75,19 @@ In other words, they use a function to constrain the parameters.
 
 In this tutorial, you will learn how to implement and use this pattern to put
 constraints on your model. Doing so is as easy as writing your own ``nn.Module``.
+
+**Further Reading**
+
+For those interested in diving deeper into parametrizations and their applications:
+
+- `Weight Normalization (Salimans & Kingma, 2016) <https://arxiv.org/abs/1602.07868>`_:
+  Introduces weight normalization for accelerating training.
+- `Spectral Normalization for GANs (Miyato et al., 2018) <https://arxiv.org/abs/1802.05957>`_:
+  Proposes spectral normalization to stabilize GAN training.
+- `Orthogonal RNNs (Helfrich et al., 2018) <https://arxiv.org/abs/1803.00254>`_:
+  Explores orthogonal parametrizations for recurrent networks.
+- `Riemannian Optimization (Absil et al., 2008) <https://press.princeton.edu/absil>`_:
+  Mathematical foundations for optimization on manifolds with constraints.
 
 Requirements: ``torch>=1.9.0``
 
