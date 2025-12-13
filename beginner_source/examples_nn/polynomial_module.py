@@ -9,6 +9,16 @@ to :math:`\pi` by minimizing squared Euclidean distance.
 This implementation defines the model as a custom Module subclass. Whenever you
 want a model more complex than a simple sequence of existing Modules you will
 need to define your model this way.
+
+.. note::
+    This example is designed to demonstrate the mechanics of gradient descent and
+    backpropagation, not to achieve a perfect fit. A third-degree polynomial has
+    fundamental limitations in approximating :math:`\sin(x)` over the range
+    :math:`[-\pi, \pi]`. The Taylor series for sine requires higher-order terms
+    (5th, 7th degree, etc.) for better accuracy. The resulting polynomial will
+    fit reasonably well near zero but will diverge from :math:`\sin(x)` as you
+    approach :math:`\pm\pi`. This is expected and illustrates the importance of
+    choosing an appropriate model architecture for your problem.
 """
 import torch
 import math
