@@ -62,6 +62,7 @@ from ray.tune.schedulers import ASHAScheduler
 # directory here to reuse the dataset across different trials.
 
 def load_data(data_dir="./data"):
+    # Mean and standard deviation of the CIFAR10 training subset.
     transform = transforms.Compose(
         [transforms.ToTensor(), transforms.Normalize((0.4914, 0.48216, 0.44653), (0.2022, 0.19932, 0.20086))]
     )
@@ -157,12 +158,11 @@ class Net(nn.Module):
 #
 # .. code-block:: python
 #
-#    device = "cpu"
 #    if torch.cuda.is_available():
-#        device = "cuda:0"
+#        # Must move the model to CUDA before wrapping it with ``DataParallel``
+#        net = net.to("cuda")
 #        if torch.cuda.device_count() > 1:
 #            net = nn.DataParallel(net)
-#    net.to(device)
 #
 # By using a ``device`` variable, we ensure that training works even
 # without a GPU. PyTorch requires us to send our data to the GPU memory
@@ -232,12 +232,9 @@ class Net(nn.Module):
 def train_cifar(config, data_dir=None):
     net = Net(config["l1"], config["l2"])
 
-    device = "cpu"
-    if torch.cuda.is_available():
-        device = "cuda:0"
-        if torch.cuda.device_count() > 1:
-            net = nn.DataParallel(net)
-    net.to(device)
+    net = net.to(config["device"])
+    if torch.cuda.device_count() > 1:
+        net = nn.DataParallel(net)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
@@ -474,11 +471,13 @@ def main(num_trials=10, max_num_epochs=10, gpus_per_trial=2):
     
     data_dir = os.path.abspath("./data")
     load_data(data_dir)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     config = {
         "l1": tune.choice([2**i for i in range(9)]),
         "l2": tune.choice([2**i for i in range(9)]),
         "lr": tune.loguniform(1e-4, 1e-1),
         "batch_size": tune.choice([2, 4, 8, 16]),
+        "device": device,
     }
     scheduler = ASHAScheduler(
         max_t=max_num_epochs,
@@ -507,12 +506,9 @@ def main(num_trials=10, max_num_epochs=10, gpus_per_trial=2):
     print(f"Best trial final validation accuracy: {best_result.metrics['accuracy']}")
 
     best_trained_model = Net(best_result.config["l1"], best_result.config["l2"])
-    device = "cpu"
-    if torch.cuda.is_available():
-        device = "cuda:0"
-        if gpus_per_trial > 1:
-            best_trained_model = nn.DataParallel(best_trained_model)
-    best_trained_model.to(device)
+    best_trained_model = best_trained_model.to(device)
+    if gpus_per_trial > 1:
+        best_trained_model = nn.DataParallel(best_trained_model)
 
     best_checkpoint = best_result.checkpoint
     with best_checkpoint.as_directory() as checkpoint_dir:
