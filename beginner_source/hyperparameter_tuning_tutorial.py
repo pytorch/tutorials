@@ -571,7 +571,7 @@ if __name__ == "__main__":
 # utilization, and inspect logs in real-time.
 #
 # For debugging, Ray also offers `Distributed
-# Debugging <https://docs.ray.io/en/latest/ray-observability/user-guides/debug-apps/ray-debugger.html>`__
+# Debugging <https://docs.ray.io/en/latest/ray-observability/index.html>`__
 # tools that let you attach a debugger to running trials across the
 # cluster.
 #
