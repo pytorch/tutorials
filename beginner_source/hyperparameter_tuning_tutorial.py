@@ -143,10 +143,10 @@ class Net(nn.Module):
 #
 #    optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
 #
-# We also split the training data into a training and validation subset.
+# We also split the dataset into training and validation subsets.
 # We thus train on 80% of the data and calculate the validation loss on
 # the remaining 20%. The batch sizes with which we iterate through the
-# training and test sets are configurable as well.
+# training and test sets are configurable by Ray Tune.
 #
 # Add multi-GPU support with DataParallel
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
