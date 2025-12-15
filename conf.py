@@ -141,7 +141,19 @@ extensions = [
     "sphinx_sitemap",
     "sphinx_reredirects",
     "sphinxcontrib.mermaid",
+    "hoverxref.extension",
 ]
+
+# sphinx-hoverxref configuration
+hoverxref_auto_ref = True
+hoverxref_domains = ["py", "std"]  # Add 'std' domain for glossary terms
+hoverxref_role_types = {
+    "term": "tooltip",  # Enable tooltips for glossary terms
+    "ref": "tooltip",
+    "std:term": "tooltip",  # Explicitly enable tooltips for std domain terms
+}
+hoverxref_tooltip_maxwidth = 600
+hoverxref_tooltip_theme = ["tooltipster-shadow", "tooltipster-shadow-custom"]
 
 intersphinx_mapping = {
     "torch": ("https://docs.pytorch.org/docs/stable/", None),
@@ -436,6 +448,10 @@ texinfo_documents = [
 
 html_css_files = [
     "https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css",
+]
+
+html_js_files = [
+    "js/glossary-tooltips.js",
 ]
 
 

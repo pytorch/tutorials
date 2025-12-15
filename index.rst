@@ -862,3 +862,9 @@ Additional Resources
    :hidden:
 
    prototype/prototype_index
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   glossary
