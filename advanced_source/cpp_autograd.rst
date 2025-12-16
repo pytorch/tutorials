@@ -15,7 +15,7 @@ Basic autograd operations
 
 (Adapted from `this tutorial <https://pytorch.org/tutorials/beginner/blitz/autograd_tutorial.html#autograd-automatic-differentiation>`_)
 
-Create a tensor and set ``torch::requires_grad()`` to track computation with it
+Create a :term:`tensor` and set ``torch::requires_grad()`` to track computation with it
 
 .. code-block:: cpp
 
@@ -64,7 +64,7 @@ Do more operations on ``y``
 
   auto z = y * y * 3;
   auto out = z.mean();
-  
+
   std::cout << z << std::endl;
   std::cout << z.grad_fn()->name() << std::endl;
   std::cout << out << std::endl;
@@ -90,10 +90,10 @@ Out:
   auto a = torch::randn({2, 2});
   a = ((a * 3) / (a - 1));
   std::cout << a.requires_grad() << std::endl;
-  
+
   a.requires_grad_(true);
   std::cout << a.requires_grad() << std::endl;
-  
+
   auto b = (a * a).sum();
   std::cout << b.grad_fn()->name() << std::endl;
 
@@ -106,13 +106,13 @@ Out:
   SumBackward0
 
 Let's backprop now. Because ``out`` contains a single scalar, ``out.backward()``
-is equivalent to ``out.backward(torch::tensor(1.))``.
+is equivalent to ``out.backward(torch::tensor(1.))``. This is part of the :term:`backward pass`.
 
 .. code-block:: cpp
 
   out.backward();
 
-Print gradients d(out)/dx
+Print :term:`gradients<gradient>` d(out)/dx
 
 .. code-block:: cpp
 
@@ -134,12 +134,12 @@ Now let's take a look at an example of vector-Jacobian product:
 .. code-block:: cpp
 
   x = torch::randn(3, torch::requires_grad());
-  
+
   y = x * 2;
   while (y.norm().item<double>() < 1000) {
     y = y * 2;
   }
-    
+
   std::cout << y << std::endl;
   std::cout << y.grad_fn()->name() << std::endl;
 
@@ -159,7 +159,7 @@ If we want the vector-Jacobian product, pass the vector to ``backward`` as argum
 
   auto v = torch::tensor({0.1, 1.0, 0.0001}, torch::kFloat);
   y.backward(v);
-  
+
   std::cout << x.grad() << std::endl;
 
 Out:
@@ -178,7 +178,7 @@ either by putting ``torch::NoGradGuard`` in a code block
 
   std::cout << x.requires_grad() << std::endl;
   std::cout << x.pow(2).requires_grad() << std::endl;
-  
+
   {
     torch::NoGradGuard no_grad;
     std::cout << x.pow(2).requires_grad() << std::endl;
@@ -218,31 +218,31 @@ please see `the corresponding C++ API docs <https://pytorch.org/cppdocs/api/clas
 Computing higher-order gradients in C++
 ---------------------------------------
 
-One of the applications of higher-order gradients is calculating gradient penalty.
+One of the applications of higher-order :term:`gradients<gradient>` is calculating :term:`gradient` penalty.
 Let's see an example of it using ``torch::autograd::grad``:
 
 .. code-block:: cpp
 
   #include <torch/torch.h>
-  
+
   auto model = torch::nn::Linear(4, 3);
-  
+
   auto input = torch::randn({3, 4}).requires_grad_(true);
   auto output = model(input);
-  
+
   // Calculate loss
   auto target = torch::randn({3, 3});
   auto loss = torch::nn::MSELoss()(output, target);
-  
+
   // Use norm of gradients as penalty
   auto grad_output = torch::ones_like(output);
   auto gradient = torch::autograd::grad({output}, {input}, /*grad_outputs=*/{grad_output}, /*create_graph=*/true)[0];
   auto gradient_penalty = torch::pow((gradient.norm(2, /*dim=*/1) - 1), 2).mean();
-  
+
   // Add gradient penalty to loss
   auto combined_loss = loss + gradient_penalty;
   combined_loss.backward();
-  
+
   std::cout << input.grad() << std::endl;
 
 Out:
@@ -277,14 +277,14 @@ Below you can find code for a ``Linear`` function from ``torch::nn``:
 .. code-block:: cpp
 
   #include <torch/torch.h>
-  
+
   using namespace torch::autograd;
-  
+
   // Inherit from Function
   class LinearFunction : public Function<LinearFunction> {
    public:
     // Note that both forward and backward are static functions
-  
+
     // bias is an optional argument
     static torch::Tensor forward(
         AutogradContext *ctx, torch::Tensor input, torch::Tensor weight, torch::Tensor bias = torch::Tensor()) {
@@ -295,13 +295,13 @@ Below you can find code for a ``Linear`` function from ``torch::nn``:
       }
       return output;
     }
-  
+
     static tensor_list backward(AutogradContext *ctx, tensor_list grad_outputs) {
       auto saved = ctx->get_saved_variables();
       auto input = saved[0];
       auto weight = saved[1];
       auto bias = saved[2];
-  
+
       auto grad_output = grad_outputs[0];
       auto grad_input = grad_output.mm(weight);
       auto grad_weight = grad_output.t().mm(input);
@@ -309,7 +309,7 @@ Below you can find code for a ``Linear`` function from ``torch::nn``:
       if (bias.defined()) {
         grad_bias = grad_output.sum(0);
       }
-  
+
       return {grad_input, grad_weight, grad_bias};
     }
   };
@@ -322,7 +322,7 @@ Then, we can use the ``LinearFunction`` in the following way:
   auto weight = torch::randn({4, 3}).requires_grad_();
   auto y = LinearFunction::apply(x, weight);
   y.sum().backward();
-  
+
   std::cout << x.grad() << std::endl;
   std::cout << weight.grad() << std::endl;
 
@@ -344,9 +344,9 @@ Here, we give an additional example of a function that is parametrized by non-te
 .. code-block:: cpp
 
   #include <torch/torch.h>
-  
+
   using namespace torch::autograd;
-  
+
   class MulConstant : public Function<MulConstant> {
    public:
     static torch::Tensor forward(AutogradContext *ctx, torch::Tensor tensor, double constant) {
@@ -355,7 +355,7 @@ Here, we give an additional example of a function that is parametrized by non-te
       ctx->saved_data["constant"] = constant;
       return tensor * constant;
     }
-  
+
     static tensor_list backward(AutogradContext *ctx, tensor_list grad_outputs) {
       // We return as many input gradients as there were arguments.
       // Gradients of non-tensor arguments to forward must be `torch::Tensor()`.

@@ -38,8 +38,10 @@ with the C++ frontend. Concretely, we will be training a `DCGAN
 generate images of MNIST digits. While conceptually a simple example, it should
 be enough to give you a whirlwind overview of the PyTorch C++ frontend and wet
 your appetite for training more complex models. We will begin with some
+We'll begin with some
 motivating words for why you would want to use the C++ frontend to begin with,
-and then dive straight into defining and training our model.
+and then dive straight into defining and training our model. In this tutorial, we'll train
+a model on :term:`GPU` for optimal performance.
 
 .. tip::
 
@@ -961,6 +963,7 @@ Writing the Training Loop
 Let's now finish the algorithmic part of our example and implement the delicate
 dance between the generator and discriminator. First, we'll create two
 optimizers, one for the generator and one for the discriminator. The optimizers
+The :term:`optimizer`s
 we use implement the `Adam <https://arxiv.org/pdf/1412.6980.pdf>`_ algorithm:
 
 .. code-block:: cpp
