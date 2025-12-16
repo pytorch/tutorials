@@ -417,7 +417,7 @@ def test_accuracy(net, device="cpu", data_dir=None):
 #
 #    tune.with_resources(
 #        partial(train_cifar, data_dir=data_dir),
-#        resources={"cpu": 2, "gpu": gpus_per_trial}
+#        resources={"cpu": cpus_per_trial, "gpu": gpus_per_trial}
 #    )
 #
 # Ray Tune automatically manages the placement of these trials and ensures
@@ -447,7 +447,7 @@ def test_accuracy(net, device="cpu", data_dir=None):
 #    tuner = tune.Tuner(
 #        tune.with_resources(
 #            partial(train_cifar, data_dir=data_dir),
-#            resources={"cpu": 2, "gpu": gpus_per_trial}
+#            resources={"cpu": cpus_per_trial, "gpu": gpus_per_trial}
 #        ),
 #        tune_config=tune.TuneConfig(
 #            metric="loss",
@@ -465,7 +465,7 @@ def test_accuracy(net, device="cpu", data_dir=None):
 # Putting it all together
 # -----------------------
 
-def main(num_trials=10, max_num_epochs=10, gpus_per_trial=0):
+def main(num_trials=10, max_num_epochs=10, gpus_per_trial=0, cpus_per_trial=2):
     print("Starting hyperparameter tuning.")
     ray.init()
     
@@ -488,7 +488,7 @@ def main(num_trials=10, max_num_epochs=10, gpus_per_trial=0):
     tuner = tune.Tuner(
         tune.with_resources(
             partial(train_cifar, data_dir=data_dir),
-            resources={"cpu": 2, "gpu": gpus_per_trial}
+            resources={"cpu": cpus_per_trial, "gpu": gpus_per_trial}
         ),
         tune_config=tune.TuneConfig(
             metric="loss",
