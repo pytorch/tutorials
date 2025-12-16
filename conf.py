@@ -154,6 +154,7 @@ hoverxref_role_types = {
 }
 hoverxref_tooltip_maxwidth = 600
 hoverxref_tooltip_theme = ["tooltipster-shadow", "tooltipster-shadow-custom"]
+hoverxref_sphinxtabs = True  # Enable sphinx-tabs integration
 
 intersphinx_mapping = {
     "torch": ("https://docs.pytorch.org/docs/stable/", None),
