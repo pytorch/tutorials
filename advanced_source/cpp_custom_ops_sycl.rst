@@ -211,17 +211,16 @@ in a separate ``TORCH_LIBRARY_IMPL`` block:
     // 4. Windows Linker
     // ==========================================================
     extern "C" {
-        // 必须导出该符号
         #ifdef _WIN32
         __declspec(dllexport)
         #endif
         PyObject* PyInit__C(void) {
             static struct PyModuleDef moduledef = {
                 PyModuleDef_HEAD_INIT,
-                "_C",                 // 模块名，必须与 setup.py 一致
-                "XPU Extension Shim", // 文档
-                -1,                   // 模块状态大小
-                NULL                  // 方法列表 (我们不通过 Python C-API 暴露方法，全靠 torch ops)
+                "_C",                 
+                "XPU Extension Shim", 
+                -1,                   
+                NULL                  
             };
             return PyModule_Create(&moduledef);
         }
