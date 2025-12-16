@@ -356,11 +356,11 @@ Submit the changes as a PR to the main branch of
 1. Address all feedback comments from your reviewers.
 1. Make sure all CI checks are passing.
 
-Once you submit your PR, you can see a generated Netlify preview of your
-build. You can see an example Netlify preview at the following URL:
-
->  <https://deploy-preview-954--pytorch-tutorials-preview.netlify.app/>
-
+Once you submit your PR, you can see a preview of your
+build, titled "Preview Python docs built from this PR", under Helpful Links.
+This preview will show you how your tutorial will appear on the website,
+but it is not the final version. The final version will be published
+after the PR is merged.
 
 ## Do not merge the PR yourself ##
 

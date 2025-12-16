@@ -2,7 +2,7 @@
 Profiling your PyTorch Module
 -----------------------------
 
-**Author:** `Suraj Subramanian <https://github.com/suraj813>`_
+**Author:** `Suraj Subramanian <https://github.com/subramen>`_
 
 PyTorch includes a profiler API that is useful to identify the time and
 memory costs of various PyTorch operations in your code. Profiler can be
@@ -316,6 +316,6 @@ Self CPU time total: 225.801ms
 # We have seen how Profiler can be used to investigate time and memory bottlenecks in PyTorch models.
 # Read more about Profiler here:
 #
-# - `Profiler Usage Recipe <https://pytorch.org/tutorials/recipes/recipes/profiler.html>`__
+# - `Profiler Usage Recipe <https://docs.pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`__
 # - `Profiling RPC-Based Workloads <https://pytorch.org/tutorials/recipes/distributed_rpc_profiling.html>`__
 # - `Profiler API Docs <https://pytorch.org/docs/stable/autograd.html?highlight=profiler#profiler>`__
