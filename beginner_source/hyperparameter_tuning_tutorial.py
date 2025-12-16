@@ -29,10 +29,11 @@ Setup
 
 To run this tutorial, install the dependencies:
 
-"""
+.. code-block:: bash
 
-# %%bash
-# pip install "ray[tune]" torchvision
+   pip install "ray[tune]" torchvision
+
+"""
 
 ######################################################################
 # Then start with the imports:
