@@ -191,7 +191,7 @@ sphinx_gallery_conf = {
     "show_signature": False,
     "first_notebook_cell": (
         "# For tips on running notebooks in Google Colab, see\n"
-        "# https://docs.pytorch.org/tutorials/beginner/colab\n"
+        "# https://docs.pytorch.org/tutorials/beginner/colab"
         "%matplotlib inline"
     ),
     "ignore_pattern": r"_torch_export_nightly_tutorial.py",
