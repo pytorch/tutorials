@@ -231,8 +231,9 @@ class Net(nn.Module):
 
 def train_cifar(config, data_dir=None):
     net = Net(config["l1"], config["l2"])
+    device = config["device"]
 
-    net = net.to(config["device"])
+    net = net.to(device)
     if torch.cuda.device_count() > 1:
         net = nn.DataParallel(net)
 
@@ -251,7 +252,7 @@ def train_cifar(config, data_dir=None):
     else:
         start_epoch = 0
 
-    trainset, testset = load_data(data_dir)
+    trainset, _testset = load_data(data_dir)
 
     test_abs = int(len(trainset) * 0.8)
     train_subset, val_subset = random_split(
@@ -341,7 +342,7 @@ def train_cifar(config, data_dir=None):
 # model. We also wrap this in a function:
 
 def test_accuracy(net, device="cpu"):
-    trainset, testset = load_data()
+    _trainset, testset = load_data()
 
     testloader = torch.utils.data.DataLoader(
         testset, batch_size=4, shuffle=False, num_workers=2
@@ -470,7 +471,7 @@ def main(num_trials=10, max_num_epochs=10, gpus_per_trial=2):
     ray.init()
     
     data_dir = os.path.abspath("./data")
-    load_data(data_dir)
+    load_data(data_dir)  # Pre-download the dataset
     device = "cuda" if torch.cuda.is_available() else "cpu"
     config = {
         "l1": tune.choice([2**i for i in range(9)]),
