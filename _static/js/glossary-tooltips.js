@@ -6,7 +6,7 @@
  * and displays it in a tooltip without requiring navigation.
  */
 
-(function() {
+(function () {
     'use strict';
 
     // Cache for glossary definitions to avoid repeated fetches
@@ -53,13 +53,41 @@
                 const iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
 
-                // Determine glossary URL
-                const currentUrl = window.location.href;
-                const glossaryUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1) + 'glossary.html';
+                // Determine glossary URL - find the base URL by looking for common patterns
+                const currentPath = window.location.pathname;
+                let basePath = '';
+
+                // Find the root of the documentation
+                const pathParts = currentPath.split('/');
+                for (let i = 0; i < pathParts.length; i++) {
+                    if (pathParts[i] === '_build') {
+                        // For local builds, glossary is at _build/html/glossary.html
+                        basePath = pathParts.slice(0, i + 2).join('/') + '/';
+                        break;
+                    }
+                }
+
+                // If we couldn't find _build, try to find common doc directories
+                if (!basePath) {
+                    const knownDirs = ['advanced', 'beginner', 'intermediate', 'recipes', 'prototype', 'unstable'];
+                    for (let i = pathParts.length - 1; i >= 0; i--) {
+                        if (knownDirs.includes(pathParts[i])) {
+                            basePath = pathParts.slice(0, i).join('/') + '/';
+                            break;
+                        }
+                    }
+                }
+
+                // Fallback to going up directories based on current location
+                if (!basePath) {
+                    basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1) + '../';
+                }
+
+                const glossaryUrl = window.location.origin + basePath + 'glossary.html';
 
                 console.log('Loading glossary from:', glossaryUrl);
 
-                iframe.onload = function() {
+                iframe.onload = function () {
                     try {
                         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
 
@@ -70,14 +98,22 @@
                             console.log('Glossary content successfully loaded');
                         }
 
-                        glossaryContent = iframeDoc;
+                        // Clone the body content before removing iframe
+                        const clonedBody = iframeDoc.body.cloneNode(true);
 
-                        // Remove iframe after loading
-                        setTimeout(() => {
-                            if (iframe.parentNode) {
-                                iframe.parentNode.removeChild(iframe);
-                            }
-                        }, 100);
+                        // Create a container to hold the content
+                        const container = document.createElement('div');
+                        container.innerHTML = clonedBody.innerHTML;
+                        container.style.display = 'none';
+                        container.id = 'glossary-content-cache';
+                        document.body.appendChild(container);
+
+                        glossaryContent = container;
+
+                        // Remove iframe after cloning
+                        if (iframe.parentNode) {
+                            iframe.parentNode.removeChild(iframe);
+                        }
 
                         resolve(glossaryContent);
                     } catch (error) {
@@ -86,7 +122,7 @@
                     }
                 };
 
-                iframe.onerror = function(error) {
+                iframe.onerror = function (error) {
                     console.error('Error loading glossary iframe:', error);
                     reject(error);
                 };
@@ -115,15 +151,17 @@
     /**
      * Extract definition text from glossary entry
      */
-    function getDefinitionText(termId, doc) {
+    function getDefinitionText(termId, container) {
         if (glossaryCache[termId]) {
             return glossaryCache[termId];
         }
 
         try {
             // Find the term definition in the glossary
-            const termElement = doc.getElementById(termId);
+            // container is a div element, so use querySelector instead of getElementById
+            const termElement = container.querySelector('#' + CSS.escape(termId));
             if (!termElement) {
+                console.warn('Term not found:', termId);
                 return null;
             }
 
@@ -134,6 +172,18 @@
             }
 
             if (!definitionElement) {
+                // Try looking for the parent dt and its sibling dd
+                const parentDt = termElement.closest('dt');
+                if (parentDt) {
+                    definitionElement = parentDt.nextElementSibling;
+                    while (definitionElement && definitionElement.tagName !== 'DD') {
+                        definitionElement = definitionElement.nextElementSibling;
+                    }
+                }
+            }
+
+            if (!definitionElement) {
+                console.warn('Definition element not found for:', termId);
                 return null;
             }
 
