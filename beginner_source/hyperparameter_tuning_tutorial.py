@@ -2,7 +2,7 @@
 Hyperparameter tuning with Ray Tune
 ===================================
 
-**Author:** `Ricardo Decal <https://github.com/crypdick>`_
+**Author:** `Ricardo Decal <https://github.com/crypdick>`__
 
 This tutorial shows how to integrate Ray Tune into your PyTorch training
 workflow to perform scalable and efficient hyperparameter tuning.
@@ -57,7 +57,7 @@ from ray.tune.schedulers import ASHAScheduler
 
 ######################################################################
 # How to use PyTorch data loaders with Ray Tune
-# ---------------------------------------------
+# =============================================
 #
 # Wrap the data loaders in a constructor function. Pass a global data
 # directory here to reuse the dataset across different trials.
@@ -80,10 +80,11 @@ def load_data(data_dir="./data"):
 
 ######################################################################
 # Configure the hyperparameters
-# -----------------------------
+# =============================
 #
-# In this example, we specify the layer sizes of the fully connected
-# layers.
+# In this tutorial, we will tune the sizes of the fully connected layers
+# and the learning rate. In order to do so, we need to expose the layer
+# sizes and the learning rate as configurable parameters.
 
 class Net(nn.Module):
     def __init__(self, l1=120, l2=84):
@@ -106,7 +107,7 @@ class Net(nn.Module):
 
 ######################################################################
 # Use a train function with Ray Tune
-# ----------------------------------
+# ==================================
 #
 # Now it gets interesting, because we introduce some changes to the
 # example `from the PyTorch
@@ -144,13 +145,13 @@ class Net(nn.Module):
 #
 #    optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
 #
-# We also split the dataset into training and validation subsets.
-# We thus train on 80% of the data and calculate the validation loss on
-# the remaining 20%. The batch sizes with which we iterate through the
+# We also split the dataset into training and validation subsets. We thus
+# train on 80% of the data and calculate the validation loss on the
+# remaining 20%. The batch sizes with which we iterate through the
 # training and test sets are configurable by Ray Tune.
 #
 # Add multi-GPU support with DataParallel
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ---------------------------------------
 #
 # Image classification benefits largely from GPUs. Luckily, you can
 # continue to use PyTorch tools in Ray Tune. Thus, you can wrap the model
@@ -182,7 +183,7 @@ class Net(nn.Module):
 # the GPU memory. We will return to that later.
 #
 # Communicating with Ray Tune
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ---------------------------
 #
 # The most interesting part is the communication with Ray Tune. As you’ll
 # see, integrating Ray Tune into your training code requires only a few
@@ -226,7 +227,7 @@ class Net(nn.Module):
 # remains standard PyTorch.
 #
 # Full training function
-# ~~~~~~~~~~~~~~~~~~~~~~
+# ----------------------
 #
 # The full code example looks like this:
 
@@ -336,7 +337,7 @@ def train_cifar(config, data_dir=None):
 # example.
 #
 # Compute test set accuracy
-# -------------------------
+# =========================
 #
 # Commonly the performance of a machine learning model is tested on a
 # held-out test set with data that has not been used for training the
@@ -367,7 +368,7 @@ def test_accuracy(net, device="cpu"):
 # set validation on a GPU.
 #
 # Configure the search space
-# --------------------------
+# ==========================
 #
 # Lastly, we need to define Ray Tune’s search space. Ray Tune offers a
 # variety of `search space
@@ -395,7 +396,7 @@ def test_accuracy(net, device="cpu"):
 # the search space is explored efficiently across different magnitudes.
 #
 # Smarter sampling and scheduling
-# -------------------------------
+# ===============================
 #
 # To make the hyperparameter search process efficient, Ray Tune provides
 # two main controls:
@@ -406,7 +407,7 @@ def test_accuracy(net, device="cpu"):
 #    such as
 #    `Optuna <https://docs.ray.io/en/latest/tune/api/suggestion.html#optuna>`__
 #    or
-#    ```bayesopt`` <https://docs.ray.io/en/latest/tune/api/suggestion.html#bayesopt>`__,
+#    `BayesOpt <https://docs.ray.io/en/latest/tune/api/suggestion.html#bayesopt>`__,
 #    instead of relying only on random or grid search.
 # 2. It can detect underperforming trials and stop them early using
 #    `schedulers <https://docs.ray.io/en/latest/tune/key-concepts.html#tune-schedulers>`__,
@@ -417,7 +418,7 @@ def test_accuracy(net, device="cpu"):
 # terminates low-performing trials to save computational resources.
 #
 # Configure the resources
-# -----------------------
+# =======================
 #
 # Tell Ray Tune what resources should be available for each trial using
 # ``tune.with_resources``:
@@ -436,11 +437,11 @@ def test_accuracy(net, device="cpu"):
 #
 # For example, if you are running this experiment on a cluster of 20
 # machines, each with 8 GPUs, you can set ``gpus_per_trial = 0.5`` to
-# schedule 2 concurrent trials per GPU. This configuration runs 320 trials
-# in parallel across the cluster.
+# schedule two concurrent trials per GPU. This configuration runs 320
+# trials in parallel across the cluster.
 #
 # Putting it together
-# -------------------
+# ===================
 #
 # The Ray Tune API is designed to be modular and composable: you pass your
 # configurations to the ``tune.Tuner`` class to create a tuner object,
@@ -560,7 +561,7 @@ if __name__ == "__main__":
 # You can now tune the parameters of your PyTorch models.
 #
 # Observability
-# -------------
+# =============
 #
 # When running large-scale experiments, monitoring is crucial. Ray
 # provides a
@@ -568,13 +569,12 @@ if __name__ == "__main__":
 # that lets you view the status of your trials, check cluster resource
 # utilization, and inspect logs in real-time.
 #
-# For debugging, Ray also offers `Distributed
-# Debugging <https://docs.ray.io/en/latest/ray-observability/index.html>`__
-# tools that let you attach a debugger to running trials across the
-# cluster.
+# For debugging, Ray also offers `distributed debugging
+# tools <https://docs.ray.io/en/latest/ray-observability/index.html>`__
+# that let you attach a debugger to running trials across the cluster.
 #
 # Conclusion
-# ----------
+# ==========
 #
 # In this tutorial, you learned how to tune the hyperparameters of a
 # PyTorch model using Ray Tune. You saw how to integrate Ray Tune into
@@ -588,7 +588,7 @@ if __name__ == "__main__":
 # efficiently.
 #
 # Further reading
-# ---------------
+# ===============
 #
 # - `Ray Tune
 #   documentation <https://docs.ray.io/en/latest/tune/index.html>`__
