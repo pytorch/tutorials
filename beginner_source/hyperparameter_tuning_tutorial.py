@@ -465,7 +465,7 @@ def test_accuracy(net, device="cpu", data_dir=None):
 # Putting it all together
 # -----------------------
 
-def main(num_trials=10, max_num_epochs=10, gpus_per_trial=2):
+def main(num_trials=10, max_num_epochs=10, gpus_per_trial=0):
     print("Starting hyperparameter tuning.")
     ray.init()
     
@@ -522,8 +522,7 @@ def main(num_trials=10, max_num_epochs=10, gpus_per_trial=2):
 
 if __name__ == "__main__":
     # Set the number of trials, epochs, and GPUs per trial here:
-    # The following configuration uses 1 trial, 1 epoch, and CPU only for demonstration purposes.
-    main(num_trials=1, max_num_epochs=1, gpus_per_trial=0)
+    main(num_trials=10, max_num_epochs=10, gpus_per_trial=1)
 
 ######################################################################
 # Results
