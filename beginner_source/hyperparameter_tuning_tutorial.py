@@ -1,6 +1,6 @@
 """
-Hyperparameter tuning with Ray Tune
-===================================
+Hyperparameter tuning using Ray Tune
+====================================
 
 **Author:** `Ricardo Decal <https://github.com/crypdick>`__
 
@@ -8,21 +8,21 @@ This tutorial shows how to integrate Ray Tune into your PyTorch training
 workflow to perform scalable and efficient hyperparameter tuning.
 
 `Ray <https://docs.ray.io/en/latest/index.html>`__, a project of the
-PyTorch Foundation, is an open-source unified framework for scaling AI
-and Python applications. It helps run distributed workloads by handling
-the complexity of distributed computing. `Ray
+PyTorch Foundation, is an open source unified framework for scaling AI
+and Python applications. It helps run distributed jobs by handling the
+complexity of distributed computing. `Ray
 Tune <https://docs.ray.io/en/latest/tune/index.html>`__ is a library
 built on Ray for hyperparameter tuning that enables you to scale a
 hyperparameter sweep from your machine to a large cluster with no code
 changes.
 
-This tutorial extends the PyTorch tutorial for training a CIFAR10 image
-classifier in the `CIFAR10 tutorial (PyTorch
-documentation) <https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html>`__.
-Only minor modifications are needed to adapt the PyTorch tutorial for
-Ray Tune. Specifically, this tutorial wraps the data loading and
-training in functions, makes some network parameters configurable, adds
-optional checkpointing, and defines the search space for model tuning.
+This tutorial makes minor modifications to the `PyTorch tutorial for
+training a CIFAR10
+classifier <https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html>`__
+to adapt it for Ray Tune. Specifically, this tutorial wraps the data
+loading and training in functions, defines a search space for model
+tuning, exposes some parameters to make them configurable, adds optional
+checkpointing, and supports multi-GPU training.
 
 Setup
 -----
@@ -56,11 +56,14 @@ from ray.tune import Checkpoint
 from ray.tune.schedulers import ASHAScheduler
 
 ######################################################################
-# How to use PyTorch data loaders with Ray Tune
-# =============================================
+# Data loading
+# ============
 #
-# Wrap the data loaders in a constructor function. Pass a global data
-# directory here to reuse the dataset across different trials.
+# Wrap the data loaders in a constructor function. In this tutorial, a
+# global data directory is passed to the function to enable reusing the
+# dataset across different trials. In a cluster environment, you can use
+# shared storage, such as network file systems, to prevent each node from
+# downloading the data separately.
 
 def load_data(data_dir="./data"):
     # Mean and standard deviation of the CIFAR10 training subset.
@@ -79,12 +82,13 @@ def load_data(data_dir="./data"):
     return trainset, testset
 
 ######################################################################
-# Configure the hyperparameters
-# =============================
+# Model architecture
+# ==================
 #
-# In this tutorial, we will tune the sizes of the fully connected layers
-# and the learning rate. In order to do so, we need to expose the layer
-# sizes and the learning rate as configurable parameters.
+# This tutorial searches for the best sizes for the fully connected layers
+# and the learning rate. To enable this, the ``Net`` class exposes the
+# layer sizes ``l1`` and ``l2`` as configurable parameters that Ray Tune
+# can search over:
 
 class Net(nn.Module):
     def __init__(self, l1=120, l2=84):
@@ -106,130 +110,45 @@ class Net(nn.Module):
         return x
 
 ######################################################################
-# Use a train function with Ray Tune
-# ==================================
+# Define the search space
+# =======================
 #
-# Now it gets interesting, because we introduce some changes to the
-# example `from the PyTorch
-# documentation <https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html>`__.
+# Next, define the hyperparameters to tune and how Ray Tune samples them.
+# Ray Tune offers a variety of `search space
+# distributions <https://docs.ray.io/en/latest/tune/api/search_space.html>`__
+# to suit different parameter types: ``loguniform``, ``uniform``,
+# ``choice``, ``randint``, ``grid``, and more. You can also express
+# complex dependencies between parameters with `conditional search
+# spaces <https://docs.ray.io/en/latest/tune/tutorials/tune-search-spaces.html#how-to-use-custom-and-conditional-search-spaces-in-tune>`__
+# or sample from arbitrary functions.
 #
-# We wrap the training script in a function
-# ``train_cifar(config, data_dir=None)``. The ``config`` parameter
-# receives the hyperparameters we want to train with. The ``data_dir``
-# specifies the directory where we load and store the data, allowing
-# multiple runs to share the same data source. This is especially useful
-# in cluster environments where you can mount shared storage (for example
-# NFS) to prevent the data from being downloaded to each node separately.
-# We also load the model and optimizer state at the start of the run if a
-# checkpoint is provided. Further down in this tutorial, you will find
-# information on how to save the checkpoint and how it is used.
+# Here is the search space for this tutorial:
 #
 # .. code-block:: python
 #
-#    net = Net(config["l1"], config["l2"])
-#
-#    checkpoint = tune.get_checkpoint()
-#    if checkpoint:
-#        with checkpoint.as_directory() as checkpoint_dir:
-#            checkpoint_path = Path(checkpoint_dir) / "checkpoint.pt"
-#            checkpoint_state = torch.load(checkpoint_path)
-#            start_epoch = checkpoint_state["epoch"]
-#            net.load_state_dict(checkpoint_state["net_state_dict"])
-#            optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
-#    else:
-#        start_epoch = 0
-#
-# The learning rate of the optimizer is made configurable, too:
-#
-# .. code-block:: python
-#
-#    optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
-#
-# We also split the dataset into training and validation subsets. We thus
-# train on 80% of the data and calculate the validation loss on the
-# remaining 20%. The batch sizes with which we iterate through the
-# training and test sets are configurable by Ray Tune.
-#
-# Add multi-GPU support with DataParallel
-# ---------------------------------------
-#
-# Image classification benefits largely from GPUs. Luckily, you can
-# continue to use PyTorch tools in Ray Tune. Thus, you can wrap the model
-# in ``nn.DataParallel`` to support data-parallel training on multiple
-# GPUs:
-#
-# .. code-block:: python
-#
-#    if torch.cuda.is_available():
-#        # Must move the model to CUDA before wrapping it with ``DataParallel``
-#        net = net.to("cuda")
-#        if torch.cuda.device_count() > 1:
-#            net = nn.DataParallel(net)
-#
-# By using a ``device`` variable, we ensure that training works even
-# without a GPU. PyTorch requires us to send our data to the GPU memory
-# explicitly:
-#
-# .. code-block:: python
-#
-#    for i, data in enumerate(trainloader, 0):
-#        inputs, labels = data
-#        inputs, labels = inputs.to(device), labels.to(device)
-#
-# The code now supports training on CPUs, on a single GPU, and on multiple
-# GPUs. Notably, Ray also supports `fractional
-# GPUs <https://docs.ray.io/en/latest/ray-core/scheduling/accelerators.html#fractional-accelerators>`__
-# so we can share GPUs among trials, as long as the model still fits on
-# the GPU memory. We will return to that later.
-#
-# Communicating with Ray Tune
-# ---------------------------
-#
-# The most interesting part is the communication with Ray Tune. As you’ll
-# see, integrating Ray Tune into your training code requires only a few
-# additional lines:
-#
-# .. code-block:: python
-#
-#    checkpoint_data = {
-#        "epoch": epoch,
-#        "net_state_dict": net.state_dict(),
-#        "optimizer_state_dict": optimizer.state_dict(),
+#    config = {
+#        "l1": tune.choice([2**i for i in range(9)]),
+#        "l2": tune.choice([2**i for i in range(9)]),
+#        "lr": tune.loguniform(1e-4, 1e-1),
+#        "batch_size": tune.choice([2, 4, 8, 16]),
 #    }
-#    with tempfile.TemporaryDirectory() as checkpoint_dir:
-#        checkpoint_path = Path(checkpoint_dir) / "checkpoint.pt"
-#        torch.save(checkpoint_data, checkpoint_path)
 #
-#        checkpoint = Checkpoint.from_directory(checkpoint_dir)
-#        tune.report(
-#            {"loss": val_loss / val_steps, "accuracy": correct / total},
-#            checkpoint=checkpoint,
-#        )
+# The ``tune.choice()`` accepts a list of values that are uniformly
+# sampled from. In this example, the ``l1`` and ``l2`` parameter values
+# are powers of 2 between 1 and 256, and the learning rate samples on a
+# log scale between 0.0001 and 0.1. Sampling on a log scale enables
+# exploration across a range of magnitudes on a relative scale, rather
+# than an absolute scale.
 #
-# Here we first save a checkpoint and then report some metrics back to Ray
-# Tune. Specifically, we send the validation loss and accuracy back to Ray
-# Tune. Ray Tune uses these metrics to determine the best hyperparameter
-# configuration and to stop underperforming trials early, saving
-# resources.
+# Training function
+# =================
 #
-# The checkpoint saving is optional. However, it is necessary if we wanted
-# to use advanced schedulers like `Population Based
-# Training <https://docs.ray.io/en/latest/tune/examples/pbt_guide.html>`__.
-# Saving the checkpoint also allows us to later load the trained models
-# for validation on a test set. Lastly, it provides fault tolerance,
-# enabling us to pause and resume training.
+# Ray Tune requires a training function that accepts a configuration
+# dictionary and runs the main training loop. As Ray Tune runs different
+# trials, it updates the configuration dictionary for each trial.
 #
-# To summarize, integrating Ray Tune into your PyTorch training requires
-# just a few key additions: use ``tune.report()`` to report metrics (and
-# optionally checkpoints) to Ray Tune, ``tune.get_checkpoint()`` to load a
-# model from a checkpoint, and ``Checkpoint.from_directory()`` to create a
-# checkpoint object from saved state. The rest of your training code
-# remains standard PyTorch.
-#
-# Full training function
-# ----------------------
-#
-# The full code example looks like this:
+# Here is the full training function, followed by explanations of the key
+# Ray Tune integration points:
 
 def train_cifar(config, data_dir=None):
     net = Net(config["l1"], config["l2"])
@@ -333,18 +252,110 @@ def train_cifar(config, data_dir=None):
     print("Finished Training")
 
 ######################################################################
-# As you can see, most of the code is adapted directly from the original
-# example.
+# Key integration points
+# ----------------------
 #
-# Compute test set accuracy
-# =========================
+# Using hyperparameters from the configuration dictionary
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# Commonly the performance of a machine learning model is tested on a
-# held-out test set with data that has not been used for training the
-# model. We also wrap this in a function:
+# Ray Tune updates the ``config`` dictionary with the hyperparameters for
+# each trial. In this example, the model architecture and optimizer
+# receive the hyperparameters from the ``config`` dictionary:
+#
+# .. code-block:: python
+#
+#    net = Net(config["l1"], config["l2"])
+#    optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
+#
+# Reporting metrics and saving checkpoints
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# The most important integration is communicating with Ray Tune. Ray Tune
+# uses the validation metrics to determine the best hyperparameter
+# configuration and to stop underperforming trials early, saving
+# resources.
+#
+# Checkpointing enables you to later load the trained models, resume
+# hyperparameter searches, and provides fault tolerance. It’s also
+# required for some Ray Tune schedulers like `Population Based
+# Training <https://docs.ray.io/en/latest/tune/examples/pbt_guide.html>`__
+# that pause and resume trials during the search.
+#
+# This code from the training function loads model and optimizer state at
+# the start if a checkpoint exists:
+#
+# .. code-block:: python
+#
+#    checkpoint = tune.get_checkpoint()
+#    if checkpoint:
+#        with checkpoint.as_directory() as checkpoint_dir:
+#            checkpoint_path = Path(checkpoint_dir) / "checkpoint.pt"
+#            checkpoint_state = torch.load(checkpoint_path)
+#            start_epoch = checkpoint_state["epoch"]
+#            net.load_state_dict(checkpoint_state["net_state_dict"])
+#            optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
+#
+# At the end of each epoch, save a checkpoint and report the validation
+# metrics:
+#
+# .. code-block:: python
+#
+#    checkpoint_data = {
+#        "epoch": epoch,
+#        "net_state_dict": net.state_dict(),
+#        "optimizer_state_dict": optimizer.state_dict(),
+#    }
+#    with tempfile.TemporaryDirectory() as checkpoint_dir:
+#        checkpoint_path = Path(checkpoint_dir) / "checkpoint.pt"
+#        torch.save(checkpoint_data, checkpoint_path)
+#
+#        checkpoint = Checkpoint.from_directory(checkpoint_dir)
+#        tune.report(
+#            {"loss": val_loss / val_steps, "accuracy": correct / total},
+#            checkpoint=checkpoint,
+#        )
+#
+# Ray Tune checkpointing supports local file systems, cloud storage, and
+# distributed file systems. For more information, see the `Ray Tune
+# storage
+# documentation <https://docs.ray.io/en/latest/tune/tutorials/tune-storage.html>`__.
+#
+# Multi-GPU support
+# ~~~~~~~~~~~~~~~~~
+#
+# Image classification models can be greatly accelerated by using GPUs.
+# The training function supports multi-GPU training by wrapping the model
+# in ``nn.DataParallel``:
+#
+# .. code-block:: python
+#
+#    if torch.cuda.device_count() > 1:
+#        net = nn.DataParallel(net)
+#
+# This training function supports training on CPUs, a single GPU, or
+# multiple GPUs without code changes. Ray Tune also supports `fractional
+# GPUs <https://docs.ray.io/en/latest/ray-core/scheduling/accelerators.html#fractional-accelerators>`__
+# so that one GPU can be shared among multiple trials, provided that the
+# models, optimizers, and data batches fit into the GPU memory.
+#
+# Validation split
+# ~~~~~~~~~~~~~~~~
+#
+# The original CIFAR10 dataset only has train and test subsets. This is
+# sufficient for training a single model, however for hyperparameter
+# tuning a validation subset is required. The training function creates a
+# validation subset by reserving 20% of the training subset. The test
+# subset is used to evaluate the best model’s generalization error after
+# the search completes.
+#
+# Evaluation function
+# ===================
+#
+# After finding the optimal hyperparameters, test the model on a held-out
+# test set to estimate the generalization error:
 
-def test_accuracy(net, device="cpu"):
-    _trainset, testset = load_data()
+def test_accuracy(net, device="cpu", data_dir=None):
+    _trainset, testset = load_data(data_dir)
 
     testloader = torch.utils.data.DataLoader(
         testset, batch_size=4, shuffle=False, num_workers=2
@@ -354,9 +365,9 @@ def test_accuracy(net, device="cpu"):
     total = 0
     with torch.no_grad():
         for data in testloader:
-            images, labels = data
-            images, labels = images.to(device), labels.to(device)
-            outputs = net(images)
+            image_batch, labels = data
+            image_batch, labels = image_batch.to(device), labels.to(device)
+            outputs = net(image_batch)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
@@ -364,109 +375,95 @@ def test_accuracy(net, device="cpu"):
     return correct / total
 
 ######################################################################
-# The function also expects a ``device`` parameter so you can run the test
-# set validation on a GPU.
-#
-# Configure the search space
+# Configure and run Ray Tune
 # ==========================
 #
-# Lastly, we need to define Ray Tune’s search space. Ray Tune offers a
-# variety of `search space
-# distributions <https://docs.ray.io/en/latest/tune/api/search_space.html>`__
-# to suit different parameter types: ``loguniform``, ``uniform``,
-# ``choice``, ``randint``, ``grid``, and more. It also lets you express
-# complex dependencies between parameters with `conditional search
-# spaces <https://docs.ray.io/en/latest/tune/tutorials/tune-search-spaces.html#how-to-use-custom-and-conditional-search-spaces-in-tune>`__.
+# With the training and evaluation functions defined, configure Ray Tune
+# to run the hyperparameter search.
 #
-# Here is an example:
+# Scheduler for early stopping
+# ----------------------------
+#
+# Ray Tune provides schedulers to improve the efficiency of the
+# hyperparameter search by detecting underperforming trials and stopping
+# them early. The ``ASHAScheduler`` uses the Asynchronous Successive
+# Halving Algorithm (ASHA) to aggressively terminate low-performing
+# trials:
 #
 # .. code-block:: python
 #
-#    config = {
-#        "l1": tune.choice([2**i for i in range(9)]),
-#        "l2": tune.choice([2**i for i in range(9)]),
-#        "lr": tune.loguniform(1e-4, 1e-1),
-#        "batch_size": tune.choice([2, 4, 8, 16]),
-#    }
+#    scheduler = ASHAScheduler(
+#        max_t=max_num_epochs,
+#        grace_period=1,
+#        reduction_factor=2,
+#    )
 #
-# The ``tune.choice()`` accepts a list of values that are uniformly
-# sampled from. In this example, the ``l1`` and ``l2`` parameter values
-# will be powers of 2 between 1 and 256. The learning rate is sampled on a
-# log scale between 0.0001 and 0.1. Sampling on a log scale ensures that
-# the search space is explored efficiently across different magnitudes.
+# Ray Tune also provides `advanced search
+# algorithms <https://docs.ray.io/en/latest/tune/api/suggestion.html>`__
+# to smartly pick the next set of hyperparameters based on previous
+# results, instead of relying only on random or grid search. Examples
+# include
+# `Optuna <https://docs.ray.io/en/latest/tune/api/suggestion.html#optuna>`__
+# and
+# `BayesOpt <https://docs.ray.io/en/latest/tune/api/suggestion.html#bayesopt>`__.
 #
-# Smarter sampling and scheduling
-# ===============================
+# Resource allocation
+# -------------------
 #
-# To make the hyperparameter search process efficient, Ray Tune provides
-# two main controls:
-#
-# 1. It can intelligently pick the next set of hyperparameters to test
-#    based on previous results using `advanced search
-#    algorithms <https://docs.ray.io/en/latest/tune/api/suggestion.html>`__
-#    such as
-#    `Optuna <https://docs.ray.io/en/latest/tune/api/suggestion.html#optuna>`__
-#    or
-#    `BayesOpt <https://docs.ray.io/en/latest/tune/api/suggestion.html#bayesopt>`__,
-#    instead of relying only on random or grid search.
-# 2. It can detect underperforming trials and stop them early using
-#    `schedulers <https://docs.ray.io/en/latest/tune/key-concepts.html#tune-schedulers>`__,
-#    enabling you to explore the parameter space more on the same compute
-#    budget.
-#
-# In this tutorial, we use the ``ASHAScheduler``, which aggressively
-# terminates low-performing trials to save computational resources.
-#
-# Configure the resources
-# =======================
-#
-# Tell Ray Tune what resources should be available for each trial using
-# ``tune.with_resources``:
+# Tell Ray Tune what resources to allocate for each trial by passing a
+# ``resources`` dictionary to ``tune.with_resources``:
 #
 # .. code-block:: python
 #
 #    tune.with_resources(
 #        partial(train_cifar, data_dir=data_dir),
-#        resources={"cpu": cpus_per_trial, "gpu": gpus_per_trial}
+#        resources={"cpu": 2, "gpu": gpus_per_trial}
 #    )
 #
-# This tells Ray Tune to allocate ``cpus_per_trial`` CPUs and
-# ``gpus_per_trial`` GPUs for each trial. Ray Tune automatically manages
-# the placement of these trials and ensures they are isolated, so you
-# don’t need to manually assign GPUs to processes.
+# Ray Tune automatically manages the placement of these trials and ensures
+# that the trials run in isolation, so you don’t need to manually assign
+# GPUs to processes.
 #
 # For example, if you are running this experiment on a cluster of 20
 # machines, each with 8 GPUs, you can set ``gpus_per_trial = 0.5`` to
 # schedule two concurrent trials per GPU. This configuration runs 320
 # trials in parallel across the cluster.
 #
-# Putting it together
-# ===================
+#    **Note**: To run this tutorial without GPUs, set ``gpus_per_trial=0``
+#    and expect significantly longer runtimes.
 #
-# The Ray Tune API is designed to be modular and composable: you pass your
-# configurations to the ``tune.Tuner`` class to create a tuner object,
-# then execute ``tuner.fit()`` to start training:
+#    To avoid long runtimes during development, start with a small number
+#    of trials and epochs.
+#
+# Creating the Tuner
+# ------------------
+#
+# The Ray Tune API is modular and composable. Pass your configuration to
+# the ``tune.Tuner`` class to create a tuner object, then run
+# ``tuner.fit()`` to start training:
 #
 # .. code-block:: python
 #
 #    tuner = tune.Tuner(
 #        tune.with_resources(
 #            partial(train_cifar, data_dir=data_dir),
-#            resources={"cpu": cpus_per_trial, "gpu": gpus_per_trial}
+#            resources={"cpu": 2, "gpu": gpus_per_trial}
 #        ),
 #        tune_config=tune.TuneConfig(
 #            metric="loss",
 #            mode="min",
 #            scheduler=scheduler,
-#            num_samples=num_samples,
+#            num_samples=num_trials,
 #        ),
 #        param_space=config,
 #    )
 #    results = tuner.fit()
 #
-# After training the models, we will find the best performing one and load
-# the trained network from the checkpoint file. We then obtain the test
-# set accuracy and report the results.
+# After training completes, retrieve the best performing trial, load its
+# checkpoint, and evaluate on the test set.
+#
+# Putting it all together
+# -----------------------
 
 def main(num_trials=10, max_num_epochs=10, gpus_per_trial=2):
     print("Starting hyperparameter tuning.")
@@ -519,17 +516,22 @@ def main(num_trials=10, max_num_epochs=10, gpus_per_trial=2):
         best_checkpoint_data = torch.load(checkpoint_path)
 
         best_trained_model.load_state_dict(best_checkpoint_data["net_state_dict"])
-        test_acc = test_accuracy(best_trained_model, device)
-        print("Best trial test set accuracy: {}".format(test_acc))
+        test_acc = test_accuracy(best_trained_model, device, data_dir)
+        print(f"Best trial test set accuracy: {test_acc}")
 
 
 if __name__ == "__main__":
     # Set the number of trials, epochs, and GPUs per trial here:
-    # The following configuration is for a quick run (1 trial, 1 epoch, CPU only) for demonstration purposes.
+    # The following configuration uses 1 trial, 1 epoch, and CPU only for demonstration purposes.
     main(num_trials=1, max_num_epochs=1, gpus_per_trial=0)
 
 ######################################################################
-# Your Ray Tune trial summary output will look something like this:
+# Results
+# =======
+#
+# Your Ray Tune trial summary output looks something like this. The text
+# table summarizes the validation performance of the trials and highlights
+# the best hyperparameter configuration:
 #
 # .. code-block:: bash
 #
@@ -554,20 +556,18 @@ if __name__ == "__main__":
 #    Best trial final validation accuracy: 0.4761
 #    Best trial test set accuracy: 0.4737
 #
-# Most trials were stopped early to conserve resources. The best
-# performing trial achieved a validation accuracy of approximately 47%,
-# which could be confirmed on the test set.
-#
-# You can now tune the parameters of your PyTorch models.
+# Most trials stopped early to conserve resources. The best performing
+# trial achieved a validation accuracy of approximately 47%, which the
+# test set confirms.
 #
 # Observability
 # =============
 #
-# When running large-scale experiments, monitoring is crucial. Ray
+# Monitoring is critical when running large-scale experiments. Ray
 # provides a
-# `Dashboard <https://docs.ray.io/en/latest/ray-observability/getting-started.html>`__
+# `dashboard <https://docs.ray.io/en/latest/ray-observability/getting-started.html>`__
 # that lets you view the status of your trials, check cluster resource
-# utilization, and inspect logs in real-time.
+# use, and inspect logs in real time.
 #
 # For debugging, Ray also offers `distributed debugging
 # tools <https://docs.ray.io/en/latest/ray-observability/index.html>`__
@@ -579,13 +579,14 @@ if __name__ == "__main__":
 # In this tutorial, you learned how to tune the hyperparameters of a
 # PyTorch model using Ray Tune. You saw how to integrate Ray Tune into
 # your PyTorch training loop, define a search space for your
-# hyperparameters, use an efficient scheduler like ASHA to terminate bad
-# trials early, save checkpoints and report metrics to Ray Tune, and run
-# the hyperparameter search and analyze the results.
+# hyperparameters, use an efficient scheduler like ASHAScheduler to
+# terminate low-performing trials early, save checkpoints and report
+# metrics to Ray Tune, and run the hyperparameter search and analyze the
+# results.
 #
-# Ray Tune makes it easy to scale your experiments from a single machine
-# to a large cluster, helping you find the best model configuration
-# efficiently.
+# Ray Tune makes it straightforward to scale your experiments from a
+# single machine to a large cluster, helping you find the best model
+# configuration efficiently.
 #
 # Further reading
 # ===============
