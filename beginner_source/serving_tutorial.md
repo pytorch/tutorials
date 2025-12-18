@@ -36,7 +36,6 @@ Start by importing the required libraries:
 
 ```python
 import asyncio
-import json
 import time
 from typing import Any
 
@@ -236,7 +235,6 @@ You should see high throughput numbers, confirming that requests are being batch
 Ray Serve provides built-in monitoring tools to help you track the status and performance of your deployment.
 This dashboard lets you view Serving metrics like request throughput, latency, and error rates, as well as cluster status and resource utilization. For more information, see the [Ray Serve monitoring documentation](https://docs.ray.io/en/latest/serve/monitoring.html).
 
-
 ## Summary
 
 In this tutorial, you learned how to:
@@ -246,13 +244,12 @@ In this tutorial, you learned how to:
 - Configure **autoscaling** to handle traffic spikes.
 - Test the service with concurrent asynchronous requests.
 
-
 ## Further reading
 
 Ray Serve has more production features that are out of scope for this tutorial, but are worth checking out:
 
-*   Specialized **LLM serving APIs** that handles complexities like managing KV caches and continuous batching.
-*   **Model multiplexing** to dynamically load and serve many different models (e.g., per-user fine-tuned models) on a single deployment.
-*   **Composed Deployments** to orchestrate multiple deployments into a single application.
+- Specialized **LLM serving APIs** that handles complexities like managing KV caches and continuous batching.
+- **Model multiplexing** to dynamically load and serve many different models (e.g., per-user fine-tuned models) on a single deployment.
+- **Composed Deployments** to orchestrate multiple deployments into a single application.
 
 For more information, see the [Ray Serve documentation](https://docs.ray.io/en/latest/serve/index.html) and [Ray Serve examples](https://docs.ray.io/en/latest/serve/examples/index.html).
