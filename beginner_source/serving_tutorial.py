@@ -174,6 +174,8 @@ class MNISTClassifier:
 # The following is a sample configuration with autoscaling and resource
 # allocation:
 
+num_cpus_per_replica = 1
+num_gpus_per_replica = 1  # Set to 0 to run the model on CPUs instead of GPUs.  
 mnist_app = MNISTClassifier.options(
     autoscaling_config={
         "target_ongoing_requests": 50,  # Target 50 ongoing requests per replica.
@@ -184,8 +186,8 @@ mnist_app = MNISTClassifier.options(
     },
     # Max concurrent requests per replica before queueing.
     # If the queue fills the shared cluster memory, future requests are backpressured until memory is freed.
-    max_ongoing_requests=100,
-    ray_actor_options={"num_cpus": 1, "num_gpus": 0.5}  # Each replica uses half a GPU.
+    max_ongoing_requests=200,
+    ray_actor_options={"num_cpus": num_cpus_per_replica, "num_gpus": num_gpus_per_replica}
 ).bind()
 
 ######################################################################
@@ -223,7 +225,7 @@ handle = serve.run(mnist_app, name="mnist_classifier")
 # The app is now listening for requests on port 8000.
 #
 # To test the deployment, you can send many requests concurrently using
-# ``aiohttp``. The following code demonstrates how to send 2000 concurrent
+# ``aiohttp``. The following code demonstrates how to send 1000 concurrent
 # requests to the app:
 
 async def send_single_request(session, url, data):
@@ -245,7 +247,7 @@ async def send_concurrent_requests(num_requests):
 
 # Run the concurrent requests.
 start_time = time.time()
-responses = asyncio.run(send_concurrent_requests(2000))
+responses = asyncio.run(send_concurrent_requests(1000))
 elapsed = time.time() - start_time
 
 print(f"Processed {len(responses)} requests in {elapsed:.2f} seconds")
