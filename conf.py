@@ -141,20 +141,20 @@ extensions = [
     "sphinx_sitemap",
     "sphinx_reredirects",
     "sphinxcontrib.mermaid",
-    "hoverxref.extension",
+    "sphinx_tippy",
 ]
 
-# sphinx-hoverxref configuration
-hoverxref_auto_ref = True
-hoverxref_domains = ["py", "std"]  # Add 'std' domain for glossary terms
-hoverxref_role_types = {
-    "term": "tooltip",  # Enable tooltips for glossary terms
-    "ref": "tooltip",
-    "std:term": "tooltip",  # Explicitly enable tooltips for std domain terms
+# sphinx-tippy configuration
+tippy_props = {
+    "placement": "auto-start",
+    "maxWidth": 500,
+    "interactive": True,  # Allow clicking links inside tooltips
+    "theme": "material",
 }
-hoverxref_tooltip_maxwidth = 600
-hoverxref_tooltip_theme = ["tooltipster-shadow", "tooltipster-shadow-custom"]
-hoverxref_sphinxtabs = True  # Enable sphinx-tabs integration
+
+# Skip all URLs except glossary term links (glossary.html#term-*)
+tippy_skip_urls = (r"^(?!.*glossary\.html#term-).*$",)
+tippy_enable_mathjax = True
 
 intersphinx_mapping = {
     "torch": ("https://docs.pytorch.org/docs/stable/", None),
