@@ -8,28 +8,27 @@ This tutorial shows how to deploy a PyTorch model using Ray Serve with
 production-ready features.
 
 `Ray Serve <https://docs.ray.io/en/latest/serve/index.html>`__ is a
-scalable framework for serving machine learning models in production
-built on top of Ray. `Ray <https://docs.ray.io/en/latest/index.html>`__,
-a project of the PyTorch Foundation, is an open-source unified framework
-for scaling AI and Python applications. Ray simplifies distributed
-workloads by handling the complexity of distributed computing.
+scalable framework for serving machine learning models in production.
+It’s built on top of `Ray <https://docs.ray.io/en/latest/index.html>`__,
+which is a unified framework for scaling AI and Python applications that
+simplifies the complexities of distributed computing. Ray is also open
+source and part of the PyTorch Foundation.
 
 In this tutorial, you’ll learn how to deploy a PyTorch model with Ray
-Serve and use its production-ready features. Ray Serve allows you to
-easily scale your model inference across multiple nodes and GPUs,
-providing features like dynamic batching, autoscaling, fault tolerance,
-and observability out of the box.
+Serve and use its production-ready features. Ray Serve lets you scale
+your model inference across thousands of nodes and GPUs, and it provides
+features like dynamic batching, autoscaling, fault tolerance, and model
+multiplexing.
 
 Setup
 -----
 
-Install the dependencies:
-
-.. code-block:: bash
-
-   pip install "ray[serve]" torch torchvision
+To install the dependencies:
 
 """
+
+# %%bash
+# pip install "ray[serve]" torch torchvision
 
 ######################################################################
 # Start by importing the required libraries:
@@ -51,8 +50,8 @@ from torchvision.transforms import v2
 # Define a PyTorch model
 # ----------------------
 #
-# We will define a simple convolutional neural network for MNIST digit
-# classification:
+# Define a simple convolutional neural network for the MNIST digit
+# classification dataset:
 
 class MNISTNet(nn.Module):
     def __init__(self):
@@ -78,7 +77,6 @@ class MNISTNet(nn.Module):
         x = self.fc2(x)
         return nn.functional.log_softmax(x, dim=1)
 
-
 ######################################################################
 # Define the Ray Serve deployment
 # -------------------------------
@@ -89,13 +87,13 @@ class MNISTNet(nn.Module):
 # Processing requests in batches is more efficient than processing
 # requests one by one, especially when using GPUs. Ray Serve provides
 # built-in support for **dynamic request batching**, where individual
-# incoming requests are opportunistically batched. The ``@serve.batch``
-# decorator on the ``predict_batch`` method below enables this.
+# incoming requests are opportunistically batched. Enable dynamic batching
+# using the ``@serve.batch`` decorator as shown in the following code:
 
 app = FastAPI()
 
-class ImageRequest(BaseModel):  # Used for request validation and documentation
-    image: list[list[float]] | list[list[list[float]]]
+class ImageRequest(BaseModel):  # Used for request validation and generating API documentation
+    image: list[list[float]] | list[list[list[float]]]  # 2D or 3D array
 
 @serve.deployment
 @serve.ingress(app)
@@ -103,15 +101,18 @@ class MNISTClassifier:
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = MNISTNet().to(self.device)
+        # Define the transformation pipeline for the input images.
         self.transform = v2.Compose([
             v2.ToImage(),
             v2.ToDtype(torch.float32, scale=True),
+            # Mean and standard deviation of the MNIST training subset.
             v2.Normalize(mean=[0.1307], std=[0.3013]),
         ])
 
         self.model.eval()
 
-    # batch_wait_timeout_s is the maximum time to wait for a full batch.
+    # batch_wait_timeout_s is the maximum time to wait for a full batch,
+    # trading off latency for throughput.
     @serve.batch(max_batch_size=128, batch_wait_timeout_s=0.1)
     async def predict_batch(self, images: list[np.ndarray]) -> list[dict[str, Any]]:
         # Stack all images into a single tensor.
@@ -120,7 +121,7 @@ class MNISTClassifier:
             for img in images
         ]).to(self.device).float()
         
-        # Run inference on the entire batch.
+        # Single forward pass on the entire batch at once.
         with torch.no_grad():
             logits = self.model(batch_tensor)
             predictions = torch.argmax(logits, dim=1).cpu().numpy()
@@ -143,51 +144,60 @@ class MNISTClassifier:
         # Process the single request.
         image_array = np.array(request.image)
 
-        # Ray Serve's @serve.batch will automatically batch requests.
+        # Ray Serve's @serve.batch automatically batches requests.
         result = await self.predict_batch(image_array)
         
         return result
 
 
 ######################################################################
-# This is a FastAPI app, which gives us batteries-included features like
-# automatic request validation (via Pydantic), OpenAPI-style API
-# documentation, and more.
+# This is a FastAPI app, which extends Ray Serve with features like
+# automatic request validation with Pydantic, auto-generated OpenAPI-style
+# API documentation, and more.
 #
 # Configure autoscaling and resource allocation
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ---------------------------------------------
 #
 # In production, traffic can vary significantly. Ray Serve’s
 # **autoscaling** feature automatically adjusts the number of replicas
 # based on traffic load, ensuring you have enough capacity during peaks
-# while saving resources during quiet periods.
+# while saving resources during quiet periods. Ray Serve scales to very
+# large deployments with thousands of nodes and replicas.
 #
 # You can also specify **resource allocation** per replica, such as the
 # number of CPUs or GPUs. Ray Serve handles the orchestration of these
-# resources across your cluster.
+# resources across your cluster. Ray also supports `fractional
+# GPUs <https://docs.ray.io/en/latest/ray-core/scheduling/accelerators.html#fractional-accelerators>`__,
+# allowing multiple replicas to share a single GPU when models are small
+# enough to fit in memory together.
 #
-# Below is a sample configuration with autoscaling and resource
+# The following is a sample configuration with autoscaling and resource
 # allocation:
 
 mnist_app = MNISTClassifier.options(
     autoscaling_config={
         "target_ongoing_requests": 50,  # Target 50 ongoing requests per replica.
         "min_replicas": 1,              # Keep at least 1 replica alive.
-        "max_replicas": 5,              # Scale up to 5 replicas to maintain target_ongoing_requests.
+        "max_replicas": 80,             # Scale up to 80 replicas to maintain target_ongoing_requests.
         "upscale_delay_s": 5,           # Wait 5s before scaling up.
         "downscale_delay_s": 30,        # Wait 30s before scaling down.
     },
     # Max concurrent requests per replica before queueing.
     # If the queue fills the shared cluster memory, future requests are backpressured until memory is freed.
     max_ongoing_requests=100,
-    ray_actor_options={"num_cpus": 1, "num_gpus": 1} 
+    ray_actor_options={"num_cpus": 1, "num_gpus": 0.5}  # Each replica uses half a GPU.
 ).bind()
 
 ######################################################################
-# The app is now ready to be deployed.
+# The app is ready to deploy. Suppose you ran this on a cluster of 10
+# machines, each with 4 GPUs. With ``num_gpus=0.5``, Ray schedules 2
+# replicas per GPU, giving you 80 replicas across the cluster. This
+# configuration permits the deployment to elastically scale up to 80
+# replicas as needed to handle traffic spikes and scale back down to 1
+# replica when traffic subsides.
 #
-# Testing the endpoint with with concurrent requests
-# --------------------------------------------------
+# Test the endpoint with concurrent requests
+# ------------------------------------------
 #
 # To deploy the app, use the ``serve.run`` function:
 
@@ -195,26 +205,25 @@ mnist_app = MNISTClassifier.options(
 handle = serve.run(mnist_app, name="mnist_classifier")
 
 ######################################################################
-# You should see an output similar to:
-#
-# .. code-block:: bash
-#
-#    Started Serve in namespace "serve".
-#    Registering autoscaling state for deployment Deployment(name='MNISTClassifier', app='mnist_classifier')
-#    Deploying new version of Deployment(name='MNISTClassifier', app='mnist_classifier') (initial target replicas: 1).
-#    Proxy starting on node ... (HTTP port: 8000).
-#    Got updated endpoints: {}.
-#    Got updated endpoints: {Deployment(name='MNISTClassifier', app='mnist_classifier'): EndpointInfo(route='/', app_is_cross_language=False, route_patterns=None)}.
-#    Started <ray.serve._private.router.SharedRouterLongPollClient object at 0x73a53c52c250>.
-#    Adding 1 replica to Deployment(name='MNISTClassifier', app='mnist_classifier').
-#    Got updated endpoints: {Deployment(name='MNISTClassifier', app='mnist_classifier'): EndpointInfo(route='/', app_is_cross_language=False, route_patterns=['/', '/docs', '/docs/oauth2-redirect', '/openapi.json', '/redoc'])}.
-#    Application 'mnist_classifier' is ready at http://127.0.0.1:8000/.
+# You will see output similar to:
+
+# %%bash
+# Started Serve in namespace "serve".
+# Registering autoscaling state for deployment Deployment(name='MNISTClassifier', app='mnist_classifier')
+# Deploying new version of Deployment(name='MNISTClassifier', app='mnist_classifier') (initial target replicas: 1).
+# Proxy starting on node ... (HTTP port: 8000).
+# Got updated endpoints: {}.
+# Got updated endpoints: {Deployment(name='MNISTClassifier', app='mnist_classifier'): EndpointInfo(route='/', app_is_cross_language=False, route_patterns=None)}.
+# Started <ray.serve._private.router.SharedRouterLongPollClient object at 0x73a53c52c250>.
+# Adding 1 replica to Deployment(name='MNISTClassifier', app='mnist_classifier').
+# Got updated endpoints: {Deployment(name='MNISTClassifier', app='mnist_classifier'): EndpointInfo(route='/', app_is_cross_language=False, route_patterns=['/', '/docs', '/docs/oauth2-redirect', '/openapi.json', '/redoc'])}.
+# Application 'mnist_classifier' is ready at http://127.0.0.1:8000/.
 
 ######################################################################
 # The app is now listening for requests on port 8000.
 #
-# To test the batching, you can send many requests concurrently using
-# ``aiohttp``. Below is a sample function that sends 2000 concurrent
+# To test the deployment, you can send many requests concurrently using
+# ``aiohttp``. The following code demonstrates how to send 2000 concurrent
 # requests to the app:
 
 async def send_single_request(session, url, data):
@@ -243,42 +252,55 @@ print(f"Processed {len(responses)} requests in {elapsed:.2f} seconds")
 print(f"Throughput: {len(responses)/elapsed:.2f} requests/second")
 
 ######################################################################
-# You should see high throughput numbers, confirming that requests are
-# being batched and processed in parallel across the replicas.
+# Ray Serve automatically buffers and load balances requests across the
+# replicas.
 #
-# Monitoring the deployment
-# -------------------------
+# Monitor the deployment
+# ----------------------
 #
-# Ray Serve provides built-in monitoring tools to help you track the
-# status and performance of your deployment. This dashboard lets you view
-# Serving metrics like request throughput, latency, and error rates, as
-# well as cluster status and resource utilization. For more information,
-# see the `Ray Serve monitoring
+# Monitoring is critical when running large-scale deployments. The `Ray
+# dashboard <https://docs.ray.io/en/latest/ray-observability/getting-started.html>`__
+# displays Serve metrics like request throughput, latency, and error
+# rates. It also shows cluster resource usage and replica status in real
+# time. The dashboard also lets you inspect logs from individual replicas
+# across the cluster.
+#
+# For debugging, Ray offers `distributed debugging
+# tools <https://docs.ray.io/en/latest/ray-observability/index.html>`__
+# that let you attach a debugger to running replicas across the cluster.
+# For more information, see the `Ray Serve monitoring
 # documentation <https://docs.ray.io/en/latest/serve/monitoring.html>`__.
-
-######################################################################
+#
 # Summary
 # -------
 #
-# In this tutorial, you learned how to:
+# In this tutorial, you:
 #
-# - Deploy PyTorch models using Ray Serve with production best practices.
-# - Enable **dynamic request batching** to optimize performance.
-# - Configure **autoscaling** to handle traffic spikes.
-# - Test the service with concurrent asynchronous requests.
+# - Deployed a PyTorch model using Ray Serve with production best
+#   practices.
+# - Enabled **dynamic request batching** to optimize performance.
+# - Configured **autoscaling** and **fractional GPU allocation** to
+#   efficiently scale across a cluster.
+# - Tested the service with concurrent asynchronous requests.
 #
 # Further reading
 # ---------------
 #
 # Ray Serve has more production features that are out of scope for this
-# tutorial, but are worth checking out:
+# tutorial but are worth checking out:
 #
-# - Specialized **LLM serving APIs** that handles complexities like
-#   managing KV caches and continuous batching.
-# - **Model multiplexing** to dynamically load and serve many different
-#   models (e.g., per-user fine-tuned models) on a single deployment.
-# - **Composed Deployments** to orchestrate multiple deployments into a
-#   single application.
+# - Specialized `large language model (LLM) serving
+#   APIs <https://docs.ray.io/en/latest/serve/llm/index.html>`__ that
+#   handle complexities like managing key-value (KV) caches and continuous
+#   batching.
+# - `Model
+#   multiplexing <https://docs.ray.io/en/latest/serve/model-multiplexing.html>`__
+#   to dynamically load and serve many different models on the same
+#   deployment. This is useful for serving per-user fine-tuned models, for
+#   example.
+# - `Composed
+#   deployments <https://docs.ray.io/en/latest/serve/model_composition.html>`__
+#   to orchestrate multiple deployments into a single app.
 #
 # For more information, see the `Ray Serve
 # documentation <https://docs.ray.io/en/latest/serve/index.html>`__ and
