@@ -160,7 +160,7 @@ This glossary provides definitions for terms commonly used in PyTorch documentat
       PyTorch 2.x optimizations.
 
    TorchScript
-      An interface to the TorchScript :term:`JIT` compiler and interpreter.
+      Deprecated. Use :term:`torch.compile` instead.
 
    Tracing
       Using ``torch.jit.trace`` on a function to get an executable that can be optimized
