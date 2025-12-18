@@ -192,7 +192,7 @@ sphinx_gallery_conf = {
     "show_signature": False,
     "first_notebook_cell": (
         "# For tips on running notebooks in Google Colab, see\n"
-        "# https://docs.pytorch.org/tutorials/beginner/colab"
+        "# https://docs.pytorch.org/tutorials/beginner/colab\n"
         "%matplotlib inline"
     ),
     "ignore_pattern": r"_torch_export_nightly_tutorial.py",
@@ -449,10 +449,6 @@ texinfo_documents = [
 
 html_css_files = [
     "https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css",
-]
-
-html_js_files = [
-    "js/glossary-tooltips.js",
 ]
 
 
