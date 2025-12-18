@@ -154,7 +154,6 @@ tippy_props = {
 
 # Skip all URLs except glossary term links (glossary.html#term-*)
 tippy_skip_urls = (r"^(?!.*glossary\.html#term-).*$",)
-tippy_enable_mathjax = True
 
 intersphinx_mapping = {
     "torch": ("https://docs.pytorch.org/docs/stable/", None),
