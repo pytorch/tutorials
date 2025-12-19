@@ -209,8 +209,8 @@ def readLangs(lang1, lang2, reverse=False):
     lines = open('data/%s-%s.txt' % (lang1, lang2), encoding='utf-8').\
         read().strip().split('\n')
 
-    # Split every line into pairs and normalize
-    pairs = [[normalizeString(s) for s in l.split('\t')] for l in lines]
+    # Split every line into pairs, normalize and ignore third element (attribution)
+    pairs = [[normalizeString(s) for s in l.split('\t')[:2]] for l in lines]
 
     # Reverse pairs, make Lang instances
     if reverse:
