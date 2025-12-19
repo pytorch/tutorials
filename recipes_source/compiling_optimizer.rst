@@ -1,12 +1,12 @@
-(beta) Compiling the optimizer with torch.compile
+(beta) Compiling the :term:`optimizer` with :term:`torch.compile`
 ==========================================================================================
 
 **Author:** `Michael Lazos <https://github.com/mlazos>`_
 
-The optimizer is a key algorithm for training any deep learning model.
+The :term:`optimizer` is a key algorithm for training any deep learning model.
 Since it is responsible for updating every model parameter, it can often
-become the bottleneck in training performance for large models. In this recipe, 
-we will apply ``torch.compile`` to the optimizer to observe the GPU performance 
+become the bottleneck in training performance for large models. In this recipe,
+we will apply ``torch.compile`` to the optimizer to observe the :term:`GPU` performance
 improvement.
 
 .. note::
@@ -24,7 +24,7 @@ Depending on what machine you are using, your exact results may vary.
 .. code-block:: python
 
    import torch
-   
+
    model = torch.nn.Sequential(
        *[torch.nn.Linear(1024, 1024, False, device="cuda") for _ in range(10)]
    )
@@ -39,7 +39,7 @@ and create a helper function to wrap the step()
 in ``torch.compile()``.
 
 .. note::
-   
+
    ``torch.compile`` is only supported on cuda devices with compute capability >= 7.0
 
 .. code-block:: python
@@ -57,12 +57,12 @@ in ``torch.compile()``.
    @torch.compile(fullgraph=False)
    def fn():
        opt.step()
-   
-   
+
+
    # Let's define a helpful benchmarking function:
    import torch.utils.benchmark as benchmark
-   
-   
+
+
    def benchmark_torch_function_in_microseconds(f, *args, **kwargs):
        t0 = benchmark.Timer(
            stmt="f(*args, **kwargs)", globals={"args": args, "kwargs": kwargs, "f": f}
@@ -73,12 +73,12 @@ in ``torch.compile()``.
    # Warmup runs to compile the function
    for _ in range(5):
        fn()
-   
+
    eager_runtime = benchmark_torch_function_in_microseconds(opt.step)
    compiled_runtime = benchmark_torch_function_in_microseconds(fn)
-   
+
    assert eager_runtime > compiled_runtime
-   
+
    print(f"eager runtime: {eager_runtime}us")
    print(f"compiled runtime: {compiled_runtime}us")
 

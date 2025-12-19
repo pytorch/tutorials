@@ -247,7 +247,7 @@ After re-compilation, we can export the custom op with:
 Why do we need to make a Fake Class?
 ------------------------------------
 
-Tracing with real custom object has several major downsides:
+:term:`Tracing` with real custom object has several major downsides:
 
 1. Operators on real objects can be time consuming e.g. the custom object
    might be reading from the network or loading data from the disk.

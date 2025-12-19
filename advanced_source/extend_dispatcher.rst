@@ -3,9 +3,12 @@ Extending dispatcher for a new backend in C++
 
 In this tutorial we will walk through all necessary steps to extend the dispatcher to
 add a new device living outside ``pytorch/pytorch`` repo and maintain it to keep in
-sync with native PyTorch devices.  Here we'll assume that you're familiar with how
+with native PyTorch devices.  Here we'll assume that you're familiar with how
 to `register a dispatched operator in C++ <dispatcher>`_ and how to write a
 `custom autograd function <cpp_autograd>`_.
+
+Note: This tutorial covers extending the dispatcher for custom backends that
+implement :term:`device kernels<Device Kernel>` for :term:`operations<Operation>`.
 
 
 .. note::
@@ -295,7 +298,7 @@ JIT support
 
 As we mentioned in `Registering a Dispatched Operator in C++ <dispatcher>`_, kernels registered through `m.impl()` API
 support being called in both unboxed and boxed ways. In other words your customized backend can also work with our
-JIT tracing/scripting frontend just like the in-tree backends like CPU or CUDA do.  You could potentially also write specialized optimization
+:term:`JIT` :term:`tracing<Tracing>`/:term:`scripting<Scripting>` frontend just like the in-tree backends like CPU or CUDA do.
 passes for your backend on a JIT graph.  But we will not discuss it here since we haven't finalized the integration point
 in JIT, so the current backend support will focus on the eager frontend for now.
 
@@ -377,4 +380,3 @@ any feature requests or bug reports, please `file an issue on github <https://gi
 
 If you're interested in helping in any of the future work items above (e.g adding more ``Math``
 kernels for PyTorch operators in C++), please reach out to us through Github or Slack!
-

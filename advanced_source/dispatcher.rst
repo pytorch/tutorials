@@ -18,7 +18,7 @@ of another.  Here is a sampling of some of the things it handles:
   depending on whether or not autograd handling is necessary.
 * Applying autocasting when necessary for automatic mixed precision.
 * Applying batching rules when an operator is run under a ``vmap`` call.
-* Tracing execution of operations, if you are tracing a model for export.
+* :term:`Tracing` execution of operations, if you are tracing a model for export.
 
 If in your `custom operator code <torch_script_custom_ops>`_ you find yourself
 manually writing if statements to handle these cases, the dispatcher APIs can
@@ -403,8 +403,8 @@ a kernel at the Batched dispatch key.
 Tracer
 ^^^^^^
 
-The Tracer dispatch key implements support for recording invocations of operators
-into a trace when you run ``torch.jit.trace``.  We intend to provide a
+The Tracer dispatch key implements support for recording invocations of :term:`operations<Operation>`
+into a trace when you run ``torch.jit.trace`` (:term:`Tracing`).
 boxed fallback that will implement tracing for arbitrary operations,
 see `issue #41478 <https://github.com/pytorch/pytorch/issues/41478>`_ to track
 progress.
