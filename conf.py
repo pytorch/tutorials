@@ -145,7 +145,7 @@ extensions = [
 
 intersphinx_mapping = {
     "torch": ("https://docs.pytorch.org/docs/stable/", None),
-    "tensordict": ("https://docs.pytorch.github.io/tensordict/stable", None),
+    "tensordict": ("https://docs.pytorch.org/tensordict/stable", None),
     "torchrl": ("https://docs.pytorch.org/rl/stable", None),
     "torchaudio": ("https://docs.pytorch.org/audio/stable/", None),
     "torchtext": ("https://docs.pytorch.org/text/stable/", None),
@@ -236,6 +236,7 @@ html_theme_options = {
     "navbar_center": "navbar-nav",
     "display_version": True,
     "pytorch_project": "tutorials",
+    "canonical_url": "https://docs.pytorch.org/tutorials/",
 }
 
 theme_variables = pytorch_sphinx_theme2.get_theme_variables()
@@ -262,8 +263,9 @@ if os.getenv("GALLERY_PATTERN"):
     # ignore_pattern also skips parsing.
     # See https://github.com/sphinx-gallery/sphinx-gallery/issues/721
     # for a more detailed description of the issue.
+    # GALLERY_PATTERN should be a regular expression.
     sphinx_gallery_conf["ignore_pattern"] = (
-        r"/(?!" + re.escape(os.getenv("GALLERY_PATTERN")) + r")[^/]+$"
+        r"^(?!.*" + os.getenv("GALLERY_PATTERN") + r")"
     )
 
 for i in range(len(sphinx_gallery_conf["examples_dirs"])):

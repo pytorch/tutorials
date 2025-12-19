@@ -4,7 +4,7 @@ Warm-up: numpy
 --------------
 
 A third order polynomial, trained to predict :math:`y=\sin(x)` from :math:`-\pi`
-to :math:`pi` by minimizing squared Euclidean distance.
+to :math:`\pi` by minimizing squared Euclidean distance.
 
 This implementation uses numpy to manually compute the forward pass, loss, and
 backward pass.

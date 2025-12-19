@@ -19,7 +19,13 @@ sudo apt-get install -y pandoc
 # NS: Path to python runtime should already be part of docker container
 # export PATH=/opt/conda/bin:$PATH
 
-#Install PyTorch Nightly for test.
+# Install PyTorch Nightly for test.
+if [ "${USE_NIGHTLY:-0}" -eq 1 ]; then
+  sudo pip uninstall -y torch torchvision torchaudio
+  pip3 install torch==2.10.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/test/cu130
+  pip show torch
+fi
+
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
 # Install 2.5 to merge all 2.4 PRs - uncomment to install nightly binaries (update the version as needed).
 # sudo pip uninstall -y fbgemm-gpu torchrec
@@ -27,8 +33,7 @@ sudo apt-get install -y pandoc
 # sudo pip3 install fbgemm-gpu==1.1.0 torchrec==1.0.0 --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu124
 # pip3 install torch==2.7.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu126
 # Install two language tokenizers for Translation with TorchText tutorial
-python -m spacy download en_core_web_sm
-python -m spacy download de_core_news_sm
+pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.4.0/en_core_web_sm-3.4.0-py3-none-any.whl
 
 awsv2 -i
 awsv2 configure set default.s3.multipart_threshold 5120MB
@@ -115,8 +120,10 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   python .jenkins/validate_tutorials_built.py
 
   # Step 6: Copy generated files to S3, tag with commit ID
-  7z a worker_${WORKER_ID}.7z docs
-  awsv2 s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z
+  if [ "${UPLOAD:-0}" -eq 1 ]; then
+    7z a worker_${WORKER_ID}.7z docs
+    awsv2 s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z
+  fi
 elif [[ "${JOB_TYPE}" == "manager" ]]; then
   # Step 1: Generate no-plot HTML pages for all tutorials
   pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
