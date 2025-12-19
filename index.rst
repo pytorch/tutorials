@@ -324,6 +324,13 @@ Welcome to PyTorch Tutorials
 .. Deploying PyTorch Models in Production
 
 .. customcarditem::
+   :header: Serving PyTorch Tutorial
+   :card_description: Deploy and scale a PyTorch model with Ray Serve.
+   :image: _static/img/ray-tune.png
+   :link: beginner/ray_serve_tutorial.html
+   :tags: Production,Best-Practice,Ray-Distributed,Ecosystem
+
+.. customcarditem::
    :header: Profiling PyTorch
    :card_description: Learn how to profile a PyTorch application
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
