@@ -37,7 +37,16 @@ the operation are as follows:
       return a * b + c
 
 You can find the end-to-end working example for this tutorial
-`here <https://github.com/pytorch/extension-cpp>`_ .
+in the `extension-cpp <https://github.com/pytorch/extension-cpp>`_ repository,
+which contains two parallel implementations:
+
+- `extension_cpp_stable/ <https://github.com/pytorch/extension-cpp/tree/main/extension_cpp_stable>`_:
+  Uses APIs supported by the LibTorch Stable ABI (recommended for PyTorch 2.10+). The main body of this
+  tutorial uses code snippets from this implementation.
+- `extension_cpp/ <https://github.com/pytorch/extension-cpp/tree/main/extension_cpp>`_:
+  Uses the standard ATen/LibTorch API. Use this if you need APIs not yet available in the
+  stable ABI. Code snippets from this implementation are shown in the
+  :ref:`reverting-to-non-stable-api` section.
 
 Setting up the Build System
 ---------------------------
@@ -162,12 +171,12 @@ LibTorch Stable ABI (PyTorch Agnosticism)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In addition to CPython agnosticism, there is a second axis of wheel compatibility:
-**LibTorch agnosticism**. While CPython agnosticism allows building a single wheel
+LibTorch agnosticism. While CPython agnosticism allows building a single wheel
 that works across multiple Python versions (3.9, 3.10, 3.11, etc.), LibTorch agnosticism
 allows building a single wheel that works across multiple PyTorch versions (2.10, 2.11, 2.12, etc.).
 These two concepts are orthogonal and can be combined.
 
-To achieve LibTorch agnosticism, you must use the **LibTorch Stable ABI**, which provides
+To achieve LibTorch agnosticism, you must use the LibTorch Stable ABI, which provides
 a stable C API for interacting with PyTorch tensors and operators. For example, instead of
 using ``at::Tensor``, you must use ``torch::stable::Tensor``. For comprehensive
 documentation on the stable ABI, including migration guides, supported types, and
@@ -178,7 +187,10 @@ The setup.py above already includes ``TORCH_TARGET_VERSION=0x020a000000000000``,
 the extension targets the LibTorch Stable ABI with a minimum supported PyTorch version of 2.10. The version format is:
 ``[MAJ 1 byte][MIN 1 byte][PATCH 1 byte][ABI TAG 5 bytes]``, so 2.10.0 = ``0x020a000000000000``.
 
-See the section below for examples of code using the LibTorch Stable ABI.
+The sections below contain examples of code using the LibTorch Stable ABI.
+If the stable API/ABI does not contain what you need, see the :ref:`reverting-to-non-stable-api` section
+or the `extension_cpp/ subdirectory <https://github.com/pytorch/extension-cpp/tree/main/extension_cpp>`_
+in the extension-cpp repository for the equivalent examples using the non-stable API.
 
 
 Defining the custom op and adding backend implementations
@@ -316,27 +328,6 @@ in a separate ``STABLE_TORCH_LIBRARY_IMPL`` block:
   STABLE_TORCH_LIBRARY_IMPL(extension_cpp, CUDA, m) {
     m.impl("mymuladd", TORCH_BOX(&mymuladd_cuda));
   }
-
-Reverting to the Non-Stable LibTorch API
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The LibTorch Stable ABI/API is still under active development, and certain APIs may not
-yet be available in ``torch/csrc/stable``, ``torch/headeronly``, or the C shims
-(``torch/csrc/stable/c/shim.h``).
-
-If you need an API that is not yet available in the stable ABI/API, you can revert to
-the regular ATen API by:
-
-1. Removing ``-DTORCH_TARGET_VERSION`` from your ``extra_compile_args``
-2. Using ``TORCH_LIBRARY`` instead of ``STABLE_TORCH_LIBRARY``
-3. Using ``TORCH_LIBRARY_IMPL`` instead of ``STABLE_TORCH_LIBRARY_IMPL``
-4. Reverting to ATen APIs (e.g. using ``at::Tensor`` instead of ``torch::stable::Tensor`` etc.)
-
-Note that doing so means you will need to build separate wheels for each PyTorch
-version you want to support.
-
-For reference, see the `PyTorch 2.9.1 version of this tutorial <https://github.com/pytorch/tutorials/blob/10eefc3b761a5b5407862b2336493b7ab859640f/advanced_source/cpp_custom_ops.rst>`_
-which uses the non-stable API, as well as `this commit of the extension-cpp repository <https://github.com/pytorch/extension-cpp/tree/0ec4969c7bc8e15a8456e5eb9d9ca0a7ec15bc95>`_.
 
 Adding ``torch.compile`` support for an operator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -672,6 +663,93 @@ When defining the operator, we must specify that it mutates the out Tensor in th
 
   Do not return any mutated Tensors as outputs of the operator as this will
   cause incompatibility with PyTorch subsystems like ``torch.compile``.
+
+.. _reverting-to-non-stable-api:
+
+Reverting to the Non-Stable LibTorch API
+----------------------------------------
+
+The LibTorch Stable ABI/API is still under active development, and certain APIs may not
+yet be available in ``torch/csrc/stable``, ``torch/headeronly``, or the C shims
+(``torch/csrc/stable/c/shim.h``).
+
+If you need an API that is not yet available in the stable ABI/API, you can revert to
+the regular ATen API. Note that doing so means you will need to build separate wheels
+for each PyTorch version you want to support.
+
+We provide code snippets for ``mymuladd`` below to illustrate. The changes for the
+CUDA variant, ``mymul`` and ``myadd_out`` are similar in nature and can be found in the
+`extension_cpp/ <https://github.com/pytorch/extension-cpp/tree/main/extension_cpp>`_
+subdirectory of the extension-cpp repository.
+
+**Setup (setup.py)**
+
+Remove ``-DTORCH_TARGET_VERSION`` from your ``extra_compile_args``:
+
+.. code-block:: python
+
+  extra_compile_args = {
+      "cxx": [
+          "-O3" if not debug_mode else "-O0",
+          "-fdiagnostics-color=always",
+          "-DPy_LIMITED_API=0x03090000",  # min CPython version 3.9
+          # Note: No -DTORCH_TARGET_VERSION flag
+      ],
+      "nvcc": [
+          "-O3" if not debug_mode else "-O0",
+      ],
+  }
+
+**C++ Implementation (muladd.cpp)**
+
+Use ATen headers and types instead of the stable API:
+
+.. code-block:: cpp
+
+  // Use ATen/torch headers instead of torch/csrc/stable headers
+  #include <ATen/Operators.h>
+  #include <torch/all.h>
+  #include <torch/library.h>
+
+  namespace extension_cpp {
+
+  // Use at::Tensor instead of torch::stable::Tensor
+  at::Tensor mymuladd_cpu(const at::Tensor& a, const at::Tensor& b, double c) {
+    // Use TORCH_CHECK instead of STD_TORCH_CHECK
+    TORCH_CHECK(a.sizes() == b.sizes());
+    // Use at::kFloat instead of torch::headeronly::ScalarType::Float
+    TORCH_CHECK(a.dtype() == at::kFloat);
+    TORCH_CHECK(b.dtype() == at::kFloat);
+    // Use at::DeviceType instead of torch::headeronly::DeviceType
+    TORCH_INTERNAL_ASSERT(a.device().type() == at::DeviceType::CPU);
+    TORCH_INTERNAL_ASSERT(b.device().type() == at::DeviceType::CPU);
+    // Use tensor.contiguous() instead of torch::stable::contiguous(tensor)
+    at::Tensor a_contig = a.contiguous();
+    at::Tensor b_contig = b.contiguous();
+    // Use torch::empty() instead of torch::stable::empty_like()
+    at::Tensor result = torch::empty(a_contig.sizes(), a_contig.options());
+    // Use data_ptr<T>() instead of const_data_ptr<T>()
+    const float* a_ptr = a_contig.data_ptr<float>();
+    const float* b_ptr = b_contig.data_ptr<float>();
+    float* result_ptr = result.data_ptr<float>();
+    for (int64_t i = 0; i < result.numel(); i++) {
+      result_ptr[i] = a_ptr[i] * b_ptr[i] + c;
+    }
+    return result;
+  }
+
+  // Use TORCH_LIBRARY instead of STABLE_TORCH_LIBRARY
+  TORCH_LIBRARY(extension_cpp, m) {
+    m.def("mymuladd(Tensor a, Tensor b, float c) -> Tensor");
+  }
+
+  // Use TORCH_LIBRARY_IMPL instead of STABLE_TORCH_LIBRARY_IMPL
+  TORCH_LIBRARY_IMPL(extension_cpp, CPU, m) {
+    // Pass function pointer directly instead of wrapping with TORCH_BOX()
+    m.impl("mymuladd", &mymuladd_cpu);
+  }
+
+  }
 
 Conclusion
 ----------
