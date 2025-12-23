@@ -16,7 +16,7 @@ Custom C++ and CUDA Operators
     .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
        :class-card: card-prerequisites
 
-       * PyTorch 2.10 or later
+       * PyTorch 2.10 or later (or PyTorch 2.4 or later if using the non-stable API)
        * Basic understanding of C++ and CUDA programming
 
 .. note::
