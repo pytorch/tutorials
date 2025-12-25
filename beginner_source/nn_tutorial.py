@@ -174,6 +174,10 @@ loss_func = nll
 yb = y_train[0:bs]
 print(loss_func(preds, yb))
 
+# Save the first batch for comparison after training
+xb_initial = xb
+yb_initial = yb
+
 
 ###############################################################################
 # Let's also implement a function to calculate the accuracy of our model.
@@ -244,9 +248,10 @@ for epoch in range(epochs):
 #
 # Let's check the loss and accuracy and compare those to what we got
 # earlier. We expect that the loss will have decreased and accuracy to
-# have increased, and they have.
+# have increased, and they have. We evaluate on the same initial batch
+# we used before training for a fair comparison.
 
-print(loss_func(model(xb), yb), accuracy(model(xb), yb))
+print(loss_func(model(xb_initial), yb_initial), accuracy(model(xb_initial), yb_initial))
 
 ###############################################################################
 # Using ``torch.nn.functional``
