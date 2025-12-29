@@ -65,9 +65,8 @@ Using ``sycl_extension`` is as straightforward as writing the following ``setup.
             "/O2",                        
             "/std:c++17",                 
             "/DPy_LIMITED_API=0x03090000",
-            "-fheader-search=gcc",
         ]
-        sycl_args = ["/O2", "/std:c++17", "-fheader-search=gcc"] 
+        sycl_args = ["/O2", "/std:c++17"] 
     else:
         cxx_args = [
             "-O3",
