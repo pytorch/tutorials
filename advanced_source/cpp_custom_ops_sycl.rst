@@ -51,7 +51,7 @@ Using ``sycl_extension`` is as straightforward as writing the following ``setup.
     import os
     import torch
     import glob
-    import platform  
+    import platform
     from setuptools import find_packages, setup
     from torch.utils.cpp_extension import SyclExtension, BuildExtension
 
@@ -62,15 +62,15 @@ Using ``sycl_extension`` is as straightforward as writing the following ``setup.
 
     if IS_WINDOWS:
         cxx_args = [
-            "/O2",                        
-            "/std:c++17",                 
+            "/O2",
+            "/std:c++17",
             "/DPy_LIMITED_API=0x03090000",
         ]
-        sycl_args = ["/O2", "/std:c++17"] 
+        sycl_args = ["/O2", "/std:c++17"]
     else:
         cxx_args = [
             "-O3",
-            "-fdiagnostics-color=always", 
+            "-fdiagnostics-color=always",
             "-DPy_LIMITED_API=0x03090000"
         ]
         sycl_args = ["-O3"]
@@ -125,7 +125,7 @@ in a separate ``TORCH_LIBRARY_IMPL`` block:
     #include <sycl/sycl.hpp>
     #include <ATen/Operators.h>
     #include <torch/all.h>
-    #include <torch/library.h> 
+    #include <torch/library.h>
 
 
     #include <Python.h>
@@ -133,7 +133,7 @@ in a separate ``TORCH_LIBRARY_IMPL`` block:
     namespace sycl_extension {
 
     // ==========================================================
-    // 1. Kernel 
+    // 1. Kernel
     // ==========================================================
     static void muladd_kernel(
         int numel, const float* a, const float* b, float c, float* result,
@@ -161,7 +161,7 @@ in a separate ``TORCH_LIBRARY_IMPL`` block:
     };
 
     // ==========================================================
-    // 2. Wrapper 
+    // 2. Wrapper
     // ==========================================================
     at::Tensor mymuladd_xpu(const at::Tensor& a, const at::Tensor& b, double c) {
         TORCH_CHECK(a.sizes() == b.sizes(), "a and b must have the same shape");
@@ -194,7 +194,7 @@ in a separate ``TORCH_LIBRARY_IMPL`` block:
     }
 
     // ==========================================================
-    // 3. Registration 
+    // 3. Registration
     // ==========================================================
     TORCH_LIBRARY(sycl_extension, m) {
     m.def("mymuladd(Tensor a, Tensor b, float c) -> Tensor");
@@ -216,10 +216,10 @@ in a separate ``TORCH_LIBRARY_IMPL`` block:
         PyObject* PyInit__C(void) {
             static struct PyModuleDef moduledef = {
                 PyModuleDef_HEAD_INIT,
-                "_C",                 
-                "XPU Extension Shim", 
-                -1,                   
-                NULL                  
+                "_C",
+                "XPU Extension Shim",
+                -1,
+                NULL
             };
             return PyModule_Create(&moduledef);
         }
