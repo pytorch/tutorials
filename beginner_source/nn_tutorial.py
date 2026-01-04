@@ -110,9 +110,10 @@ print(y_train.min(), y_train.max())
 # gradient. This causes PyTorch to record all of the operations done on the tensor,
 # so that it can calculate the gradient during back-propagation *automatically*!
 #
-# For the weights, we set ``requires_grad`` **after** the initialization, since we
-# don't want that step included in the gradient. (Note that a trailing ``_`` in
-# PyTorch signifies that the operation is performed in-place.)
+# We set ``requires_grad`` **after** the initialization math. If enabled earlier, 
+# PyTorch would view the weights as the result of a calculation (non-leaf) rather 
+# than a source parameter, making them impossible to optimize. (Note that a trailing 
+# ``_`` in PyTorch signifies that the operation is performed in-place.)
 #
 # .. note:: We are initializing the weights here with
 #    `Xavier initialisation <http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf>`_
