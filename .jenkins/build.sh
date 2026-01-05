@@ -2,7 +2,13 @@
 
 set -ex
 
-export BUCKET_NAME=pytorch-tutorial-build-pull-request
+# Set bucket name based on whether this is a nightly build or not
+# This prevents conflicts when both builds run simultaneously
+if [ "${USE_NIGHTLY:-0}" -eq 1 ]; then
+  export BUCKET_NAME=${BUCKET_NAME:-pytorch-tutorial-build-pull-request-nightly}
+else
+  export BUCKET_NAME=${BUCKET_NAME:-pytorch-tutorial-build-pull-request}
+fi
 
 # set locale for click dependency in spacy
 export LC_ALL=C.UTF-8
