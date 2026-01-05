@@ -387,9 +387,9 @@ To achieve maximum overlap between computation and checkpointing, we can use the
             optimizer.zero_grad()
             model(torch.rand(8, 16, device="cuda")).sum().backward()
 
-            # Critical: We must ensure the previous checkpoint's D2H copy (staging) 
+            # Critical: We must ensure the previous checkpoint's D2H copy (staging)
             # is complete before the optimizer modifies the model parameters.
-            # Placing this await AFTER the backward pass allows us to overlap 
+            # Placing this await AFTER the backward pass allows us to overlap
             # the D2H copy with the current step's Forward and Backward computation.
             if checkpoint_future is not None:
                 checkpoint_future.staging_completion.result()
@@ -405,8 +405,8 @@ To achieve maximum overlap between computation and checkpointing, we can use the
             # This offloads the state_dict creation and GPU-to-CPU copy to a background thread.
             # The return object (AsyncSaveResponse) exposes distinct futures for staging and upload.
             checkpoint_future = dcp.async_save(
-                state_dict, 
-                checkpoint_id=f"{CHECKPOINT_DIR}_step{step}", 
+                state_dict,
+                checkpoint_id=f"{CHECKPOINT_DIR}_step{step}",
                 async_stager=DefaultStager(),
             )
 
