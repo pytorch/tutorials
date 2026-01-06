@@ -181,10 +181,10 @@ def train_cifar(config, data_dir=None):
     )
 
     trainloader = torch.utils.data.DataLoader(
-        train_subset, batch_size=int(config["batch_size"]), shuffle=True, num_workers=2
+        train_subset, batch_size=int(config["batch_size"]), shuffle=True, num_workers=8
     )
     valloader = torch.utils.data.DataLoader(
-        val_subset, batch_size=int(config["batch_size"]), shuffle=True, num_workers=2
+        val_subset, batch_size=int(config["batch_size"]), shuffle=True, num_workers=8
     )
 
     for epoch in range(start_epoch, 10):  # loop over the dataset multiple times
@@ -467,7 +467,7 @@ def test_accuracy(net, device="cpu", data_dir=None):
 
 def main(num_trials=10, max_num_epochs=10, gpus_per_trial=0, cpus_per_trial=2):
     print("Starting hyperparameter tuning.")
-    ray.init()
+    ray.init(include_dashboard=False)
     
     data_dir = os.path.abspath("./data")
     load_data(data_dir)  # Pre-download the dataset
