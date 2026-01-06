@@ -7,6 +7,24 @@ Hyperparameter tuning using Ray Tune
 This tutorial shows how to integrate Ray Tune into your PyTorch training
 workflow to perform scalable and efficient hyperparameter tuning.
 
+.. grid:: 2
+
+    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+       :class-card: card-prerequisites
+
+       * How to modify a PyTorch training loop for Ray Tune
+       * How to scale a hyperparameter sweep to multiple nodes and GPUs without code changes
+       * How to define a hyperparameter search space and run a sweep with ``tune.Tuner``
+       * How to use an early-stopping scheduler (ASHA) and report metrics/checkpoints
+       * How to use checkpointing to resume training and load the best model
+
+    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+       :class-card: card-prerequisites
+
+       * PyTorch v2.9+ and ``torchvision``
+       * Ray Tune (``ray[tune]``) v2.52.1+
+       * GPU(s) are optional, but recommended for faster training
+
 `Ray <https://docs.ray.io/en/latest/index.html>`__, a project of the
 PyTorch Foundation, is an open source unified framework for scaling AI
 and Python applications. It helps run distributed jobs by handling the
@@ -16,13 +34,9 @@ built on Ray for hyperparameter tuning that enables you to scale a
 hyperparameter sweep from your machine to a large cluster with no code
 changes.
 
-This tutorial makes minor modifications to the `PyTorch tutorial for
-training a CIFAR10
+This tutorial adapts the `PyTorch tutorial for training a CIFAR10
 classifier <https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html>`__
-to adapt it for Ray Tune. Specifically, this tutorial wraps the data
-loading and training in functions, defines a search space for model
-tuning, exposes some parameters to make them configurable, adds optional
-checkpointing, and supports multi-GPU training.
+to run multi-GPU hyperparameter sweeps with Ray Tune.
 
 Setup
 -----
@@ -332,8 +346,9 @@ def train_cifar(config, data_dir=None):
 #    if torch.cuda.device_count() > 1:
 #        net = nn.DataParallel(net)
 #
-# This training function supports training on CPUs, a single GPU, or
-# multiple GPUs without code changes. Ray Tune also supports `fractional
+# This training function supports training on CPUs, a single GPU, multiple GPUs, or
+# multiple nodes without code changes. Ray Tune automatically distributes the trials
+# across the nodes according to the available resources. Ray Tune also supports `fractional
 # GPUs <https://docs.ray.io/en/latest/ray-core/scheduling/accelerators.html#fractional-accelerators>`__
 # so that one GPU can be shared among multiple trials, provided that the
 # models, optimizers, and data batches fit into the GPU memory.
