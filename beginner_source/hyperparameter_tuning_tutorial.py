@@ -27,7 +27,7 @@ checkpointing, and supports multi-GPU training.
 Setup
 -----
 
-To run this tutorial, install the dependencies:
+To run this tutorial, install the following dependencies:
 
 .. code-block:: bash
 
