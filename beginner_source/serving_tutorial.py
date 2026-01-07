@@ -117,15 +117,15 @@ class MNISTClassifier:
     async def predict_batch(self, images: list[np.ndarray]) -> list[dict[str, Any]]:
         # Stack all images into a single tensor.
         batch_tensor = torch.cat([
-            self.transform(img).unsqueeze(0) 
+            self.transform(img).unsqueeze(0)
             for img in images
         ]).to(self.device).float()
-        
+
         # Single forward pass on the entire batch at once.
         with torch.no_grad():
             logits = self.model(batch_tensor)
             predictions = torch.argmax(logits, dim=1).cpu().numpy()
-        
+
         # Unbatch the results and preserve their original order.
         return [
             {
@@ -138,7 +138,7 @@ class MNISTClassifier:
     @app.post("/")
     async def handle_request(self, request: ImageRequest):
         """Handle an incoming HTTP request using FastAPI.
-        
+
         Inputs are automatically validated using the Pydantic model.
         """
         # Process the single request.
@@ -146,7 +146,7 @@ class MNISTClassifier:
 
         # Ray Serve's @serve.batch automatically batches requests.
         result = await self.predict_batch(image_array)
-        
+
         return result
 
 
@@ -175,7 +175,7 @@ class MNISTClassifier:
 # allocation:
 
 num_cpus_per_replica = 1
-num_gpus_per_replica = 1  # Set to 0 to run the model on CPUs instead of GPUs.  
+num_gpus_per_replica = 1  # Set to 0 to run the model on CPUs instead of GPUs.
 mnist_app = MNISTClassifier.options(
     autoscaling_config={
         "target_ongoing_requests": 50,  # Target 50 ongoing requests per replica.
@@ -238,7 +238,7 @@ async def send_single_request(session, url, data):
 
 async def send_concurrent_requests(num_requests):
     image = np.random.rand(28, 28).tolist()
-    
+
     print(f"Sending {num_requests} concurrent requests...")
     async with aiohttp.ClientSession() as session:
         tasks = [
@@ -246,7 +246,7 @@ async def send_concurrent_requests(num_requests):
             for _ in range(num_requests)
         ]
         responses = await asyncio.gather(*tasks)
-    
+
     return responses
 
 # Run the concurrent requests.
