@@ -444,7 +444,8 @@ def test_accuracy(net, device="cpu", data_dir=None):
 # schedule two concurrent trials per GPU. This configuration runs 320
 # trials in parallel across the cluster.
 #
-#    **Note**: To run this tutorial without GPUs, set ``gpus_per_trial=0``
+# .. note::
+#    To run this tutorial without GPUs, set ``gpus_per_trial=0``
 #    and expect significantly longer runtimes.
 #
 #    To avoid long runtimes during development, start with a small number
@@ -593,7 +594,7 @@ if __name__ == "__main__":
 # In this tutorial, you learned how to tune the hyperparameters of a
 # PyTorch model using Ray Tune. You saw how to integrate Ray Tune into
 # your PyTorch training loop, define a search space for your
-# hyperparameters, use an efficient scheduler like ASHAScheduler to
+# hyperparameters, use an efficient scheduler like ``ASHAScheduler`` to
 # terminate low-performing trials early, save checkpoints and report
 # metrics to Ray Tune, and run the hyperparameter search and analyze the
 # results.
