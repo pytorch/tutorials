@@ -42,29 +42,28 @@ meaning it is also compilable using ``torch.compile``.
 
 ######################################################################
 # Overview of Variable Length Attention
-# -------------------------------------
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # In normal SDPA, sequences are expected to be a fixed length. In
 # practice, this means that input tensors are often **padded** to the same
 # length in a batch. However, this wastes both memory and compute through
 # storing this padding and performing unnecessary computations.
-
-######################################################################
 # Variable length attention handles sequences of varying length by
 # **packing** the tensors in a batch together and essentially collapsing
 # the batch dimension.
 
+
+######################################################################
 # However, we still need to maintain the boundaries between documents. To
 # do so, we compute cumulative sequence positions for query and key/value
 # that mark the end of documents. In the diagram below, doc 1 is 7 tokens
-# long, doc 2 is 10 tokens long, etc. so
-# ``cu_seq_lens = [0, 7, 17, ...]``.
-
-######################################################################
-#    Padding vs Packing Diagram
-
+# long, doc 2 is 10 tokens long, etc. so ``cu_seq_lens = [0, 7, 17, ...]``.
+#
 # .. figure:: ../_static/img/varlen_diagram.png
 #    :alt: Padding vs Packing Diagram
+#
+#    Padding vs Packing Diagram
+
 
 ######################################################################
 # Note that ``NestedTensor`` is another way to enable
@@ -74,13 +73,13 @@ meaning it is also compilable using ``torch.compile``.
 
 ######################################################################
 # Definition
-# ~~~~~~~~~~
-
+# ----------
+#
 # Below is the definition of ``varlen_attn`` which returns the output
 # tensor from the attention computation.
-
+#
 # .. code:: python
-
+#
 #    def varlen_attn(
 #        query: torch.Tensor,
 #        key: torch.Tensor,
@@ -93,8 +92,6 @@ meaning it is also compilable using ``torch.compile``.
 #        return_aux: AuxRequest | None = None,
 #    ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
 #
-
-######################################################################
 # ``query``, ``key``, and ``value`` correspond to the ``q``, ``k``, and
 # ``v`` of the packed input. ``cu_seq_q`` and ``cu_seq_k`` are the
 # cumulative indices for query and key/value, respectively. These mark the
@@ -102,24 +99,21 @@ meaning it is also compilable using ``torch.compile``.
 # and ``max_k`` are the maximum sequence lengths of query and key,
 # respectively. ``is_causal`` applies causal masking if set to True and
 # ``return_aux`` specifies which auxiliary outputs to return (ie ``lse``).
-#
 
 ######################################################################
 # **Note on causal masking**
-
 # When ``is_causal`` is set to True, causal masking is applied which means
 # that tokens can only attend to previous tokens. For bidirectional
 # attention, set this flag to False.
-
-######################################################################
-# In torchtitan (PyTorch’s pretraining framework), we set
+#
+# In torchtitan (PyTorch's pretraining framework), we set
 # ``is_causal = True`` uniformly to prevent the model from cheating and
-# artifically driving the loss down too quickly.
+# artificially driving the loss down too quickly.
 
 
 ######################################################################
 # Example
-# -------
+# ~~~~~~~
 #
 # Let’s walk through a simple example of how we would use ``varlen_attn``
 # in the context of training a Transformer model.
@@ -128,12 +122,12 @@ meaning it is also compilable using ``torch.compile``.
 
 ######################################################################
 # Creating Required Metadata for ``varlen_attn`` from Input Batches
-# ~~~~~~~~~~~~~~~~~~~~~
-
+# -----------------------------------------------------------------
+#
 # Given an input batch, how would we construct the metadata that
 # ``varlen_attn`` expects? More specifically, how do we calculate the
 # cumulative sequence indices?
-
+#
 # The helper function ``create_varlen_metadata`` returns the required
 # ``cu_seqlens`` and ``max_seqlen`` given ``input_batch`` and the end of
 # sequence token ID that marks the end of documents.
@@ -184,16 +178,16 @@ def create_varlen_metadata(input_batch: torch.Tensor, eos_id: int):
 
 ######################################################################
 # Implementing the Attention Block with ``varlen_attn``
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# Let’s explore how we would use ``varlen_attn`` in an Attention module.
+# -----------------------------------------------------
+#
+# Let's explore how we would use ``varlen_attn`` in an Attention module.
 # We define an attention module as usual, but in the ``forward`` method,
 # we call the new ``varlen_attn`` custom op.
-
+#
 # This function expects the ``cu_seq`` indices and ``max_len`` that we
 # computed earlier using ``create_varlen_metadata`` to mark the boundaries
 # of the different documents.
-
+#
 # Before we call ``varlen_attn``, we also pack our input so that it has
 # the shape ``(total tokens, dim)``. Recall that variable length attention
 # allows us to collapse the ``batch_size`` dimension so that we can lay
@@ -244,22 +238,21 @@ class SimpleVarlenAttention(nn.Module):
 
 
 ######################################################################
-# We can also use ``torch.compile`` with ``varlen_attn`` and define
-
+# We can also use ``torch.compile`` with ``varlen_attn`` and define:
+#
 # .. code:: python
-
+#
 #    compiled_varlen_attn: ClassVar[Callable] = torch.compile(
 #        varlen_attn, mode="max-autotune-no-cudagraphs"
 #    )
-
+#
 # We can call ``compiled_varlen_attn`` instead of ``varlen_attn`` in the
 # Attention forward, and everything else stays the same.
-#
 
 
 ######################################################################
 # Creating a Transformer
-# ~~~~~~~~~~~~~~~~~~~~~~
+# ----------------------
 #
 # Now, we can use this ``SimpleVarlenAttention`` module in a simple
 # Transformer.
@@ -288,7 +281,7 @@ class SimpleVarlenTransformer(nn.Module):
 
 ######################################################################
 # Running a Training Step
-# ~~~~~~~~~~~~~~~~~~~~~~~
+# -----------------------
 #
 # Now we’re ready to put all the pieces together! Let’s run a training
 # step with our ``SimpleVarlenTransformer``. We define our model, compute
@@ -344,20 +337,20 @@ if __name__ == "__main__":
 
 ######################################################################
 # Conclusion
-# -----------
+# ~~~~~~~~~~
 #
 # In this tutorial, we have covered how to use the ``varlen_attn`` API in PyTorch to efficiently
-# to handle sequences of varying lengths without padding. We explored how to create the
+# handle sequences of varying lengths without padding. We explored how to create the
 # necessary metadata including the cumulative sequence indices, implemented a simple
 # Transformer attention layer with variable length attention, and ran a complete
 # training step.
 
+######################################################################
 # This approach eliminates wasted computation on padding tokens
 # and enables more efficient training and inference for models processing
 # documents of different lengths.
-
-######################################################################
-# See Also:
-# -----------
-# * [Implementing High-Performance Transformers with Scaled Dot Product Attention ](https://docs.pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html)
-# * [torch.nn.functional.scaled_dot_product_attention](https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html)
+#
+# .. seealso::
+#
+#    - `Implementing High-Performance Transformers with Scaled Dot Product Attention <https://docs.pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html>`_
+#    - `torch.nn.functional.scaled_dot_product_attention <https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html>`_
