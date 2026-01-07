@@ -184,9 +184,13 @@ mnist_app = MNISTClassifier.options(
         "upscale_delay_s": 5,           # Wait 5s before scaling up.
         "downscale_delay_s": 30,        # Wait 30s before scaling down.
     },
-    # Max concurrent requests per replica before queueing.
-    # If the queue fills the shared cluster memory, future requests are backpressured until memory is freed.
+    # Max invocations to handle_request per replica to process simultaneously.
+    # Requests exceeding this limit are queued by the router until capacity is available.
     max_ongoing_requests=200,
+    # Max queue size for requests that exceed max_ongoing_requests.
+    # If the queue is full, future requests are backpressured with errors until space is available.
+    # -1 means the queue can grow until cluster memory is exhausted.
+    max_queued_requests=-1,
     ray_actor_options={"num_cpus": num_cpus_per_replica, "num_gpus": num_gpus_per_replica}
 ).bind()
 
