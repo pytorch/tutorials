@@ -7,6 +7,26 @@ Serve PyTorch models at scale with Ray Serve
 This tutorial shows how to deploy a PyTorch model using Ray Serve with
 production-ready features.
 
+.. grid:: 2
+
+    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+       :class-card: card-prerequisites
+
+       * How to create a production-ready PyTorch model deployment that can scale to thousands of nodes and GPUs
+       * How to configure an HTTP endpoint for the deployment using FastAPI
+       * Enable dynamic request batching for higher throughput
+       * Configure autoscaling and per-replica CPU/GPU resource allocation
+       * Load test the service with concurrent requests and monitor it with the Ray dashboard
+       * How Ray Serve deployments can self-heal from failures
+       * Ray Serve's advanced features like model multiplexing and model composition.
+
+    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+       :class-card: card-prerequisites
+
+       * PyTorch v2.9+ and ``torchvision``
+       * Ray Serve (``ray[serve]``) v2.52.1+
+       * A GPU is recommended for higher throughput but is not required
+
 `Ray Serve <https://docs.ray.io/en/latest/serve/index.html>`__ is a
 scalable framework for serving machine learning models in production.
 It’s built on top of `Ray <https://docs.ray.io/en/latest/index.html>`__,
@@ -14,11 +34,6 @@ which is a unified framework for scaling AI and Python applications that
 simplifies the complexities of distributed computing. Ray is also open
 source and part of the PyTorch Foundation.
 
-In this tutorial, you’ll learn how to deploy a PyTorch model with Ray
-Serve and use its production-ready features. Ray Serve lets you scale
-your model inference across thousands of nodes and GPUs, and it provides
-features like dynamic batching, autoscaling, fault tolerance, and model
-multiplexing.
 
 Setup
 -----
@@ -191,6 +206,7 @@ mnist_app = MNISTClassifier.options(
     # If the queue is full, future requests are backpressured with errors until space is available.
     # -1 means the queue can grow until cluster memory is exhausted.
     max_queued_requests=-1,
+    # Set the resources per replica.
     ray_actor_options={"num_cpus": num_cpus_per_replica, "num_gpus": num_gpus_per_replica}
 ).bind()
 
@@ -261,15 +277,29 @@ print(f"Throughput: {len(responses)/elapsed:.2f} requests/second")
 # Ray Serve automatically buffers and load balances requests across the
 # replicas.
 #
+# Fault tolerance
+# ---------------
+#
+# In production, process and machine failures are inevitable. Ray Serve is designed
+# so that each major component in the Serve stack (the controller, replicas, and proxies) can fail
+# and recover while your application continues to handle traffic.
+#
+# Serve can also recover from larger infrastructure failures, such as entire nodes or pods
+# failing. Serve can even recover from head node failures, or the entire head pod if
+# deploying on KubeRay.
+#
+# For more information about Ray Serve's fault tolerance, see the
+# `Ray Serve fault-tolerance guide <https://docs.ray.io/en/master/serve/production-guide/fault-tolerance.html>`__
+#
 # Monitor the deployment
 # ----------------------
 #
 # Monitoring is critical when running large-scale deployments. The `Ray
 # dashboard <https://docs.ray.io/en/latest/ray-observability/getting-started.html>`__
 # displays Serve metrics like request throughput, latency, and error
-# rates. It also shows cluster resource usage and replica status in real
-# time. The dashboard also lets you inspect logs from individual replicas
-# across the cluster.
+# rates. It also shows cluster resource usage, replica status, and overall
+# deployment health in real time. The dashboard also lets you inspect logs
+# from individual replicas across the cluster.
 #
 # For debugging, Ray offers `distributed debugging
 # tools <https://docs.ray.io/en/latest/ray-observability/index.html>`__
