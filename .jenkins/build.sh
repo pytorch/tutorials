@@ -4,6 +4,14 @@ set -ex
 
 export BUCKET_NAME=pytorch-tutorial-build-pull-request
 
+# Set build prefix based on whether this is a nightly build or not
+# This prevents conflicts when both builds run simultaneously
+if [ "${USE_NIGHTLY:-0}" -eq 1 ]; then
+  export BUILD_PREFIX="nightly"
+else
+  export BUILD_PREFIX="stable"
+fi
+
 # set locale for click dependency in spacy
 export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
@@ -122,7 +130,7 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   # Step 6: Copy generated files to S3, tag with commit ID
   if [ "${UPLOAD:-0}" -eq 1 ]; then
     7z a worker_${WORKER_ID}.7z docs
-    awsv2 s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z
+    awsv2 s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${BUILD_PREFIX}/${COMMIT_ID}/worker_${WORKER_ID}.7z
   fi
 elif [[ "${JOB_TYPE}" == "manager" ]]; then
   # Step 1: Generate no-plot HTML pages for all tutorials
@@ -136,7 +144,7 @@ elif [[ "${JOB_TYPE}" == "manager" ]]; then
   # Step 3: Download generated with-plot HTML files and static files from S3, merge into one folder
   mkdir -p docs_with_plot/docs
   for ((worker_id=1;worker_id<NUM_WORKERS+1;worker_id++)); do
-    awsv2 s3 cp s3://${BUCKET_NAME}/${COMMIT_ID}/worker_$worker_id.7z worker_$worker_id.7z
+    awsv2 s3 cp s3://${BUCKET_NAME}/${BUILD_PREFIX}/${COMMIT_ID}/worker_$worker_id.7z worker_$worker_id.7z
     7z x worker_$worker_id.7z -oworker_$worker_id
     yes | cp -R worker_$worker_id/docs/* docs_with_plot/docs
   done
@@ -153,7 +161,7 @@ elif [[ "${JOB_TYPE}" == "manager" ]]; then
 
   # Step 6: Copy generated HTML files and static files to S3
   7z a manager.7z docs
-  awsv2 s3 cp manager.7z s3://${BUCKET_NAME}/${COMMIT_ID}/manager.7z
+  awsv2 s3 cp manager.7z s3://${BUCKET_NAME}/${BUILD_PREFIX}/${COMMIT_ID}/manager.7z
 
   # Step 7: push new HTML files and static files to gh-pages
   if [[ "$COMMIT_SOURCE" == "refs/heads/master" || "$COMMIT_SOURCE" == "refs/heads/main" ]]; then
