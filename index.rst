@@ -493,7 +493,7 @@ Welcome to PyTorch Tutorials
    :card_description: Learn how to use Ray Tune to find the best performing set of hyperparameters for your model.
    :image: _static/img/ray-tune.png
    :link: beginner/hyperparameter_tuning_tutorial.html
-   :tags: Model-Optimization,Best-Practice
+   :tags: Model-Optimization,Best-Practice,Ray-Distributed,Parallel-and-Distributed-Training
 
 .. customcarditem::
    :header: Parametrizations Tutorial

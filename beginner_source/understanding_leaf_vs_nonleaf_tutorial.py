@@ -265,8 +265,10 @@ print(f"{loss.grad=}")
 #
 #    Computational graph after backward pass
 #
-# If you call ``retain_grad()`` on a non-leaf node, it results in a no-op.
-# If we call ``retain_grad()`` on a node that has ``requires_grad=False``,
+# If you call ``retain_grad()`` on a leaf tensor, it results in a no-op
+# since leaf tensors already retain their gradients by default (when
+# ``requires_grad=True``).
+# If we call ``retain_grad()`` on a tensor that has ``requires_grad=False``,
 # PyTorch actually throws an error, since it can’t store the gradient if
 # it is never calculated.
 #
@@ -298,13 +300,13 @@ print(f"{loss.grad=}")
 # +----------------+------------------------+------------------------+---------------------------------------------------+-------------------------------------+
 # |  ``is_leaf``   |   ``requires_grad``    |   ``retains_grad``     |  ``require_grad()``                               |   ``retain_grad()``                 |
 # +================+========================+========================+===================================================+=====================================+
-# | ``True``       | ``False``              | ``False``              | sets ``requires_grad`` to ``True`` or ``False``   | no-op                               |
+# | ``True``       | ``False``              | ``False``              | sets ``requires_grad`` to ``True`` or ``False``   | throws error                        |
 # +----------------+------------------------+------------------------+---------------------------------------------------+-------------------------------------+
-# | ``True``       | ``True``               | ``False``              | sets ``requires_grad`` to ``True`` or ``False``   | no-op                               |
+# | ``True``       | ``True``               | ``False``              | sets ``requires_grad`` to ``True`` or ``False``   | no-op (already retains)             |
 # +----------------+------------------------+------------------------+---------------------------------------------------+-------------------------------------+
 # | ``False``      | ``True``               | ``False``              | no-op                                             | sets ``retains_grad`` to ``True``   |
 # +----------------+------------------------+------------------------+---------------------------------------------------+-------------------------------------+
-# | ``False``      | ``True``               | ``True``               | no-op                                             | no-op                               |
+# | ``False``      | ``True``               | ``True``               | no-op                                             | no-op (already retains)             |
 # +----------------+------------------------+------------------------+---------------------------------------------------+-------------------------------------+
 #
 
