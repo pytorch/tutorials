@@ -16,7 +16,7 @@ Custom C++ and CUDA Operators
     .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
        :class-card: card-prerequisites
 
-       * PyTorch 2.4 or later (or PyTorch 2.10 if using the stable ABI)
+       * PyTorch 2.4 or later (or PyTorch 2.10 or later if using the stable ABI)
        * Basic understanding of C++ and CUDA programming
 
 .. note::
@@ -40,9 +40,9 @@ You can find the end-to-end working example for this tutorial
 in the `extension-cpp <https://github.com/pytorch/extension-cpp>`_ repository,
 which contains two parallel implementations:
 
-- `extension_cpp/ <https://github.com/pytorch/extension-cpp/tree/main/extension_cpp>`_:
+- `extension_cpp/ <https://github.com/pytorch/extension-cpp/tree/master/extension_cpp>`_:
   Uses the standard ATen/LibTorch API.
-- `extension_cpp_stable/ <https://github.com/pytorch/extension-cpp/tree/main/extension_cpp_stable>`_:
+- `extension_cpp_stable/ <https://github.com/pytorch/extension-cpp/tree/master/extension_cpp_stable>`_:
   Uses APIs supported by the LibTorch Stable ABI (recommended for PyTorch 2.10+).
 
 The code snippets below show both implementations using tabs.
