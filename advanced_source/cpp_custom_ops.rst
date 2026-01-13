@@ -45,7 +45,18 @@ which contains two parallel implementations:
 - `extension_cpp_stable/ <https://github.com/pytorch/extension-cpp/tree/master/extension_cpp_stable>`_:
   Uses APIs supported by the LibTorch Stable ABI (recommended for PyTorch 2.10+).
 
-The code snippets below show both implementations using tabs.
+**Which API should you use?**
+
+- **ABI-Stable LibTorch API** (recommended): If you are using PyTorch 2.10+, we recommend using
+  the ABI-stable API. It allows you to build a single wheel that works across multiple PyTorch
+  versions (2.10, 2.11, 2.12, etc.), reducing the maintenance burden of supporting multiple
+  PyTorch releases. See the :ref:`libtorch-stable-abi` section below for more details.
+
+- **Non-ABI-Stable LibTorch API**: Use this if you need APIs not yet available in the stable ABI,
+  or if you are targeting PyTorch versions older than 2.10. Note that you will need to build
+  separate wheels for each PyTorch version you want to support.
+
+The code snippets below show both implementations using tabs, with the ABI-stable API shown by default.
 
 Setting up the Build System
 ---------------------------
@@ -191,6 +202,8 @@ like so:
               ["muladd.cpp"])],
         cmdclass={'build_ext': cpp_extension.BuildExtension},
   )
+
+.. _libtorch-stable-abi:
 
 LibTorch Stable ABI (PyTorch Agnosticism)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
