@@ -212,7 +212,7 @@ The stable ABI setup.py includes ``TORCH_TARGET_VERSION=0x020a000000000000``, wh
 the extension targets the LibTorch Stable ABI with a minimum supported PyTorch version of 2.10. The version format is:
 ``[MAJ 1 byte][MIN 1 byte][PATCH 1 byte][ABI TAG 5 bytes]``, so 2.10.0 = ``0x020a000000000000``.
 
-If the stable API/ABI does not contain what you need, you can use the non-stable ATen API,
+If the stable API/ABI does not contain what you need, you can use the Non-ABI-stable LibTorch API,
 but you will need to build separate wheels for each PyTorch version you want to support.
 
 
