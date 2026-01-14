@@ -35,7 +35,7 @@ Specifically:
     the memory constraints of their systems. Specifically, pinned memory implies the usage of ``page-lock`` memory, which can be scarce as compared to
     ``pageable`` memory.
 
-* Checkpoint Management - Since checkpointing is asynchronous, it is up to the user to manage concurrently run checkpoints. 
+* Checkpoint Management - Since checkpointing is asynchronous, it is up to the user to manage concurrently run checkpoints.
     In general, users can employ their own management strategies by handling the future object returned form ``async_save``. For most users, we recommend limiting
     checkpoints to one asynchronous request at a time, avoiding additional memory pressure per request.
 
