@@ -3,7 +3,7 @@ Asynchronous Saving with Distributed Checkpoint (DCP)
 
 **Author:** `Lucas Pasqualin <https://github.com/lucasllc>`__, `Iris Zhang <https://github.com/wz337>`__, `Rodrigo Kumpera <https://github.com/kumpera>`__, `Chien-Chin Huang <https://github.com/fegin>`__, `Yunsheng Ni <https://github.com/niyunsheng>`__
 
-Checkpointing is often a bottle-neck in the critical path for distributed training workloads, incurring larger and larger costs as both model and world sizes grow.
+Checkpointing is often a bottleneck in the critical path for distributed training workloads, incurring larger and larger costs as both model and world sizes grow.
 One excellent strategy for offsetting this cost is to checkpoint in parallel, asynchronously. Below, we expand the save example
 from the `Getting Started with Distributed Checkpoint Tutorial <https://github.com/pytorch/tutorials/blob/main/recipes_source/distributed_checkpoint_recipe.rst>`__
 to show how this can be integrated quite easily with ``torch.distributed.checkpoint.async_save``.
@@ -26,7 +26,7 @@ to show how this can be integrated quite easily with ``torch.distributed.checkpo
 
 Asynchronous Checkpointing Overview
 ------------------------------------
-Before getting started with Asynchronous Checkpointing, it's important to understand it's differences and limitations as compared to synchronous checkpointing.
+Before getting started with Asynchronous Checkpointing, it's important to understand its differences and limitations as compared to synchronous checkpointing.
 Specifically:
 
 * Memory requirements - Asynchronous checkpointing works by first copying models into internal CPU-buffers.
@@ -35,8 +35,9 @@ Specifically:
     the memory constraints of their systems. Specifically, pinned memory implies the usage of ``page-lock`` memory, which can be scarce as compared to
     ``pageable`` memory.
 
-* Checkpoint Management - Since checkpointing is asynchronous, it is up to the user to manage concurrently run checkpoints. In general, users can
-    employ their own management strategies by handling the future object returned form ``async_save``. For most users, we recommend limiting
+* Checkpoint Management - Since checkpointing is asynchronous, it is up to the user to manage concurrently run checkpoints. 
+    In general, users can
+employ their own management strategies by handling the future object returned form ``async_save``. For most users, we recommend limiting
     checkpoints to one asynchronous request at a time, avoiding additional memory pressure per request.
 
 
@@ -72,7 +73,7 @@ Specifically:
             self.optimizer = optimizer
 
         def state_dict(self):
-            # this line automatically manages FSDP FQN's, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT
+            # this line automatically manages FSDP FQNs, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT
             model_state_dict, optimizer_state_dict = get_state_dict(self.model, self.optimizer)
             return {
                 "model": model_state_dict,
@@ -330,7 +331,7 @@ To achieve maximum overlap between computation and checkpointing, we can use the
             self.optimizer = optimizer
 
         def state_dict(self):
-            # this line automatically manages FSDP FQN's, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT
+            # this line automatically manages FSDP FQNs, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT
             model_state_dict, optimizer_state_dict = get_state_dict(self.model, self.optimizer)
             return {
                 "model": model_state_dict,
