@@ -5,6 +5,20 @@ DebugMode: Recording Dispatched Operations and Numerical Debugging
 =================================================================
 
 **Authors:** Pian Pawakapan, Shangdi Yu
+
+.. grid:: 2
+
+    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+       :class-card: card-prerequisites
+
+       * How to capture dispatched ops for eager and ``torch.compile`` runs
+       * How to use tensor hashes and stack traces in DebugMode to pinpoint numerical divergence
+
+    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+       :class-card: card-prerequisites
+
+       * PyTorch 2.10 or later
+
 """
 
 ######################################################################
@@ -258,8 +272,8 @@ print(debug_mode.debug_string(show_stack_trace=True))
 # Conclusion
 # ----------
 #
-# DebugMode gives you a lightweight, runtime-only view of what PyTorch actually
-# executed, whether you are running eager code or compiled graphs. By layering
-# tensor hashing, Triton logging, and custom dispatch hooks you can quickly
-# track down numerical differences. This is especially helpful in debugging
-# bit-wise equivalence between runs.
+# In this tutorial, we saw how DebugMode gives you a lightweight, runtime-only
+# view of what PyTorch actually executed, whether you are running eager code or
+# compiled graphs. By layering tensor hashing, Triton logging, and custom
+# dispatch hooks you can quickly track down numerical differences. This is
+# especially helpful in debugging bit-wise equivalence between runs.
