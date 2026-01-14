@@ -36,8 +36,7 @@ Specifically:
     ``pageable`` memory.
 
 * Checkpoint Management - Since checkpointing is asynchronous, it is up to the user to manage concurrently run checkpoints. 
-    In general, users can
-employ their own management strategies by handling the future object returned form ``async_save``. For most users, we recommend limiting
+    In general, users can employ their own management strategies by handling the future object returned form ``async_save``. For most users, we recommend limiting
     checkpoints to one asynchronous request at a time, avoiding additional memory pressure per request.
 
 
@@ -197,7 +196,7 @@ checkpoint requests users can take advantage of direct memory access to speed up
             self.optimizer = optimizer
 
         def state_dict(self):
-            # this line automatically manages FSDP FQN's, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT
+            # this line automatically manages FSDP FQNs, as well as sets the default state dict type to FSDP.SHARDED_STATE_DICT
             model_state_dict, optimizer_state_dict = get_state_dict(self.model, self.optimizer)
             return {
                 "model": model_state_dict,
