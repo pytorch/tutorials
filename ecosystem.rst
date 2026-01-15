@@ -33,7 +33,7 @@ to production deployment.
    :card_description: Learn how to use Ray Tune to find the best performing set of hyperparameters for your model.
    :image: _static/img/ray-tune.png
    :link: beginner/hyperparameter_tuning_tutorial.html
-   :tags: Model-Optimization,Best-Practice,Ecosystem
+   :tags: Model-Optimization,Best-Practice,Ecosystem,Ray-Distributed,Parallel-and-Distributed-Training
 
 .. customcarditem::
    :header: Multi-Objective Neural Architecture Search with Ax
