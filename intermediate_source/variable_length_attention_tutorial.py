@@ -60,7 +60,18 @@ meaning it is also compilable using ``torch.compile``.
 # long, doc 2 is 10 tokens long, etc. so ``cu_seq_lens = [0, 7, 17, ...]``.
 #
 # .. figure:: ../_static/img/varlen_diagram.png
-#    :alt: Padding vs Packing Diagram
+#    :alt: Diagram comparing two approaches for handling variable-length
+#       sequences in attention. Left side labeled 'PADDING (SDPA)' shows a 2D
+#       batch of 4 samples stacked vertically, each padded to match the longest
+#       sequence (length 10). Sample 1 has length 7 with 3 padding tokens,
+#       sample 2 has length 10 with no padding, sample 3 has length 8 with 2
+#       padding tokens, and sample 4 has length 5 with 5 padding tokens. The
+#       vertical axis represents batch size and horizontal axis represents
+#       sequence length. Right side labeled 'PACKING (VARLEN)' shows the same 4
+#       samples concatenated into a single 1D sequence with no padding. Arrows
+#       indicate boundaries at positions 7, 17, 25, and 30. Below shows
+#       cu_seq_lens: [0, 7, 17, 25, 30] representing cumulative sequence
+#       lengths, and max_seqlen: 10.
 #
 #    Padding vs Packing Diagram
 
