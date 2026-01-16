@@ -68,7 +68,7 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   export FILES_TO_RUN
 
   # Step 3: Run `make docs` to generate HTML files and static files for these tutorialis
-  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
+  # pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
   make docs
 
   # Step 3.1: Run the post-processing script:
