@@ -3,6 +3,8 @@
 Getting Started with Nested Tensors
 ===============================================================
 
+**Warning: Nested tensors are not currently under active development. Use at your own risk.**
+
 Nested tensors generalize the shape of regular dense tensors, allowing for representation
 of ragged-sized data.
 
@@ -21,8 +23,6 @@ for operating on sequential data of varying lengths with a real-world example. I
 they are invaluable for building transformers that can efficiently operate on ragged sequential
 inputs. Below, we present an implementation of multi-head attention using nested tensors that,
 combined usage of ``torch.compile``, out-performs operating naively on tensors with padding.
-
-Nested tensors are currently a prototype feature and are subject to change.
 """
 
 import numpy as np
