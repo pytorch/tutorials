@@ -3,7 +3,7 @@
 Getting Started with Nested Tensors
 ===============================================================
 
-.. warning:: 
+.. warning::
    Nested tensors are not currently under active development. Use at your own risk.
 
 Nested tensors generalize the shape of regular dense tensors, allowing for representation
