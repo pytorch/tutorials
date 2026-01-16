@@ -131,7 +131,6 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   fi
 elif [[ "${JOB_TYPE}" == "manager" ]]; then
   # Step 1: Generate no-plot HTML pages for all tutorials
-  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
   make html-noplot
   cp -r _build/html docs
 
