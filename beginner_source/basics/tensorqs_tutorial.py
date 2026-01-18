@@ -111,8 +111,8 @@ print(f"Device tensor is stored on: {tensor.device}")
 # across devices can be expensive in terms of time and memory!
 
 # We move our tensor to the current accelerator if available
-if torch.accelerator.is_available():
-    tensor = tensor.to(torch.accelerator.current_accelerator())
+if torch.cuda.is_available():
+    tensor = tensor.to("cuda")
 
 
 ######################################################################
