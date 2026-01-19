@@ -234,6 +234,7 @@ print(f"Labels batch shape: {train_labels.size()}")
 img = train_features[0].squeeze()
 label = train_labels[0]
 plt.imshow(img, cmap="gray")
+plt.axis("off")
 plt.show()
 print(f"Label: {label}")
 
