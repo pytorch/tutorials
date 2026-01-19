@@ -10,7 +10,7 @@ control, as well as third-party backend solutions.
 
 .. warning::
 
-   TorchScript is no longer in active development.
+   :term:`TorchScript` is no longer in active development.
 
 .. raw:: html
 

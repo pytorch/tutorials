@@ -141,7 +141,19 @@ extensions = [
     "sphinx_sitemap",
     "sphinx_reredirects",
     "sphinxcontrib.mermaid",
+    "sphinx_tippy",
 ]
+
+# sphinx-tippy configuration
+tippy_props = {
+    "placement": "auto-start",
+    "maxWidth": 500,
+    "interactive": True,  # Allow clicking links inside tooltips
+    "theme": "material",
+}
+
+# Skip all URLs except glossary term links (glossary.html#term-*)
+tippy_skip_urls = (r"^(?!.*glossary\.html#term-).*$",)
 
 intersphinx_mapping = {
     "torch": ("https://docs.pytorch.org/docs/stable/", None),
