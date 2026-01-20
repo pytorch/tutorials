@@ -44,6 +44,8 @@ x_data = torch.tensor(data)
 # Tensors can be created from NumPy arrays (and vice versa - see :ref:`bridge-to-np-label`).
 np_array = np.array(data)
 x_np = torch.from_numpy(np_array)
+# Note: torch.from_numpy shares memory with the NumPy array when possible. If you want a copy, use torch.tensor(np_array).
+# torch.as_tensor(np_array) also avoids a copy when possible.
 
 
 ###############################################################
