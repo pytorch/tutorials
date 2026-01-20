@@ -379,7 +379,7 @@ def bar_fixed(a, b):
         # NOTE: torch.cond doesn't allow aliased outputs
         return y.clone()
 
-    x = cond(b.sum() < 0, true_branch, false_branch, (b,))
+    b = cond(b.sum() < 0, true_branch, false_branch, (b,))
     return x * b
 
 
