@@ -1,0 +1,60 @@
+name: Check for ghstack PRs
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  check-ghstack:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Check for ghstack usage
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const headRef = pr.head.ref;
+            const prBody = pr.body || '';
+            
+            // ghstack branches follow pattern: gh/<username>/<number>/head
+            const isGhstack = /^gh\/[^/]+\/\d+\/head$/.test(headRef);
+            
+            if (!isGhstack) {
+              core.info('No ghstack patterns detected. PR is good to go!');
+              return;
+            }
+            
+            core.info('ghstack PR detected');
+            
+            // Check if we've already commented
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+            });
+            
+            const alreadyCommented = comments.some(c => 
+              c.user.type === 'Bot' && c.body.includes('ghstack PRs are not supported')
+            );
+            
+            if (!alreadyCommented) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body: `## ⚠️ ghstack PRs are not supported.
+                This pull request appears to be created using [ghstack](https://github.com/ezyang/ghstack).
+                **We do not support ghstack in this repository.**
+
+                Please resubmit as a regular pull request:
+                1. Create a branch from main
+                2. Cherry-pick or apply your changes
+                3. Open a new pull request
+                
+                See our [Contributing Guide](https://github.com/pytorch/tutorials/blob/main/CONTRIBUTING.md) for details.`,
+                              });
+                            }
+                            
+                            core.setFailed('ghstack PRs are not supported. Please resubmit as a regular pull request.');
