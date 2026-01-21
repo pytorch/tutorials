@@ -1,0 +1,107 @@
+name: Check for ghstack PRs
+
+on:
+  pull_request:
+    types: [opened, reopened, edited, synchronize]
+
+# This workflow should run before other workflows
+# Lower concurrency group number means higher priority
+concurrency:
+  group: ghstack-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  check-ghstack:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Check for ghstack usage
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const prBody = pr.body || '';
+            const prTitle = pr.title || '';
+            const headRef = pr.head.ref;
+
+            // Patterns that indicate ghstack usage
+            const ghstackPatterns = [
+              /gh\/.*\/\d+\/head/i,           // Branch pattern: gh/username/123/head
+              /gh\/.*\/\d+\/base/i,           // Branch pattern: gh/username/123/base
+              /stack from ghstack/i,          // Common ghstack description text
+              /ghstack-source-id:/i,          // ghstack metadata in description
+              /pulled by ghstack/i,           // Another common pattern
+              /differential revision:/i,      // Phabricator/ghstack pattern
+            ];
+
+            let isGhstack = false;
+            let matchedPattern = '';
+
+            // Check branch name
+            if (headRef.startsWith('gh/')) {
+              isGhstack = true;
+              matchedPattern = 'branch name starts with "gh/"';
+            }
+
+            // Check PR body and title for ghstack patterns
+            if (!isGhstack) {
+              for (const pattern of ghstackPatterns) {
+                if (pattern.test(prBody) || pattern.test(prTitle)) {
+                  isGhstack = true;
+                  matchedPattern = `pattern "${pattern}" found in PR description or title`;
+                  break;
+                }
+              }
+            }
+
+            if (isGhstack) {
+              core.info(`ghstack PR detected: ${matchedPattern}`);
+
+              const commentBody = `## ⚠️ ghstack PRs are not supported
+
+            This pull request appears to be created using [ghstack](https://github.com/ezyang/ghstack).
+
+            **We do not support ghstack in the pytorch/tutorials repository.**
+
+            Please resubmit this contribution as a regular pull request. You can do this by:
+
+            1. Creating a regular branch from main
+            2. Cherry-picking or applying your changes to that branch
+            3. Opening a new pull request
+
+            Thank you for your contribution! Please see our [Contributing Guide](https://github.com/pytorch/tutorials/blob/main/CONTRIBUTING.md#submit-the-pr) for more information.
+
+            ---
+            *Detection reason: ${matchedPattern}*`;
+
+              // Check if we've already commented
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+              });
+
+              const botComment = comments.find(comment =>
+                comment.user.type === 'Bot' &&
+                comment.body.includes('ghstack PRs are not supported')
+              );
+
+              if (!botComment) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  body: commentBody,
+                });
+                core.info('Comment posted to PR');
+              } else {
+                core.info('Comment already exists, skipping');
+              }
+
+              // Set a failure status to indicate this PR needs attention
+              core.setFailed('This PR was created using ghstack, which is not supported. Please resubmit as a regular pull request.');
+            } else {
+              core.info('No ghstack patterns detected. PR is good to go!');
+            }
