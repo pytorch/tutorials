@@ -4,8 +4,7 @@ on:
   pull_request:
     types: [opened, reopened, edited, synchronize]
 
-# This workflow should run before other workflows
-# Lower concurrency group number means higher priority
+# This workflow runs on PR events to detect ghstack usage early
 concurrency:
   group: ghstack-check-${{ github.event.pull_request.number }}
   cancel-in-progress: false
@@ -28,12 +27,12 @@ jobs:
 
             // Patterns that indicate ghstack usage
             const ghstackPatterns = [
-              /gh\/.*\/\d+\/head/i,           // Branch pattern: gh/username/123/head
-              /gh\/.*\/\d+\/base/i,           // Branch pattern: gh/username/123/base
-              /stack from ghstack/i,          // Common ghstack description text
-              /ghstack-source-id:/i,          // ghstack metadata in description
-              /pulled by ghstack/i,           // Another common pattern
-              /differential revision:/i,      // Phabricator/ghstack pattern
+              { pattern: /gh\/.*\/\d+\/head/i, description: 'branch pattern gh/*/number/head' },
+              { pattern: /gh\/.*\/\d+\/base/i, description: 'branch pattern gh/*/number/base' },
+              { pattern: /stack from ghstack/i, description: 'text "Stack from ghstack"' },
+              { pattern: /ghstack-source-id:/i, description: 'ghstack-source-id metadata' },
+              { pattern: /pulled by ghstack/i, description: 'text "Pulled by ghstack"' },
+              { pattern: /differential revision:/i, description: 'Differential Revision marker' },
             ];
 
             let isGhstack = false;
@@ -47,10 +46,10 @@ jobs:
 
             // Check PR body and title for ghstack patterns
             if (!isGhstack) {
-              for (const pattern of ghstackPatterns) {
-                if (pattern.test(prBody) || pattern.test(prTitle)) {
+              for (const item of ghstackPatterns) {
+                if (item.pattern.test(prBody) || item.pattern.test(prTitle)) {
                   isGhstack = true;
-                  matchedPattern = `pattern "${pattern}" found in PR description or title`;
+                  matchedPattern = `found ${item.description} in PR description or title`;
                   break;
                 }
               }
