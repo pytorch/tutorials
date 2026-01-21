@@ -4,7 +4,7 @@ Welcome to PyTorch Tutorials
 **What's new in PyTorch tutorials?**
 
 * `Using Variable Length Attention in PyTorch <https://docs.pytorch.org/tutorials/intermediate/variable_length_attention_tutorial.html>`__
-* `ebugMode: Recording Dispatched Operations and Numerical Debugging <https://docs.pytorch.org/tutorials/recipes/debug_mode_tutorial.html>`__
+* `DebugMode: Recording Dispatched Operations and Numerical Debugging <https://docs.pytorch.org/tutorials/recipes/debug_mode_tutorial.html>`__
 * `[Updated] Custom SYCL Operators <https://docs.pytorch.org/tutorials/advanced/cpp_custom_ops_sycl.html>`__
 * `[Updated] Custom C++ and CUDA Operators <https://docs.pytorch.org/tutorials/advanced/cpp_custom_ops.html>`__
 
