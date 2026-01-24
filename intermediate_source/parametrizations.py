@@ -307,7 +307,8 @@ class CayleyMap(nn.Module):
         # Assume A orthogonal
         # See https://en.wikipedia.org/wiki/Cayley_transform#Matrix_map
         # (A - I)(A + I)^{-1}
-        return torch.linalg.solve(A + self.Id, self.Id - A)
+        eps = 1e-6
+        return torch.linalg.solve(A + self.Id + eps * self.Id, self.Id - A)
 
 layer_orthogonal = nn.Linear(3, 3)
 parametrize.register_parametrization(layer_orthogonal, "weight", Skew())
