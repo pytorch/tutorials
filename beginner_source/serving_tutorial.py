@@ -341,4 +341,4 @@ print(f"Throughput: {len(responses)/elapsed:.2f} requests/second")
 # For more information, see the `Ray Serve
 # documentation <https://docs.ray.io/en/latest/serve/index.html>`__ and
 # `Ray Serve
-# examples <https://docs.ray.io/en/latest/serve/examples/index.html>`__.
+# examples <https://docs.ray.io/en/latest/serve/examples.html>`__.

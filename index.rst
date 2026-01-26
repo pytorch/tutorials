@@ -327,7 +327,7 @@ Welcome to PyTorch Tutorials
    :header: Serving PyTorch Tutorial
    :card_description: Deploy and scale a PyTorch model with Ray Serve.
    :image: _static/img/ray-tune.png
-   :link: beginner/ray_serve_tutorial.html
+   :link: beginner/serving_tutorial.html
    :tags: Production,Best-Practice,Ray-Distributed,Ecosystem
 
 .. customcarditem::
