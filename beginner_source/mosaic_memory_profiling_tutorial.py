@@ -86,7 +86,32 @@ import pickle
 # .. code-block:: bash
 #
 #    mosaic_get_memory_profile --snapshot <path> --out-path <html> \
+#        --profile categories
+#
+# An example HTML output looks like:
+#
+# .. figure:: /_static/img/mosaic/mosaic-categorical-memory-profiling-no-allocation-ordering.png
+#    :alt: Mosaic categorical memory profiling without allocation ordering
+#    :align: center
+#    :width: 600px
+#
+#    Categorical memory profiling showing memory breakdown by type
+#    (activation, gradient, optimizer, etc.)
+#
+# To maintain allocation order for the categories, add ``--preserve-allocation-order``:
+#
+# .. code-block:: bash
+#
+#    mosaic_get_memory_profile --snapshot <path> --out-path <html> \
 #        --profile categories --preserve-allocation-order
+#
+# .. figure:: /_static/img/mosaic/mosaic-categorical-memory-profiling-allocation-ordering.png
+#    :alt: Mosaic categorical memory profiling with allocation ordering preserved
+#    :align: center
+#    :width: 600px
+#
+#    Categorical profiling with ``--preserve-allocation-order`` shows memory
+#    allocations in chronological order
 #
 # **3. Custom Dictionary Profiling**
 #
@@ -96,6 +121,16 @@ import pickle
 #
 #    mosaic_get_memory_profile --snapshot <path> --profile custom \
 #        --custom-profile '{"ncclx": "ncclx"}'
+#
+# This is invaluable for tracking specific kernels, optimizers, or custom code patterns:
+#
+# .. figure:: /_static/img/mosaic/mosaic-categorical-memory-profiling-ncclx.png
+#    :alt: Mosaic custom dictionary profiling with ncclx pattern
+#    :align: center
+#    :width: 600px
+#
+#    Custom profiling with regex patterns to track specific operations like
+#    NCCL communications
 #
 
 ######################################################################
@@ -298,46 +333,66 @@ def run_training_ac(
 ######################################################################
 # Run Baseline Training (Without Activation Checkpointing)
 # ---------------------------------------------------------
+#
+# .. note::
+#
+#    This tutorial requires a CUDA-capable GPU. If you're running in
+#    Google Colab, make sure to select a GPU runtime:
+#    Runtime → Change runtime type → Hardware accelerator → GPU
 
-print("=" * 60)
-print("BASELINE: Training WITHOUT Activation Checkpointing")
-print("=" * 60)
+if not torch.cuda.is_available():
+    print("=" * 60)
+    print("WARNING: No CUDA GPU detected!")
+    print("=" * 60)
+    print("\nThis tutorial requires a CUDA-capable GPU for memory profiling.")
+    print("\nIf you're running in Google Colab:")
+    print("  1. Go to Runtime → Change runtime type")
+    print("  2. Set Hardware accelerator to 'GPU'")
+    print("  3. Click 'Save' and re-run the notebook")
+    print("\nSkipping GPU memory profiling examples...")
+    HAS_CUDA = False
+else:
+    HAS_CUDA = True
+    print("=" * 60)
+    print("BASELINE: Training WITHOUT Activation Checkpointing")
+    print("=" * 60)
 
-baseline_memory = run_training_ac(
-    activation_checkpointing=False,
-    snapshot_path="snapshot_baseline.pickle",
-    batch_size=4,
-    seq_length=512,
-    num_steps=5,
-)
+    baseline_memory = run_training_ac(
+        activation_checkpointing=False,
+        snapshot_path="snapshot_baseline.pickle",
+        batch_size=4,
+        seq_length=512,
+        num_steps=5,
+    )
 
 ######################################################################
 # Run Modified Training (With Activation Checkpointing)
 # ------------------------------------------------------
 
-print("\n" + "=" * 60)
-print("MODIFIED: Training WITH Activation Checkpointing")
-print("=" * 60)
+if HAS_CUDA:
+    print("\n" + "=" * 60)
+    print("MODIFIED: Training WITH Activation Checkpointing")
+    print("=" * 60)
 
-ac_memory = run_training_ac(
-    activation_checkpointing=True,
-    snapshot_path="snapshot_with_ac.pickle",
-    batch_size=4,
-    seq_length=512,
-    num_steps=5,
-)
-
-# Summary
-print("\n" + "=" * 60)
-print("MEMORY COMPARISON SUMMARY")
-print("=" * 60)
-print(f"Baseline (no AC):     {baseline_memory:.2f} GB")
-print(f"With AC:              {ac_memory:.2f} GB")
-if baseline_memory > 0:
-    saved_pct = 100 * (baseline_memory - ac_memory) / baseline_memory
-    print(
-        f"Memory Saved:         {baseline_memory - ac_memory:.2f} GB ({saved_pct:.1f}%)"
+    ac_memory = run_training_ac(
+        activation_checkpointing=True,
+        snapshot_path="snapshot_with_ac.pickle",
+        batch_size=4,
+        seq_length=512,
+        num_steps=5,
     )
+
+    # Summary
+    print("\n" + "=" * 60)
+    print("MEMORY COMPARISON SUMMARY")
+    print("=" * 60)
+    print(f"Baseline (no AC):     {baseline_memory:.2f} GB")
+    print(f"With AC:              {ac_memory:.2f} GB")
+    if baseline_memory > 0:
+        saved_pct = 100 * (baseline_memory - ac_memory) / baseline_memory
+        print(
+            f"Memory Saved:         {baseline_memory - ac_memory:.2f} GB ({saved_pct:.1f}%)"
+        )
 
 ######################################################################
 # Generate Categorical Memory Profiles with Mosaic
@@ -345,48 +400,49 @@ if baseline_memory > 0:
 #
 # Use Mosaic to generate HTML profiles for both snapshots.
 
-print("\n" + "=" * 60)
-print("MOSAIC: Categorical Memory Profiling")
-print("=" * 60)
+if HAS_CUDA:
+    print("\n" + "=" * 60)
+    print("MOSAIC: Categorical Memory Profiling")
+    print("=" * 60)
 
-# Generate HTML profiles using subprocess
-subprocess.run(
-    [
-        "mosaic_get_memory_profile",
-        "--snapshot",
-        "snapshot_baseline.pickle",
-        "--out-path",
-        "profile_baseline.html",
-        "--profile",
-        "categories",
-        "--preserve-allocation-order",
-        "--plotter_sampling_rate",
-        "20",
-    ],
-    check=True,
-)
+    # Generate HTML profiles using subprocess
+    subprocess.run(
+        [
+            "mosaic_get_memory_profile",
+            "--snapshot",
+            "snapshot_baseline.pickle",
+            "--out-path",
+            "profile_baseline.html",
+            "--profile",
+            "categories",
+            "--preserve-allocation-order",
+            "--plotter_sampling_rate",
+            "20",
+        ],
+        check=True,
+    )
 
-print()
+    print()
 
-subprocess.run(
-    [
-        "mosaic_get_memory_profile",
-        "--snapshot",
-        "snapshot_with_ac.pickle",
-        "--out-path",
-        "profile_with_ac.html",
-        "--profile",
-        "categories",
-        "--preserve-allocation-order",
-        "--plotter_sampling_rate",
-        "20",
-    ],
-    check=True,
-)
+    subprocess.run(
+        [
+            "mosaic_get_memory_profile",
+            "--snapshot",
+            "snapshot_with_ac.pickle",
+            "--out-path",
+            "profile_with_ac.html",
+            "--profile",
+            "categories",
+            "--preserve-allocation-order",
+            "--plotter_sampling_rate",
+            "20",
+        ],
+        check=True,
+    )
 
-print("\n✓ Generated profile_baseline.html")
-print("✓ Generated profile_with_ac.html")
-print("\nDownload these files to view the interactive memory profiles.")
+    print("\n✓ Generated profile_baseline.html")
+    print("✓ Generated profile_with_ac.html")
+    print("\nDownload these files to view the interactive memory profiles.")
 
 ######################################################################
 # Results Interpretation: Activation Checkpointing
@@ -635,23 +691,25 @@ def run_training_with_bug(snapshot_path, num_steps=3):
 # Run Training for Baseline (Clean Model)
 # ----------------------------------------
 
-print("\n" + "=" * 60)
-print("Training with baseline model")
-print("=" * 60)
+if HAS_CUDA:
+    print("\n" + "=" * 60)
+    print("Training with baseline model")
+    print("=" * 60)
 
-baseline_memory_debug = run_training_clean(
-    "snapshot_debug_baseline.pickle", num_steps=3
-)
+    baseline_memory_debug = run_training_clean(
+        "snapshot_debug_baseline.pickle", num_steps=3
+    )
 
 ######################################################################
 # Run Training WITH the Bug
 # --------------------------
 
-print("\n" + "=" * 60)
-print("Training with debug projection overhead (BUG)")
-print("=" * 60)
+if HAS_CUDA:
+    print("\n" + "=" * 60)
+    print("Training with debug projection overhead (BUG)")
+    print("=" * 60)
 
-buggy_memory = run_training_with_bug("snapshot_with_bug.pickle", num_steps=3)
+    buggy_memory = run_training_with_bug("snapshot_with_bug.pickle", num_steps=3)
 
 ######################################################################
 # Use Mosaic to Find the Problem
@@ -659,23 +717,24 @@ buggy_memory = run_training_with_bug("snapshot_with_bug.pickle", num_steps=3)
 #
 # Analyze both snapshots to identify the source of extra memory usage.
 
-print("\n" + "=" * 60)
-print("MOSAIC: Analyzing the Baseline Snapshot")
-print("=" * 60)
+if HAS_CUDA:
+    print("\n" + "=" * 60)
+    print("MOSAIC: Analyzing the Baseline Snapshot")
+    print("=" * 60)
 
-subprocess.run(
-    ["mosaic_get_memory_usage_peak", "--snapshot", "snapshot_debug_baseline.pickle"],
-    check=True,
-)
+    subprocess.run(
+        ["mosaic_get_memory_usage_peak", "--snapshot", "snapshot_debug_baseline.pickle"],
+        check=True,
+    )
 
-print("\n" + "=" * 60)
-print("MOSAIC: Analyzing the Buggy Snapshot")
-print("=" * 60)
+    print("\n" + "=" * 60)
+    print("MOSAIC: Analyzing the Buggy Snapshot")
+    print("=" * 60)
 
-subprocess.run(
-    ["mosaic_get_memory_usage_peak", "--snapshot", "snapshot_with_bug.pickle"],
-    check=True,
-)
+    subprocess.run(
+        ["mosaic_get_memory_usage_peak", "--snapshot", "snapshot_with_bug.pickle"],
+        check=True,
+    )
 
 ######################################################################
 # Analyzing The Mosaic Output
@@ -754,14 +813,15 @@ subprocess.run(
 # **Total Overall Peak Memory Usage:** Dynamic + Static
 #
 
-print("\n" + "=" * 60)
-print("COMPARISON")
-print("=" * 60)
-print(f"Baseline (clean model):           {baseline_memory_debug:.2f} GB")
-print(f"With bug (debug projections):     {buggy_memory:.2f} GB")
-print(
-    f"Extra memory from bug:            {buggy_memory - baseline_memory_debug:.2f} GB"
-)
+if HAS_CUDA:
+    print("\n" + "=" * 60)
+    print("COMPARISON")
+    print("=" * 60)
+    print(f"Baseline (clean model):           {baseline_memory_debug:.2f} GB")
+    print(f"With bug (debug projections):     {buggy_memory:.2f} GB")
+    print(
+        f"Extra memory from bug:            {buggy_memory - baseline_memory_debug:.2f} GB"
+    )
 
 ######################################################################
 # Case 3: Integrating Memory Analysis into Your Training Pipeline
@@ -821,11 +881,12 @@ def run_training_with_memory_capture(
     return snapshot_path
 
 
-print("\n" + "=" * 60)
-print("CASE 3: Pipeline Integration")
-print("=" * 60)
+if HAS_CUDA:
+    print("\n" + "=" * 60)
+    print("CASE 3: Pipeline Integration")
+    print("=" * 60)
 
-pipeline_snapshot_path = run_training_with_memory_capture(batch_size=4, seq_length=512)
+    pipeline_snapshot_path = run_training_with_memory_capture(batch_size=4, seq_length=512)
 
 ######################################################################
 # Mosaic Memory Analysis via Python API
@@ -834,27 +895,28 @@ pipeline_snapshot_path = run_training_with_memory_capture(batch_size=4, seq_leng
 # Instead of using CLI commands, we can use Mosaic's Python API directly
 # for programmatic integration.
 
-print("\n" + "=" * 60)
-print("MOSAIC MEMORY ANALYSIS (via Python API)")
-print("=" * 60)
+if HAS_CUDA:
+    print("\n" + "=" * 60)
+    print("MOSAIC MEMORY ANALYSIS (via Python API)")
+    print("=" * 60)
 
-# Load and analyze the memory snapshot
-memory_abstract = MemoryAbstract(memory_snapshot_file=pipeline_snapshot_path)
-memory_abstract.load_memory_snapshot()
+    # Load and analyze the memory snapshot
+    memory_abstract = MemoryAbstract(memory_snapshot_file=pipeline_snapshot_path)
+    memory_abstract.load_memory_snapshot()
 
-# Analyze peak memory usage
-memory_abstract.memory_snapshot.analyze_memory_snapshot(opt="memory_peak")
+    # Analyze peak memory usage
+    memory_abstract.memory_snapshot.analyze_memory_snapshot(opt="memory_peak")
 
-# Get results
-dynamic_peak = memory_abstract.memory_snapshot.dynamic_memory_peak
-static_memory = memory_abstract.memory_snapshot.static_memory
-overall_peak = dynamic_peak + static_memory
+    # Get results
+    dynamic_peak = memory_abstract.memory_snapshot.dynamic_memory_peak
+    static_memory = memory_abstract.memory_snapshot.static_memory
+    overall_peak = dynamic_peak + static_memory
 
-print(f"Peak dynamic memory: {dynamic_peak / 1024**3:.3f} GiB")
-print(f"Static memory: {static_memory / 1024**3:.3f} GiB")
-print(f"Overall peak memory: {overall_peak / 1024**3:.3f} GiB")
+    print(f"Peak dynamic memory: {dynamic_peak / 1024**3:.3f} GiB")
+    print(f"Static memory: {static_memory / 1024**3:.3f} GiB")
+    print(f"Overall peak memory: {overall_peak / 1024**3:.3f} GiB")
 
-print("✓ Analysis complete using Mosaic Python API")
+    print("✓ Analysis complete using Mosaic Python API")
 
 ######################################################################
 # Reusable Memory Analysis Function
@@ -897,10 +959,11 @@ def analyze_training_memory(snapshot_path):
     }
 
 
-analysis = analyze_training_memory(pipeline_snapshot_path)
-print("\nMemory Analysis Result:")
-for key, value in analysis.items():
-    print(f"  {key}: {value}")
+if HAS_CUDA:
+    analysis = analyze_training_memory(pipeline_snapshot_path)
+    print("\nMemory Analysis Result:")
+    for key, value in analysis.items():
+        print(f"  {key}: {value}")
 
 ######################################################################
 # Complete Training Pipeline with Memory Monitoring
@@ -992,18 +1055,19 @@ def training_pipeline_with_memory_monitoring(
 
 
 # Run the pipeline
-report = training_pipeline_with_memory_monitoring(
-    "gpt2", batch_size=4, seq_length=512, num_steps=5
-)
+if HAS_CUDA:
+    report = training_pipeline_with_memory_monitoring(
+        "gpt2", batch_size=4, seq_length=512, num_steps=5
+    )
 
-print("\n" + "=" * 60)
-print("PIPELINE REPORT")
-print("=" * 60)
-print(f"Model: {report['model']}")
-print(f"Config: {report['config']}")
-print(f"PyTorch Peak Memory: {report['pytorch_peak_memory_gb']:.3f} GB")
-print(f"Mosaic Dynamic Peak: {report['mosaic_analysis']['dynamic_peak_gib']:.3f} GiB")
-print(f"Mosaic Overall Peak: {report['mosaic_analysis']['overall_peak_gib']:.3f} GiB")
+    print("\n" + "=" * 60)
+    print("PIPELINE REPORT")
+    print("=" * 60)
+    print(f"Model: {report['model']}")
+    print(f"Config: {report['config']}")
+    print(f"PyTorch Peak Memory: {report['pytorch_peak_memory_gb']:.3f} GB")
+    print(f"Mosaic Dynamic Peak: {report['mosaic_analysis']['dynamic_peak_gib']:.3f} GiB")
+    print(f"Mosaic Overall Peak: {report['mosaic_analysis']['overall_peak_gib']:.3f} GiB")
 
 ######################################################################
 # CI/CD and Dashboard Integration Patterns
@@ -1034,13 +1098,14 @@ def check_memory_regression(report, threshold_gib=5.0):
     print(f"✓ Memory check passed: {peak:.2f} GiB < {threshold_gib} GiB threshold")
 
 
-check_memory_regression(report, threshold_gib=8.0)
+if HAS_CUDA:
+    check_memory_regression(report, threshold_gib=8.0)
 
-# Pattern 2: Export to JSON for Dashboards
-with open("memory_report.json", "w") as f:
-    json.dump(report, f, indent=2, default=str)
+    # Pattern 2: Export to JSON for Dashboards
+    with open("memory_report.json", "w") as f:
+        json.dump(report, f, indent=2, default=str)
 
-print("✓ Memory report exported to memory_report.json")
+    print("✓ Memory report exported to memory_report.json")
 
 ######################################################################
 # Conclusion
