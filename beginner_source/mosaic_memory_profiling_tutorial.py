@@ -151,6 +151,7 @@ and is now open source.
 import subprocess
 import sys
 from contextlib import contextmanager
+import pickle
 
 import torch
 from torch.utils.data import DataLoader, Dataset
