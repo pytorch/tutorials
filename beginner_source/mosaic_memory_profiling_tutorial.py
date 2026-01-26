@@ -154,6 +154,18 @@ import shutil
 from contextlib import contextmanager
 import pickle
 
+# Fix for sphinx-gallery environment where __main__.__file__ may not exist
+# This is needed for transformers library compatibility
+import os
+if not hasattr(sys.modules["__main__"], "__file__"):
+    # Use this file's path as a fallback, or a dummy path if __file__ is not available
+    try:
+        sys.modules["__main__"].__file__ = os.path.abspath(__file__)
+    except NameError:
+        # __file__ not available, use transformers modeling file as fallback
+        import transformers.modeling_utils
+        sys.modules["__main__"].__file__ = transformers.modeling_utils.__file__
+
 import torch
 from torch.utils.data import DataLoader, Dataset
 
