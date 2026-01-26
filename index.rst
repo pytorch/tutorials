@@ -3,11 +3,11 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
-* `Integrating Custom Operators with SYCL for Intel GPU <https://pytorch.org/tutorials/advanced/cpp_custom_ops_sycl.html>`__
-* `Supporting Custom C++ Classes in torch.compile/torch.export <https://docs.pytorch.org/tutorials/advanced/custom_class_pt2.html>`__
-* `Accelerating torch.save and torch.load with GPUDirect Storage <https://docs.pytorch.org/tutorials/unstable/gpu_direct_storage.html>`__
-* `Getting Started with Fully Sharded Data Parallel (FSDP2) <https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__
-* `Interactive Distributed Applications with Monarch <https://docs.pytorch.org/tutorials/intermediate/monarch_distributed_tutorial.html>`__
+* `Using Variable Length Attention in PyTorch <https://docs.pytorch.org/tutorials/intermediate/variable_length_attention_tutorial.html>`__
+* `DebugMode: Recording Dispatched Operations and Numerical Debugging <https://docs.pytorch.org/tutorials/recipes/debug_mode_tutorial.html>`__
+* `[Updated] Custom SYCL Operators <https://docs.pytorch.org/tutorials/advanced/cpp_custom_ops_sycl.html>`__
+* `[Updated] Custom C++ and CUDA Operators <https://docs.pytorch.org/tutorials/advanced/cpp_custom_ops.html>`__
+
 
 .. raw:: html
 
