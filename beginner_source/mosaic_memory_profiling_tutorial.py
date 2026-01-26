@@ -1,30 +1,39 @@
+# -*- coding: utf-8 -*-
+
 """
 Mosaic: Memory Profiling for PyTorch
 ====================================
 
-**Author:** `Meta <https://github.com/facebookresearch/mosaic>`_
+**Author:** `Basil Wong <https://github.com/basilwong>`_
 
-This tutorial demonstrates how to use **Mosaic**, a post-processing memory
+.. grid:: 2
+
+    .. grid-item-card:: :octicon:`mortar-board;1em;` What you will learn
+       :class-card: card-prerequisites
+
+       * How to capture and analyze PyTorch memory snapshots
+       * Identify memory savings from activation checkpointing
+       * Debug unexpected memory usage from abandoned code
+       * Integrate memory analysis into training pipelines
+
+    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
+       :class-card: card-prerequisites
+
+       * PyTorch v2.0.0 or later
+       * CUDA-capable GPU
+       * Basic understanding of PyTorch training loops
+
+This tutorial demonstrates how to use `Mosaic <https://github.com/facebookresearch/mosaic>`_, a post-processing memory
 snapshot analysis tool for PyTorch. Mosaic helps analyze GPU memory usage in
 distributed deep learning, providing detailed insights into memory allocations,
 peak usage, and memory imbalances across parallel workers.
 
-Mosaic was instrumental in debugging OOM issues during the 405B LLaMA training
+Mosaic was instrumental in debugging OOM issues during the
+`405B LLaMA training <https://ai.meta.com/blog/meta-llama-3-1/>`_
 and is now open source.
-
-What you will learn:
-
-- How to capture and analyze PyTorch memory snapshots
-- Identify memory savings from activation checkpointing
-- Debug unexpected memory usage from abandoned code
-- Integrate memory analysis into training pipelines
-
-.. figure:: https://raw.githubusercontent.com/facebookresearch/mosaic/main/docs/mosaic_logo.png
-   :alt: Mosaic Logo
 
 """
 
-import pickle
 ######################################################################
 # Introduction to Mosaic
 # ======================
@@ -540,8 +549,7 @@ if HAS_CUDA:
 #
 # This model has **abandoned debug code** that creates unnecessary GPU memory
 # overhead. Someone added projection layers to "analyze hidden states" during
-# debugging, but forgot to remove them before training. This creates ~700MB-1GB
-# of extra GPU memory at peak.
+# debugging, but forgot to remove them before training.
 
 
 class GPT2WithDebugOverhead(GPT2LMHeadModel):
@@ -769,12 +777,6 @@ if HAS_CUDA:
 #      - 2nd and 3rd
 #      - 148 calls
 #      - 0.464 GB + 0.464 GB
-#
-# **Key stack trace sections to notice:**
-#
-# .. code-block:: text
-#
-#    run_training_with_bug → optimizer.step() → AdamW → zeros_like
 #
 # **What this tells us:** The optimizer is tracking more tensors! This is your
 # first clue that there are extra parameters or tensors in the computation graph.
@@ -1078,7 +1080,9 @@ if HAS_CUDA:
 
 import json
 
+######################################################################
 # Pattern 1: CI/CD Memory Regression Testing
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 def check_memory_regression(report, threshold_gib=5.0):
@@ -1095,17 +1099,20 @@ def check_memory_regression(report, threshold_gib=5.0):
     assert peak < threshold_gib, (
         f"Memory regression! {peak:.2f} GiB > {threshold_gib} GiB"
     )
-    print(f"✓ Memory check passed: {peak:.2f} GiB < {threshold_gib} GiB threshold")
+    print(f"Memory check passed: {peak:.2f} GiB < {threshold_gib} GiB threshold")
 
+
+######################################################################
+# Pattern 2: Export to JSON for Dashboards
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 if HAS_CUDA:
     check_memory_regression(report, threshold_gib=8.0)
 
-    # Pattern 2: Export to JSON for Dashboards
     with open("memory_report.json", "w") as f:
         json.dump(report, f, indent=2, default=str)
 
-    print("✓ Memory report exported to memory_report.json")
+    print("Memory report exported to memory_report.json")
 
 ######################################################################
 # Conclusion
@@ -1124,23 +1131,18 @@ if HAS_CUDA:
 # - Created a "buggy" model with abandoned debug code
 # - Used ``mosaic_get_memory_usage_peak`` to identify extra allocations
 # - Stack traces revealed optimizer state tracking extra parameters
-# - Additional activation allocations from debug projection layers
 #
 # **Case 3: Pipeline Integration**
 #
 # - Demonstrated programmatic usage via Mosaic's Python API
-# - Created reusable functions for memory analysis
-# - Showed integration patterns for CI/CD and dashboards
-# - Exported structured reports for monitoring
+# - Showed integration patterns for CI/CD and dashboards with structured reports
 #
-# Key Takeaways
-# -------------
+# Further Reading
+# ---------------
 #
-# 1. **Capture snapshots** with ``torch.cuda.memory._record_memory_history()``
-# 2. **Use categorical profiling** to understand where memory is used
-# 3. **Compare snapshots** to identify optimization opportunities or bugs
-# 4. **Integrate programmatically** for automated monitoring
-#
-# For more information, see the `Mosaic repository
-# <https://github.com/facebookresearch/mosaic>`_.
+# * `Mosaic GitHub Repository <https://github.com/facebookresearch/mosaic>`_
+# * `PyTorch Memory Management Documentation <https://pytorch.org/docs/stable/notes/cuda.html#memory-management>`_
+# * `Understanding CUDA Memory Usage <https://pytorch.org/docs/stable/torch_cuda_memory.html>`_
+# * `Activation Checkpointing in PyTorch <https://pytorch.org/docs/stable/checkpoint.html>`_
+# * `PyTorch Memory Snapshot Visualizer <https://pytorch.org/memory_viz>`_
 #
