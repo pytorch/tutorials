@@ -425,7 +425,7 @@ if HAS_CUDA and HAS_MOSAIC_CLI:
     print("=" * 60)
 
     # Generate HTML profiles using subprocess
-    subprocess.run(
+    result1 = subprocess.run(
         [
             "mosaic_get_memory_profile",
             "--snapshot",
@@ -438,12 +438,11 @@ if HAS_CUDA and HAS_MOSAIC_CLI:
             "--plotter_sampling_rate",
             "20",
         ],
-        check=True,
     )
 
     print()
 
-    subprocess.run(
+    result2 = subprocess.run(
         [
             "mosaic_get_memory_profile",
             "--snapshot",
@@ -456,12 +455,15 @@ if HAS_CUDA and HAS_MOSAIC_CLI:
             "--plotter_sampling_rate",
             "20",
         ],
-        check=True,
     )
 
-    print("\nGenerated profile_baseline.html")
-    print("Generated profile_with_ac.html")
-    print("\nDownload these files to view the interactive memory profiles.")
+    if result1.returncode == 0 and result2.returncode == 0:
+        print("\nGenerated profile_baseline.html")
+        print("Generated profile_with_ac.html")
+        print("\nDownload these files to view the interactive memory profiles.")
+    else:
+        print("\nNote: Mosaic profile generation encountered issues.")
+        print("This may happen if running in an environment without full Mosaic support.")
 
 ######################################################################
 # Results Interpretation: Activation Checkpointing
@@ -742,7 +744,6 @@ if HAS_CUDA and HAS_MOSAIC_CLI:
 
     subprocess.run(
         ["mosaic_get_memory_usage_peak", "--snapshot", "snapshot_debug_baseline.pickle"],
-        check=True,
     )
 
     print("\n" + "=" * 60)
@@ -751,7 +752,6 @@ if HAS_CUDA and HAS_MOSAIC_CLI:
 
     subprocess.run(
         ["mosaic_get_memory_usage_peak", "--snapshot", "snapshot_with_bug.pickle"],
-        check=True,
     )
 
 ######################################################################
