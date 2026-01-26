@@ -9,12 +9,13 @@ Introduction to Torch's tensor library
 All of deep learning is computations on tensors, which are
 generalizations of a matrix that can be indexed in more than 2
 dimensions. We will see exactly what this means in-depth later. First,
-let's look what we can do with tensors.
+let's look at what we can do with tensors.
 """
 # Author: Robert Guthrie
 
 import torch
 
+# Ensures reproducible random numbers
 torch.manual_seed(1)
 
 
@@ -31,7 +32,7 @@ V_data = [1., 2., 3.]
 V = torch.tensor(V_data)
 print(V)
 
-# Creates a matrix
+# Creates a matrix.
 M_data = [[1., 2., 3.], [4., 5., 6]]
 M = torch.tensor(M_data)
 print(M)
@@ -60,6 +61,8 @@ print(T)
 print(V[0])
 # Get a Python number from it
 print(V[0].item())
+# .item() converts a 0-dim tensor to a Python float
+
 
 # Index into M and get a vector
 print(M[0])
@@ -127,7 +130,7 @@ print(z_2)
 # Reshaping Tensors
 # ~~~~~~~~~~~~~~~~~
 #
-# Use the .view() method to reshape a tensor. This method receives heavy
+# Use the ``.view()`` method to reshape a tensor. This method receives heavy
 # use, because many neural network components expect their inputs to have
 # a certain shape. Often you will need to reshape before passing your data
 # to the component.
@@ -136,7 +139,7 @@ print(z_2)
 x = torch.randn(2, 3, 4)
 print(x)
 print(x.view(2, 12))  # Reshape to 2 rows, 12 columns
-# Same as above.  If one of the dimensions is -1, its size can be inferred
+# Same as above.If one of the dimensions is -1, its size can be inferred
 print(x.view(2, -1))
 
 
@@ -153,7 +156,7 @@ print(x.view(2, -1))
 # probably sounds vague, so let's see what is going on using the
 # fundamental flag ``requires_grad``.
 #
-# First, think from a programmers perspective. What is stored in the
+# First, think from a programmer's perspective. What is stored in the
 # torch.Tensor objects we were creating above? Obviously the data and the
 # shape, and maybe a few other things. But when we added two tensors
 # together, we got an output tensor. All this output tensor knows is its
@@ -194,7 +197,7 @@ print(s.grad_fn)
 
 
 ######################################################################
-# So now, what is the derivative of this sum with respect to the first
+# Now, what is the derivative of this sum with respect to the first
 # component of x? In math, we want
 #
 # .. math::
@@ -214,7 +217,7 @@ print(s.grad_fn)
 # Of course this glosses over the challenge of how to actually compute
 # that derivative. The point here is that s is carrying along enough
 # information that it is possible to compute it. In reality, the
-# developers of Pytorch program the sum() and + operations to know how to
+# developers of PyTorch program the sum() and + operations to know how to
 # compute their gradients, and run the back propagation algorithm. An
 # in-depth discussion of that algorithm is beyond the scope of this
 # tutorial.
@@ -222,9 +225,9 @@ print(s.grad_fn)
 
 
 ######################################################################
-# Let's have Pytorch compute the gradient, and see that we were right:
+# Let's have PyTorch compute the gradient, and see that we were right:
 # (note if you run this block multiple times, the gradient will increment.
-# That is because Pytorch *accumulates* the gradient into the .grad
+# That is because PyTorch *accumulates* the gradient into the .grad
 # property, since for many models this is very convenient.)
 #
 
