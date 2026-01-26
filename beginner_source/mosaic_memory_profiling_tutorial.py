@@ -150,6 +150,7 @@ and is now open source.
 
 import subprocess
 import sys
+import shutil
 from contextlib import contextmanager
 import pickle
 
@@ -363,6 +364,14 @@ if not torch.cuda.is_available():
     HAS_CUDA = False
 else:
     HAS_CUDA = True
+
+# Check if Mosaic CLI is available
+HAS_MOSAIC_CLI = shutil.which("mosaic_get_memory_profile") is not None
+if HAS_CUDA and not HAS_MOSAIC_CLI:
+    print("Note: Mosaic CLI not found. Install Mosaic to generate HTML profiles.")
+    print("      pip install git+https://github.com/facebookresearch/mosaic.git")
+
+if HAS_CUDA:
     print("=" * 60)
     print("BASELINE: Training WITHOUT Activation Checkpointing")
     print("=" * 60)
@@ -410,7 +419,7 @@ if HAS_CUDA:
 #
 # Use Mosaic to generate HTML profiles for both snapshots.
 
-if HAS_CUDA:
+if HAS_CUDA and HAS_MOSAIC_CLI:
     print("\n" + "=" * 60)
     print("MOSAIC: Categorical Memory Profiling")
     print("=" * 60)
@@ -450,8 +459,8 @@ if HAS_CUDA:
         check=True,
     )
 
-    print("\n✓ Generated profile_baseline.html")
-    print("✓ Generated profile_with_ac.html")
+    print("\nGenerated profile_baseline.html")
+    print("Generated profile_with_ac.html")
     print("\nDownload these files to view the interactive memory profiles.")
 
 ######################################################################
@@ -726,7 +735,7 @@ if HAS_CUDA:
 #
 # Analyze both snapshots to identify the source of extra memory usage.
 
-if HAS_CUDA:
+if HAS_CUDA and HAS_MOSAIC_CLI:
     print("\n" + "=" * 60)
     print("MOSAIC: Analyzing the Baseline Snapshot")
     print("=" * 60)
