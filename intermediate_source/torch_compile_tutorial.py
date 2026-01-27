@@ -27,7 +27,7 @@ Introduction to ``torch.compile``
 #
 # For an end-to-end example on a real model, check out our `end-to-end torch.compile tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_full_example.html>`__.
 #
-# To troubleshoot issues and to gain a deeper understanding of how to apply ``torch.compile`` to your code, check out `the torch.compile programming model <https://docs.pytorch.org/docs/main/compile/programming_model.html>`__.
+# To troubleshoot issues and to gain a deeper understanding of how to apply ``torch.compile`` to your code, check out `the torch.compile programming model <https://docs.pytorch.org/docs/stable/user_guide/torch_compiler/compile/programming_model.html>`__.
 #
 # **Contents**
 #
@@ -379,7 +379,7 @@ def bar_fixed(a, b):
         # NOTE: torch.cond doesn't allow aliased outputs
         return y.clone()
 
-    x = cond(b.sum() < 0, true_branch, false_branch, (b,))
+    b = cond(b.sum() < 0, true_branch, false_branch, (b,))
     return x * b
 
 
@@ -394,7 +394,7 @@ bar_fixed(inp1, -inp2)
 # `the torch.export tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html>`__
 # for more details on ``torch.export``.
 #
-# Check out our `section on graph breaks in the torch.compile programming model <https://docs.pytorch.org/docs/main/compile/programming_model.graph_breaks_index.html>`__
+# Check out our `section on graph breaks in the torch.compile programming model <https://docs.pytorch.org/docs/stable/user_guide/torch_compiler/compile/programming_model.graph_breaks_index.html>`__
 # for tips on how to work around graph breaks.
 
 ######################################################################
@@ -405,7 +405,7 @@ bar_fixed(inp1, -inp2)
 # Are you looking for tips on how to best use ``torch.compile``?
 # Or maybe you simply want to learn more about the inner workings of ``torch.compile``?
 #
-# Check out `the torch.compile programming model <https://docs.pytorch.org/docs/main/compile/programming_model.html>`__.
+# Check out `the torch.compile programming model <https://docs.pytorch.org/docs/stable/user_guide/torch_compiler/compile/programming_model.html>`__.
 
 ######################################################################
 # Conclusion
@@ -417,6 +417,6 @@ bar_fixed(inp1, -inp2)
 #
 # For an end-to-end example on a real model, check out our `end-to-end torch.compile tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_full_example.html>`__.
 #
-# To troubleshoot issues and to gain a deeper understanding of how to apply ``torch.compile`` to your code, check out `the torch.compile programming model <https://docs.pytorch.org/docs/main/compile/programming_model.html>`__.
+# To troubleshoot issues and to gain a deeper understanding of how to apply ``torch.compile`` to your code, check out `the torch.compile programming model <https://docs.pytorch.org/docs/stable/user_guide/torch_compiler/compile/programming_model.html>`__.
 #
 # We hope that you will give ``torch.compile`` a try!
