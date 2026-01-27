@@ -4,6 +4,10 @@
 Mosaic: Memory Profiling for PyTorch
 ====================================
 
+.. meta::
+   :description: Learn how to use Mosaic for PyTorch GPU memory profiling. Capture and analyze memory snapshots, identify memory savings from activation checkpointing, debug OOM errors, and integrate memory analysis into training pipelines.
+   :keywords: PyTorch, Mosaic, memory profiling, GPU memory, CUDA, activation checkpointing, OOM debugging, deep learning, memory optimization, memory snapshots, distributed training, LLaMA, transformer models
+
 **Author:** `Basil Wong <https://github.com/basilwong>`_
 
 .. grid:: 2
