@@ -869,4 +869,4 @@ Additional Resources
    :maxdepth: 1
    :hidden:
 
-   prototype/prototype_index
+   unstable_index
