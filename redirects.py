@@ -10,6 +10,7 @@ redirects = {
     "beginner/deploy_seq2seq_hybrid_frontend_tutorial.html": "../index.html",
     "beginner/hybrid_frontend_tutorial": "../index.html",
     "beginner/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.html": "../../index.html",
+    "beginner/finetuning_torchvision_models_tutorial.html": "transfer_learning_tutorial.html",
     "beginner/flava_finetuning_tutorial.html": "../index.html",
     "beginner/ptcheat.html": "../index.html",
     "beginner/audio_io_tutorial.html": "../index.html",
