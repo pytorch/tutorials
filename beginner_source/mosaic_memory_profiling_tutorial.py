@@ -485,19 +485,16 @@ if HAS_CUDA and HAS_MOSAIC_CLI:
 # Download Generated Files (Google Colab)
 # ----------------------------------------
 #
-# If running in Google Colab, you can download the generated snapshot
-# and profile files using the following code:
+# If running in Google Colab, uncomment the following lines to download
+# the generated snapshot and profile files:
+
+# from google.colab import files
 #
-# .. code-block:: python
-#
-#    from google.colab import files
-#
-#    print("Downloading memory snapshots and profiles...")
-#    files.download('snapshot_baseline.pickle')
-#    files.download('snapshot_with_ac.pickle')
-#    files.download('profile_baseline.html')
-#    files.download('profile_with_ac.html')
-#
+# print("Downloading memory snapshots and profiles...")
+# files.download('snapshot_baseline.pickle')
+# files.download('snapshot_with_ac.pickle')
+# files.download('profile_baseline.html')
+# files.download('profile_with_ac.html')
 
 ######################################################################
 # Results Interpretation: Activation Checkpointing
