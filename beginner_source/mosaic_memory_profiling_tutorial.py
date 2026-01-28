@@ -441,6 +441,7 @@ if HAS_CUDA and HAS_MOSAIC_CLI:
     print("=" * 60)
 
     # Generate HTML profiles using subprocess
+    print("\nGenerating baseline profile...")
     result1 = subprocess.run(
         [
             "mosaic_get_memory_profile",
@@ -454,10 +455,14 @@ if HAS_CUDA and HAS_MOSAIC_CLI:
             "--plotter_sampling_rate",
             "20",
         ],
+        capture_output=True,
+        text=True,
     )
+    print(result1.stdout)
+    if result1.stderr:
+        print(result1.stderr)
 
-    print()
-
+    print("\nGenerating activation checkpointing profile...")
     result2 = subprocess.run(
         [
             "mosaic_get_memory_profile",
@@ -471,7 +476,12 @@ if HAS_CUDA and HAS_MOSAIC_CLI:
             "--plotter_sampling_rate",
             "20",
         ],
+        capture_output=True,
+        text=True,
     )
+    print(result2.stdout)
+    if result2.stderr:
+        print(result2.stderr)
 
     if result1.returncode == 0 and result2.returncode == 0:
         print("\nGenerated profile_baseline.html")
