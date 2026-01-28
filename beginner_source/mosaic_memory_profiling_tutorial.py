@@ -175,13 +175,13 @@ from torch.utils.data import DataLoader, Dataset
 
 # Install dependencies if needed
 try:
-    from transformers import GPT2Config, GPT2LMHeadModel, GPT2Tokenizer
+    from transformers import GPT2LMHeadModel, GPT2Tokenizer
     from transformers.modeling_outputs import CausalLMOutputWithCrossAttentions
 except ImportError:
     subprocess.check_call(
         [sys.executable, "-m", "pip", "install", "-q", "transformers"]
     )
-    from transformers import GPT2Config, GPT2LMHeadModel, GPT2Tokenizer
+    from transformers import GPT2LMHeadModel, GPT2Tokenizer
     from transformers.modeling_outputs import CausalLMOutputWithCrossAttentions
 
 try:
@@ -482,8 +482,47 @@ if HAS_CUDA and HAS_MOSAIC_CLI:
         print("This may happen if running in an environment without full Mosaic support.")
 
 ######################################################################
+# Download Generated Files (Google Colab)
+# ----------------------------------------
+#
+# If running in Google Colab, you can download the generated snapshot
+# and profile files using the following code:
+#
+# .. code-block:: python
+#
+#    from google.colab import files
+#
+#    print("Downloading memory snapshots and profiles...")
+#    files.download('snapshot_baseline.pickle')
+#    files.download('snapshot_with_ac.pickle')
+#    files.download('profile_baseline.html')
+#    files.download('profile_with_ac.html')
+#
+
+######################################################################
 # Results Interpretation: Activation Checkpointing
 # -------------------------------------------------
+#
+# The generated HTML profiles visualize memory usage over time, with
+# allocations colored by category. Here's what the profiles look like:
+#
+# .. figure:: /_static/img/mosaic/mosaic-categorical-memory-profiling-gpt2-without-ac.png
+#    :alt: GPT-2 memory profile without activation checkpointing
+#    :align: center
+#    :width: 600px
+#
+#    **Baseline (without activation checkpointing):** Notice the large
+#    activation memory (shown in one color) that persists throughout
+#    the forward pass.
+#
+# .. figure:: /_static/img/mosaic/mosaic-categorical-memory-profiling-gpt2-with-ac.png
+#    :alt: GPT-2 memory profile with activation checkpointing
+#    :align: center
+#    :width: 600px
+#
+#    **With activation checkpointing:** Activation memory is significantly
+#    reduced as intermediate activations are discarded and recomputed
+#    during the backward pass.
 #
 # What We Observed
 # ~~~~~~~~~~~~~~~~
@@ -580,11 +619,17 @@ if HAS_CUDA and HAS_MOSAIC_CLI:
 # debugging, but forgot to remove them before training.
 
 
-class GPT2WithDebugOverhead(GPT2LMHeadModel):
-    """GPT2 with abandoned 'feature analysis' code that bloats peak memory."""
+class GPT2WithDebugOverhead(torch.nn.Module):
+    """GPT2 wrapper with abandoned 'feature analysis' code that bloats peak memory.
 
-    def __init__(self, config):
-        super().__init__(config)
+    This wrapper adds extra projection layers that consume memory but serve no
+    purpose - simulating abandoned debug code that was never cleaned up.
+    """
+
+    def __init__(self, base_model):
+        super().__init__()
+        self.base_model = base_model
+        config = base_model.config
 
         # BUG: Large projection layers from an abandoned experiment
         self.debug_projections = torch.nn.ModuleList(
@@ -600,7 +645,7 @@ class GPT2WithDebugOverhead(GPT2LMHeadModel):
 
     def forward(self, input_ids=None, labels=None, **kwargs):
         # Run normal GPT-2 forward with hidden states
-        outputs = super().forward(
+        outputs = self.base_model(
             input_ids=input_ids,
             labels=labels,
             output_hidden_states=True,
@@ -680,14 +725,9 @@ def run_training_with_bug(snapshot_path, num_steps=3):
     device = torch.device("cuda")
 
     print("Loading buggy model with debug overhead...")
-    config = GPT2Config.from_pretrained("gpt2")
-    model = GPT2WithDebugOverhead(config).to(device)
-
-    # Load pretrained weights
-    pretrained = GPT2LMHeadModel.from_pretrained("gpt2")
-    model.load_state_dict(pretrained.state_dict(), strict=False)
-    del pretrained
-    torch.cuda.empty_cache()
+    # Load pretrained GPT-2 and wrap it with the debug overhead
+    base_model = GPT2LMHeadModel.from_pretrained("gpt2")
+    model = GPT2WithDebugOverhead(base_model).to(device)
 
     model.train()
 
@@ -745,35 +785,50 @@ if HAS_CUDA:
     print("Training with debug projection overhead (BUG)")
     print("=" * 60)
 
-    try:
-        buggy_memory = run_training_with_bug("snapshot_with_bug.pickle", num_steps=3)
-    except (AttributeError, ValueError) as e:
-        # Handle transformers version compatibility issues
-        print(f"Note: Skipping buggy model demo due to transformers compatibility: {e}")
-        buggy_memory = baseline_memory_debug
+    buggy_memory = run_training_with_bug("snapshot_with_bug.pickle", num_steps=3)
 
 ######################################################################
 # Use Mosaic to Find the Problem
 # -------------------------------
 #
 # Analyze both snapshots to identify the source of extra memory usage.
+# We'll run Mosaic's peak memory analysis on each snapshot separately.
+
+######################################################################
+# Analyze the Baseline (Clean) Snapshot
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 if HAS_CUDA and HAS_MOSAIC_CLI:
-    print("\n" + "=" * 60)
+    print("=" * 60)
     print("MOSAIC: Analyzing the Baseline Snapshot")
     print("=" * 60)
 
-    subprocess.run(
+    result = subprocess.run(
         ["mosaic_get_memory_usage_peak", "--snapshot", "snapshot_debug_baseline.pickle"],
+        capture_output=True,
+        text=True,
     )
+    print(result.stdout)
+    if result.stderr:
+        print(result.stderr)
 
-    print("\n" + "=" * 60)
+######################################################################
+# Analyze the Buggy Snapshot
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+if HAS_CUDA and HAS_MOSAIC_CLI:
+    print("=" * 60)
     print("MOSAIC: Analyzing the Buggy Snapshot")
     print("=" * 60)
 
-    subprocess.run(
+    result = subprocess.run(
         ["mosaic_get_memory_usage_peak", "--snapshot", "snapshot_with_bug.pickle"],
+        capture_output=True,
+        text=True,
     )
+    print(result.stdout)
+    if result.stderr:
+        print(result.stderr)
 
 ######################################################################
 # Analyzing The Mosaic Output
@@ -783,8 +838,7 @@ if HAS_CUDA and HAS_MOSAIC_CLI:
 # memory allocation. Let's look at how to find abandoned or unnecessary code
 # that's bloating the memory.
 #
-# 1. Optimizer State Allocations Delta
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# **1. Optimizer State Allocations Delta**
 #
 # In the buggy snapshot output, we can see that the first two stack traces
 # represent the **optimizer state allocations** (like ``zeros_like`` for Adam
@@ -809,11 +863,10 @@ if HAS_CUDA and HAS_MOSAIC_CLI:
 #      - 148 calls
 #      - 0.464 GB + 0.464 GB
 #
-# **What this tells us:** The optimizer is tracking more tensors! This is your
+# What this tells us: The optimizer is tracking more tensors! This is your
 # first clue that there are extra parameters or tensors in the computation graph.
 #
-# 2. Additional Activation Allocations
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# **2. Additional Activation Allocations**
 #
 # The buggy version shows **extra allocations** that don't appear in the
 # baseline model. Scrolling down the Mosaic output of the buggy model we can
