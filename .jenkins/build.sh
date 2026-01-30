@@ -36,8 +36,8 @@ fi
 
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
 # Install 2.5 to merge all 2.4 PRs - uncomment to install nightly binaries (update the version as needed).
-sudo pip uninstall -y torch torchvision torchaudio torchtext torchdata
-pip3 install torch==2.10.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu130
+# sudo pip uninstall -y torch torchvision torchaudio torchtext torchdata
+#pip3 install torch==2.10.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu130
 # Install two language tokenizers for Translation with TorchText tutorial
 pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.4.0/en_core_web_sm-3.4.0-py3-none-any.whl
 
