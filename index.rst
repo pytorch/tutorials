@@ -3,6 +3,7 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
+* `Memory Profiling with Mosaic <https://docs.pytorch.org/tutorials/beginner/mosaic_memory_profiling_tutorial.html>`__
 * `Using Variable Length Attention in PyTorch <https://docs.pytorch.org/tutorials/intermediate/variable_length_attention_tutorial.html>`__
 * `DebugMode: Recording Dispatched Operations and Numerical Debugging <https://docs.pytorch.org/tutorials/recipes/debug_mode_tutorial.html>`__
 * `[Updated] Custom SYCL Operators <https://docs.pytorch.org/tutorials/advanced/cpp_custom_ops_sycl.html>`__
@@ -341,6 +342,13 @@ Welcome to PyTorch Tutorials
    :card_description: Trace Diff using Holistic Trace Analysis
    :link: beginner/hta_trace_diff_tutorial.html
    :tags: Profiling
+
+.. customcarditem::
+   :header: Memory Profiling with Mosaic
+   :card_description: Learn how to use the Mosaic memory profiler to visualize GPU memory usage and identify memory optimization opportunities in PyTorch models.
+   :image: _static/img/thumbnails/cropped/profiler.png
+   :link: beginner/mosaic_memory_profiling_tutorial.html
+   :tags: Model-Optimization,Best-Practice,Profiling
 
 .. Code Transformations with FX
 
@@ -861,4 +869,4 @@ Additional Resources
    :maxdepth: 1
    :hidden:
 
-   prototype/prototype_index
+   unstable_index
