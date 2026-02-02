@@ -152,6 +152,13 @@ from our full-length tutorials.
    :link: recipes/recipes/tensorboard_with_pytorch.html
    :tags: Visualization,TensorBoard
 
+.. customcarditem::
+   :header: DebugMode: Recording Dispatched Operations and Numerical Debugging
+   :card_description: Inspect dispatched ops, tensor hashes, and module boundaries to debug eager and ``torch.compile`` runs.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: recipes/debug_mode_tutorial.html
+   :tags: Interpretability,Compiler
+
 .. Automatic Mixed Precision
 
 .. customcarditem::
@@ -353,3 +360,4 @@ from our full-length tutorials.
    recipes/distributed_device_mesh
    recipes/distributed_checkpoint_recipe
    recipes/distributed_async_checkpoint_recipe
+   recipes/debug_mode_tutorial
