@@ -33,7 +33,7 @@ handle the unsupported code, and then resumes capturing the graph. This break in
 One of the key differences between ``torch.export`` and ``torch.compile`` is that ``torch.export`` doesn’t support graph breaks
 which means that the entire model or part of the model that you are exporting needs to be a single graph. This is because handling graph breaks
 involves interpreting the unsupported operation with default Python evaluation, which is incompatible with what ``torch.export`` is
-designed for. You can read details about the differences between the various PyTorch frameworks in this `link <https://pytorch.org/docs/main/export.html#existing-frameworks>`__
+designed for. You can read details about the differences between the various PyTorch frameworks in this `link <https://docs.pytorch.org/docs/stable/user_guide/torch_compiler/export.html#existing-frameworks>`__
 
 You can identify graph breaks in your program by using the following command:
 
