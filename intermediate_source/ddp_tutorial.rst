@@ -20,7 +20,7 @@ multiple machines, making it perfect for large-scale deep learning applications.
 To use DDP, you'll need to spawn multiple processes and create a single instance of DDP per process.
 
 But how does it work? DDP uses collective communications from the
-`torch.distributed <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`__
+`torch.distributed <https://pytorch.org/docs/stable/distributed.html>`__
 package to synchronize gradients and buffers across all processes. This means that each process will have
 its own copy of the model, but they'll all work together to train the model as if it were on a single machine.
 
@@ -71,7 +71,7 @@ Basic Use Case
 
 To create a DDP module, you must first set up process groups properly. More details can
 be found in
-`Writing Distributed Applications with PyTorch <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`__.
+`PyTorch Distributed Overview <../beginner/dist_overview.html>`__.
 
 .. code:: python
 
