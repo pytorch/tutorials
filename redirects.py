@@ -52,4 +52,5 @@ redirects = {
     "unstable/semi_structured_sparse.html": "https://docs.pytorch.org/tutorials/advanced/semi_structured_sparse.html",
     "unstable/skip_param_init.html": "https://docs.pytorch.org/tutorials/recipes/recipes/module_load_state_dict_tips.html",
     "unstable_source/backend_config_tutorial.rst": "../index.html",
+    "prototype/maskedtensor_overview.html": "../unstable/maskedtensor_overview.html",
 }
