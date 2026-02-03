@@ -36,10 +36,8 @@ fi
 
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
 # Install 2.5 to merge all 2.4 PRs - uncomment to install nightly binaries (update the version as needed).
-# sudo pip uninstall -y fbgemm-gpu torchrec
-# sudo pip uninstall -y torch torchvision torchaudio torchtext torchdata torchrl tensordict
-# sudo pip3 install fbgemm-gpu==1.1.0 torchrec==1.0.0 --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu124
-# pip3 install torch==2.7.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu126
+# sudo pip uninstall -y torch torchvision torchaudio torchtext torchdata
+#pip3 install torch==2.10.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu130
 # Install two language tokenizers for Translation with TorchText tutorial
 pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.4.0/en_core_web_sm-3.4.0-py3-none-any.whl
 
@@ -70,7 +68,6 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   export FILES_TO_RUN
 
   # Step 3: Run `make docs` to generate HTML files and static files for these tutorialis
-  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
   make docs
 
   # Step 3.1: Run the post-processing script:
@@ -134,7 +131,6 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   fi
 elif [[ "${JOB_TYPE}" == "manager" ]]; then
   # Step 1: Generate no-plot HTML pages for all tutorials
-  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
   make html-noplot
   cp -r _build/html docs
 

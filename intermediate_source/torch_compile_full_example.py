@@ -235,6 +235,6 @@ print("~" * 10)
 #
 # For a gentle introduction to ``torch.compile``, please check out `the introduction to torch.compile tutorial <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`__.
 #
-# To troubleshoot issues and to gain a deeper understanding of how to apply ``torch.compile`` to your code, check out `the torch.compile programming model <https://docs.pytorch.org/docs/main/user_guide/torch_compiler/compile/programming_model.html>`__.
+# To troubleshoot issues and to gain a deeper understanding of how to apply ``torch.compile`` to your code, check out `the torch.compile programming model <https://docs.pytorch.org/docs/stable/user_guide/torch_compiler/compile/programming_model.html>`__.
 #
 # We hope that you will give ``torch.compile`` a try!
