@@ -188,7 +188,7 @@ class Classifier:
 # don't need to change your code since Ray will automatically detect the resources
 # available in the cluster and scale the workload accordingly.
 #
-# This flexibility enables you to mix different node types into your cluster, such as 
+# This flexibility enables you to mix different node types into your cluster, such as
 # different accelerators or CPU-only machines. This is useful for multi-modal workloads or
 # when you want to optimize the hardware utilization of different stages of your pipeline.
 #
@@ -211,7 +211,7 @@ class Classifier:
 #
 # The ``num_gpus`` parameter tells Ray to place each replica on a node with an
 # available GPU. If a worker fails, Ray automatically restarts the task on
-# another node with the required resources. The ``batch_size`` parameter tells Ray how many 
+# another node with the required resources. The ``batch_size`` parameter tells Ray how many
 # images to process at each invocation of the actor. If you run into CUDA out of memory errors,
 # you can try reducing the ``batch_size``, increasing the ``num_gpus`` per worker, or
 # using a GPU with more memory.
