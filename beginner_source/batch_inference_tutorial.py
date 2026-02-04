@@ -31,11 +31,10 @@ with Ray Data for scalable, production-ready data processing.
 
 `Ray Data <https://docs.ray.io/en/latest/data/data.html>`__ is a
 scalable framework for data processing in production.
-It's built on top of `Ray <https://docs.ray.io/en/latest/index.html>`__, a 
+It's built on top of `Ray <https://docs.ray.io/en/latest/index.html>`__, a
 unified framework for scaling AI and Python applications that
 simplifies the complexities of distributed computing. Ray is also open-source
 and part of the PyTorch Foundation.
-
 
 Setup
 -----
@@ -44,10 +43,9 @@ To install the dependencies:
 
 """
 
-# %%bash
 # pip install "ray[data]" torch torchvision
 
-######################################################################
+###############################################################################
 # Start by importing the required libraries:
 
 import os
@@ -58,7 +56,7 @@ import ray
 import torch
 from torchvision.models import efficientnet_v2_s, EfficientNet_V2_S_Weights
 
-######################################################################
+###############################################################################
 # Load the dataset with Ray Data
 # ------------------------------
 #
@@ -70,24 +68,23 @@ s3_uri = "s3://anonymous@air-example-data-2/imagenette2/train/"
 ds = ray.data.read_images(s3_uri, mode="RGB")
 print(ds)
 
-######################################################################
+###############################################################################
 # Under the hood, ``read_images()`` spreads the downloads across all available
 # nodes, using all the network bandwidth available to the cluster.
 #
 # Ray divides the data into **blocks** and dispatches them to
 # workers. This block-based architecture enables **streaming execution**: as soon
-# as a stage outputs a block, the next stage can begin processing immediately it without 
-# waiting for previous stages to process the entire dataset. This allows you to utilize 
+# as a stage outputs a block, the next stage can begin processing immediately it without
+# waiting for previous stages to process the entire dataset. This allows you to utilize
 # all your cluster's resources and evict intermediate data from the cluster's shared memory
 # as soon as it's no longer needed, making room for more data to be processed.
-
-######################################################################
+#
 # Ray Data provides useful methods to explore your data without loading it all into memory.
 # The ``schema()`` method shows the column names and data types:
 
 print(ds.schema())
 
-######################################################################
+###############################################################################
 # The ``take_batch()`` method lets you copy a small sample for inspection:
 
 sample_batch = ds.take_batch(5)
@@ -96,7 +93,7 @@ print(f"Image shape: {first_img.shape}")
 img = Image.fromarray(first_img)
 img.show()
 
-######################################################################
+###############################################################################
 # Part 1: Batch Predictions
 # =========================
 #
@@ -124,9 +121,10 @@ def preprocess_image(row: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
     }
 
 
-######################################################################
+
+###############################################################################
 # Apply the preprocessing function with ``ds.map()``. This operation is **lazy**,
-# meaning that Ray Data will not begin this stage until a non-lazy operation 
+# meaning that Ray Data will not begin this stage until a non-lazy operation
 # demands the results (in this case, when ``ds.write_parquet()`` is called).
 # Lazy execution allows Ray to intelligently optimize the entire pipeline
 # before any work begins.
@@ -134,7 +132,8 @@ def preprocess_image(row: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
 ds = ds.map(preprocess_image)
 print(ds.schema())
 
-######################################################################
+
+###############################################################################
 # Define the model class for batch inference
 # ------------------------------------------
 #
@@ -147,7 +146,7 @@ print(ds.schema())
 # for high-throughput pipelines. This decoupling prevents GPUs from
 # blocking on CPU work and allows you to scale stages independently
 # or eliminate bottlenecks. Ray takes care of moving the data to a node
-# with the appropriate resources if the current node doesn't have the 
+# with the appropriate resources if the current node doesn't have the
 # required resources.
 
 class Classifier:
@@ -177,7 +176,8 @@ class Classifier:
         }
 
 
-######################################################################
+
+###############################################################################
 # Configure resource allocation and scaling
 # -----------------------------------------
 #
@@ -185,9 +185,9 @@ class Classifier:
 # number of CPUs or GPUs. Ray handles the orchestration of these resources across
 # your cluster, automatically placing workers on nodes with available capacity. This
 # means that when you move your workload from your laptop to a large cluster, you
-# don't need to change your code since Ray will automatically detect the resources 
+# don't need to change your code since Ray will automatically detect the resources
 # available in the cluster and scale the workload accordingly.
-
+#
 # This flexibility enables you to mix different node types into your cluster, such as 
 # different accelerators or CPU-only machines. This is useful for multi-modal workloads or
 # when you want to optimize the hardware utilization of different stages of your pipeline.
@@ -200,7 +200,8 @@ class Classifier:
 # For example, on a cluster of 10 machines with 4 GPUs each, setting
 # ``num_gpus=0.5`` would schedule 2 workers per GPU, giving you 80 workers
 # across the cluster.
-#
+
+###############################################################################
 # Run batch inference with map_batches
 # ------------------------------------
 #
@@ -225,7 +226,7 @@ ds = ds.map_batches(
     batch_size=128,  # Adjust based on available GPU memory
 )
 
-######################################################################
+###############################################################################
 # Inspect a few predictions:
 
 prediction_batch = ds.take_batch(5)
@@ -242,11 +243,11 @@ num_images = ds.count()
 print(f"Total images in dataset: {num_images}")
 
 
-######################################################################
+###############################################################################
 # Run the pipeline and save the predictions to disk
-# ------------------------
+# -------------------------------------------------
 #
-# The ``write_parquet()`` method is a blocking operation that triggers the execution of the 
+# The ``write_parquet()`` method is a blocking operation that triggers the execution of the
 # pipeline we defined above. As the pipeline streams results, the ``write_parquet()`` method
 # writes them to shards. Sharding the results is desirable because afterwards you can read
 # the shards in parallel. Writing to shared storage such as S3, GCS, or NFS is efficient because
@@ -263,14 +264,13 @@ ds = ds.drop_columns(["original_image"])
 # print(f"Wrote {len(os.listdir(output_dir))} shards to {output_dir}")
 ds.materialize()  # FIXME
 
-######################################################################
+###############################################################################
 # Performance benchmarking
 # ------------------------
 #
 # Measuring throughput is important for understanding how your batch inference
 # performs at scale. Ray Data provides fine-grained execution statistics for both
 # the overall pipeline as well as invidivual operations with the ``stats()`` method.
-#
 
 print("\nExecution statistics:")
 print(ds.stats())
@@ -278,10 +278,13 @@ print(ds.stats())
 # Clear ds for the next example
 del ds
 
-######################################################################
+
+###############################################################################
 # For a single stage, the report looks like this:
 #
+# ```text
 # Operator 3 Map(preprocess_image)->MapBatches(drop_columns): 58 tasks executed, 58 blocks produced in 9.65s
+#
 # * Remote wall time: 369.14ms min, 1.85s max, 634.59ms mean, 36.81s total
 # * Remote cpu time: 369.57ms min, 696.42ms max, 551.0ms mean, 31.96s total
 # * UDF time: 733.07ms min, 3.69s max, 1.26s mean, 73.33s total
@@ -295,24 +298,19 @@ del ds
 #         * Total output num rows: 2794 rows
 #         * Ray Data throughput: 289.43 rows/s
 #         * Estimated single task throughput: 75.91 rows/s
-#
-# - Wall time and CPU time per operator
-# - Peak memory usage
-# - Data throughput (rows/s)
-# - Number of tasks and blocks processed
+# ```
 #
 # This information helps identify bottlenecks and optimize your pipeline.
 
-
-
-######################################################################
+###############################################################################
 # Part 2: Batch Embeddings
 # ========================
 #
 # Embeddings are dense vector representations useful for similarity search,
 # clustering, and downstream ML tasks. To extract embeddings, we modify the
 # model to return the features before the final classification layer.
-#
+
+###############################################################################
 # Define the embedding model class
 # --------------------------------
 #
@@ -340,7 +338,8 @@ class Embedder:
         return {"embedding": embeddings.cpu().numpy()}
 
 
-######################################################################
+
+###############################################################################
 # Run batch embedding extraction:
 
 ds = ray.data.read_images(s3_uri, mode="RGB")
@@ -353,14 +352,14 @@ ds = ds.map_batches(
     batch_size=16,
 )
 
-######################################################################
+###############################################################################
 # Inspect the embeddings:
 
 embedding_batch = ds.take_batch(3)
 print(f"Embedding shape: {embedding_batch['embedding'].shape}")
 print(f"First embedding (truncated): {embedding_batch['embedding'][0][:10]}...")
 
-######################################################################
+###############################################################################
 # Save embeddings to disk:
 
 embeddings_output_dir = os.path.join(os.getcwd(), "embeddings")
@@ -374,7 +373,7 @@ print("\nExecution statistics for embeddings:")
 print(ds.stats())
 
 
-######################################################################
+###############################################################################
 # Fault Tolerance
 # ---------------
 #
@@ -384,24 +383,24 @@ print(ds.stats())
 #
 # Ray Data provides several fault tolerance mechanisms:
 #
-# - **Backpressure**: Ray Data has multiple backpressure mechanisms to prevent a job from 
-#   exhausting the cluster's shared memory. For instance, Ray Data can detect if a stage 
+# * **Backpressure**: Ray Data has multiple backpressure mechanisms to prevent a job from
+#   exhausting the cluster's shared memory. For instance, Ray Data can detect if a stage
 #   becomes a bottleneck, and throttle upstream stages to downstream to prevent queue buildup
 #   and exhausting memory.
-# - **Disk spilling**: If the cluster's shared memory is exhaused, Ray Data will spill data 
+# * **Disk spilling**: If the cluster's shared memory is exhaused, Ray Data will spill data
 #   from RAM to disk to prevent the job from failing due to out-of-memory errors.
-# - **Task retry**: If a task fails (e.g., due to a network issue), Ray automatically
+# * **Task retry**: If a task fails (e.g., due to a network issue), Ray automatically
 #   retries.
-# - **Actor reconstruction**: If an actor crashes, Ray creates a new
+# * **Actor reconstruction**: If an actor crashes, Ray creates a new
 #   actor and reassigns pending tasks to it.
-# - **Lineage-based recovery**: Ray Data tracks the lineage of data transformations,
+# * **Lineage-based recovery**: Ray Data tracks the lineage of data transformations,
 #   so if a node fails, will recompute the lost data rather than
 #   than restarting the entire job.
 #
 # Ray Data can recover from larger infrastructure failures, such as entire nodes
 # failing.
 
-######################################################################
+###############################################################################
 # Monitor your batch jobs
 # -----------------------
 #
@@ -422,11 +421,11 @@ print(ds.stats())
 #
 # The dashboard lets you:
 #
-# - Monitor progress of your batch job in real time
-# - Inspect logs from individual workers across the cluster
-# - Identify bottlenecks in your data pipeline
-# - View resource utilization (CPU, GPU, memory) per worker
-# - Debug failures with detailed error messages and stack traces
+# * Monitor progress of your batch job in real time
+# * Inspect logs from individual workers across the cluster
+# * Identify bottlenecks in your data pipeline
+# * View resource utilization (CPU, GPU, memory) per worker
+# * Debug failures with detailed error messages and stack traces
 #
 # For debugging, Ray offers `distributed debugging
 # tools <https://docs.ray.io/en/latest/ray-observability/index.html>`__
@@ -434,39 +433,39 @@ print(ds.stats())
 # For more information, see the `Ray Data monitoring
 # documentation <https://docs.ray.io/en/latest/data/monitoring-your-workload.html>`__.
 
-######################################################################
+###############################################################################
 # Conclusion
 # ----------
 #
 # In this tutorial, you learned how to:
 #
-# - Load image data with Ray Data from cloud storage using **distributed
+# * Load image data with Ray Data from cloud storage using **distributed
 #   ingestion** that leverages all nodes' network bandwidth
-# - Explore datasets using ``schema()`` and ``take_batch()``
-# - Separate CPU preprocessing from GPU inference to **maximize hardware
+# * Explore datasets using ``schema()`` and ``take_batch()``
+# * Separate CPU preprocessing from GPU inference to **maximize hardware
 #   utilization** and enable independent scaling of each stage
-# - Configure **resource allocation** and **fractional GPU usage** to
+# * Configure **resource allocation** and **fractional GPU usage** to
 #   efficiently scale across heterogeneous clusters
-# - Run scalable batch predictions with a pretrained EfficientNet model
-# - Extract embeddings by modifying the model's classification head
-# - Measure and benchmark throughput for batch inference pipelines
-# - Understand Ray Data's **fault tolerance** mechanisms
-# - Monitor batch jobs using the Ray dashboard
+# * Run scalable batch predictions with a pretrained EfficientNet model
+# * Extract embeddings by modifying the model's classification head
+# * Measure and benchmark throughput for batch inference pipelines
+# * Understand Ray Data's **fault tolerance** mechanisms
+# * Monitor batch jobs using the Ray dashboard
 #
 # The key advantage of Ray Data is that **the same code runs everywhere**:
 # from a laptop to a multi-node cluster with heterogeneous GPU types. Ray
 # handles parallelization, batching, resource management, and failure recovery
 # automatically—you focus on your model and transformations while Ray handles
 # the distributed systems complexity.
-#
+
+###############################################################################
 # Further Reading
 # ---------------
 #
 # Ray Data has more production features that are out of scope for this
 # tutorial but are worth checking out:
 #
-# - `Custom aggregations <https://docs.ray.io/en/latest/data/aggregating-data.html#custom-aggregations>`__
-# - `Integration with Ray Train <https://docs.ray.io/en/latest/train/user-guides/data-loading-preprocessing.html>`__
+# * `Custom aggregations <https://docs.ray.io/en/latest/data/aggregating-data.html#custom-aggregations>`__
+# * `Integration with Ray Train <https://docs.ray.io/en/latest/train/user-guides/data-loading-preprocessing.html>`__
 #   to build end-to-end training and inference pipelines.
-# - `Reading and writing custom file types <https://docs.ray.io/en/latest/data/custom-datasource-example.html>`__
-#
+# * `Reading and writing custom file types <https://docs.ray.io/en/latest/data/custom-datasource-example.html>`__
