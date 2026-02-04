@@ -272,11 +272,10 @@ ds.materialize()  # FIXME
 # ------------------------
 #
 # Measuring throughput is important for understanding how your batch inference
-# performs at scale. Ray Data provides built-in execution stats that show
-# processing rates, resource utilization, and bottlenecks.
+# performs at scale. Ray Data provides fine-grained execution statistics for both
+# the overall pipeline as well as invidivual operations with the ``stats()`` method.
 #
 
-# Display execution stats after write completes
 print("\nExecution statistics:")
 print(ds.stats())
 
@@ -284,16 +283,29 @@ print(ds.stats())
 del ds
 
 ######################################################################
-# The stats show important metrics like:
+# For a single stage, the report looks like this:
 #
-# - Wall time and CPU time per operation
+# Operator 3 Map(preprocess_image)->MapBatches(drop_columns): 58 tasks executed, 58 blocks produced in 9.65s
+# * Remote wall time: 369.14ms min, 1.85s max, 634.59ms mean, 36.81s total
+# * Remote cpu time: 369.57ms min, 696.42ms max, 551.0ms mean, 31.96s total
+# * UDF time: 733.07ms min, 3.69s max, 1.26s mean, 73.33s total
+# * Peak heap memory usage (MiB): 720.84 min, 1478.72 max, 1129 mean
+# * Output num rows per block: 44 min, 54 max, 48 mean, 2794 total
+# * Output size bytes per block: 77857120 min, 95551920 max, 85240122 mean, 4943927120 total
+# * Output rows per task: 44 min, 54 max, 48 mean, 58 tasks used
+# * Tasks per node: 8 min, 40 max, 19 mean; 3 nodes used
+# * Operator throughput:
+#         * Total input num rows: 3358 rows
+#         * Total output num rows: 2794 rows
+#         * Ray Data throughput: 289.43 rows/s
+#         * Estimated single task throughput: 75.91 rows/s
+#
+# - Wall time and CPU time per operator
 # - Peak memory usage
-# - Data throughput (MB/s)
+# - Data throughput (rows/s)
 # - Number of tasks and blocks processed
 #
 # This information helps identify bottlenecks and optimize your pipeline.
-# For example, if preprocessing is slow, you might increase ``num_cpus`` or
-# optimize your preprocessing function.
 
 
 
