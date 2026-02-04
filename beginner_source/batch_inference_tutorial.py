@@ -65,7 +65,7 @@ from torchvision.models import efficientnet_v2_s, EfficientNet_V2_S_Weights
 # Ray Data can read images directly from cloud storage (S3, GCS) or local paths.
 # Here we use a subset of the ImageNette dataset hosted on S3:
 
-s3_uri = "s3://anonymous@air-example-data-2/imagenette2/train/n01440764/"
+s3_uri = "s3://anonymous@air-example-data-2/imagenette2/train/"
 
 ds = ray.data.read_images(s3_uri, mode="RGB")
 print(ds)
@@ -91,13 +91,9 @@ print(ds.schema())
 # The ``take_batch()`` method lets you copy a small sample for inspection:
 
 sample_batch = ds.take_batch(5)
-print(f"Batch keys: {sample_batch.keys()}")
-print(f"Image shape: {sample_batch['image'][0].shape}")
-
-######################################################################
-# Let's visualize one of the images:
-
-img = Image.fromarray(sample_batch["image"][0])
+first_img = sample_batch["image"][0]
+print(f"Image shape: {first_img.shape}")
+img = Image.fromarray(first_img)
 img.show()
 
 ######################################################################
@@ -226,7 +222,7 @@ ds = ds.map_batches(
     Classifier,
     num_gpus=num_gpus_per_worker,
     num_cpus=num_cpus_per_worker,
-    batch_size=16,  # Adjust based on available GPU memory
+    batch_size=128,  # Adjust based on available GPU memory
 )
 
 ######################################################################
