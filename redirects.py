@@ -37,6 +37,7 @@ redirects = {
     "prototype/pt2e_quantizer.html": "https://docs.pytorch.org/ao/main/tutorials_source/pt2e_quantizer.html",
     "prototype/quantization_in_pytorch_2_0_export_tutorial.html": "../index.html",
     "prototype/torchscript_freezing.html": "../index.html",
+    "prototype/nestedtensor.html": "../unstable/nestedtensor.html",
     "recipes_source/cuda_rpc.rst": "../index.html",
     "receipes/fuse.html": "../index.html",
     "receipes/quantization.html": "../index.html",
@@ -52,4 +53,5 @@ redirects = {
     "unstable/semi_structured_sparse.html": "https://docs.pytorch.org/tutorials/advanced/semi_structured_sparse.html",
     "unstable/skip_param_init.html": "https://docs.pytorch.org/tutorials/recipes/recipes/module_load_state_dict_tips.html",
     "unstable_source/backend_config_tutorial.rst": "../index.html",
+    "prototype/maskedtensor_overview.html": "../unstable/maskedtensor_overview.html",
 }
