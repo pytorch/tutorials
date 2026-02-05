@@ -7,13 +7,14 @@ Offline batch inference at scale with PyTorch and Ray Data
 This tutorial shows how to run batch inference using a pretrained PyTorch model
 with Ray Data for scalable, production-ready data processing.
 
+
 .. grid:: 2
 
     .. grid-item-card:: :octicon:`mortar-board;1em;` You will learn how to:
        :class-card: card-prerequisites
 
        * Create a production-ready PyTorch offline batch inference pipeline.
-       * Scale the pipeline from your laptop to a cluster with thousands of nodes 
+       * Scale the pipeline from your laptop to a cluster with thousands of nodes
          and GPUs with no code changes.
        * Use Ray Data to process data that is much larger than the cluster's shared memory.
        * Configure resource allocation (CPU/GPU) and fractional resources.
@@ -24,13 +25,13 @@ with Ray Data for scalable, production-ready data processing.
     .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
        :class-card: card-prerequisites
 
-       * PyTorch v2.9+ and ``torchvision``
-       * Ray Data (``ray[data]``) v2.52.1+
+       * PyTorch v2.9+ and ``torchvision``.
+       * Ray Data (``ray[data]``) v2.52.1+.
        * A GPU is recommended for higher throughput but is not required.
 
 `Ray Data <https://docs.ray.io/en/latest/data/data.html>`__ is a
 scalable framework for data processing in production.
-Ray Data is built on top of `Ray <https://docs.ray.io/en/latest/index.html>`__, a
+Ray Data builds on top of `Ray <https://docs.ray.io/en/latest/index.html>`__, a
 unified framework for scaling AI and Python applications that
 simplifies the complexities of distributed computing. Ray is also open source
 and part of the PyTorch Foundation.
@@ -38,7 +39,7 @@ and part of the PyTorch Foundation.
 Setup
 -----
 
-To install the dependencies, run `pip install "ray[data]" torch torchvision`.
+To install the dependencies, run ``pip install "ray[data]" torch torchvision``.
 
 """
 
@@ -246,7 +247,7 @@ print(f"Total images in dataset: {num_images}")
 # the shards in parallel. Writing to shared storage such as Amazon S3, Google Cloud Platform (GCP) Storage, or network file systems such as Network File System (NFS) is efficient because
 # different workers can upload shards in parallel and use your cluster's upload bandwidth.
 
-# Write predictions to parquet to trigger execution
+# Write predictions to Parquet to trigger execution
 output_dir = os.path.join(os.getcwd(), "predictions")
 os.makedirs(output_dir, exist_ok=True)
 
@@ -354,7 +355,7 @@ ds = ds.map_batches(
 
 embedding_batch = ds.take_batch(3)
 print(f"Embedding batch shape: {embedding_batch['embedding'].shape}")
-print(f"First embedding vector (truncated): {embedding_batch['embedding'][0][:10]}...")
+print(f"First embedding vector: {embedding_batch['embedding'][0][:10]}...")
 
 ###############################################################################
 # Save embeddings to disk:
@@ -411,7 +412,7 @@ print(ds.stats())
 # Typically, this link is
 # ``http://localhost:8265``.
 #
-# TODO: Add screenshots of the dashboard.
+# TODO: Add screenshots of the Ray dashboard.
 #
 # The dashboard lets you:
 #
