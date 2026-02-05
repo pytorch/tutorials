@@ -19,7 +19,7 @@ with Ray Data for scalable, production-ready data processing.
        * Configure resource allocation (CPU/GPU) and fractional resources.
        * Measure and benchmark throughput for batch inference pipelines.
        * Use Ray Data fault tolerance to self-heal from failures.
-       * Monitor batch jobs with the Ray dashboard for real-time insights.
+       * Monitor batch jobs with the Ray dashboard.
 
     .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
        :class-card: card-prerequisites
@@ -30,7 +30,7 @@ with Ray Data for scalable, production-ready data processing.
 
 `Ray Data <https://docs.ray.io/en/latest/data/data.html>`__ is a
 scalable framework for data processing in production.
-It's built on top of `Ray <https://docs.ray.io/en/latest/index.html>`__, a
+Ray Data is built on top of `Ray <https://docs.ray.io/en/latest/index.html>`__, a
 unified framework for scaling AI and Python applications that
 simplifies the complexities of distributed computing. Ray is also open source
 and part of the PyTorch Foundation.
@@ -73,7 +73,7 @@ print(ds)
 # as a stage outputs a block, the next stage can begin processing it immediately without
 # waiting for previous stages to process the entire dataset. This is key to Ray Data's efficiency,
 # because it prevents hardware from sitting idle
-# or parking intermediate data in memory waiting to be processed.
+# or parking intermediate data in memory waiting for processing.
 #
 # Ray Data provides useful methods to explore your data without loading it all into memory. For example, the ``schema()`` method shows the column names and data types:
 
@@ -263,7 +263,7 @@ ds.materialize()  # FIXME
 #
 # Measuring throughput is important for understanding how your batch inference
 # performs at scale. Ray Data provides fine-grained execution statistics for both
-# the overall pipeline as well as individual operations with the ``stats()`` method.
+# the overall pipeline and individual operations with the ``stats()`` method.
 
 print("\nExecution statistics:")
 print(ds.stats())
@@ -307,7 +307,7 @@ del ds
 # Define the embedding model class
 # --------------------------------
 #
-# ML models can also be used to extract internal representations of the data. These representations, sometimes called embeddings, latent representations,
+# ML models can also extract internal representations of the data. These representations, sometimes called embeddings, latent representations,
 # or features, are a compressed representation of the data that distills the semantic meaning of the data into a lower-dimensional space. These
 # representations are useful for similarity search, clustering, and other ML tasks.
 #
@@ -407,7 +407,8 @@ print(ds.stats())
 # rates. It also shows cluster resource usage for CPU, GPU, and memory and overall
 # job health.
 #
-# To view the dashboard, open the link printed in the logs after Ray initializes, typically
+# To view the dashboard, open the link printed in the logs after Ray initializes.
+# Typically, this link is
 # ``http://localhost:8265``.
 #
 # TODO: Add screenshots of the dashboard.
@@ -445,11 +446,8 @@ print(ds.stats())
 # * Learned about Ray Data's **fault tolerance** mechanisms.
 # * Monitored batch jobs using the Ray dashboard.
 #
-# The key advantage of Ray Data is that **the same code runs everywhere**:
-# from a laptop to a multi-node cluster with heterogeneous GPU types. Ray
-# handles parallelization, batching, resource management, and failure recovery
-# automatically—you focus on your model and transformations while Ray handles
-# the distributed systems complexity.
+# Ray Data handles the complexity of distributed systems and resource allocation
+# so that you can focus on defining your data pipeline.
 
 ###############################################################################
 # Further reading
