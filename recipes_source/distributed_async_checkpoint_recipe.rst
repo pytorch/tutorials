@@ -257,12 +257,14 @@ checkpoint requests users can take advantage of direct memory access to speed up
         for step in range(10):
             optimizer.zero_grad()
             model(torch.rand(8, 16, device="cuda")).sum().backward()
+
+            # Wait for the previous checkpoint to finish before optimizer.step() modifies weights in-place
+            if checkpoint_future is not None:
+                checkpoint_future.result()
+
             optimizer.step()
 
             state_dict = { "app": AppState(model, optimizer) }
-            if checkpoint_future is not None:
-                # waits for checkpointing to finish, avoiding queuing more then one checkpoint request at a time
-                checkpoint_future.result()
             checkpoint_future = dcp.async_save(state_dict, storage_writer=writer, checkpoint_id=f"{CHECKPOINT_DIR}_step{step}")
 
         cleanup()
