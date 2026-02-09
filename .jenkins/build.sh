@@ -38,7 +38,7 @@ fi
 # Install 2.5 to merge all 2.4 PRs - uncomment to install nightly binaries (update the version as needed).
 # sudo pip uninstall -y torch torchvision torchaudio torchtext torchdata
 #pip3 install torch==2.10.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu130
-# Install two language tokenizers for Translation with TorchText tutorial  
+# Install two language tokenizers for Translation with TorchText tutorial
 # Note: keep this version consistent with the spacy version in requirements.txt
 pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
 
