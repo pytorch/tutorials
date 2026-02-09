@@ -334,7 +334,6 @@ from our full-length tutorials.
    recipes/recipes/profile_with_itt
    recipes/recipes/Captum_Recipe
    recipes/recipes/tensorboard_with_pytorch
-   recipes/recipes/dynamic_quantization
    recipes/recipes/amp_recipe
    recipes/recipes/tuning_guide
    recipes/recipes/xeon_run_cpu
