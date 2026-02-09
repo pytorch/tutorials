@@ -142,8 +142,12 @@ imshow(out, title=[class_names[x] for x in classes])
 # -  Scheduling the learning rate
 # -  Saving the best model
 #
-# In the following, parameter ``scheduler`` is an LR scheduler object from
-# ``torch.optim.lr_scheduler``.
+# In this tutorial, `scheduler` is an LR scheduler object (e.g. StepLR).
+# For schedulers like StepLR, the recommended usage is:
+#   optimizer.step() followed by scheduler.step() 
+# which is why `scheduler.step()` is called once at the end of each epoch,
+# after all optimizer steps for that epoch are complete.
+
 
 
 def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
@@ -185,7 +189,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
                         _, preds = torch.max(outputs, 1)
                         loss = criterion(outputs, labels)
 
-                        # backward + optimize only if in training phase
+                        # backward pass + optimizer step (only in training phase)
+
                         if phase == 'train':
                             loss.backward()
                             optimizer.step()
