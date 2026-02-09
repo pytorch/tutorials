@@ -16,6 +16,16 @@ a generic n-dimensional array to be used for arbitrary numeric computation.
 The biggest difference between a numpy array and a PyTorch Tensor is that
 a PyTorch Tensor can run on either CPU or GPU. To run operations on the GPU,
 just cast the Tensor to a cuda datatype.
+
+.. note::
+    This example is designed to demonstrate the mechanics of gradient descent and
+    backpropagation, not to achieve a perfect fit. A third-degree polynomial has
+    fundamental limitations in approximating :math:`\sin(x)` over the range
+    :math:`[-\pi, \pi]`. The Taylor series for sine requires higher-order terms
+    (5th, 7th degree, etc.) for better accuracy. The resulting polynomial will
+    fit reasonably well near zero but will diverge from :math:`\sin(x)` as you
+    approach :math:`\pm\pi`. This is expected and illustrates the importance of
+    choosing an appropriate model architecture for your problem.
 """
 
 import torch

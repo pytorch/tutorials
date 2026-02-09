@@ -12,6 +12,16 @@ backward pass.
 A numpy array is a generic n-dimensional array; it does not know anything about
 deep learning or gradients or computational graphs, and is just a way to perform
 generic numeric computations.
+
+.. note::
+    This example is designed to demonstrate the mechanics of gradient descent and
+    backpropagation, not to achieve a perfect fit. A third-degree polynomial has
+    fundamental limitations in approximating :math:`\sin(x)` over the range
+    :math:`[-\pi, \pi]`. The Taylor series for sine requires higher-order terms
+    (5th, 7th degree, etc.) for better accuracy. The resulting polynomial will
+    fit reasonably well near zero but will diverge from :math:`\sin(x)` as you
+    approach :math:`\pm\pi`. This is expected and illustrates the importance of
+    choosing an appropriate model architecture for your problem.
 """
 import numpy as np
 import math

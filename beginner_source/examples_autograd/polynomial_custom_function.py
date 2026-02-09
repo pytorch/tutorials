@@ -16,6 +16,16 @@ Tensors, and uses PyTorch autograd to compute gradients.
 
 In this implementation we implement our own custom autograd function to perform
 :math:`P_3'(x)`. By mathematics, :math:`P_3'(x)=\\frac{3}{2}\\left(5x^2-1\\right)`
+
+.. note::
+    This example is designed to demonstrate the mechanics of gradient descent and
+    backpropagation, not to achieve a perfect fit. A third-degree polynomial has
+    fundamental limitations in approximating :math:`\sin(x)` over the range
+    :math:`[-\pi, \pi]`. The Taylor series for sine requires higher-order terms
+    (5th, 7th degree, etc.) for better accuracy. The resulting polynomial will
+    fit reasonably well near zero but will diverge from :math:`\sin(x)` as you
+    approach :math:`\pm\pi`. This is expected and illustrates the importance of
+    choosing an appropriate model architecture for your problem.
 """
 import torch
 import math
