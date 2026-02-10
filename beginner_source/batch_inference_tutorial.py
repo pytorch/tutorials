@@ -341,7 +341,6 @@ class Embedder:
 # Run batch embedding extraction:
 
 ds = ray.data.read_images(s3_uri, mode="RGB")
-# TODO: map batches version
 ds = ds.map(preprocess_image)
 ds = ds.drop_columns(["original_image"])
 ds = ds.map_batches(
