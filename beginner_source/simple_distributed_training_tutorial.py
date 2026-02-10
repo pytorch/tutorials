@@ -14,10 +14,11 @@ using Ray Train and Ray Data for scalable, production-ready model training.
 
        * Pre-train a GPT-2 (~124M-parameter) language model using PyTorch
          and Hugging Face Transformers.
-       * Distribute training across multiple GPUs with Ray Train.
-       * Stream training data from Hugging Face datasets with Ray Data.
+       * Distribute training across multiple GPUs with Ray Train with minimal code changes.
+       * Stream training data from Hugging Face datasets with Ray Data's distributed workers.
        * Save and load distributed checkpoints.
        * Scale from a single node to a multi-node cluster with minimal code changes.
+       * Optimize cost and performance with heterogeneous clusters.
        * Monitor training with the Ray dashboard.
 
     .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
@@ -49,8 +50,6 @@ To install the dependencies, run ``pip install "ray[train]" torch tiktoken datas
 
 Then, import the required libraries:
 """
-
-###############################################################################
 
 import time
 
@@ -87,6 +86,11 @@ hf_ds = load_dataset("Salesforce/wikitext", "wikitext-103-raw-v1")
 train_ds = ray.data.from_huggingface(hf_ds["train"])
 val_ds = ray.data.from_huggingface(hf_ds["validation"])
 
+# Limit dataset size for fast iteration during smoke tests.=
+if SMOKE_TEST:
+    train_ds = train_ds.limit(2500)
+    val_ds = val_ds.limit(2500)
+
 print(f"Dataset schema:\n{train_ds.schema()}")
 
 ###############################################################################
@@ -101,10 +105,12 @@ print(f"Dataset schema:\n{train_ds.schema()}")
 # This means that the dataset has one column called ``text`` and it is a string.
 #
 # Inspect raw data
+#
 # ~~~~~~~~~~~~~~~~
 #
 # Use ``take(n)`` to fetch a small number of rows for inspection.
 # Each row is a dictionary with the column names as keys.
+
 print("--- Raw data sample ---")
 sample = train_ds.take(2)
 for i, row in enumerate(sample):
@@ -117,7 +123,7 @@ for i, row in enumerate(sample):
 # .. code-block:: text
 #
 #    Row 0: ''
-#    Row 1: ' = Valkyria Chronicles III = \n'
+#    Row 1: ' = Valkyria Chronicles III = '
 #
 # Each row in Wikitext-103 is a single line from a Wikipedia article.
 # Consecutive rows belong to the same article, with empty rows separating
@@ -125,13 +131,7 @@ for i, row in enumerate(sample):
 # ``= Article Title =``. The tokenization step below inserts an
 # ``<|endoftext|>`` separator token before each title line so the model
 # learns to reset context at article boundaries.
-
-# Limit dataset size for fast iteration during smoke tests.=
-if SMOKE_TEST:
-    train_ds = train_ds.limit(2500)
-    val_ds = val_ds.limit(2500)
-
-###############################################################################
+#
 # Tokenize and chunk the data
 # ----------------------------
 #
@@ -195,12 +195,14 @@ def tokenize_and_chunk(batch: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
     }
 
 
+
 ###############################################################################
 # Apply the tokenization with ``map_batches()``. This operation is **lazy**,
 # meaning that Ray Data defers execution until a downstream consumer requests the
 # results. Lazy execution lets Ray optimize the entire pipeline before any
 # work begins.
 
+# These do not trigger execution.
 train_ds = train_ds.map_batches(tokenize_and_chunk, batch_format="numpy")
 val_ds = val_ds.map_batches(tokenize_and_chunk, batch_format="numpy")
 
@@ -236,29 +238,23 @@ for i, row in enumerate(tokenized_sample):
 # .. code-block:: text
 #
 #    Execution plan: InputDataBuffer[Input]
-#        -> TaskPoolMapOperator[Filter]
 #        -> TaskPoolMapOperator[MapBatches(tokenize_and_chunk)]
 #        -> OutputSplitter[split(8, equal=True)]
 #
-# This tells you exactly how Ray Data will stream through filter, tokenize,
-# and split the data across 8 workers.
+# This tells you exactly how Ray Data will stream through tokenization
+# and split the data across 8 trainer workers.
 
 ###############################################################################
 # Define the transformer model
 # ----------------------------
 #
 # The model is a decoder-only transformer language model using Hugging Face's
-# ``GPT2LMHeadModel``.
+# ``GPT2LMHeadModel``. The hyperparameters below are the standard GPT-2 "small" architecture.
 #
-# The GPT-2 "small" architecture:
-#
-# * 12 transformer layers, 12 attention heads, 768 hidden size
-# * ~124M parameters
-# * Built-in causal attention masking and weight tying
 
 
 def create_model():
-    """Create a fresh GPT-2 model from config (random weights)."""
+    """Create a GPT-2 small model with random weights."""
     model = GPT2LMHeadModel(GPT2Config(
         vocab_size=VOCAB_SIZE,
         n_positions=BLOCK_SIZE,
@@ -268,6 +264,7 @@ def create_model():
     ))
     model.loss_type = "ForCausalLM"
     return model
+
 
 
 ###############################################################################
@@ -280,8 +277,7 @@ print(f"Model parameters: {num_params / 1e6:.1f}M")
 del model  # Free memory before training
 
 ###############################################################################
-# You should see approximately **123.8M parameters** — the standard GPT-2
-# "small" size.
+# You should see approximately 123.8M parameters.
 
 ###############################################################################
 # Define the distributed training function
@@ -294,15 +290,15 @@ del model  # Free memory before training
 #
 # The key Ray Train integration points are:
 #
-# 1. **``ray.train.get_dataset_shard("train")``** retrieves the
+# 1. ``ray.train.get_dataset_shard("train")`` retrieves the
 #    worker's portion of the data. Ray Data automatically splits the
 #    dataset across all workers.
-# 2. **``ray.train.torch.prepare_model(model)``** wraps the model in
+# 2. ``ray.train.torch.prepare_model(model)`` wraps the model in
 #    ``DistributedDataParallel`` and moves it to the correct GPU.
-# 3. **``shard.iter_torch_batches(batch_size=...)``** returns an iterator
+# 3. ``shard.iter_torch_batches(batch_size=...)`` returns an iterator
 #    of ``dict[str, torch.Tensor]`` batches, with tensors automatically
-#    placed on the worker's GPU.
-# 4. **``ray.train.report(metrics, checkpoint=...)``** reports metrics
+#    placed on the worker's GPU. Setting ``prefetch_batches=2`` opportunistically fetches 2 batches ahead of the current batch.
+# 4. ``ray.train.report(metrics, checkpoint=...)`` reports metrics
 #    to the driver and optionally saves a checkpoint.
 
 
@@ -338,7 +334,7 @@ def train_func_per_worker(config: dict):
 
         # iter_torch_batches returns dicts of tensors already on the GPU.
         for batch in train_data_shard.iter_torch_batches(
-            batch_size=batch_size, dtypes=torch.long
+            batch_size=batch_size, dtypes=torch.long, prefetch_batches=2
         ):
             input_ids = batch["input_ids"]
             labels = batch["labels"]
@@ -371,7 +367,7 @@ def train_func_per_worker(config: dict):
 
         with torch.no_grad():
             for batch in val_data_shard.iter_torch_batches(
-                batch_size=batch_size, dtypes=torch.long
+                batch_size=batch_size, dtypes=torch.long, prefetch_batches=2
             ):
                 input_ids = batch["input_ids"]
                 labels = batch["labels"]
@@ -402,18 +398,20 @@ def train_func_per_worker(config: dict):
         )
 
 
+
 ###############################################################################
 # Configure and launch distributed training
 # ------------------------------------------
 #
-# The ``TorchTrainer`` brings everything together. It accepts:
+# The ``TorchTrainer`` brings everything together. Running ``trainer.fit()`` finally
+# triggers the execution of the full data pipeline and training loop. The Trainer accepts:
 #
-# * **``train_func_per_worker``**: the function each worker executes.
-# * **``train_loop_config``**: a dictionary of hyperparameters forwarded
+# * ``train_func_per_worker``: the function each worker executes.
+# * ``train_loop_config``: a dictionary of hyperparameters forwarded
 #   to the training function.
-# * **``datasets``**: a dictionary of Ray Datasets. Ray Train automatically
+# * ``datasets``: a dictionary of Ray Datasets. Ray Train automatically
 #   splits each dataset across workers.
-# * **``scaling_config``**: specifies the number of workers and whether to
+# * ``scaling_config``: specifies the number of workers and whether to
 #   use GPUs.
 #
 # Setting ``num_workers=8`` launches 8 parallel workers, one per GPU. Ray
@@ -424,8 +422,9 @@ def train_func_per_worker(config: dict):
 # .. code-block:: text
 #
 #    Started training worker group of size 8:
-#    - (ip=10.0.176.183, pid=25636) world_rank=0, local_rank=0, node_rank=0
-#    - (ip=10.0.176.183, pid=25637) world_rank=1, local_rank=1, node_rank=0
+#
+# * (ip=10.0.176.183, pid=25636) world_rank=0, local_rank=0, node_rank=0
+# * (ip=10.0.176.183, pid=25637) world_rank=1, local_rank=1, node_rank=0
 #    ...
 #    Moving model to device: cuda:0
 #    Wrapping provided model in DistributedDataParallel.
@@ -452,6 +451,7 @@ trainer = TorchTrainer(
         "batch_size_per_worker": BATCH_SIZE_PER_WORKER,
         "max_steps_per_epoch": 5 if SMOKE_TEST else None,
     },
+    # Register the datasets,
     datasets={"train": train_ds, "validation": val_ds},
     scaling_config=ScalingConfig(
         num_workers=NUM_WORKERS,
@@ -483,12 +483,11 @@ print("\nTraining finished!")
 #
 # The per-worker logs show training loss, validation loss, and throughput
 # metrics for each epoch. With random weights and only a few steps, expect
-# a high loss (~10–11) — this is normal. In a real training run with more
-# epochs and the full dataset, you would see loss steadily decrease and
-# throughput stabilize.
+# a high loss (~10–11).
 
 ###############################################################################
 # Checkpointing
+#
 # ~~~~~~~~~~~~~
 #
 # In a production training run you would enable checkpointing so that
@@ -507,14 +506,62 @@ print("\nTraining finished!")
 #    )
 #
 # Inside the training function, save a checkpoint with
-# ``ray.train.report()``:
+# ``ray.train.report()``. Every worker must still call ``ray.train.report()``:
 #
 # .. code-block:: python
 #
 #    with tempfile.TemporaryDirectory() as tmp_dir:
-#        model.module.save_pretrained(tmp_dir)  # .module unwraps DDP
-#        checkpoint = ray.train.Checkpoint.from_directory(tmp_dir)
+#        checkpoint = None
+#        if ray.train.get_context().get_world_rank() == 0:
+#            torch.save(model.module.state_dict(),
+#                       os.path.join(tmp_dir, "model.pt"))
+#            torch.save(optimizer.state_dict(),
+#                       os.path.join(tmp_dir, "optimizer.pt"))
+#            torch.save({"epoch": epoch},
+#                       os.path.join(tmp_dir, "extra_state.pt"))
+#            checkpoint = ray.train.Checkpoint.from_directory(tmp_dir)
 #        ray.train.report(metrics={...}, checkpoint=checkpoint)
+#
+# Note that ``.module`` unwraps the ``DistributedDataParallel`` wrapper so
+# you save the underlying model weights rather than the DDP wrapper.
+#
+# To **resume training from a checkpoint**, call
+# ``ray.train.get_checkpoint()`` at the top of your training function.
+# When Ray Train restarts workers (for example, after a failure), it
+# automatically provides the latest checkpoint. If no checkpoint exists
+# (i.e. this is a fresh run), the function returns ``None``:
+#
+# .. code-block:: python
+#
+#    def train_func_per_worker(config: dict):
+#        model = create_model()
+#        model = ray.train.torch.prepare_model(model)
+#        optimizer = torch.optim.AdamW(model.parameters(), lr=config["lr"])
+#
+#        # Resume from the latest checkpoint if one exists.
+#        start_epoch = 0
+#        checkpoint = ray.train.get_checkpoint()
+#        if checkpoint:
+#            with checkpoint.as_directory() as ckpt_dir:
+#                model.module.load_state_dict(
+#                    torch.load(os.path.join(ckpt_dir, "model.pt"))
+#                )
+#                optimizer.load_state_dict(
+#                    torch.load(os.path.join(ckpt_dir, "optimizer.pt"))
+#                )
+#                start_epoch = torch.load(
+#                    os.path.join(ckpt_dir, "extra_state.pt")
+#                )["epoch"] + 1
+#
+#        for epoch in range(start_epoch, config["epochs"]):
+#            # ... training loop ...
+#
+# You can also call ``TorchTrainer.restore(path, datasets=...)`` to
+# restore an entire interrupted experiment from its results directory
+# without re-specifying the full trainer configuration. See the `Ray Train
+# checkpointing guide
+# <https://docs.ray.io/en/latest/train/user-guides/checkpoints.html>`__
+# for more details.
 #
 # Scaling to a multi-node cluster
 # -------------------------------
@@ -522,8 +569,7 @@ print("\nTraining finished!")
 # The code above runs on a single 8-GPU machine. Scaling to a multi-node
 # cluster requires only two changes:
 #
-# 1. **Increase ``num_workers``** to match the total number of GPUs across
-#    all nodes.
+# 1. **Increase ``num_workers``** to match the total number of GPUs in the cluster.
 # 2. **Set a shared storage path** so that all nodes can access checkpoints.
 #
 # For example, to train on a cluster of 4 nodes with 8 GPUs each
@@ -549,8 +595,6 @@ print("\nTraining finished!")
 # Ray Train automatically:
 #
 # * Launches workers across all available nodes.
-# * Initializes ``torch.distributed`` with the NCCL backend.
-# * Configures ``DistributedDataParallel`` across nodes.
 # * Shards data across all workers.
 #
 # No changes to the training function are needed. The same
@@ -564,6 +608,24 @@ print("\nTraining finished!")
 #    `FullyShardedDataParallel <https://pytorch.org/docs/stable/fsdp.html>`__
 #    (FSDP) to shard parameters, gradients, and optimizer states across
 #    workers by setting ``prepare_model(parallel_strategy="fsdp")``.
+#
+# Heterogeneous clusters: separate data and training resources
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# Because Ray Data and Ray Train are separate systems, they don't have to
+# share the same machines. By default, Ray Data preprocessing and training
+# workers all run on the same nodes. However, you can optionally add
+# **CPU-only nodes** to your cluster and Ray Data will automatically
+# schedule preprocessing tasks on them, keeping your expensive GPU nodes
+# free for training.
+#
+# This is useful when data preprocessing is a bottleneck. If you notice
+# low GPU utilization because workers are waiting on data, you can add
+# cheaper CPU-only nodes to the cluster and Ray Data scales out
+# preprocessing to them.
+#
+# For more details, see `Configuring data ingest
+# <https://docs.ray.io/en/latest/train/user-guides/data-loading-preprocessing.html>`__.
 
 ###############################################################################
 # Fault tolerance
@@ -582,8 +644,7 @@ print("\nTraining finished!")
 #   storage. When recovering from a failure, training resumes from the
 #   latest checkpoint rather than starting over.
 # * **Node failure handling**: If an entire node goes down, Ray
-#   redistributes work to surviving nodes and replaces the failed node
-#   when new resources become available.
+#   replaces the failed node and resumes training.
 #
 # To enable automatic failure recovery, configure ``FailureConfig`` in your ``RunConfig``:
 #
@@ -637,9 +698,13 @@ print("\nTraining finished!")
 # * Ran distributed training across 8 GPUs using Ray Train's
 #   ``TorchTrainer`` with only minimal changes to a standard PyTorch
 #   training loop.
-# * Learned how to save distributed checkpoints for model recovery.
+# * Learned how to save and load distributed checkpoints for model
+#   recovery.
 # * Learned how to scale to multi-node clusters by changing
 #   ``ScalingConfig`` and ``RunConfig``.
+# * Learned how heterogeneous clusters let you run data preprocessing
+#   on CPU nodes and training on GPU nodes for cost and performance
+#   optimization.
 # * Learned about Ray Train's **fault tolerance** mechanisms for
 #   production training jobs.
 # * Monitored training with the Ray dashboard.
