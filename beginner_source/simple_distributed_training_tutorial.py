@@ -126,10 +126,10 @@ for i, row in enumerate(sample):
 # ``<|endoftext|>`` separator token before each title line so the model
 # learns to reset context at article boundaries.
 
-# Limit dataset size for fast iteration during smoke tests.
+# Limit dataset size for fast iteration during smoke tests.=
 if SMOKE_TEST:
-    train_ds = train_ds.limit(1000)
-    val_ds = val_ds.limit(1000)
+    train_ds = train_ds.limit(2500)
+    val_ds = val_ds.limit(2500)
 
 ###############################################################################
 # Tokenize and chunk the data
@@ -275,7 +275,7 @@ def create_model():
 
 model = create_model()
 num_params = sum(p.numel() for p in model.parameters())
-print(f"Model parameters: {num_params:,} ({num_params / 1e6:.1f}M)")
+print(f"Model parameters: {num_params / 1e6:.1f}M")
 
 del model  # Free memory before training
 
@@ -333,7 +333,7 @@ def train_func_per_worker(config: dict):
         model.train()
         train_loss_sum = 0.0
         train_batches = 0
-        train_items = 0
+        train_tokens = 0
         epoch_start = time.perf_counter()
 
         # iter_torch_batches returns dicts of tensors already on the GPU.
@@ -356,7 +356,7 @@ def train_func_per_worker(config: dict):
 
             train_loss_sum += loss.item()
             train_batches += 1
-            train_items += batch_size
+            train_tokens += input_ids.numel()
 
             if max_steps_per_epoch and train_batches >= max_steps_per_epoch:
                 break
@@ -385,14 +385,16 @@ def train_func_per_worker(config: dict):
                     break
 
         avg_val_loss = val_loss_sum / max(val_batches, 1)
+        epoch_elapsed = time.perf_counter() - epoch_start
 
         # --- Report metrics -------------------------------------------------
         metrics = {
             "train_loss": round(avg_train_loss, 4),
             "val_loss": round(avg_val_loss, 4),
             "epoch": epoch,
-            "batches_per_sec": round(train_batches / max(train_elapsed, 1e-6), 2),
-            "items_per_sec": round(train_items / max(train_elapsed, 1e-6), 2),
+            "epoch_time_sec": round(epoch_elapsed, 2),
+            "epoch_tokens": train_tokens,
+            "tokens_per_sec": round(train_tokens / max(train_elapsed, 1e-6), 2),
         }
         ray.train.report(
             metrics=metrics,
@@ -427,9 +429,14 @@ def train_func_per_worker(config: dict):
 #    ...
 #    Moving model to device: cuda:0
 #    Wrapping provided model in DistributedDataParallel.
+#
+# ``batch_size_per_worker`` is the number of sequences each worker
+# processes per gradient step. With 8 workers and a per-worker batch size
+# of 16, the **effective global batch size** is 8 × 16 = 128 sequences,
+# or 128 × 256 = 32,768 tokens per optimizer step.
 
 NUM_WORKERS = 8  # One worker per GPU on this machine
-NUM_EPOCHS = 20
+NUM_EPOCHS = 5
 BATCH_SIZE_PER_WORKER = 16
 LR = 3e-4
 WEIGHT_DECAY = 0.1
@@ -471,8 +478,8 @@ print("\nTraining finished!")
 #
 # .. code-block:: text
 #
-#    {'train_loss': 10.95, 'val_loss': 10.02, 'epoch': 0,
-#     'batches_per_sec': 1.23, 'items_per_sec': 19.68}
+#    {'train_loss': 7.0646, 'val_loss': 7.6051, 'epoch': 4,
+#     'epoch_time_sec': 12.34, 'epoch_tokens': 20480, 'tokens_per_sec': 1759.8}
 #
 # The per-worker logs show training loss, validation loss, and throughput
 # metrics for each epoch. With random weights and only a few steps, expect
