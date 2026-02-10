@@ -135,6 +135,9 @@ print(ds.schema())
 
 
 ###############################################################################
+# The schema of the dataset shows that there are two columns: "original_image" and "transformed_image",
+# both of which are tensor arrays. The "transformed_image" should be cropped into a square.
+#
 # Define the model class for batch inference
 # ------------------------------------------
 #
@@ -197,7 +200,7 @@ class Classifier:
 # enough to fit in memory together.
 #
 # For example, on a cluster of 10 machines with 4 GPUs each, setting
-# ``num_gpus=0.5`` schedules 2 workers per GPU, giving you 80 workers
+# ``num_gpus=0.5`` schedules 2 workers per GPU, resulting in 80 workers
 # across the cluster.
 
 ###############################################################################
@@ -281,7 +284,7 @@ del ds
 ###############################################################################
 # For a single stage, the report looks like this:
 #
-# ```text
+# ```markdown
 # Operator 3 Map(preprocess_image)->MapBatches(drop_columns): 58 tasks executed, 58 blocks produced in 9.65s
 #
 # * Remote wall time: 369.14ms min, 1.85s max, 634.59ms mean, 36.81s total
