@@ -33,7 +33,7 @@ to production deployment.
    :card_description: Learn how to use Ray Tune to find the best performing set of hyperparameters for your model.
    :image: _static/img/ray-tune.png
    :link: beginner/hyperparameter_tuning_tutorial.html
-   :tags: Model-Optimization,Best-Practice,Ecosystem
+   :tags: Model-Optimization,Best-Practice,Ecosystem,Ray-Distributed,Parallel-and-Distributed-Training
 
 .. customcarditem::
    :header: Multi-Objective Neural Architecture Search with Ax
@@ -56,6 +56,13 @@ to production deployment.
    :link: intermediate/realtime_rpi.html
    :tags: Model-Optimization,Image/Video,Quantization,Ecosystem
 
+.. customcarditem::
+   :header: Memory Profiling with Mosaic
+   :card_description: Learn how to use the Mosaic memory profiler to visualize GPU memory usage and identify memory optimization opportunities in PyTorch models.
+   :image: _static/img/thumbnails/cropped/profiler.png
+   :link: beginner/mosaic_memory_profiling_tutorial.html
+   :tags: Model-Optimization,Best-Practice,Profiling,Ecosystem
+
 .. End of tutorial card section
 .. -----------------------------------------
 .. Page TOC
@@ -68,3 +75,4 @@ to production deployment.
    intermediate/ax_multiobjective_nas_tutorial
    intermediate/tensorboard_profiler_tutorial
    intermediate/realtime_rpi
+   beginner/mosaic_memory_profiling_tutorial

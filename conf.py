@@ -263,8 +263,9 @@ if os.getenv("GALLERY_PATTERN"):
     # ignore_pattern also skips parsing.
     # See https://github.com/sphinx-gallery/sphinx-gallery/issues/721
     # for a more detailed description of the issue.
+    # GALLERY_PATTERN should be a regular expression.
     sphinx_gallery_conf["ignore_pattern"] = (
-        r"/(?!" + re.escape(os.getenv("GALLERY_PATTERN")) + r")[^/]+$"
+        r"^(?!.*" + os.getenv("GALLERY_PATTERN") + r")"
     )
 
 for i in range(len(sphinx_gallery_conf["examples_dirs"])):

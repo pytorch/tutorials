@@ -3,11 +3,12 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
-* `Integrating Custom Operators with SYCL for Intel GPU <https://pytorch.org/tutorials/advanced/cpp_custom_ops_sycl.html>`__
-* `Supporting Custom C++ Classes in torch.compile/torch.export <https://docs.pytorch.org/tutorials/advanced/custom_class_pt2.html>`__
-* `Accelerating torch.save and torch.load with GPUDirect Storage <https://docs.pytorch.org/tutorials/unstable/gpu_direct_storage.html>`__
-* `Getting Started with Fully Sharded Data Parallel (FSDP2) <https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__
-* `Interactive Distributed Applications with Monarch <https://docs.pytorch.org/tutorials/intermediate/monarch_distributed_tutorial.html>`__
+* `Memory Profiling with Mosaic <https://docs.pytorch.org/tutorials/beginner/mosaic_memory_profiling_tutorial.html>`__
+* `Using Variable Length Attention in PyTorch <https://docs.pytorch.org/tutorials/intermediate/variable_length_attention_tutorial.html>`__
+* `DebugMode: Recording Dispatched Operations and Numerical Debugging <https://docs.pytorch.org/tutorials/recipes/debug_mode_tutorial.html>`__
+* `[Updated] Custom SYCL Operators <https://docs.pytorch.org/tutorials/advanced/cpp_custom_ops_sycl.html>`__
+* `[Updated] Custom C++ and CUDA Operators <https://docs.pytorch.org/tutorials/advanced/cpp_custom_ops.html>`__
+
 
 .. raw:: html
 
@@ -349,6 +350,13 @@ Welcome to PyTorch Tutorials
    :link: beginner/hta_trace_diff_tutorial.html
    :tags: Profiling
 
+.. customcarditem::
+   :header: Memory Profiling with Mosaic
+   :card_description: Learn how to use the Mosaic memory profiler to visualize GPU memory usage and identify memory optimization opportunities in PyTorch models.
+   :image: _static/img/thumbnails/cropped/profiler.png
+   :link: beginner/mosaic_memory_profiling_tutorial.html
+   :tags: Model-Optimization,Best-Practice,Profiling
+
 .. Code Transformations with FX
 
 .. customcarditem::
@@ -500,7 +508,7 @@ Welcome to PyTorch Tutorials
    :card_description: Learn how to use Ray Tune to find the best performing set of hyperparameters for your model.
    :image: _static/img/ray-tune.png
    :link: beginner/hyperparameter_tuning_tutorial.html
-   :tags: Model-Optimization,Best-Practice
+   :tags: Model-Optimization,Best-Practice,Ray-Distributed,Parallel-and-Distributed-Training
 
 .. customcarditem::
    :header: Parametrizations Tutorial
@@ -868,4 +876,4 @@ Additional Resources
    :maxdepth: 1
    :hidden:
 
-   prototype/prototype_index
+   unstable_index
