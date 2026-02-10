@@ -52,20 +52,24 @@ Then, import the required libraries:
 
 ###############################################################################
 
-import math
-import os
-import tempfile
+import time
 
 import numpy as np
 import ray
 import ray.train
 import tiktoken
 import torch
-import torch.nn as nn
 from datasets import load_dataset
 from ray.train import CheckpointConfig, RunConfig, ScalingConfig
 from ray.train.torch import TorchTrainer
 from transformers import GPT2Config, GPT2LMHeadModel
+
+# Enable smoke test to run this tutorial quickly.
+SMOKE_TEST = True
+
+# Reduce Ray Data verbosity
+ray.data.DataContext.get_current().enable_progress_bars = False
+ray.data.DataContext.get_current().print_on_execution_start = False
 
 ###############################################################################
 # Load the dataset with Ray Data
@@ -87,23 +91,24 @@ print(f"Dataset schema:\n{train_ds.schema()}")
 
 ###############################################################################
 # The schema should look like this:
-# ```text`
-# Schema: Column  Type
-# ------  ----
-# text    string
-# ```
 #
-# This means that the dataset has one column called "text" and it is a string.
+# .. code-block:: text
+#
+#    Column  Type
+#    ------  ----
+#    text    string
+#
+# This means that the dataset has one column called ``text`` and it is a string.
 #
 # Inspect raw data
 # ~~~~~~~~~~~~~~~~
 #
 # Use ``take(n)`` to fetch a small number of rows for inspection.
 # Each row is a dictionary with the column names as keys.
-print("--- Raw data sample (train_ds.take(2)) ---")
+print("--- Raw data sample ---")
 sample = train_ds.take(2)
 for i, row in enumerate(sample):
-    text_preview = row["text"][:120] + "..." if len(row["text"]) > 120 else row["text"]
+    text_preview = (row["text"][:120] + "...") if len(row["text"]) > 120 else row["text"]
     print(f"  Row {i}: {text_preview!r}")
 
 ###############################################################################
@@ -114,39 +119,25 @@ for i, row in enumerate(sample):
 #    Row 0: ''
 #    Row 1: ' = Valkyria Chronicles III = \n'
 #
-# The raw dataset evidently contains empty lines and short headers that would
-# produce zero tokens after chunking. Use ``filter()`` to keep only rows
-# with at least 20 words, which removes noise and avoids wasted work in
-# downstream stages.
+# Each row in Wikitext-103 is a single line from a Wikipedia article.
+# Consecutive rows belong to the same article, with empty rows separating
+# paragraphs. New articles begin with a title line like
+# ``= Article Title =``. The tokenization step below inserts an
+# ``<|endoftext|>`` separator token before each title line so the model
+# learns to reset context at article boundaries.
 
-MIN_WORDS = 20
-train_ds = train_ds.filter(lambda row: len(row["text"].split()) >= MIN_WORDS)
-val_ds = val_ds.filter(lambda row: len(row["text"].split()) >= MIN_WORDS)
-
-# DEBUG: limit dataset size for fast iteration
-train_ds = train_ds.limit(100)
-val_ds = val_ds.limit(100)
-
-print("--- After filtering short rows (train_ds.take(2)) ---")
-filtered_sample = train_ds.take(2)
-for i, row in enumerate(filtered_sample):
-    text_preview = row["text"][:120] + "..." if len(row["text"]) > 120 else row["text"]
-    print(f"  Row {i}: {text_preview!r}")
+# Limit dataset size for fast iteration during smoke tests.
+if SMOKE_TEST:
+    train_ds = train_ds.limit(1000)
+    val_ds = val_ds.limit(1000)
 
 ###############################################################################
-# After filtering, only substantive paragraphs remain:
-#
-# .. code-block:: text
-#
-#    Row 0: ' Senjō no Valkyria 3 : Unrecorded Chronicles ( Japanese : ...'
-#    Row 1: ' The game began development in 2010 , carrying over a large ...'
-#
 # Tokenize and chunk the data
 # ----------------------------
 #
 # Language models consume fixed-length sequences of token IDs. The
-# preprocessing step converts raw text into overlapping input/target pairs
-# for next-token prediction.
+# preprocessing step converts raw text into input/target pairs for
+# next-token prediction.
 #
 # This tutorial uses ``tiktoken`` with the GPT-2 encoding (vocabulary size
 # 50,257). ``tiktoken`` is a fast, standalone tokenizer that has no
@@ -154,26 +145,38 @@ for i, row in enumerate(filtered_sample):
 #
 # The ``tokenize_and_chunk`` function:
 #
-# 1. Tokenizes each batch of text.
-# 2. Concatenates all tokens into a single stream.
-# 3. Splits the stream into fixed-length blocks of ``block_size + 1``
+# 1. Tokenizes each batch of text, concatenating into a single stream.
+#    Article title lines (e.g. ``= Article Title =``) trigger an
+#    ``<|endoftext|>`` separator so the model resets context at article
+#    boundaries.
+# 2. Splits the stream into fixed-length blocks of ``block_size + 1``
 #    tokens.
-# 4. Returns ``input_ids`` (the first ``block_size`` tokens) and
+# 3. Returns ``input_ids`` (the first ``block_size`` tokens) and
 #    ``labels`` (shifted by one position for next-token prediction).
 
 BLOCK_SIZE = 256
 VOCAB_SIZE = 50257
 
 encoding = tiktoken.get_encoding("gpt2")
+EOT_TOKEN = encoding.eot_token  # <|endoftext|> token ID (50256)
+
+
+def _is_article_title(text: str) -> bool:
+    """Detect Wikitext article title lines like ' = Some Title = '."""
+    stripped = text.strip()
+    return stripped.startswith("= ") and stripped.endswith(" =") and not stripped.startswith("= =")
 
 
 def tokenize_and_chunk(batch: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
     """Tokenize text and split into fixed-length chunks for language modeling."""
-    # Tokenize all texts in the batch and concatenate
+    # Reconstruct the original text stream by joining rows with newlines.
+    # Article title lines signal new articles, so we insert an
+    # <|endoftext|> separator before them.
     all_tokens: list[int] = []
     for text in batch["text"]:
-        if text.strip():  # skip empty lines
-            all_tokens.extend(encoding.encode_ordinary(text))
+        if _is_article_title(text):
+            all_tokens.append(EOT_TOKEN)
+        all_tokens.extend(encoding.encode_ordinary(text + "\n"))
 
     # Split into chunks of block_size + 1 (input + 1 shifted target)
     chunk_len = BLOCK_SIZE + 1
@@ -192,7 +195,6 @@ def tokenize_and_chunk(batch: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
     }
 
 
-
 ###############################################################################
 # Apply the tokenization with ``map_batches()``. This operation is **lazy**,
 # meaning that Ray Data defers execution until a downstream consumer requests the
@@ -205,7 +207,7 @@ val_ds = val_ds.map_batches(tokenize_and_chunk, batch_format="numpy")
 ###############################################################################
 # Inspect the tokenized output with ``take(2)``:
 
-print("--- Tokenized data sample (train_ds.take(2)) ---")
+print("--- After tokenization ---")
 tokenized_sample = train_ds.take(2)
 for i, row in enumerate(tokenized_sample):
     ids = row["input_ids"]
@@ -254,18 +256,16 @@ for i, row in enumerate(tokenized_sample):
 # * ~124M parameters
 # * Built-in causal attention masking and weight tying
 
-MODEL_CONFIG = GPT2Config(
-    vocab_size=VOCAB_SIZE,
-    n_positions=BLOCK_SIZE,
-    n_embd=768,
-    n_layer=12,
-    n_head=12,
-)
-
 
 def create_model():
     """Create a fresh GPT-2 model from config (random weights)."""
-    model = GPT2LMHeadModel(MODEL_CONFIG)
+    model = GPT2LMHeadModel(GPT2Config(
+        vocab_size=VOCAB_SIZE,
+        n_positions=BLOCK_SIZE,
+        n_embd=768,
+        n_layer=12,
+        n_head=12,
+    ))
     model.loss_type = "ForCausalLM"
     return model
 
@@ -277,21 +277,11 @@ model = create_model()
 num_params = sum(p.numel() for p in model.parameters())
 print(f"Model parameters: {num_params:,} ({num_params / 1e6:.1f}M)")
 
+del model  # Free memory before training
+
 ###############################################################################
 # You should see approximately **123.8M parameters** — the standard GPT-2
 # "small" size.
-#
-# Quick smoke test: run a forward pass on CPU to verify the model produces the
-# expected output shape before launching distributed training:
-
-model.eval()
-dummy_input = torch.randint(0, VOCAB_SIZE, (2, BLOCK_SIZE))
-with torch.no_grad():
-    out = model(dummy_input)
-print(f"Smoke test passed — logits shape: {out.logits.shape}")
-del model, dummy_input, out  # Free memory before distributed training
-
-
 
 ###############################################################################
 # Define the distributed training function
@@ -315,12 +305,15 @@ del model, dummy_input, out  # Free memory before distributed training
 # 4. **``ray.train.report(metrics, checkpoint=...)``** reports metrics
 #    to the driver and optionally saves a checkpoint.
 
+
 def train_func_per_worker(config: dict):
     """Training function executed by each distributed worker."""
     lr = config["lr"]
+    weight_decay = config["weight_decay"]
+    max_grad_norm = config["max_grad_norm"]
     epochs = config["epochs"]
     batch_size = config["batch_size_per_worker"]
-    max_steps_per_epoch = config.get("max_steps_per_epoch")  # DEBUG: cap steps
+    max_steps_per_epoch = config.get("max_steps_per_epoch")
 
     # --- Data -----------------------------------------------------------
     # Each worker gets an automatic shard of the dataset.
@@ -333,13 +326,15 @@ def train_func_per_worker(config: dict):
     # it on the correct device.
     model = ray.train.torch.prepare_model(model)
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.1)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
 
     # --- Training loop --------------------------------------------------
     for epoch in range(epochs):
         model.train()
         train_loss_sum = 0.0
         train_batches = 0
+        train_items = 0
+        epoch_start = time.perf_counter()
 
         # iter_torch_batches returns dicts of tensors already on the GPU.
         for batch in train_data_shard.iter_torch_batches(
@@ -356,18 +351,20 @@ def train_func_per_worker(config: dict):
             optimizer.zero_grad()
             loss.backward()
             # Gradient clipping for training stability
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=max_grad_norm)
             optimizer.step()
 
             train_loss_sum += loss.item()
             train_batches += 1
+            train_items += batch_size
 
             if max_steps_per_epoch and train_batches >= max_steps_per_epoch:
-                break  # DEBUG: early stop
+                break
 
+        train_elapsed = time.perf_counter() - epoch_start
         avg_train_loss = train_loss_sum / max(train_batches, 1)
 
-        # --- Validation -------------------------------------------------
+        # --- Validation -----------------------------------------------------
         model.eval()
         val_loss_sum = 0.0
         val_batches = 0
@@ -385,30 +382,22 @@ def train_func_per_worker(config: dict):
                 val_batches += 1
 
                 if max_steps_per_epoch and val_batches >= max_steps_per_epoch:
-                    break  # DEBUG: early stop
+                    break
 
         avg_val_loss = val_loss_sum / max(val_batches, 1)
-        val_perplexity = math.exp(min(avg_val_loss, 20))  # cap to avoid overflow
 
-        # --- Report metrics -----------------------------------------------
+        # --- Report metrics -------------------------------------------------
+        metrics = {
+            "train_loss": round(avg_train_loss, 4),
+            "val_loss": round(avg_val_loss, 4),
+            "epoch": epoch,
+            "batches_per_sec": round(train_batches / max(train_elapsed, 1e-6), 2),
+            "items_per_sec": round(train_items / max(train_elapsed, 1e-6), 2),
+        }
         ray.train.report(
-            metrics={
-                "train_loss": avg_train_loss,
-                "val_loss": avg_val_loss,
-                "val_perplexity": val_perplexity,
-                "epoch": epoch,
-            },
-            checkpoint=None,  # If we were checkpointing, we'd pass checkpoint to Ray Train here
+            metrics=metrics,
+            checkpoint=None,  # If we were checkpointing, we'd pass a Checkpoint here
         )
-
-        if ray.train.get_context().get_world_rank() == 0:
-            print(
-                f"Epoch {epoch}: "
-                f"train_loss={avg_train_loss:.4f}, "
-                f"val_loss={avg_val_loss:.4f}, "
-                f"val_perplexity={val_perplexity:.2f}"
-            )
-
 
 
 ###############################################################################
@@ -440,23 +429,27 @@ def train_func_per_worker(config: dict):
 #    Wrapping provided model in DistributedDataParallel.
 
 NUM_WORKERS = 8  # One worker per GPU on this machine
-NUM_EPOCHS = 1  # DEBUG: reduced from 2
+NUM_EPOCHS = 20
 BATCH_SIZE_PER_WORKER = 16
+LR = 3e-4
+WEIGHT_DECAY = 0.1
+MAX_GRAD_NORM = 1.0
 
 trainer = TorchTrainer(
     train_loop_per_worker=train_func_per_worker,
     train_loop_config={
-        "lr": 3e-4,
+        "lr": LR,
+        "weight_decay": WEIGHT_DECAY,
+        "max_grad_norm": MAX_GRAD_NORM,
         "epochs": NUM_EPOCHS,
         "batch_size_per_worker": BATCH_SIZE_PER_WORKER,
-        "max_steps_per_epoch": 5,  # DEBUG: cap at 5 steps for fast iteration
+        "max_steps_per_epoch": 5 if SMOKE_TEST else None,
     },
     datasets={"train": train_ds, "validation": val_ds},
     scaling_config=ScalingConfig(
         num_workers=NUM_WORKERS,
         use_gpu=True,
     ),
-    # run_config=RunConfig(),
 )
 
 result = trainer.fit()
@@ -465,23 +458,27 @@ result = trainer.fit()
 # Inspect results
 # ---------------
 #
-# After training, the ``Result`` object contains the final metrics reported
-# by the workers.
+# After training, the ``Result`` object contains the final metrics and
+# checkpoint. ``result.metrics`` is populated from the last
+# ``ray.train.report()`` call. ``result.checkpoint`` is ``None`` here
+# because this tutorial does not save checkpoints.
 
-print(f"\nTraining finished!")
-print(f"Final metrics: {result.metrics}")
+print("\nTraining finished!")
 
 ###############################################################################
-# The logs from each worker show training and validation metrics per epoch.
-# With random weights and only a few steps, expect a high loss (~10–11)
-# and perplexity in the tens of thousands — this is normal.
+# ``result.metrics`` contains the metrics dict from the last
+# ``ray.train.report()`` call:
 #
 # .. code-block:: text
 #
-#    Epoch 0: train_loss=10.9492, val_loss=10.0157, val_perplexity=22374.06
+#    {'train_loss': 10.95, 'val_loss': 10.02, 'epoch': 0,
+#     'batches_per_sec': 1.23, 'items_per_sec': 19.68}
 #
-# In a real training run with more epochs and the full dataset, you would
-# see these values steadily decrease.
+# The per-worker logs show training loss, validation loss, and throughput
+# metrics for each epoch. With random weights and only a few steps, expect
+# a high loss (~10–11) — this is normal. In a real training run with more
+# epochs and the full dataset, you would see loss steadily decrease and
+# throughput stabilize.
 
 ###############################################################################
 # Checkpointing
@@ -551,6 +548,15 @@ print(f"Final metrics: {result.metrics}")
 #
 # No changes to the training function are needed. The same
 # ``train_func_per_worker`` runs identically whether on 1 GPU or 256 GPUs.
+#
+# .. note::
+#
+#    This tutorial uses ``DistributedDataParallel`` (DDP), which replicates
+#    the full model on every GPU. For larger models that don't fit on a
+#    single GPU, you can switch to
+#    `FullyShardedDataParallel <https://pytorch.org/docs/stable/fsdp.html>`__
+#    (FSDP) to shard parameters, gradients, and optimizer states across
+#    workers by setting ``prepare_model(parallel_strategy="fsdp")``.
 
 ###############################################################################
 # Fault tolerance
@@ -621,10 +627,10 @@ print(f"Final metrics: {result.metrics}")
 #   Hugging Face Transformers and PyTorch.
 # * Loaded and preprocessed the Wikitext-103 dataset using Ray Data
 #   with distributed streaming.
-# * Distributed training across 8 GPUs using Ray Train's
+# * Ran distributed training across 8 GPUs using Ray Train's
 #   ``TorchTrainer`` with only minimal changes to a standard PyTorch
 #   training loop.
-# * Saved and loaded distributed checkpoints for model recovery.
+# * Learned how to save distributed checkpoints for model recovery.
 # * Learned how to scale to multi-node clusters by changing
 #   ``ScalingConfig`` and ``RunConfig``.
 # * Learned about Ray Train's **fault tolerance** mechanisms for
