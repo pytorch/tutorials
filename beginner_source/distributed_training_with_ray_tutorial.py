@@ -48,7 +48,7 @@ Setup
 
 To install the dependencies, run ``pip install "ray[train]" torch tiktoken datasets transformers``.
 
-Then, import the required libraries:
+Then, import the required libraries.
 """
 
 import time
@@ -86,7 +86,7 @@ hf_ds = load_dataset("Salesforce/wikitext", "wikitext-103-raw-v1")
 train_ds = ray.data.from_huggingface(hf_ds["train"])
 val_ds = ray.data.from_huggingface(hf_ds["validation"])
 
-# Limit dataset size for fast iteration during smoke tests.=
+# Limit dataset size for fast iteration during smoke tests.
 if SMOKE_TEST:
     train_ds = train_ds.limit(2500)
     val_ds = val_ds.limit(2500)
@@ -94,7 +94,7 @@ if SMOKE_TEST:
 print(f"Dataset schema:\n{train_ds.schema()}")
 
 ###############################################################################
-# The schema should look like this:
+# The schema can look like this:
 #
 # .. code-block:: text
 #
@@ -105,7 +105,6 @@ print(f"Dataset schema:\n{train_ds.schema()}")
 # This means that the dataset has one column called ``text`` and it is a string.
 #
 # Inspect raw data
-#
 # ~~~~~~~~~~~~~~~~
 #
 # Use ``take(n)`` to fetch a small number of rows for inspection.
@@ -143,16 +142,16 @@ for i, row in enumerate(sample):
 # 50,257). ``tiktoken`` is a fast, standalone tokenizer that has no
 # dependency on the Hugging Face ``transformers`` library.
 #
-# The ``tokenize_and_chunk`` function:
+# The ``tokenize_and_chunk`` function does the following:
 #
-# 1. Tokenizes each batch of text, concatenating into a single stream.
-#    Article title lines (e.g. ``= Article Title =``) trigger an
-#    ``<|endoftext|>`` separator so the model resets context at article
-#    boundaries.
-# 2. Splits the stream into fixed-length blocks of ``block_size + 1``
-#    tokens.
-# 3. Returns ``input_ids`` (the first ``block_size`` tokens) and
-#    ``labels`` (shifted by one position for next-token prediction).
+# * Tokenizes each batch of text, concatenating into a single stream.
+#   Article title lines (for example, ``= Article Title =``) trigger an
+#   ``<|endoftext|`` separator so the model resets context at article
+#   boundaries.
+# * Splits the stream into fixed-length blocks of ``block_size + 1``
+#   tokens.
+# * Returns ``input_ids`` (the first ``block_size`` tokens) and
+#   ``labels`` (shifted by one position for next-token prediction).
 
 BLOCK_SIZE = 256
 VOCAB_SIZE = 50257
@@ -224,7 +223,7 @@ for i, row in enumerate(tokenized_sample):
 # Streaming execution
 # ~~~~~~~~~~~~~~~~~~~
 #
-# Under the hood, Ray divides the data into **blocks** and dispatches them to
+# Internally, Ray divides the data into **blocks** and dispatches them to
 # workers. This block-based architecture enables **streaming execution**: as
 # soon as a stage outputs a block, the next stage can begin processing it
 # immediately without waiting for previous stages to finish the entire
@@ -233,7 +232,7 @@ for i, row in enumerate(tokenized_sample):
 # to fit in memory at once.
 #
 # When training starts, Ray Data logs the execution plan. For this tutorial
-# it looks like:
+# one possible plan is:
 #
 # .. code-block:: text
 #
@@ -277,7 +276,7 @@ print(f"Model parameters: {num_params / 1e6:.1f}M")
 del model  # Free memory before training
 
 ###############################################################################
-# You should see approximately 123.8M parameters.
+# You can see approximately 123.8M parameters.
 
 ###############################################################################
 # Define the distributed training function
@@ -417,7 +416,7 @@ def train_func_per_worker(config: dict):
 # Setting ``num_workers=8`` launches 8 parallel workers, one per GPU. Ray
 # Train handles ``torch.distributed`` initialization, NCCL backend setup,
 # and ``DistributedDataParallel`` wrapping behind the scenes. In the logs
-# you will see each worker being assigned a rank and device:
+# you see each worker assigned a rank and device:
 #
 # .. code-block:: text
 #
@@ -466,9 +465,9 @@ result = trainer.fit()
 # ---------------
 #
 # After training, the ``Result`` object contains the final metrics and
-# checkpoint. ``result.metrics`` is populated from the last
+# checkpoint. ``result.metrics`` comes from the last
 # ``ray.train.report()`` call. ``result.checkpoint`` is ``None`` here
-# because this tutorial does not save checkpoints.
+# because this tutorial doesn't save checkpoints.
 
 print("\nTraining finished!")
 
@@ -487,12 +486,11 @@ print("\nTraining finished!")
 
 ###############################################################################
 # Checkpointing
-#
 # ~~~~~~~~~~~~~
 #
 # In a production training run you would enable checkpointing so that
 # training can resume from the last saved state after a failure. This
-# requires a **shared storage path** (e.g. an S3 bucket or NFS mount)
+# requires a **shared storage path** (for example, an S3 bucket or NFS mount)
 # accessible from all nodes:
 #
 # .. code-block:: python
@@ -528,8 +526,8 @@ print("\nTraining finished!")
 # To **resume training from a checkpoint**, call
 # ``ray.train.get_checkpoint()`` at the top of your training function.
 # When Ray Train restarts workers (for example, after a failure), it
-# automatically provides the latest checkpoint. If no checkpoint exists
-# (i.e. this is a fresh run), the function returns ``None``:
+# automatically provides the most recent checkpoint. If no checkpoint exists
+# (this is a fresh run), the function returns ``None``:
 #
 # .. code-block:: python
 #
@@ -600,14 +598,12 @@ print("\nTraining finished!")
 # No changes to the training function are needed. The same
 # ``train_func_per_worker`` runs identically whether on 1 GPU or 256 GPUs.
 #
-# .. note::
-#
-#    This tutorial uses ``DistributedDataParallel`` (DDP), which replicates
-#    the full model on every GPU. For larger models that don't fit on a
-#    single GPU, you can switch to
-#    `FullyShardedDataParallel <https://pytorch.org/docs/stable/fsdp.html>`__
-#    (FSDP) to shard parameters, gradients, and optimizer states across
-#    workers by setting ``prepare_model(parallel_strategy="fsdp")``.
+# This tutorial uses ``DistributedDataParallel`` (DDP), which replicates
+# the full model on every GPU. For larger models that don't fit on a
+# single GPU, you can switch to
+# `FullyShardedDataParallel <https://pytorch.org/docs/stable/fsdp.html>`__
+# (FSDP) to shard parameters, gradients, and optimizer states across
+# workers by setting ``prepare_model(parallel_strategy="fsdp")``.
 #
 # Heterogeneous clusters: separate data and training resources
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -615,12 +611,12 @@ print("\nTraining finished!")
 # Because Ray Data and Ray Train are separate systems, they don't have to
 # share the same machines. By default, Ray Data preprocessing and training
 # workers all run on the same nodes. However, you can optionally add
-# **CPU-only nodes** to your cluster and Ray Data will automatically
-# schedule preprocessing tasks on them, keeping your expensive GPU nodes
+# **CPU-only nodes** to your cluster and Ray Data automatically
+# schedules preprocessing tasks on them, keeping your expensive GPU nodes
 # free for training.
 #
 # This is useful when data preprocessing is a bottleneck. If you notice
-# low GPU utilization because workers are waiting on data, you can add
+# low GPU use because workers are waiting on data, you can add
 # cheaper CPU-only nodes to the cluster and Ray Data scales out
 # preprocessing to them.
 #
@@ -638,12 +634,11 @@ print("\nTraining finished!")
 # Ray Train's fault tolerance mechanisms include:
 #
 # * **Worker restart**: If a worker process crashes, Ray Train
-#   automatically restarts it and resumes training from the last
-#   checkpoint.
+#   automatically restarts it and resumes training.
 # * **Checkpoint recovery**: Ray Train saves checkpoints to persistent
 #   storage. When recovering from a failure, training resumes from the
 #   latest checkpoint rather than starting over.
-# * **Node failure handling**: If an entire node goes down, Ray
+# * **Node failure handling**: If an entire node goes down, Ray Train
 #   replaces the failed node and resumes training.
 #
 # To enable automatic failure recovery, configure ``FailureConfig`` in your ``RunConfig``:
@@ -679,7 +674,7 @@ print("\nTraining finished!")
 # * Monitor training progress across all workers
 # * Inspect logs from individual workers
 # * Identify data loading or communication bottlenecks
-# * View resource utilization for CPU, GPU, and memory per worker
+# * View resource use for CPU, GPU, and memory per worker
 # * Debug failures with detailed error messages and stack traces
 #
 # For more information, see the `Ray Train monitoring
