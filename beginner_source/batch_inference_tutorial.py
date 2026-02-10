@@ -54,6 +54,11 @@ import ray
 import torch
 from torchvision.models import efficientnet_v2_s, EfficientNet_V2_S_Weights
 
+
+# Reduce Ray Data verbosity
+ray.data.DataContext.get_current().enable_progress_bars = False
+ray.data.DataContext.get_current().print_on_execution_start = False
+
 ###############################################################################
 # Load the dataset with Ray Data
 # ------------------------------
