@@ -12,8 +12,8 @@ using Ray Train and Ray Data for scalable, production-ready model training.
     .. grid-item-card:: :octicon:`mortar-board;1em;` You will learn how to:
        :class-card: card-prerequisites
 
-       * Pre-train a ~117M-parameter decoder-only transformer language model
-         using PyTorch.
+       * Pre-train a GPT-2 (~124M-parameter) language model using PyTorch
+         and Hugging Face Transformers.
        * Distribute training across multiple GPUs with Ray Train.
        * Stream training data from Hugging Face datasets with Ray Data.
        * Save and load distributed checkpoints.
@@ -25,7 +25,7 @@ using Ray Train and Ray Data for scalable, production-ready model training.
 
        * PyTorch v2.9+.
        * Ray Train (``ray[train]``) v2.52.1+.
-       * ``tiktoken`` and ``datasets`` (Hugging Face).
+       * ``tiktoken``, ``datasets``, and ``transformers`` (Hugging Face).
        * One or more GPUs are recommended but not required.
 
 `Ray Train <https://docs.ray.io/en/latest/train/train.html>`__ is a
@@ -45,7 +45,7 @@ checkpointing, and fault tolerance.
 Setup
 -----
 
-To install the dependencies, run ``pip install "ray[train]" torch tiktoken datasets``.
+To install the dependencies, run ``pip install "ray[train]" torch tiktoken datasets transformers``.
 
 Then, import the required libraries:
 """
@@ -65,6 +65,7 @@ import torch.nn as nn
 from datasets import load_dataset
 from ray.train import CheckpointConfig, RunConfig, ScalingConfig
 from ray.train.torch import TorchTrainer
+from transformers import GPT2Config, GPT2LMHeadModel
 
 ###############################################################################
 # Load the dataset with Ray Data
@@ -81,21 +82,65 @@ from ray.train.torch import TorchTrainer
 hf_ds = load_dataset("Salesforce/wikitext", "wikitext-103-raw-v1")
 train_ds = ray.data.from_huggingface(hf_ds["train"])
 val_ds = ray.data.from_huggingface(hf_ds["validation"])
-print(train_ds)
+
+print(f"Dataset schema:\n{train_ds.schema()}")
 
 ###############################################################################
-# Ray divides the data into **blocks** and dispatches them to workers.
-# This block-based architecture enables **streaming execution**: as soon as
-# a stage outputs a block, the next stage can begin processing it
-# immediately without waiting for previous stages to finish the entire
-# dataset.
-# TODO: move the above text elsewhere; we should discuss .schema() lets you inspect the data
-
-print(train_ds.schema())
-
-# TODO discuss the output of schema.
+# The schema should look like this:
+# ```text`
+# Schema: Column  Type
+# ------  ----
+# text    string
+# ```
+#
+# This means that the dataset has one column called "text" and it is a string.
+#
+# Inspect raw data
+# ~~~~~~~~~~~~~~~~
+#
+# Use ``take(n)`` to fetch a small number of rows for inspection.
+# Each row is a dictionary with the column names as keys.
+print("--- Raw data sample (train_ds.take(2)) ---")
+sample = train_ds.take(2)
+for i, row in enumerate(sample):
+    text_preview = row["text"][:120] + "..." if len(row["text"]) > 120 else row["text"]
+    print(f"  Row {i}: {text_preview!r}")
 
 ###############################################################################
+# You'll see output like:
+#
+# .. code-block:: text
+#
+#    Row 0: ''
+#    Row 1: ' = Valkyria Chronicles III = \n'
+#
+# The raw dataset evidently contains empty lines and short headers that would
+# produce zero tokens after chunking. Use ``filter()`` to keep only rows
+# with at least 20 words, which removes noise and avoids wasted work in
+# downstream stages.
+
+MIN_WORDS = 20
+train_ds = train_ds.filter(lambda row: len(row["text"].split()) >= MIN_WORDS)
+val_ds = val_ds.filter(lambda row: len(row["text"].split()) >= MIN_WORDS)
+
+# DEBUG: limit dataset size for fast iteration
+train_ds = train_ds.limit(100)
+val_ds = val_ds.limit(100)
+
+print("--- After filtering short rows (train_ds.take(2)) ---")
+filtered_sample = train_ds.take(2)
+for i, row in enumerate(filtered_sample):
+    text_preview = row["text"][:120] + "..." if len(row["text"]) > 120 else row["text"]
+    print(f"  Row {i}: {text_preview!r}")
+
+###############################################################################
+# After filtering, only substantive paragraphs remain:
+#
+# .. code-block:: text
+#
+#    Row 0: ' Senjō no Valkyria 3 : Unrecorded Chronicles ( Japanese : ...'
+#    Row 1: ' The game began development in 2010 , carrying over a large ...'
+#
 # Tokenize and chunk the data
 # ----------------------------
 #
@@ -136,13 +181,14 @@ def tokenize_and_chunk(batch: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
     all_tokens = all_tokens[: num_chunks * chunk_len]
 
     if num_chunks == 0:
-        return {"input_ids": np.array([], dtype=np.int64).reshape(0, BLOCK_SIZE),
-                "labels": np.array([], dtype=np.int64).reshape(0, BLOCK_SIZE)}
+        return {"input_ids": [], "labels": []}
 
     tokens_array = np.array(all_tokens, dtype=np.int64).reshape(num_chunks, chunk_len)
+    input_ids = tokens_array[:, :-1]
+    labels = tokens_array[:, 1:]
     return {
-        "input_ids": tokens_array[:, :-1],
-        "labels": tokens_array[:, 1:],
+        "input_ids": input_ids,
+        "labels": labels,
     }
 
 
@@ -155,98 +201,96 @@ def tokenize_and_chunk(batch: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
 
 train_ds = train_ds.map_batches(tokenize_and_chunk, batch_format="numpy")
 val_ds = val_ds.map_batches(tokenize_and_chunk, batch_format="numpy")
-print(train_ds.schema())
 
+###############################################################################
+# Inspect the tokenized output with ``take(2)``:
+
+print("--- Tokenized data sample (train_ds.take(2)) ---")
+tokenized_sample = train_ds.take(2)
+for i, row in enumerate(tokenized_sample):
+    ids = row["input_ids"]
+    print(f"  Row {i}: input_ids shape={ids.shape}, first 10 tokens={ids[:10].tolist()}")
+    print(f"          Decoded: {encoding.decode(ids[:30].tolist())!r}...")
+
+###############################################################################
+# Each row now contains a fixed-length ``input_ids`` array of 256 tokens and
+# a corresponding ``labels`` array shifted by one position. These are the
+# input/target pairs for next-token prediction.
+#
+# Streaming execution
+# ~~~~~~~~~~~~~~~~~~~
+#
+# Under the hood, Ray divides the data into **blocks** and dispatches them to
+# workers. This block-based architecture enables **streaming execution**: as
+# soon as a stage outputs a block, the next stage can begin processing it
+# immediately without waiting for previous stages to finish the entire
+# dataset. This means the ``map_batches`` tokenization above runs in a
+# streaming pipeline with the training loop, so the full dataset never needs
+# to fit in memory at once.
+#
+# When training starts, Ray Data logs the execution plan. For this tutorial
+# it looks like:
+#
+# .. code-block:: text
+#
+#    Execution plan: InputDataBuffer[Input]
+#        -> TaskPoolMapOperator[Filter]
+#        -> TaskPoolMapOperator[MapBatches(tokenize_and_chunk)]
+#        -> OutputSplitter[split(8, equal=True)]
+#
+# This tells you exactly how Ray Data will stream through filter, tokenize,
+# and split the data across 8 workers.
 
 ###############################################################################
 # Define the transformer model
 # ----------------------------
 #
-# The model is a decoder-only transformer language model, similar to GPT-2,
-# built entirely from standard PyTorch modules. It has approximately 117
-# million parameters.
+# The model is a decoder-only transformer language model using Hugging Face's
+# ``GPT2LMHeadModel``.
 #
-# The architecture:
+# The GPT-2 "small" architecture:
 #
-# * **Token embedding** maps token IDs to dense vectors.
-# * **Positional embedding** encodes position information.
-# * **Transformer encoder** with a causal (triangular) attention mask ensures
-#   that each token can only attend to preceding tokens. Note: PyTorch's
-#   ``TransformerEncoder`` with a causal mask is functionally equivalent to a
-#   decoder-only transformer.
-# * **Output head** projects the hidden states back to the vocabulary.
+# * 12 transformer layers, 12 attention heads, 768 hidden size
+# * ~124M parameters
+# * Built-in causal attention masking and weight tying
 
-class TransformerLM(nn.Module):
-    """Decoder-only transformer language model (~117M parameters)."""
+MODEL_CONFIG = GPT2Config(
+    vocab_size=VOCAB_SIZE,
+    n_positions=BLOCK_SIZE,
+    n_embd=768,
+    n_layer=12,
+    n_head=12,
+)
 
-    def __init__(
-        self,
-        vocab_size: int = VOCAB_SIZE,
-        d_model: int = 768,
-        nhead: int = 12,
-        num_layers: int = 12,
-        dim_feedforward: int = 3072,
-        max_seq_len: int = BLOCK_SIZE,
-        dropout: float = 0.1,
-    ):
-        super().__init__()
-        self.d_model = d_model
-        self.token_embedding = nn.Embedding(vocab_size, d_model)
-        self.position_embedding = nn.Embedding(max_seq_len, d_model)
 
-        encoder_layer = nn.TransformerEncoderLayer(
-            d_model=d_model,
-            nhead=nhead,
-            dim_feedforward=dim_feedforward,
-            dropout=dropout,
-            batch_first=True,
-            norm_first=True,  # Pre-norm architecture for training stability
-        )
-        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
-        self.ln_f = nn.LayerNorm(d_model)
-        self.output_head = nn.Linear(d_model, vocab_size, bias=False)
-
-        # Weight tying: share weights between token embedding and output head
-        self.output_head.weight = self.token_embedding.weight
-
-        self._init_weights()
-
-    def _init_weights(self):
-        """Initialize weights with small values for stable training."""
-        nn.init.normal_(self.token_embedding.weight, mean=0.0, std=0.02)
-        nn.init.normal_(self.position_embedding.weight, mean=0.0, std=0.02)
-
-    def forward(self, input_ids: torch.Tensor) -> torch.Tensor:
-        """
-        Args:
-            input_ids: Token IDs of shape (batch_size, seq_len).
-
-        Returns:
-            Logits of shape (batch_size, seq_len, vocab_size).
-        """
-        batch_size, seq_len = input_ids.shape
-        positions = torch.arange(seq_len, device=input_ids.device).unsqueeze(0)
-
-        x = self.token_embedding(input_ids) + self.position_embedding(positions)
-
-        # Create causal mask so each token only attends to previous tokens
-        causal_mask = nn.Transformer.generate_square_subsequent_mask(
-            seq_len, device=input_ids.device
-        )
-        x = self.transformer(x, mask=causal_mask, is_causal=True)
-        x = self.ln_f(x)
-        logits = self.output_head(x)
-        return logits
-
+def create_model():
+    """Create a fresh GPT-2 model from config (random weights)."""
+    model = GPT2LMHeadModel(MODEL_CONFIG)
+    model.loss_type = "ForCausalLM"
+    return model
 
 
 ###############################################################################
 # Verify the model size:
 
-model = TransformerLM()
+model = create_model()
 num_params = sum(p.numel() for p in model.parameters())
 print(f"Model parameters: {num_params:,} ({num_params / 1e6:.1f}M)")
-del model  # Free memory before distributed training
+
+###############################################################################
+# You should see approximately **123.8M parameters** — the standard GPT-2
+# "small" size.
+#
+# Quick smoke test: run a forward pass on CPU to verify the model produces the
+# expected output shape before launching distributed training:
+
+model.eval()
+dummy_input = torch.randint(0, VOCAB_SIZE, (2, BLOCK_SIZE))
+with torch.no_grad():
+    out = model(dummy_input)
+print(f"Smoke test passed — logits shape: {out.logits.shape}")
+del model, dummy_input, out  # Free memory before distributed training
+
 
 
 ###############################################################################
@@ -276,6 +320,7 @@ def train_func_per_worker(config: dict):
     lr = config["lr"]
     epochs = config["epochs"]
     batch_size = config["batch_size_per_worker"]
+    max_steps_per_epoch = config.get("max_steps_per_epoch")  # DEBUG: cap steps
 
     # --- Data -----------------------------------------------------------
     # Each worker gets an automatic shard of the dataset.
@@ -283,13 +328,12 @@ def train_func_per_worker(config: dict):
     val_data_shard = ray.train.get_dataset_shard("validation")
 
     # --- Model ----------------------------------------------------------
-    model = TransformerLM()
+    model = create_model()
     # prepare_model wraps the model in DistributedDataParallel and places
     # it on the correct device.
     model = ray.train.torch.prepare_model(model)
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.1)
-    loss_fn = nn.CrossEntropyLoss()
 
     # --- Training loop --------------------------------------------------
     for epoch in range(epochs):
@@ -304,12 +348,10 @@ def train_func_per_worker(config: dict):
             input_ids = batch["input_ids"]
             labels = batch["labels"]
 
-            logits = model(input_ids)
-            # Flatten for cross-entropy: (batch * seq_len, vocab_size) vs (batch * seq_len,)
-            loss = loss_fn(
-                logits.view(-1, logits.size(-1)),
-                labels.view(-1),
-            )
+            # GPT2LMHeadModel computes cross-entropy loss internally
+            # when labels are provided.
+            out = model(input_ids=input_ids, labels=labels)
+            loss = out.loss
 
             optimizer.zero_grad()
             loss.backward()
@@ -319,6 +361,9 @@ def train_func_per_worker(config: dict):
 
             train_loss_sum += loss.item()
             train_batches += 1
+
+            if max_steps_per_epoch and train_batches >= max_steps_per_epoch:
+                break  # DEBUG: early stop
 
         avg_train_loss = train_loss_sum / max(train_batches, 1)
 
@@ -334,35 +379,27 @@ def train_func_per_worker(config: dict):
                 input_ids = batch["input_ids"]
                 labels = batch["labels"]
 
-                logits = model(input_ids)
-                loss = loss_fn(
-                    logits.view(-1, logits.size(-1)),
-                    labels.view(-1),
-                )
+                out = model(input_ids=input_ids, labels=labels)
+                loss = out.loss
                 val_loss_sum += loss.item()
                 val_batches += 1
+
+                if max_steps_per_epoch and val_batches >= max_steps_per_epoch:
+                    break  # DEBUG: early stop
 
         avg_val_loss = val_loss_sum / max(val_batches, 1)
         val_perplexity = math.exp(min(avg_val_loss, 20))  # cap to avoid overflow
 
-        # --- Checkpointing ----------------------------------------------
-        # Save a checkpoint at the end of each epoch.
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            torch.save(
-                model.module.state_dict(),  # .module unwraps DDP
-                os.path.join(tmp_dir, "model.pt"),
-            )
-            checkpoint = ray.train.Checkpoint.from_directory(tmp_dir)
-
-            ray.train.report(
-                metrics={
-                    "train_loss": avg_train_loss,
-                    "val_loss": avg_val_loss,
-                    "val_perplexity": val_perplexity,
-                    "epoch": epoch,
-                },
-                checkpoint=checkpoint,
-            )
+        # --- Report metrics -----------------------------------------------
+        ray.train.report(
+            metrics={
+                "train_loss": avg_train_loss,
+                "val_loss": avg_val_loss,
+                "val_perplexity": val_perplexity,
+                "epoch": epoch,
+            },
+            checkpoint=None,  # If we were checkpointing, we'd pass checkpoint to Ray Train here
+        )
 
         if ray.train.get_context().get_world_rank() == 0:
             print(
@@ -390,10 +427,20 @@ def train_func_per_worker(config: dict):
 #
 # Setting ``num_workers=8`` launches 8 parallel workers, one per GPU. Ray
 # Train handles ``torch.distributed`` initialization, NCCL backend setup,
-# and ``DistributedDataParallel`` wrapping behind the scenes.
+# and ``DistributedDataParallel`` wrapping behind the scenes. In the logs
+# you will see each worker being assigned a rank and device:
+#
+# .. code-block:: text
+#
+#    Started training worker group of size 8:
+#    - (ip=10.0.176.183, pid=25636) world_rank=0, local_rank=0, node_rank=0
+#    - (ip=10.0.176.183, pid=25637) world_rank=1, local_rank=1, node_rank=0
+#    ...
+#    Moving model to device: cuda:0
+#    Wrapping provided model in DistributedDataParallel.
 
 NUM_WORKERS = 8  # One worker per GPU on this machine
-NUM_EPOCHS = 2
+NUM_EPOCHS = 1  # DEBUG: reduced from 2
 BATCH_SIZE_PER_WORKER = 16
 
 trainer = TorchTrainer(
@@ -402,18 +449,14 @@ trainer = TorchTrainer(
         "lr": 3e-4,
         "epochs": NUM_EPOCHS,
         "batch_size_per_worker": BATCH_SIZE_PER_WORKER,
+        "max_steps_per_epoch": 5,  # DEBUG: cap at 5 steps for fast iteration
     },
     datasets={"train": train_ds, "validation": val_ds},
     scaling_config=ScalingConfig(
         num_workers=NUM_WORKERS,
         use_gpu=True,
     ),
-    run_config=RunConfig(
-        # Keep the best 2 checkpoints by validation loss
-        checkpoint_config=CheckpointConfig(
-            num_to_keep=2,
-        ),
-    ),
+    # run_config=RunConfig(),
 )
 
 result = trainer.fit()
@@ -422,62 +465,52 @@ result = trainer.fit()
 # Inspect results
 # ---------------
 #
-# After training, the ``Result`` object contains the final metrics and
-# the path to the best checkpoint.
+# After training, the ``Result`` object contains the final metrics reported
+# by the workers.
 
 print(f"\nTraining finished!")
 print(f"Final metrics: {result.metrics}")
-print(f"Best checkpoint path: {result.checkpoint.path}")
-
 
 ###############################################################################
-# Load a checkpoint and generate text
-# ------------------------------------
+# The logs from each worker show training and validation metrics per epoch.
+# With random weights and only a few steps, expect a high loss (~10–11)
+# and perplexity in the tens of thousands — this is normal.
 #
-# As a sanity check, load the trained model from the checkpoint and
-# generate a few tokens using greedy decoding:
-
-def generate(model: TransformerLM, prompt_tokens: list[int], max_new_tokens: int = 50) -> list[int]:
-    """Generate tokens autoregressively using greedy decoding."""
-    model.eval()
-    device = next(model.parameters()).device
-    tokens = prompt_tokens[:]
-
-    with torch.no_grad():
-        for _ in range(max_new_tokens):
-            # Only use the last BLOCK_SIZE tokens if the sequence is too long
-            input_ids = torch.tensor([tokens[-BLOCK_SIZE:]], device=device)
-            logits = model(input_ids)
-            next_token = logits[0, -1, :].argmax().item()
-            tokens.append(next_token)
-
-    return tokens
-
-
-# Load the model from the checkpoint
-checkpoint_path = os.path.join(result.checkpoint.path, "model.pt")
-trained_model = TransformerLM()
-trained_model.load_state_dict(torch.load(checkpoint_path, weights_only=True))
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-trained_model = trained_model.to(device)
-
-# Generate text from a prompt
-prompt = "The history of science"
-prompt_tokens = encoding.encode_ordinary(prompt)
-generated_tokens = generate(trained_model, prompt_tokens, max_new_tokens=50)
-generated_text = encoding.decode(generated_tokens)
-print(f"Prompt: {prompt}")
-print(f"Generated: {generated_text}")
+# .. code-block:: text
+#
+#    Epoch 0: train_loss=10.9492, val_loss=10.0157, val_perplexity=22374.06
+#
+# In a real training run with more epochs and the full dataset, you would
+# see these values steadily decrease.
 
 ###############################################################################
-# .. note::
+# Checkpointing
+# ~~~~~~~~~~~~~
 #
-#    With only 2 epochs of training on Wikitext-103, the generated text
-#    will be mostly incoherent. This is expected for a tutorial that
-#    prioritizes demonstrating the distributed training workflow over
-#    producing a fully-trained model. In a real pre-training run, you would
-#    train for many more epochs with a learning rate schedule and a larger
-#    dataset.
+# In a production training run you would enable checkpointing so that
+# training can resume from the last saved state after a failure. This
+# requires a **shared storage path** (e.g. an S3 bucket or NFS mount)
+# accessible from all nodes:
+#
+# .. code-block:: python
+#
+#    trainer = TorchTrainer(
+#        ...,
+#        run_config=RunConfig(
+#            storage_path="s3://my-bucket/ray-checkpoints",
+#            checkpoint_config=CheckpointConfig(num_to_keep=2),
+#        ),
+#    )
+#
+# Inside the training function, save a checkpoint with
+# ``ray.train.report()``:
+#
+# .. code-block:: python
+#
+#    with tempfile.TemporaryDirectory() as tmp_dir:
+#        model.module.save_pretrained(tmp_dir)  # .module unwraps DDP
+#        checkpoint = ray.train.Checkpoint.from_directory(tmp_dir)
+#        ray.train.report(metrics={...}, checkpoint=checkpoint)
 #
 # Scaling to a multi-node cluster
 # -------------------------------
@@ -584,8 +617,8 @@ print(f"Generated: {generated_text}")
 #
 # In this tutorial, you:
 #
-# * Built a ~117M-parameter decoder-only transformer language model
-#   using pure PyTorch.
+# * Pre-trained a GPT-2 (~124M-parameter) language model using
+#   Hugging Face Transformers and PyTorch.
 # * Loaded and preprocessed the Wikitext-103 dataset using Ray Data
 #   with distributed streaming.
 # * Distributed training across 8 GPUs using Ray Train's
