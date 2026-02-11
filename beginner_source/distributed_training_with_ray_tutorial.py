@@ -136,7 +136,7 @@ for i, row in enumerate(sample):
 # ----------------------------
 #
 # Language models consume fixed-length sequences of token IDs. The
-# preprocessing step converts raw text into input/target pairs for
+# preprocessing step converts raw text into token ID sequences for
 # next-token prediction.
 #
 # This tutorial uses ``tiktoken`` with the GPT-2 encoding (vocabulary size
@@ -149,10 +149,10 @@ for i, row in enumerate(sample):
 #   Article title lines (for example, ``= Article Title =``) trigger an
 #   ``<|endoftext|>`` separator so the model resets context at article
 #   boundaries.
-# * Splits the stream into fixed-length blocks of ``block_size + 1``
-#   tokens.
-# * Returns ``input_ids`` (the first ``block_size`` tokens) and
-#   ``labels`` (shifted by one position for next-token prediction).
+# * Splits the stream into fixed-length blocks of ``block_size`` tokens.
+# * Returns ``input_ids`` for each block. During training, the same
+#   tensor serves as both input and label because ``GPT2LMHeadModel``
+#   shifts the labels internally when computing the cross-entropy loss.
 
 BLOCK_SIZE = 256
 VOCAB_SIZE = 50257
@@ -178,21 +178,15 @@ def tokenize_and_chunk(batch: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
             all_tokens.append(EOT_TOKEN)
         all_tokens.extend(encoding.encode_ordinary(text + "\n"))
 
-    # Split into chunks of block_size + 1 (input + 1 shifted target)
-    chunk_len = BLOCK_SIZE + 1
-    num_chunks = len(all_tokens) // chunk_len
-    all_tokens = all_tokens[: num_chunks * chunk_len]
+    # Split into fixed-length chunks of block_size tokens.
+    num_chunks = len(all_tokens) // BLOCK_SIZE
+    all_tokens = all_tokens[: num_chunks * BLOCK_SIZE]
 
     if num_chunks == 0:
-        return {"input_ids": [], "labels": []}
+        return {"input_ids": []}
 
-    tokens_array = np.array(all_tokens, dtype=np.int64).reshape(num_chunks, chunk_len)
-    input_ids = tokens_array[:, :-1]
-    labels = tokens_array[:, 1:]
-    return {
-        "input_ids": input_ids,
-        "labels": labels,
-    }
+    tokens_array = np.array(all_tokens, dtype=np.int64).reshape(num_chunks, BLOCK_SIZE)
+    return {"input_ids": tokens_array}
 
 
 
@@ -217,9 +211,7 @@ for i, row in enumerate(tokenized_sample):
     print(f"          Decoded: {encoding.decode(ids[:30].tolist())!r}...")
 
 ###############################################################################
-# Each row now contains a fixed-length ``input_ids`` array of 256 tokens and
-# a corresponding ``labels`` array shifted by one position. These are the
-# input/target pairs for next-token prediction.
+# Each row now contains a fixed-length ``input_ids`` array of 256 tokens.
 #
 # Streaming execution
 # ~~~~~~~~~~~~~~~~~~~
@@ -334,11 +326,11 @@ def train_func_per_worker(config: dict):
             batch_size=batch_size, dtypes=torch.long, prefetch_batches=2
         ):
             input_ids = batch["input_ids"]
-            labels = batch["labels"]
 
-            # GPT2LMHeadModel computes cross-entropy loss internally
-            # when labels are provided.
-            out = model(input_ids=input_ids, labels=labels)
+            # GPT2LMHeadModel shifts labels internally to align each
+            # position with the next token, so we can use input_ids as
+            # both the input and the labels.
+            out = model(input_ids=input_ids, labels=input_ids)
             loss = out.loss
 
             optimizer.zero_grad()
@@ -367,9 +359,8 @@ def train_func_per_worker(config: dict):
                 batch_size=batch_size, dtypes=torch.long, prefetch_batches=2
             ):
                 input_ids = batch["input_ids"]
-                labels = batch["labels"]
 
-                out = model(input_ids=input_ids, labels=labels)
+                out = model(input_ids=input_ids, labels=input_ids)
                 loss = out.loss
                 val_loss_sum += loss.item()
                 val_batches += 1
