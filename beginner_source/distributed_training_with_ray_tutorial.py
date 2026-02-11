@@ -704,9 +704,6 @@ print("\nTraining finished!")
 #   production training jobs.
 # * Monitored training with the Ray dashboard.
 #
-# Ray Train handles the complexity of distributed systems, gradient
-# synchronization, and resource allocation so that you can focus on
-# your model and data.
 
 ###############################################################################
 # Further reading
