@@ -236,6 +236,7 @@ html_theme_options = {
     "navbar_center": "navbar-nav",
     "display_version": True,
     "pytorch_project": "tutorials",
+    "llm_disabled": False,
     "canonical_url": "https://docs.pytorch.org/tutorials/",
 }
 
