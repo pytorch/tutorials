@@ -68,6 +68,7 @@ ray.data.DataContext.get_current().print_on_execution_start = False
 
 s3_uri = "s3://anonymous@air-example-data-2/imagenette2/train/"
 
+ray.init(log_to_driver=False)
 ds = ray.data.read_images(s3_uri, mode="RGB")
 print(ds)
 
