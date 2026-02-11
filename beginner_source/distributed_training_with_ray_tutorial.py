@@ -17,7 +17,7 @@ using Ray Train and Ray Data for scalable, production-ready model training.
        * Distribute training across multiple GPUs with Ray Train with minimal code changes.
        * Stream training data from Hugging Face datasets with Ray Data's distributed workers.
        * Save and load distributed checkpoints.
-       * Scale from a single node to a multi-node cluster with minimal code changes.
+       * Scale from a single node to a multinode cluster with minimal code changes.
        * Optimize cost and performance with heterogeneous clusters.
        * Monitor training with the Ray dashboard.
 
@@ -48,7 +48,7 @@ Setup
 
 To install the dependencies, run ``pip install "ray[train]" torch tiktoken datasets transformers``.
 
-Then, import the required libraries.
+Then, import the required libraries:
 """
 
 import time
@@ -105,6 +105,7 @@ print(f"Dataset schema:\n{train_ds.schema()}")
 # This means that the dataset has one column called ``text`` and it is a string.
 #
 # Inspect raw data
+#
 # ~~~~~~~~~~~~~~~~
 #
 # Use ``take(n)`` to fetch a small number of rows for inspection.
@@ -146,7 +147,7 @@ for i, row in enumerate(sample):
 #
 # * Tokenizes each batch of text, concatenating into a single stream.
 #   Article title lines (for example, ``= Article Title =``) trigger an
-#   ``<|endoftext|`` separator so the model resets context at article
+#   ``<|endoftext|>`` separator so the model resets context at article
 #   boundaries.
 # * Splits the stream into fixed-length blocks of ``block_size + 1``
 #   tokens.
@@ -242,13 +243,13 @@ for i, row in enumerate(tokenized_sample):
 #
 # This tells you exactly how Ray Data will stream through tokenization
 # and split the data across 8 trainer workers.
-
-###############################################################################
+#
+#
 # Define the transformer model
 # ----------------------------
 #
 # The model is a decoder-only transformer language model using Hugging Face's
-# ``GPT2LMHeadModel``. The hyperparameters below are the standard GPT-2 "small" architecture.
+# ``GPT2LMHeadModel``. The hyperparameters below are for the standard GPT-2 "small" architecture.
 #
 
 
@@ -289,16 +290,13 @@ del model  # Free memory before training
 #
 # The key Ray Train integration points are:
 #
-# 1. ``ray.train.get_dataset_shard("train")`` retrieves the
-#    worker's portion of the data. Ray Data automatically splits the
-#    dataset across all workers.
-# 2. ``ray.train.torch.prepare_model(model)`` wraps the model in
-#    ``DistributedDataParallel`` and moves it to the correct GPU.
-# 3. ``shard.iter_torch_batches(batch_size=...)`` returns an iterator
-#    of ``dict[str, torch.Tensor]`` batches, with tensors automatically
-#    placed on the worker's GPU. Setting ``prefetch_batches=2`` opportunistically fetches 2 batches ahead of the current batch.
-# 4. ``ray.train.report(metrics, checkpoint=...)`` reports metrics
-#    to the driver and optionally saves a checkpoint.
+# - ``ray.train.get_dataset_shard("train")`` retrieves the worker's portion of the
+#   dataset, and Ray Data automatically splits the dataset across all workers.
+# - ``ray.train.torch.prepare_model(model)`` wraps the model in
+#   ``DistributedDataParallel`` and moves it to the correct GPU.
+# - ``shard.iter_torch_batches(batch_size=...)`` returns an iterator
+#   of ``dict[str, torch.Tensor]`` batches, with tensors automatically placed on the worker's GPU. Setting ``prefetch_batches=2`` opportunistically fetches 2 batches ahead of the current batch.
+# - ``ray.train.report(metrics, checkpoint=...)`` reports metrics to the driver and optionally saves a checkpoint.
 
 
 def train_func_per_worker(config: dict):
@@ -405,25 +403,25 @@ def train_func_per_worker(config: dict):
 # The ``TorchTrainer`` brings everything together. Running ``trainer.fit()`` finally
 # triggers the execution of the full data pipeline and training loop. The Trainer accepts:
 #
-# * ``train_func_per_worker``: the function each worker executes.
-# * ``train_loop_config``: a dictionary of hyperparameters forwarded
+# - ``train_func_per_worker``: the function each worker executes.
+# - ``train_loop_config``: a dictionary of hyperparameters forwarded
 #   to the training function.
-# * ``datasets``: a dictionary of Ray Datasets. Ray Train automatically
+# - ``datasets``: a dictionary of Ray Datasets. Ray Train automatically
 #   splits each dataset across workers.
-# * ``scaling_config``: specifies the number of workers and whether to
+# - ``scaling_config``: specifies the number of workers and whether to
 #   use GPUs.
 #
 # Setting ``num_workers=8`` launches 8 parallel workers, one per GPU. Ray
 # Train handles ``torch.distributed`` initialization, NCCL backend setup,
-# and ``DistributedDataParallel`` wrapping behind the scenes. In the logs
+# and ``DistributedDataParallel`` wrapping behind the scenes. In the logs,
 # you see each worker assigned a rank and device:
 #
 # .. code-block:: text
 #
 #    Started training worker group of size 8:
 #
-# * (ip=10.0.176.183, pid=25636) world_rank=0, local_rank=0, node_rank=0
-# * (ip=10.0.176.183, pid=25637) world_rank=1, local_rank=1, node_rank=0
+#    * (ip=10.0.176.183, pid=25636) world_rank=0, local_rank=0, node_rank=0
+#    * (ip=10.0.176.183, pid=25637) world_rank=1, local_rank=1, node_rank=0
 #    ...
 #    Moving model to device: cuda:0
 #    Wrapping provided model in DistributedDataParallel.
@@ -482,84 +480,26 @@ print("\nTraining finished!")
 #
 # The per-worker logs show training loss, validation loss, and throughput
 # metrics for each epoch. With random weights and only a few steps, expect
-# a high loss (~10–11).
+# a high loss (~10-11).
 
 ###############################################################################
 # Checkpointing
 # ~~~~~~~~~~~~~
 #
-# In a production training run you would enable checkpointing so that
-# training can resume from the last saved state after a failure. This
-# requires a **shared storage path** (for example, an S3 bucket or NFS mount)
-# accessible from all nodes:
+# In production training, you can enable checkpointing to make
+# your training jobs robust to unexpected failures. Checkpointing
+# permits you to take advantage of Ray Train's fault tolerance mechanisms described in the
+# `Fault tolerance`_ section.
 #
-# .. code-block:: python
+# Ray Train offers several checkpointing optimizations. Asynchronous
+# uploading enables you to continue training while checkpoints stream to remote storage
+# in the background.
+# Distributed checkpointing uploads shards from each worker in parallel, avoiding 
+# a gather step into a single worker's memory that risks OOM errors for large models.
 #
-#    trainer = TorchTrainer(
-#        ...,
-#        run_config=RunConfig(
-#            storage_path="s3://my-bucket/ray-checkpoints",
-#            checkpoint_config=CheckpointConfig(num_to_keep=2),
-#        ),
-#    )
-#
-# Inside the training function, save a checkpoint with
-# ``ray.train.report()``. Every worker must still call ``ray.train.report()``:
-#
-# .. code-block:: python
-#
-#    with tempfile.TemporaryDirectory() as tmp_dir:
-#        checkpoint = None
-#        if ray.train.get_context().get_world_rank() == 0:
-#            torch.save(model.module.state_dict(),
-#                       os.path.join(tmp_dir, "model.pt"))
-#            torch.save(optimizer.state_dict(),
-#                       os.path.join(tmp_dir, "optimizer.pt"))
-#            torch.save({"epoch": epoch},
-#                       os.path.join(tmp_dir, "extra_state.pt"))
-#            checkpoint = ray.train.Checkpoint.from_directory(tmp_dir)
-#        ray.train.report(metrics={...}, checkpoint=checkpoint)
-#
-# Note that ``.module`` unwraps the ``DistributedDataParallel`` wrapper so
-# you save the underlying model weights rather than the DDP wrapper.
-#
-# To **resume training from a checkpoint**, call
-# ``ray.train.get_checkpoint()`` at the top of your training function.
-# When Ray Train restarts workers (for example, after a failure), it
-# automatically provides the most recent checkpoint. If no checkpoint exists
-# (this is a fresh run), the function returns ``None``:
-#
-# .. code-block:: python
-#
-#    def train_func_per_worker(config: dict):
-#        model = create_model()
-#        model = ray.train.torch.prepare_model(model)
-#        optimizer = torch.optim.AdamW(model.parameters(), lr=config["lr"])
-#
-#        # Resume from the latest checkpoint if one exists.
-#        start_epoch = 0
-#        checkpoint = ray.train.get_checkpoint()
-#        if checkpoint:
-#            with checkpoint.as_directory() as ckpt_dir:
-#                model.module.load_state_dict(
-#                    torch.load(os.path.join(ckpt_dir, "model.pt"))
-#                )
-#                optimizer.load_state_dict(
-#                    torch.load(os.path.join(ckpt_dir, "optimizer.pt"))
-#                )
-#                start_epoch = torch.load(
-#                    os.path.join(ckpt_dir, "extra_state.pt")
-#                )["epoch"] + 1
-#
-#        for epoch in range(start_epoch, config["epochs"]):
-#            # ... training loop ...
-#
-# You can also call ``TorchTrainer.restore(path, datasets=...)`` to
-# restore an entire interrupted experiment from its results directory
-# without re-specifying the full trainer configuration. See the `Ray Train
-# checkpointing guide
-# <https://docs.ray.io/en/latest/train/user-guides/checkpoints.html>`__
-# for more details.
+# For a full guide on checkpointing with Ray Train, see the
+# `Ray Train checkpointing guide
+# <https://docs.ray.io/en/latest/train/user-guides/checkpoints.html>`__.
 #
 # Scaling to a multi-node cluster
 # -------------------------------
@@ -601,7 +541,7 @@ print("\nTraining finished!")
 # This tutorial uses ``DistributedDataParallel`` (DDP), which replicates
 # the full model on every GPU. For larger models that don't fit on a
 # single GPU, you can switch to
-# `FullyShardedDataParallel <https://pytorch.org/docs/stable/fsdp.html>`__
+# `FullyShardedDataParallel <https://docs.pytorch.org/docs/stable/fsdp.html>`__
 # (FSDP) to shard parameters, gradients, and optimizer states across
 # workers by setting ``prepare_model(parallel_strategy="fsdp")``.
 #
@@ -620,28 +560,30 @@ print("\nTraining finished!")
 # cheaper CPU-only nodes to the cluster and Ray Data scales out
 # preprocessing to them.
 #
-# For more details, see `Configuring data ingest
+# For more information, see `Configuring data ingest
 # <https://docs.ray.io/en/latest/train/user-guides/data-loading-preprocessing.html>`__.
 
 ###############################################################################
+# .. _Fault tolerance:
+#
 # Fault tolerance
 # ---------------
 #
 # Long-running distributed training jobs are vulnerable to hardware
-# failures. Ray Train provides fault tolerance so that training can
-# recover from failures without restarting from scratch.
+# failures. These include hardware failures, network failures, or preemption.
+# Without fault tolerance, any of these events can force you to restart
+# training from scratch, wasting time and compute.
 #
-# Ray Train's fault tolerance mechanisms include:
+# Ray Train has features that handle these failures automatically. When a worker process
+# crashes, Ray Train restarts it in place and resumes training. If an
+# entire node goes down, Ray Train provisions a replacement and
+# recovers from the most recent checkpoint so that only a small amount
+# of work is lost. This makes it practical to interrupt training jobs and resume
+# them later.
 #
-# * **Worker restart**: If a worker process crashes, Ray Train
-#   automatically restarts it and resumes training.
-# * **Checkpoint recovery**: Ray Train saves checkpoints to persistent
-#   storage. When recovering from a failure, training resumes from the
-#   latest checkpoint rather than starting over.
-# * **Node failure handling**: If an entire node goes down, Ray Train
-#   replaces the failed node and resumes training.
-#
-# To enable automatic failure recovery, configure ``FailureConfig`` in your ``RunConfig``:
+# To enable automatic failure recovery, configure ``FailureConfig`` in
+# your ``RunConfig``. The ``max_failures`` parameter controls how many
+# consecutive failures Ray Train tolerates before giving up:
 #
 # .. code-block:: python
 #
@@ -652,6 +594,9 @@ print("\nTraining finished!")
 #        failure_config=FailureConfig(max_failures=3),
 #        checkpoint_config=CheckpointConfig(num_to_keep=2),
 #    )
+#
+# For more details, see the `Ray Train fault tolerance guide
+# <https://docs.ray.io/en/latest/train/user-guides/fault-tolerance.html>`__.
 
 ###############################################################################
 # Monitor your training jobs
@@ -661,21 +606,21 @@ print("\nTraining finished!")
 # The `Ray dashboard <https://docs.ray.io/en/latest/ray-observability/getting-started.html>`__
 # displays real-time metrics including:
 #
-# * Training loss and validation metrics per epoch
-# * GPU utilization and memory usage per worker
-# * Data loading throughput
-# * Worker status and error logs
+# - Training loss and validation metrics per epoch
+# - GPU utilization and memory usage per worker
+# - Data loading throughput
+# - Worker status and error logs
 #
 # To view the dashboard, open the link printed in the logs after Ray
 # initializes. Typically, this link is ``http://localhost:8265``.
 #
 # The dashboard lets you:
 #
-# * Monitor training progress across all workers
-# * Inspect logs from individual workers
-# * Identify data loading or communication bottlenecks
-# * View resource use for CPU, GPU, and memory per worker
-# * Debug failures with detailed error messages and stack traces
+# - Monitor training progress across all workers
+# - Inspect logs from individual workers
+# - Identify data loading or communication bottlenecks
+# - View resource use for CPU, GPU, and memory per worker
+# - Debug failures with detailed error messages and stack traces
 #
 # For more information, see the `Ray Train monitoring
 # documentation <https://docs.ray.io/en/latest/train/user-guides/monitoring-logging.html>`__.
@@ -686,31 +631,32 @@ print("\nTraining finished!")
 #
 # In this tutorial, you:
 #
-# * Pre-trained a GPT-2 (~124M-parameter) language model using
+# - Pre-trained a GPT-2 (~124M-parameter) language model using
 #   Hugging Face Transformers and PyTorch.
-# * Loaded and preprocessed the Wikitext-103 dataset using Ray Data
+# - Loaded and preprocessed the Wikitext-103 dataset using Ray Data
 #   with distributed streaming.
-# * Ran distributed training across 8 GPUs using Ray Train's
+# - Ran distributed training across 8 GPUs using Ray Train's
 #   ``TorchTrainer`` with only minimal changes to a standard PyTorch
 #   training loop.
-# * Learned how to save and load distributed checkpoints for model
+# - Learned how to save and load distributed checkpoints for model
 #   recovery.
-# * Learned how to scale to multi-node clusters by changing
+# - Learned how to scale to multi-node clusters by changing
 #   ``ScalingConfig`` and ``RunConfig``.
-# * Learned how heterogeneous clusters let you run data preprocessing
+# - Learned how heterogeneous clusters let you run data preprocessing
 #   on CPU nodes and training on GPU nodes for cost and performance
 #   optimization.
-# * Learned about Ray Train's **fault tolerance** mechanisms for
+# - Learned about Ray Train's **fault tolerance** mechanisms for
 #   production training jobs.
-# * Monitored training with the Ray dashboard.
+# - Monitored training with the Ray dashboard.
 #
 
 ###############################################################################
 # Further reading
 # ---------------
 #
-# * `Ray Train documentation <https://docs.ray.io/en/latest/train/train.html>`__
-# * `Ray Data for training <https://docs.ray.io/en/latest/train/user-guides/data-loading-preprocessing.html>`__
-# * `PyTorch DistributedDataParallel <https://pytorch.org/docs/stable/notes/ddp.html>`__
-# * `Ray Train fault tolerance <https://docs.ray.io/en/latest/train/user-guides/fault-tolerance.html>`__
-# * `Ray cluster setup <https://docs.ray.io/en/latest/cluster/getting-started.html>`__
+# - `Ray Train documentation <https://docs.ray.io/en/latest/train/train.html>`__
+# - `Ray Data for training <https://docs.ray.io/en/latest/train/user-guides/data-loading-preprocessing.html>`__
+# - `Saving and loading checkpoints <https://docs.ray.io/en/latest/train/user-guides/checkpoints.html>`__
+# - `PyTorch DistributedDataParallel <https://docs.pytorch.org/docs/stable/notes/ddp.html>`__
+# - `Ray Train fault tolerance <https://docs.ray.io/en/latest/train/user-guides/fault-tolerance.html>`__
+# - `Ray cluster setup <https://docs.ray.io/en/latest/cluster/getting-started.html>`__
