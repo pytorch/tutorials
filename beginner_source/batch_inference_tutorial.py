@@ -49,6 +49,7 @@ To install the dependencies, run ``pip install "ray[data]" torch torchvision``.
 import os
 
 import numpy as np
+import matplotlib.pyplot as plt
 from PIL import Image
 import ray
 import torch
@@ -91,8 +92,7 @@ print(ds.schema())
 sample_batch = ds.take_batch(5)
 first_img_array = sample_batch["image"][0]
 print(f"Image shape: {first_img_array.shape}")
-first_img = Image.fromarray(first_img_array)
-first_img.show()
+plt.imshow(first_img_array)
 
 ###############################################################################
 # Part 1: Batch predictions
