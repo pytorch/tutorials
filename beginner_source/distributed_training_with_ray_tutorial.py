@@ -592,7 +592,7 @@ print("\nTraining finished!")
 #
 # Ray Train automatically:
 #
-# * Launches workers across all available nodes.
+# * Launches workers across all available nodes, bringing up new nodes if needed in an autoscaling Ray cluster.
 # * Shards data across all workers.
 #
 # No changes to the training function are needed. The same
