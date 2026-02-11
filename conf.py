@@ -159,7 +159,6 @@ html_meta = {
 }
 
 
-
 # -- Sphinx-gallery configuration --------------------------------------------
 
 sphinx_gallery_conf = {
@@ -252,7 +251,7 @@ html_context = {
     "github_version": "main",
     "doc_path": ".",
     "library_links": theme_variables.get("library_links", []),
-    #"pytorch_project": "tutorials",
+    # "pytorch_project": "tutorials",
 }
 
 
