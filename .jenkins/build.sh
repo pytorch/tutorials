@@ -46,21 +46,9 @@ awsv2 configure set default.s3.multipart_threshold 5120MB
 
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 if [[ "${JOB_TYPE}" == "worker" ]]; then
-  # Step 1: Remove runnable code from tutorials that are not supposed to be run
-  python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
-  # Temp remove for mnist download issue. (Re-enabled for 1.8.1)
-  # python $DIR/remove_runnable_code.py beginner_source/fgsm_tutorial.py beginner_source/fgsm_tutorial.py || true
-  # python $DIR/remove_runnable_code.py intermediate_source/spatial_transformer_tutorial.py intermediate_source/spatial_transformer_tutorial.py || true
-  # Temp remove for 1.10 release.
-  # python $DIR/remove_runnable_code.py advanced_source/neural_style_tutorial.py advanced_source/neural_style_tutorial.py || true
-
-  # TODO: Fix bugs in these tutorials to make them runnable again
-  # python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py || true
-
-  # Remove runnable code from tensorboard_profiler_tutorial.py as it frequently crashes, see https://github.com/pytorch/pytorch/issues/74139
-  # python $DIR/remove_runnable_code.py intermediate_source/tensorboard_profiler_tutorial.py intermediate_source/tensorboard_profiler_tutorial.py || true
-
-  # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
+  # Step 1: Determine which tutorials this worker should execute.
+  # FILES_TO_RUN is read by conf.py to set sphinx_gallery's filename_pattern,
+  # so only the assigned tutorials have their code executed.
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
   FILES_TO_RUN=$(python .jenkins/get_files_to_run.py)
   echo "FILES_TO_RUN: " ${FILES_TO_RUN}
@@ -146,7 +134,7 @@ elif [[ "${JOB_TYPE}" == "manager" ]]; then
   done
 
   # Step 4: Copy all generated files into docs
-  rsync -av docs_with_plot/docs/ docs --exclude='**aws_distributed_training_tutorial*'
+  rsync -av docs_with_plot/docs/ docs
 
   # Step 5: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
   bash $DIR/remove_invisible_code_block_batch.sh docs
