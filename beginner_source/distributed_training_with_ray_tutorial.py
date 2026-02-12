@@ -27,7 +27,7 @@ using Ray Train and Ray Data for scalable, production-ready model training.
        * PyTorch v2.9+.
        * Ray Train (``ray[train]``) v2.52.1+.
        * ``tiktoken``, ``datasets``, and ``transformers`` (Hugging Face).
-       * One or more GPUs are recommended but not required.
+       * One or more GPUs are recommended but not required. This tutorial is tested on a ``g4dn.12xlarge`` instance, which has 4 NVIDIA T4 GPUs (16GB of memory per GPU).
 
 `Ray Train <https://docs.ray.io/en/latest/train/train.html>`__ is a
 scalable framework for distributed deep learning.
@@ -84,6 +84,7 @@ ray.data.DataContext.get_current().print_on_execution_start = False
 # dataset into a Ray Dataset, enabling distributed streaming and
 # preprocessing across all available nodes.
 
+ray.init(log_to_driver=False)  # Reduce verbosity.
 hf_ds = load_dataset("Salesforce/wikitext", "wikitext-103-raw-v1")
 train_ds = ray.data.from_huggingface(hf_ds["train"])
 val_ds = ray.data.from_huggingface(hf_ds["validation"])
@@ -233,10 +234,10 @@ for i, row in enumerate(tokenized_sample):
 #
 #    Execution plan: InputDataBuffer[Input]
 #        -> TaskPoolMapOperator[MapBatches(tokenize_and_chunk)]
-#        -> OutputSplitter[split(8, equal=True)]
+#        -> OutputSplitter[split(4, equal=True)]
 #
 # This tells you exactly how Ray Data will stream through tokenization
-# and split the data across 8 trainer workers.
+# and split the data across 4 trainer workers.
 #
 #
 # Define the transformer model
@@ -412,14 +413,14 @@ def train_func_per_worker(config: dict):
 # - ``scaling_config``: specifies the number of workers and whether to
 #   use GPUs.
 #
-# Setting ``num_workers=8`` launches 8 parallel workers, one per GPU. Ray
+# Setting ``num_workers=4`` launches 4 parallel workers, one per GPU. Ray
 # Train handles ``torch.distributed`` initialization, NCCL backend setup,
 # and ``DistributedDataParallel`` wrapping behind the scenes. In the logs,
 # you see each worker assigned a rank and device:
 #
 # .. code-block:: text
 #
-#    Started training worker group of size 8:
+#    Started training worker group of size 4:
 #
 #    * (ip=10.0.176.183, pid=25636) world_rank=0, local_rank=0, node_rank=0
 #    * (ip=10.0.176.183, pid=25637) world_rank=1, local_rank=1, node_rank=0
@@ -428,11 +429,11 @@ def train_func_per_worker(config: dict):
 #    Wrapping provided model in DistributedDataParallel.
 #
 # ``batch_size_per_worker`` is the number of sequences each worker
-# processes per gradient step. With 8 workers and a per-worker batch size
-# of 16, the **effective global batch size** is 8 × 16 = 128 sequences,
-# or 128 × 256 = 32,768 tokens per optimizer step.
+# processes per gradient step. With 4 workers and a per-worker batch size
+# of 16, the **effective global batch size** is 4 × 16 = 64 sequences,
+# or 64 × 256 = 4,096 tokens per optimizer step.
 
-NUM_WORKERS = 8  # One worker per GPU on this machine
+NUM_WORKERS = 4  # One worker per GPU on this machine
 NUM_EPOCHS = 5
 BATCH_SIZE_PER_WORKER = 16
 LR = 3e-4
@@ -509,14 +510,14 @@ print("\nTraining finished!")
 # Scaling to a multi-node cluster
 # -------------------------------
 #
-# The code above runs on a single 8-GPU machine. Scaling to a multi-node
+# The code above runs on a single 4-GPU machine. Scaling to a multi-node
 # cluster requires only two changes:
 #
 # 1. **Increase ``num_workers``** to match the total number of GPUs in the cluster.
 # 2. **Set a shared storage path** so that all nodes can access checkpoints.
 #
-# For example, to train on a cluster of 4 nodes with 8 GPUs each
-# (32 GPUs total):
+# For example, to train on a cluster of 4 nodes with 4 GPUs each
+# (16 GPUs total):
 #
 # .. code-block:: python
 #
@@ -525,7 +526,7 @@ print("\nTraining finished!")
 #        train_loop_config={...},
 #        datasets={"train": train_ds, "validation": val_ds},
 #        scaling_config=ScalingConfig(
-#            num_workers=32,  # 4 nodes x 8 GPUs
+#            num_workers=16,  # 4 nodes x 4 GPUs
 #            use_gpu=True,
 #        ),
 #        run_config=RunConfig(
@@ -640,7 +641,7 @@ print("\nTraining finished!")
 #   Hugging Face Transformers and PyTorch.
 # - Loaded and preprocessed the Wikitext-103 dataset using Ray Data
 #   with distributed streaming.
-# - Ran distributed training across 8 GPUs using Ray Train's
+# - Ran distributed training across 4 GPUs using Ray Train's
 #   ``TorchTrainer`` with only minimal changes to a standard PyTorch
 #   training loop.
 # - Learned how to save and load distributed checkpoints for model
