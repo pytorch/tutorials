@@ -231,7 +231,7 @@ html_theme_options = {
     ],
     "use_edit_page_button": True,
     "header_links_before_dropdown": 9,
-    "navbar_start": ["pytorch_version"],
+    "navbar_start": ["navbar-logo", "pytorch_version"],
     "navbar_center": "navbar-nav",
     "display_version": True,
     "pytorch_project": "tutorials",
