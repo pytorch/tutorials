@@ -84,7 +84,6 @@ ray.data.DataContext.get_current().print_on_execution_start = False
 # dataset into a Ray Dataset, enabling distributed streaming and
 # preprocessing across all available nodes.
 
-ray.init(log_to_driver=False)  # Reduce verbosity.
 hf_ds = load_dataset("Salesforce/wikitext", "wikitext-103-raw-v1")
 train_ds = ray.data.from_huggingface(hf_ds["train"])
 val_ds = ray.data.from_huggingface(hf_ds["validation"])
