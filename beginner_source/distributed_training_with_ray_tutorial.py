@@ -51,6 +51,8 @@ To install the dependencies, run ``pip install "ray[train]" torch tiktoken datas
 Then, import the required libraries:
 """
 
+import os
+import tempfile
 import time
 
 import numpy as np
@@ -288,7 +290,7 @@ del model  # Free memory before training
 #   ``DistributedDataParallel`` and moves it to the correct GPU.
 # - ``shard.iter_torch_batches(batch_size=...)`` returns an iterator
 #   of ``dict[str, torch.Tensor]`` batches, with tensors automatically placed on the worker's GPU. Setting ``prefetch_batches=2`` opportunistically fetches 2 batches ahead of the current batch.
-# - ``ray.train.report(metrics, checkpoint=...)`` reports metrics to the driver and optionally saves a checkpoint.
+# - ``ray.train.report(metrics, checkpoint=...)`` reports metrics to the driver and saves a checkpoint.
 
 
 def train_func_per_worker(config: dict):
@@ -371,7 +373,7 @@ def train_func_per_worker(config: dict):
         avg_val_loss = val_loss_sum / max(val_batches, 1)
         epoch_elapsed = time.perf_counter() - epoch_start
 
-        # --- Report metrics -------------------------------------------------
+        # --- Report metrics and save checkpoint ------------------------------
         metrics = {
             "train_loss": round(avg_train_loss, 4),
             "val_loss": round(avg_val_loss, 4),
@@ -380,10 +382,18 @@ def train_func_per_worker(config: dict):
             "epoch_tokens": train_tokens,
             "tokens_per_sec": round(train_tokens / max(train_elapsed, 1e-6), 2),
         }
-        ray.train.report(
-            metrics=metrics,
-            checkpoint=None,  # If we were checkpointing, we'd pass a Checkpoint here
-        )
+
+        with tempfile.TemporaryDirectory() as temp_checkpoint_dir:
+            torch.save(
+                {
+                    "epoch": epoch,
+                    "model_state_dict": model.module.state_dict(),
+                    "optimizer_state_dict": optimizer.state_dict(),
+                },
+                os.path.join(temp_checkpoint_dir, "checkpoint.pt"),
+            )
+            checkpoint = ray.train.Checkpoint.from_directory(temp_checkpoint_dir)
+            ray.train.report(metrics=metrics, checkpoint=checkpoint)
 
 
 
@@ -445,6 +455,10 @@ trainer = TorchTrainer(
         num_workers=NUM_WORKERS,
         use_gpu=True,
     ),
+    run_config=RunConfig(
+        name="gpt2-small-pretraining",
+        storage_path="/tmp/ray-train-checkpoints",
+    ),
 )
 
 result = trainer.fit()
@@ -455,8 +469,8 @@ result = trainer.fit()
 #
 # After training, the ``Result`` object contains the final metrics and
 # checkpoint. ``result.metrics`` comes from the last
-# ``ray.train.report()`` call. ``result.checkpoint`` is ``None`` here
-# because this tutorial doesn't save checkpoints.
+# ``ray.train.report()`` call. ``result.checkpoint`` contains the
+# checkpoint from the last ``ray.train.report()`` call.
 
 print("\nTraining finished!")
 
