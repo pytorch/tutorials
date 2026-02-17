@@ -104,7 +104,7 @@ print(input_image.size())
 ##################################################
 # nn.Flatten
 # ^^^^^^^^^^^^^^^^^^^^^^
-# We initialize the `nn.Flatten  <https://pytorch.org/docs/stable/generated/torch.nn.Flatten.html>`_
+# We initialize the `nn.Flatten  <https://docs.pytorch.org/docs/stable/generated/torch.nn.modules.flatten.Flatten.html>`_
 # layer to convert each 2D 28x28 image into a contiguous array of 784 pixel values (
 # the minibatch dimension (at dim=0) is maintained).
 
@@ -131,7 +131,7 @@ print(hidden1.size())
 # learn a wide variety of phenomena.
 #
 # In this model, we use `nn.ReLU <https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html>`_ between our
-# linear layers, but there's other activations to introduce non-linearity in your model.
+# linear layers, but there are other activations to introduce non-linearity in your model.
 
 print(f"Before ReLU: {hidden1}\n\n")
 hidden1 = nn.ReLU()(hidden1)
