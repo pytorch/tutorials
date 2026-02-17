@@ -97,7 +97,7 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: Good usage of `non_blocking` and `pin_memory()` in PyTorch
    :card_description: A guide on best practices to copy data from CPU to GPU.
-   :image: _static/img/pinmem.png
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/pinmem_nonblock.html
    :tags: Getting-Started
 
@@ -334,12 +334,14 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: Profiling PyTorch
    :card_description: Introduction to Holistic Trace Analysis
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: beginner/hta_intro_tutorial.html
    :tags: Profiling
 
 .. customcarditem::
    :header: Profiling PyTorch
    :card_description: Trace Diff using Holistic Trace Analysis
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: beginner/hta_trace_diff_tutorial.html
    :tags: Profiling
 
@@ -658,7 +660,7 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: Introduction to Distributed Pipeline Parallelism
    :card_description: Demonstrate how to implement pipeline parallelism using torch.distributed.pipelining
-   :image: _static/img/thumbnails/cropped/Introduction-to-Distributed-Pipeline-Parallelism.png
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/pipelining_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
@@ -686,7 +688,7 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: Introduction to Libuv TCPStore Backend
    :card_description: TCPStore now uses a new server backend for faster connection and better scalability.
-   :image: _static/img/thumbnails/cropped/Introduction-to-Libuv-Backend-TCPStore.png
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/TCPStore_libuv_backend.html
    :tags: Parallel-and-Distributed-Training
 
