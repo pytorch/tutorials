@@ -250,6 +250,3 @@ for data in rand_loader:
 # models on several GPUs. After each model finishes their job, DataParallel
 # collects and merges the results before returning it to you.
 #
-# For more information, please check out
-# https://pytorch.org/tutorials/beginner/former\_torchies/parallelism\_tutorial.html.
-#
