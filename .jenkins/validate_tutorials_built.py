@@ -23,7 +23,6 @@ NOT_RUN = [
     "intermediate_source/dqn_with_rnn_tutorial", #not working on 2.8 release reenable after 3514
     "intermediate_source/mnist_train_nas",  # used by ax_multiobjective_nas_tutorial.py
     "intermediate_source/torch_compile_conv_bn_fuser",
-    "intermediate_source/_torch_export_nightly_tutorial",  # does not work on release
     "advanced_source/usb_semisup_learn", # fails with CUDA OOM error, should try on a different worker
     "unstable_source/gpu_direct_storage", # requires specific filesystem + GPUDirect Storage to be set up
     "recipes_source/recipes/tensorboard_with_pytorch",
