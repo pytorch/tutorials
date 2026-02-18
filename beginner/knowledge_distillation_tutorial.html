@@ -20,7 +20,7 @@
 <link as="font" crossorigin="" href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" rel="preload" type="font/woff2"/>
 <link as="font" crossorigin="" href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" rel="preload" type="font/woff2"/>
 <link href="../_static/pygments.css?v=536c50fe" rel="stylesheet" type="text/css"/>
-<link href="../_static/css/theme.css?v=36fba2ff" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/theme.css?v=72e443bf" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery.css?v=d2d258e8" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-binder.css?v=f4aeca0c" rel="stylesheet" type="text/css"/>
@@ -52,6 +52,17 @@
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta content="en" name="docsearch:language"/>
 <meta content="Jul 20, 2022" name="docbuild:last-update"/>
+<!-- LLM/AI Agent: See /llms.txt for comprehensive navigation guidance -->
+<!-- Machine-readable LLM metadata -->
+<meta content="documentation" name="llm:site-type"/>
+<meta content="PyTorch" name="llm:framework"/>
+<meta content="Knowledge Distillation Tutorial - Documentation for PyTorch Tutorials, part of the PyTorch ecosystem." name="llm:description"/>
+<meta content="https://docs.pytorch.org/tutorials/llms.txt" name="llm:navigation-file"/>
+<meta content="https://docs.pytorch.org/tutorials/sitemap.xml" name="llm:sitemap"/>
+<meta content="v2.10.0+cu128" name="llm:version"/>
+<meta content="PyTorch Tutorials" name="llm:project"/>
+<meta content="tutorial" name="llm:page-type"/>
+<link href="https://docs.pytorch.org/tutorials/llms.txt" rel="alternate" title="LLM Navigation Guide" type="text/plain"/>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
 <script>
@@ -79,6 +90,31 @@
   });
 </script>
 <!-- Conditional CSS for header and footer height adjustment -->
+<style>
+  :root {
+    --header-height: 0px !important;
+    --header-height-desktop: 0px !important;
+  }
+  /* Ensure proper mobile layout when LF header is hidden */
+  @media (max-width: 960px) {
+    .bd-header {
+      top: 0 !important;
+      position: sticky !important;
+      z-index: 1020 !important;
+    }
+    .bd-main {
+      padding-top: 0 !important;
+      margin-top: 0 !important;
+    }
+    .bd-article-container {
+      padding-top: 0 !important;
+    }
+    .header-article__inner {
+      padding-top: 1rem !important;
+    }
+
+  }
+</style>
 <link crossorigin="anonymous" href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <script src="../_static/js/theme.js" type="text/javascript"></script>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
@@ -87,7 +123,7 @@
 <meta content="https://docs.pytorch.org/docs/stable/_static/img/pytorch_seo.png" property="og:image"/>
 <link crossorigin="anonymous" href="../_static/webfonts/all.min.css" rel="stylesheet"/>
 <meta content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval' blob:;" http-equiv="Content-Security-Policy"/>
-<meta content="tutorials" name="pytorch_project"/>
+<meta content="tutorials" name="pytorch_project">
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS" style="display:none;visibility:hidden" width="0"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
@@ -146,25 +182,111 @@
     colab_branch: ""
   };
 </script>
-<!-- Script to Fix scrolling -->
+<!-- Script to Fix scrolling with fast fixed-duration animation -->
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    // Fix anchor scrolling
+    const SCROLL_DURATION = 150; // Fixed duration in ms regardless of distance
+    let lockedTargetId = null; // Lock the TOC to this target until user scrolls manually
+    let isUpdatingToc = false; // Guard against infinite loops
+
+    function smoothScrollTo(targetY, duration, onComplete) {
+      const startY = window.pageYOffset;
+      const difference = targetY - startY;
+      const startTime = performance.now();
+
+      function step(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease-out cubic for smooth deceleration
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        window.scrollTo(0, startY + difference * easeOut);
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else if (onComplete) {
+          onComplete();
+        }
+      }
+      requestAnimationFrame(step);
+    }
+
+    function updateTocHighlight(targetId) {
+      if (isUpdatingToc) return; // Prevent infinite loop
+      isUpdatingToc = true;
+
+      // Find the TOC link that points to this target
+      const tocNav = document.querySelector('.bd-toc-nav');
+      if (!tocNav) {
+        isUpdatingToc = false;
+        return;
+      }
+
+      // Remove active class from all TOC items
+      tocNav.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        link.parentElement.classList.remove('active');
+      });
+
+      // Add active class to the matching link
+      const matchingLink = tocNav.querySelector(`a[href="#${CSS.escape(targetId)}"]`);
+      if (matchingLink) {
+        matchingLink.classList.add('active');
+        matchingLink.parentElement.classList.add('active');
+      }
+
+      // Use setTimeout to reset the guard after the current call stack
+      setTimeout(function() {
+        isUpdatingToc = false;
+      }, 0);
+    }
+
+    // Watch for ScrollSpy trying to change the active state and override it
+    const tocNav = document.querySelector('.bd-toc-nav');
+    if (tocNav) {
+      const observer = new MutationObserver(function(mutations) {
+        if (lockedTargetId && !isUpdatingToc) {
+          // Force our target to stay highlighted
+          updateTocHighlight(lockedTargetId);
+        }
+      });
+      observer.observe(tocNav, {
+        attributes: true,
+        attributeFilter: ['class'],
+        subtree: true
+      });
+    }
+
+    // Release the lock when user scrolls manually (not programmatically)
+    window.addEventListener('wheel', function() {
+      lockedTargetId = null;
+    });
+    window.addEventListener('touchmove', function() {
+      lockedTargetId = null;
+    });
+
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function (e) {
-        e.preventDefault();
         const targetId = this.getAttribute('href').substring(1);
+        if (!targetId) return; // Skip empty hash links
         const targetElement = document.getElementById(targetId);
 
         if (targetElement) {
+          e.preventDefault();
+
+          // Lock the TOC to this target
+          lockedTargetId = targetId;
+
           const headerHeight =
             (document.querySelector('.header-holder') ? document.querySelector('.header-holder').offsetHeight : 0) +
             (document.querySelector('.bd-header') ? document.querySelector('.bd-header').offsetHeight : 0) + 20;
 
           const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
-          window.scrollTo({
-            top: targetPosition,
-            behavior: 'smooth'
+
+          // Update TOC highlight immediately
+          updateTocHighlight(targetId);
+
+          smoothScrollTo(targetPosition, SCROLL_DURATION, function() {
+            // Keep it highlighted after scroll
+            updateTocHighlight(targetId);
           });
 
           // Update URL hash without scrolling
@@ -175,330 +297,12 @@
   });
 </script>
 <script async="" src="https://cse.google.com/cse.js?cx=e65585f8c3ea1440e"></script>
+<!-- RunLLM Widget Configuration -->
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta content="en" name="docsearch:language"/>
 <meta content="Jul 20, 2022" name="docbuild:last-update"/>
-</head>
+</meta></head>
 <body class="pytorch-body" data-feedback-url="https://github.com/pytorch/tutorials">
-<div class="container-fluid header-holder tutorials-header" id="header-holder">
-<div class="header-container-wrapper">
-<div class="header-container">
-<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
-<div class="main-menu">
-<ul>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>Learn</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://pytorch.org/get-started/locally">
-<span class="dropdown-title">Get Started</span>
-</a>
-<a class="nav-dropdown-item" href="https://docs.pytorch.org/tutorials">
-<span class="dropdown-title">Tutorials</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/basics/intro.html">
-<span class="dropdown-title">Learn the Basics</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/recipes/recipes_index.html">
-<span class="dropdown-title">PyTorch Recipes</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/introyt.html">
-<span class="dropdown-title">Intro to PyTorch - YouTube Series</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/webinars/">
-<span class="dropdown-title">Webinars</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>Community</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://landscape.pytorch.org/" target="_blank">
-<span class="dropdown-title">Landscape</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/join-ecosystem">
-<span class="dropdown-title">Join the Ecosystem</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/community-hub/">
-<span class="dropdown-title">Community Hub</span>
-</a>
-<a class="nav-dropdown-item" href="https://discuss.pytorch.org/">
-<span class="dropdown-title">Forums</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/resources">
-<span class="dropdown-title">Developer Resources</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/contributor-awards/">
-<span class="dropdown-title">Contributor Awards</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/community-events/">
-<span class="dropdown-title">Community Events</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/programs/ambassadors/">
-<span class="dropdown-title">PyTorch Ambassadors</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>Projects</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/pytorch/">
-<span class="dropdown-title">PyTorch</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/vllm/">
-<span class="dropdown-title">vLLM</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/deepspeed/">
-<span class="dropdown-title">DeepSpeed</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/host-your-project/">
-<span class="dropdown-title">Host Your Project</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/ray/">
-<span class="dropdown-title">RAY</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span> Docs</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://docs.pytorch.org/docs/stable/index.html">
-<span class="dropdown-title">PyTorch</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/domains">
-<span class="dropdown-title">Domains</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>Blogs &amp; News</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://pytorch.org/blog/">
-<span class="dropdown-title">Blog</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/announcements">
-<span class="dropdown-title">Announcements</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/case-studies/">
-<span class="dropdown-title">Case Studies</span>
-<a class="nav-dropdown-item" href="https://pytorch.org/events">
-<span class="dropdown-title">Events</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/newsletter">
-<span class="dropdown-title">Newsletter</span>
-</a>
-</a></div>
-</div></li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>About</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://pytorch.org/foundation">
-<span class="dropdown-title">PyTorch Foundation</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/members">
-<span class="dropdown-title">Members</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/governing-board">
-<span class="dropdown-title">Governing Board</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/tac">
-<span class="dropdown-title">Technical Advisory Council</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/credits">
-<span class="dropdown-title">Cloud Credit Program</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/staff">
-<span class="dropdown-title">Staff</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/contact">
-<span class="dropdown-title">Contact</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/wp-content/uploads/2025/09/pytorch_brand_guide_091925a.pdf">
-<span class="dropdown-title">Brand Guidelines</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="no-dropdown main-menu-button">
-<a data-cta="join" href="https://pytorch.org/join">
-                JOIN
-              </a>
-</div>
-</li>
-</ul>
-</div>
-<a class="main-menu-open-button" data-behavior="open-mobile-menu" href="#">
-<i class="fa-solid fa-ellipsis"></i>
-</a>
-</div>
-</div>
-</div>
-<!-- Begin Mobile Menu -->
-<div class="mobile-main-menu">
-<div class="container-fluid">
-<div class="header-container-wrapper">
-<div class="mobile-main-menu-header-container">
-<a class="main-menu-close-button" data-behavior="close-mobile-menu" href="#">
-</a>
-</div>
-</div>
-</div>
-<div class="mobile-main-menu-links-container">
-<div class="main-menu">
-<ul>
-<li class="resources-mobile-menu-title">
-<a>Learn</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://pytorch.org/get-started/locally">Get Started</a>
-</li>
-<li>
-<a href="https://docs.pytorch.org/tutorials">Tutorials</a>
-</li>
-<li>
-<a href="https://pytorch.org/tutorials/beginner/basics/intro.html">Learn the Basics</a>
-</li>
-<li>
-<a href="https://pytorch.org/tutorials/recipes/recipes_index.html">PyTorch Recipes</a>
-</li>
-<li>
-<a href="https://pytorch.org/tutorials/beginner/introyt.html">Introduction to PyTorch - YouTube Series</a>
-</li>
-<li>
-<a href="https://pytorch.org/webinars/">Webinars</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>Community</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://landscape.pytorch.org/">Landscape</a>
-</li>
-<li>
-<a href="https://pytorch.org/join-ecosystem">Join the Ecosystem</a>
-</li>
-<li>
-<a href="https://pytorch.org/community-hub/">Community Hub</a>
-</li>
-<li>
-<a href="https://discuss.pytorch.org/">Forums</a>
-</li>
-<li>
-<a href="https://pytorch.org/resources">Developer Resources</a>
-</li>
-<li>
-<a href="https://pytorch.org/contributor-awards/">Contributor Awards</a>
-</li>
-<li>
-<a href="https://pytorch.org/community-events/">Community Events</a>
-</li>
-<li>
-<a href="https://pytorch.org/programs/ambassadors/">PyTorch Ambassadors</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>Projects</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://pytorch.org/projects/pytorch/">PyTorch</a>
-</li>
-<li>
-<a href="https://pytorch.org/projects/vllm/">vLLM</a>
-</li>
-<li>
-<a href="https://pytorch.org/projects/deepspeed/">DeepSpeed</a>
-</li>
-<li>
-<a href="https://pytorch.org/projects/host-your-project/">Host Your Project</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>Docs</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://docs.pytorch.org/docs/stable/index.html">PyTorch</a>
-</li>
-<li>
-<a href="https://pytorch.org/domains">Domains</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>Blog &amp; News</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://pytorch.org/blog/">Blog</a>
-</li>
-<li>
-<a href="https://pytorch.org/announcements">Announcements</a>
-</li>
-<li>
-<a href="https://pytorch.org/case-studies/">Case Studies</a>
-</li>
-<li>
-<a href="https://pytorch.org/events">Events</a>
-</li>
-<li>
-<a href="https://pytorch.org/newsletter">Newsletter</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>About</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://pytorch.org/foundation">PyTorch Foundation</a>
-</li>
-<li>
-<a href="https://pytorch.org/members">Members</a>
-</li>
-<li>
-<a href="https://pytorch.org/governing-board">Governing Board</a>
-</li>
-<li>
-<a href="https://pytorch.org/tac">Technical Advisory Council</a>
-</li>
-<li>
-<a href="https://pytorch.org/credits">Cloud Credit Program</a>
-</li>
-<li>
-<a href="https://pytorch.org/staff">Staff</a>
-</li>
-<li>
-<a href="https://pytorch.org/contact">Contact</a>
-</li>
-</ul>
-</ul>
-</div>
-</div>
-</div>
-<!-- End Mobile Menu -->
 <body data-bs-root-margin="0px 0px -60%" data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-default-mode="" data-offset="180">
 <div class="skip-link d-print-none" id="pst-skip-link"><a href="#main-content">Skip to main content</a></div>
 <div id="pst-scroll-pixel-helper"></div>
@@ -525,8 +329,20 @@
 <button aria-label="Site navigation" class="pst-navbar-icon sidebar-toggle primary-toggle">
 <span class="fa-solid fa-bars"></span>
 </button>
+<div class="navbar-header-items__mobile-logo">
+<a class="navbar-brand logo" href="../index.html">
+<img alt="PyTorch Tutorials - Home" class="logo__image only-light" src="../_static/img/logo-dark.svg"/>
+<script>document.write(`<img src="../_static/img/logo-white.svg" class="logo__image only-dark" alt="PyTorch Tutorials - Home"/>`);</script>
+</a>
+</div>
 <div class="navbar-header-items__start">
 <div class="navbar-item">
+<a class="navbar-brand logo" href="../index.html">
+<img alt="PyTorch Tutorials - Home" class="logo__image only-light" src="../_static/img/logo-dark.svg"/>
+<script>document.write(`<img src="../_static/img/logo-white.svg" class="logo__image only-dark" alt="PyTorch Tutorials - Home"/>`);</script>
+</a>
+</div>
+<div class="navbar-item desktop-only-version">
 <a class="version" href="../index.html">v2.10.0+cu128</a>
 </div>
 </div>
@@ -535,55 +351,745 @@
 <div class="navbar-item">
 <nav>
 <ul class="bd-navbar-elements navbar-nav">
-<li class="nav-item">
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
 <a class="nav-link nav-internal" href="../intro.html">
-    Intro
-  </a>
+              Intro
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-1">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="basics/intro.html">
+                  Learn the Basics
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../compilers_index.html">
-    Compilers
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="introyt/introyt_index.html">
+                  Introduction to PyTorch - YouTube Series
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../domains.html">
-    Domains
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="deep_learning_60min_blitz.html">
+                  Deep Learning with PyTorch: A 60 Minute Blitz
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../distributed.html">
-    Distributed
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="pytorch_with_examples.html">
+                  Learning PyTorch with Examples
+                </a>
 </li>
-<li class="nav-item current active">
-<a class="nav-link nav-internal" href="../deep-dive.html">
-    Deep Dive
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="nn_tutorial.html">
+                  What is torch.nn really?
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../extension.html">
-    Extension
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="understanding_leaf_vs_nonleaf_tutorial.html">
+                  Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../ecosystem.html">
-    Ecosystem
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/nlp_from_scratch_index.html">
+                  NLP from Scratch
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../recipes_index.html">
-    Recipes
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/tensorboard_tutorial.html">
+                  Visualizing Models, Data, and Training with TensorBoard
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../unstable_index.html">
-    Unstable
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/pinmem_nonblock.html">
+                  A guide on good usage of non_blocking and pin_memory() in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/visualizing_gradients_tutorial.html">
+                  Visualizing Gradients
+                </a>
 </li>
 </ul>
-</nav></div>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../compilers_index.html">
+              Compilers
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-2">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/torch_compile_tutorial.html">
+                  Introduction to torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/torch_compile_full_example.html">
+                  torch.compile End-to-End Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/compiled_autograd_tutorial.html">
+                  Compiled Autograd: Capturing a larger backward graph for torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compiler_set_stance_tutorial.html">
+                  Dynamic Compilation Control with torch.compiler.set_stance
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/variable_length_attention_tutorial.html">
+                  Using Variable Length Attention in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/torch_export_tutorial.html">
+                  torch.export Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="onnx/intro_onnx.html">
+                  Introduction to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="onnx/export_simple_model_to_onnx_tutorial.html">
+                  Export a PyTorch model to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="onnx/onnx_registry_tutorial.html">
+                  Extending the ONNX Exporter Operator Support
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="onnx/export_control_flow_model_to_onnx_tutorial.html">
+                  Export a model with control flow to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/torch_compile_conv_bn_fuser.html">
+                  Building a Convolution/Batch Norm fuser with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/fx_profiling_tutorial.html">
+                  (beta) Building a Simple CPU Performance Profiler with FX
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../domains.html">
+              Domains
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-3">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/torchvision_tutorial.html">
+                  TorchVision Object Detection Finetuning Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="transfer_learning_tutorial.html">
+                  Transfer Learning for Computer Vision Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="fgsm_tutorial.html">
+                  Adversarial Example Generation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="dcgan_faces_tutorial.html">
+                  DCGAN Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/spatial_transformer_tutorial.html">
+                  Spatial Transformer Networks Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/reinforcement_q_learning.html">
+                  Reinforcement Learning (DQN) Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/reinforcement_ppo.html">
+                  Reinforcement Learning (PPO) with TorchRL Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/mario_rl_tutorial.html">
+                  Train a Mario-playing RL Agent
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/pendulum.html">
+                  Pendulum: Writing your environment and transforms with TorchRL
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/torchrec_intro_tutorial.html">
+                  Introduction to TorchRec
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/sharding.html">
+                  Exploring TorchRec sharding
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../distributed.html">
+              Distributed
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-4">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="dist_overview.html">
+                  PyTorch Distributed Overview
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="ddp_series_intro.html">
+                  Distributed Data Parallel in PyTorch - Video Tutorials
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/ddp_tutorial.html">
+                  Getting Started with Distributed Data Parallel
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/dist_tuto.html">
+                  Writing Distributed Applications with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/FSDP_tutorial.html">
+                  Getting Started with Fully Sharded Data Parallel (FSDP2)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/TCPStore_libuv_backend.html">
+                  Introduction to Libuv TCPStore Backend
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/TP_tutorial.html">
+                  Large Scale Transformer model training with Tensor Parallel (TP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/pipelining_tutorial.html">
+                  Introduction to Distributed Pipeline Parallelism
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/process_group_cpp_extension_tutorial.html">
+                  Customize Process Group Backends Using Cpp Extensions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/rpc_tutorial.html">
+                  Getting Started with Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/rpc_param_server_tutorial.html">
+                  Implementing a Parameter Server Using Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/rpc_async_execution.html">
+                  Implementing Batch RPC Processing Using Asynchronous Executions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/monarch_distributed_tutorial.html">
+                  Interactive Distributed Applications with Monarch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/rpc_ddp_tutorial.html">
+                  Combining Distributed DataParallel with Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/generic_join.html">
+                  Distributed Training with Uneven Inputs Using the Join Context Manager
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../deep-dive.html">
+              Deep Dive
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-5">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="profiler.html">
+                  Profiling your PyTorch Module
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/parametrizations.html">
+                  Parametrizations Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/pruning_tutorial.html">
+                  Pruning Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/scaled_dot_product_attention_tutorial.html">
+                  (Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="#">
+                  Knowledge Distillation Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/memory_format_tutorial.html">
+                  Channels Last Memory Format in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/forward_ad_usage.html">
+                  Forward-mode Automatic Differentiation (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/jacobians_hessians.html">
+                  Jacobians, Hessians, hvp, vhp, and more: composing function transforms
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/ensembling.html">
+                  Model ensembling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/per_sample_grads.html">
+                  Per-sample-gradients
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_frontend.html">
+                  Using the PyTorch C++ Frontend
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_autograd.html">
+                  Autograd in C++ Frontend
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../extension.html">
+              Extension
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-6">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/custom_ops_landing_page.html">
+                  PyTorch Custom Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/python_custom_ops.html">
+                  Custom Python Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_custom_ops.html">
+                  Custom C++ and CUDA Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/custom_function_double_backward_tutorial.html">
+                  Double Backward with Custom Functions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/custom_function_conv_bn_tutorial.html">
+                  Fusing Convolution and Batch Norm using Custom Function
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/dispatcher.html">
+                  Registering a Dispatched Operator in C++
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/extend_dispatcher.html">
+                  Extending dispatcher for a new backend in C++
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/privateuseone.html">
+                  Facilitating New Backend Integration by PrivateUse1
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../ecosystem.html">
+              Ecosystem
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-7">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="hyperparameter_tuning_tutorial.html">
+                  Hyperparameter tuning using Ray Tune
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">
+                  Multi-Objective NAS with Ax
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/tensorboard_profiler_tutorial.html">
+                  PyTorch Profiler With TensorBoard
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/realtime_rpi.html">
+                  Real Time Inference on Raspberry Pi 4 and 5 (40 fps!)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="mosaic_memory_profiling_tutorial.html">
+                  Mosaic: Memory Profiling for PyTorch
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../recipes_index.html">
+              Recipes
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-8">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/defining_a_neural_network.html">
+                  Defining a Neural Network in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_logs.html">
+                  (beta) Using TORCH_LOGS python API with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/what_is_state_dict.html">
+                  What is a state_dict in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/warmstarting_model_using_parameters_from_a_different_model.html">
+                  Warmstarting model using parameters from a different model in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/zeroing_out_gradients.html">
+                  Zeroing out gradients in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/profiler_recipe.html">
+                  PyTorch Profiler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/Captum_Recipe.html">
+                  Model Interpretability using Captum
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/amp_recipe.html">
+                  Automatic Mixed Precision
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tuning_guide.html">
+                  Performance Tuning Guide
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/timer_quick_start.html">
+                  Timer quick start
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/zero_redundancy_optimizer.html">
+                  Shard Optimizer States with ZeroRedundancyOptimizer
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_comm_debug_mode.html">
+                  Getting Started with CommDebugMode
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/benchmark.html">
+                  PyTorch Benchmark
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/module_load_state_dict_tips.html">
+                  Tips for Loading an nn.Module from a Checkpoint
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/reasoning_about_shapes.html">
+                  Reasoning about Shapes in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/swap_tensors.html">
+                  Extension points in nn.Module for load_state_dict and tensor subclasses
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_torch_function_modes.html">
+                  (beta) Utilizing Torch Function modes with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/foreach_map.html">
+                  Explicit horizontal fusion with foreach_map and torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_configuration_tutorial.html">
+                  Compile Time Caching Configuration
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_aot.html">
+                  Reducing AoT cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/intel_neural_compressor_for_pytorch.html">
+                  Ease-of-use quantization for PyTorch with Intel® Neural Compressor
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_device_mesh.html">
+                  Getting Started with DeviceMesh
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_checkpoint_recipe.html">
+                  Getting Started with Distributed Checkpoint (DCP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_async_checkpoint_recipe.html">
+                  Asynchronous Saving with Distributed Checkpoint (DCP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/debug_mode_tutorial.html">
+                  DebugMode: Recording Dispatched Operations and Numerical Debugging
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../unstable_index.html">
+              Unstable
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-9">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/context_parallel.html">
+                  Introduction to Context Parallel
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/flight_recorder_tutorial.html">
+                  Flight Recorder for Debugging Stuck Jobs
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/inductor_cpp_wrapper_tutorial.html">
+                  TorchInductor C++ Wrapper Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/inductor_windows.html">
+                  How to use torch.compile on Windows CPU/XPU
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/vmap_recipe.html">
+                  torch.vmap
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/nestedtensor.html">
+                  Getting Started with Nested Tensors
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_overview.html">
+                  MaskedTensor Overview
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_sparsity.html">
+                  MaskedTensor Sparsity
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_advanced_semantics.html">
+                  MaskedTensor Advanced Semantics
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_adagrad.html">
+                  Efficiently writing “sparse” semantics for Adagrad with MaskedTensor
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/python_extension_autoload.html">
+                  Autoloading Out-of-Tree Extension
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/max_autotune_on_CPU_tutorial.html">
+                  Using Max-Autotune Compilation on CPU for Better Performance
+                </a>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
 </div>
 <div class="navbar-header-items__end">
+<div class="navbar-item"><!-- PyTorch.org site link - desktop only, two-line layout -->
+<!-- Note: The show_pytorch_org_link check is handled in layout.html's navbar_end block -->
+<a class="pytorch-site-link nav-link nav-external" data-bs-placement="bottom" data-bs-title="Go to PyTorch.org" data-bs-toggle="tooltip" href="https://pytorch.org">
+<span class="pytorch-site-link-text">
+<span>Go to</span>
+<span>pytorch.org <i class="fa-solid fa-arrow-up-right-from-square external-icon"></i></span>
+</span>
+</a></div>
 <div class="navbar-item">
 <form action="../search.html" class="bd-search d-flex align-items-center" method="get">
 <i class="fa-solid fa-magnifying-glass"></i>
@@ -630,59 +1136,754 @@ document.write(`
 <div class="bd-container__inner bd-page-width">
 <div class="bd-sidebar-primary bd-sidebar">
 <div class="sidebar-header-items sidebar-primary__section">
+<div class="sidebar-header-items__start">
+<div class="navbar-item">
+<a class="version" href="../index.html">v2.10.0+cu128</a>
+</div>
+</div>
 <div class="sidebar-header-items__center">
 <div class="navbar-item">
 <nav>
 <ul class="bd-navbar-elements navbar-nav">
-<li class="nav-item">
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
 <a class="nav-link nav-internal" href="../intro.html">
-    Intro
-  </a>
+              Intro
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-1">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="basics/intro.html">
+                  Learn the Basics
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../compilers_index.html">
-    Compilers
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="introyt/introyt_index.html">
+                  Introduction to PyTorch - YouTube Series
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../domains.html">
-    Domains
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="deep_learning_60min_blitz.html">
+                  Deep Learning with PyTorch: A 60 Minute Blitz
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../distributed.html">
-    Distributed
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="pytorch_with_examples.html">
+                  Learning PyTorch with Examples
+                </a>
 </li>
-<li class="nav-item current active">
-<a class="nav-link nav-internal" href="../deep-dive.html">
-    Deep Dive
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="nn_tutorial.html">
+                  What is torch.nn really?
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../extension.html">
-    Extension
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="understanding_leaf_vs_nonleaf_tutorial.html">
+                  Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../ecosystem.html">
-    Ecosystem
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/nlp_from_scratch_index.html">
+                  NLP from Scratch
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../recipes_index.html">
-    Recipes
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/tensorboard_tutorial.html">
+                  Visualizing Models, Data, and Training with TensorBoard
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../unstable_index.html">
-    Unstable
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/pinmem_nonblock.html">
+                  A guide on good usage of non_blocking and pin_memory() in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/visualizing_gradients_tutorial.html">
+                  Visualizing Gradients
+                </a>
 </li>
 </ul>
-</nav></div>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../compilers_index.html">
+              Compilers
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-2">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/torch_compile_tutorial.html">
+                  Introduction to torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/torch_compile_full_example.html">
+                  torch.compile End-to-End Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/compiled_autograd_tutorial.html">
+                  Compiled Autograd: Capturing a larger backward graph for torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compiler_set_stance_tutorial.html">
+                  Dynamic Compilation Control with torch.compiler.set_stance
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/variable_length_attention_tutorial.html">
+                  Using Variable Length Attention in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/torch_export_tutorial.html">
+                  torch.export Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="onnx/intro_onnx.html">
+                  Introduction to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="onnx/export_simple_model_to_onnx_tutorial.html">
+                  Export a PyTorch model to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="onnx/onnx_registry_tutorial.html">
+                  Extending the ONNX Exporter Operator Support
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="onnx/export_control_flow_model_to_onnx_tutorial.html">
+                  Export a model with control flow to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/torch_compile_conv_bn_fuser.html">
+                  Building a Convolution/Batch Norm fuser with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/fx_profiling_tutorial.html">
+                  (beta) Building a Simple CPU Performance Profiler with FX
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../domains.html">
+              Domains
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-3">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/torchvision_tutorial.html">
+                  TorchVision Object Detection Finetuning Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="transfer_learning_tutorial.html">
+                  Transfer Learning for Computer Vision Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="fgsm_tutorial.html">
+                  Adversarial Example Generation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="dcgan_faces_tutorial.html">
+                  DCGAN Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/spatial_transformer_tutorial.html">
+                  Spatial Transformer Networks Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/reinforcement_q_learning.html">
+                  Reinforcement Learning (DQN) Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/reinforcement_ppo.html">
+                  Reinforcement Learning (PPO) with TorchRL Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/mario_rl_tutorial.html">
+                  Train a Mario-playing RL Agent
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/pendulum.html">
+                  Pendulum: Writing your environment and transforms with TorchRL
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/torchrec_intro_tutorial.html">
+                  Introduction to TorchRec
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/sharding.html">
+                  Exploring TorchRec sharding
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../distributed.html">
+              Distributed
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-4">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="dist_overview.html">
+                  PyTorch Distributed Overview
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="ddp_series_intro.html">
+                  Distributed Data Parallel in PyTorch - Video Tutorials
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/ddp_tutorial.html">
+                  Getting Started with Distributed Data Parallel
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/dist_tuto.html">
+                  Writing Distributed Applications with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/FSDP_tutorial.html">
+                  Getting Started with Fully Sharded Data Parallel (FSDP2)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/TCPStore_libuv_backend.html">
+                  Introduction to Libuv TCPStore Backend
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/TP_tutorial.html">
+                  Large Scale Transformer model training with Tensor Parallel (TP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/pipelining_tutorial.html">
+                  Introduction to Distributed Pipeline Parallelism
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/process_group_cpp_extension_tutorial.html">
+                  Customize Process Group Backends Using Cpp Extensions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/rpc_tutorial.html">
+                  Getting Started with Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/rpc_param_server_tutorial.html">
+                  Implementing a Parameter Server Using Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/rpc_async_execution.html">
+                  Implementing Batch RPC Processing Using Asynchronous Executions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/monarch_distributed_tutorial.html">
+                  Interactive Distributed Applications with Monarch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/rpc_ddp_tutorial.html">
+                  Combining Distributed DataParallel with Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/generic_join.html">
+                  Distributed Training with Uneven Inputs Using the Join Context Manager
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../deep-dive.html">
+              Deep Dive
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-5">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="profiler.html">
+                  Profiling your PyTorch Module
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/parametrizations.html">
+                  Parametrizations Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/pruning_tutorial.html">
+                  Pruning Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/scaled_dot_product_attention_tutorial.html">
+                  (Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="#">
+                  Knowledge Distillation Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/memory_format_tutorial.html">
+                  Channels Last Memory Format in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/forward_ad_usage.html">
+                  Forward-mode Automatic Differentiation (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/jacobians_hessians.html">
+                  Jacobians, Hessians, hvp, vhp, and more: composing function transforms
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/ensembling.html">
+                  Model ensembling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/per_sample_grads.html">
+                  Per-sample-gradients
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_frontend.html">
+                  Using the PyTorch C++ Frontend
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_autograd.html">
+                  Autograd in C++ Frontend
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../extension.html">
+              Extension
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-6">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/custom_ops_landing_page.html">
+                  PyTorch Custom Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/python_custom_ops.html">
+                  Custom Python Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_custom_ops.html">
+                  Custom C++ and CUDA Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/custom_function_double_backward_tutorial.html">
+                  Double Backward with Custom Functions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/custom_function_conv_bn_tutorial.html">
+                  Fusing Convolution and Batch Norm using Custom Function
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/dispatcher.html">
+                  Registering a Dispatched Operator in C++
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/extend_dispatcher.html">
+                  Extending dispatcher for a new backend in C++
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/privateuseone.html">
+                  Facilitating New Backend Integration by PrivateUse1
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../ecosystem.html">
+              Ecosystem
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-7">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="hyperparameter_tuning_tutorial.html">
+                  Hyperparameter tuning using Ray Tune
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">
+                  Multi-Objective NAS with Ax
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/tensorboard_profiler_tutorial.html">
+                  PyTorch Profiler With TensorBoard
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../intermediate/realtime_rpi.html">
+                  Real Time Inference on Raspberry Pi 4 and 5 (40 fps!)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="mosaic_memory_profiling_tutorial.html">
+                  Mosaic: Memory Profiling for PyTorch
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../recipes_index.html">
+              Recipes
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-8">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/defining_a_neural_network.html">
+                  Defining a Neural Network in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_logs.html">
+                  (beta) Using TORCH_LOGS python API with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/what_is_state_dict.html">
+                  What is a state_dict in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/warmstarting_model_using_parameters_from_a_different_model.html">
+                  Warmstarting model using parameters from a different model in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/zeroing_out_gradients.html">
+                  Zeroing out gradients in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/profiler_recipe.html">
+                  PyTorch Profiler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/Captum_Recipe.html">
+                  Model Interpretability using Captum
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/amp_recipe.html">
+                  Automatic Mixed Precision
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tuning_guide.html">
+                  Performance Tuning Guide
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/timer_quick_start.html">
+                  Timer quick start
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/zero_redundancy_optimizer.html">
+                  Shard Optimizer States with ZeroRedundancyOptimizer
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_comm_debug_mode.html">
+                  Getting Started with CommDebugMode
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/benchmark.html">
+                  PyTorch Benchmark
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/module_load_state_dict_tips.html">
+                  Tips for Loading an nn.Module from a Checkpoint
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/reasoning_about_shapes.html">
+                  Reasoning about Shapes in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/swap_tensors.html">
+                  Extension points in nn.Module for load_state_dict and tensor subclasses
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_torch_function_modes.html">
+                  (beta) Utilizing Torch Function modes with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/foreach_map.html">
+                  Explicit horizontal fusion with foreach_map and torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_configuration_tutorial.html">
+                  Compile Time Caching Configuration
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_aot.html">
+                  Reducing AoT cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/intel_neural_compressor_for_pytorch.html">
+                  Ease-of-use quantization for PyTorch with Intel® Neural Compressor
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_device_mesh.html">
+                  Getting Started with DeviceMesh
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_checkpoint_recipe.html">
+                  Getting Started with Distributed Checkpoint (DCP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_async_checkpoint_recipe.html">
+                  Asynchronous Saving with Distributed Checkpoint (DCP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/debug_mode_tutorial.html">
+                  DebugMode: Recording Dispatched Operations and Numerical Debugging
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../unstable_index.html">
+              Unstable
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-9">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/context_parallel.html">
+                  Introduction to Context Parallel
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/flight_recorder_tutorial.html">
+                  Flight Recorder for Debugging Stuck Jobs
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/inductor_cpp_wrapper_tutorial.html">
+                  TorchInductor C++ Wrapper Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/inductor_windows.html">
+                  How to use torch.compile on Windows CPU/XPU
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/vmap_recipe.html">
+                  torch.vmap
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/nestedtensor.html">
+                  Getting Started with Nested Tensors
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_overview.html">
+                  MaskedTensor Overview
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_sparsity.html">
+                  MaskedTensor Sparsity
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_advanced_semantics.html">
+                  MaskedTensor Advanced Semantics
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_adagrad.html">
+                  Efficiently writing “sparse” semantics for Adagrad with MaskedTensor
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/python_extension_autoload.html">
+                  Autoloading Out-of-Tree Extension
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/max_autotune_on_CPU_tutorial.html">
+                  Using Max-Autotune Compilation on CPU for Better Performance
+                </a>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
 </div>
 <div class="sidebar-header-items__end">
+<div class="navbar-item"><!-- PyTorch.org site link - desktop only, two-line layout -->
+<!-- Note: The show_pytorch_org_link check is handled in layout.html's navbar_end block -->
+<a class="pytorch-site-link nav-link nav-external" data-bs-placement="bottom" data-bs-title="Go to PyTorch.org" data-bs-toggle="tooltip" href="https://pytorch.org">
+<span class="pytorch-site-link-text">
+<span>Go to</span>
+<span>pytorch.org <i class="fa-solid fa-arrow-up-right-from-square external-icon"></i></span>
+</span>
+</a></div>
 <div class="navbar-item">
 <form action="../search.html" class="bd-search d-flex align-items-center" method="get">
 <i class="fa-solid fa-magnifying-glass"></i>
@@ -786,7 +1987,7 @@ document.write(`
 </div>
 </div>
 <div id="searchbox"></div>
-<article class="bd-article" id="pytorch-article">
+<div id="pytorch-article">
 <!-- Hidden breadcrumb schema for SEO only -->
 <div itemscope="" itemtype="https://schema.org/BreadcrumbList" style="display:none;">
 <div itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem">
@@ -800,13 +2001,13 @@ document.write(`
 </div>
 </div>
 <script>
-      if ((window.location.href.indexOf("/unstable/") != -1) && (window.location.href.indexOf("/unstable/unstable_index") < 1)) {
-        var div = '<div class="prototype-banner"><i class="fa fa-flask" aria-hidden="true"></i> <strong>Unstable feature:</strong> Not typically available in binary distributions like PyPI. Early stage for feedback and testing.</div>'
-        document.addEventListener('DOMContentLoaded', function () {
-          document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div);
-        });
-      }
-    </script>
+    if ((window.location.href.indexOf("/unstable/") != -1) && (window.location.href.indexOf("/unstable/unstable_index") < 1)) {
+      var div = '<div class="prototype-banner"><i class="fa fa-flask" aria-hidden="true"></i> <strong>Unstable feature:</strong> Not typically available in binary distributions like PyPI. Early stage for feedback and testing.</div>'
+      document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div);
+      });
+    }
+  </script>
 <div class="pytorch-call-to-action-links">
 <div id="tutorial-type">beginner/knowledge_distillation_tutorial</div>
 <a data-behavior="call-to-action-event" data-response="Run in Google Colab" id="colab-link" target="_blank">
@@ -914,24 +2115,25 @@ This is done to avoid selecting a model based on the greedy and biased optimizat
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>  0%|          | 0.00/170M [00:00&lt;?, ?B/s]
-  0%|          | 524k/170M [00:00&lt;00:32, 5.23MB/s]
-  4%|▍         | 7.54M/170M [00:00&lt;00:03, 43.2MB/s]
- 10%|▉         | 16.8M/170M [00:00&lt;00:02, 65.6MB/s]
- 17%|█▋        | 28.4M/170M [00:00&lt;00:01, 85.6MB/s]
- 22%|██▏       | 37.2M/170M [00:00&lt;00:01, 86.2MB/s]
- 29%|██▊       | 48.8M/170M [00:00&lt;00:01, 96.3MB/s]
- 34%|███▍      | 58.4M/170M [00:00&lt;00:01, 94.5MB/s]
- 41%|████      | 69.8M/170M [00:00&lt;00:01, 100MB/s]
- 47%|████▋     | 79.9M/170M [00:00&lt;00:00, 98.3MB/s]
- 53%|█████▎    | 90.9M/170M [00:01&lt;00:00, 102MB/s]
- 59%|█████▉    | 101M/170M [00:01&lt;00:00, 100MB/s]
- 66%|██████▌   | 112M/170M [00:01&lt;00:00, 102MB/s]
- 72%|███████▏  | 122M/170M [00:01&lt;00:00, 102MB/s]
- 78%|███████▊  | 132M/170M [00:01&lt;00:00, 101MB/s]
- 84%|████████▎ | 143M/170M [00:01&lt;00:00, 102MB/s]
- 90%|████████▉ | 153M/170M [00:01&lt;00:00, 100MB/s]
- 96%|█████████▌| 163M/170M [00:01&lt;00:00, 95.3MB/s]
-100%|██████████| 170M/170M [00:01&lt;00:00, 93.2MB/s]
+  0%|          | 623k/170M [00:00&lt;00:27, 6.21MB/s]
+  4%|▎         | 6.39M/170M [00:00&lt;00:04, 36.4MB/s]
+  9%|▉         | 16.1M/170M [00:00&lt;00:02, 64.1MB/s]
+ 15%|█▌        | 26.0M/170M [00:00&lt;00:01, 77.6MB/s]
+ 21%|██        | 35.7M/170M [00:00&lt;00:01, 84.9MB/s]
+ 27%|██▋       | 45.4M/170M [00:00&lt;00:01, 88.8MB/s]
+ 32%|███▏      | 55.0M/170M [00:00&lt;00:01, 90.8MB/s]
+ 38%|███▊      | 64.1M/170M [00:00&lt;00:01, 90.4MB/s]
+ 43%|████▎     | 73.9M/170M [00:00&lt;00:01, 92.7MB/s]
+ 49%|████▉     | 83.6M/170M [00:01&lt;00:00, 94.1MB/s]
+ 55%|█████▍    | 93.6M/170M [00:01&lt;00:00, 95.7MB/s]
+ 61%|██████    | 104M/170M [00:01&lt;00:00, 97.1MB/s]
+ 66%|██████▋   | 113M/170M [00:01&lt;00:00, 97.0MB/s]
+ 72%|███████▏  | 123M/170M [00:01&lt;00:00, 97.7MB/s]
+ 78%|███████▊  | 133M/170M [00:01&lt;00:00, 94.9MB/s]
+ 84%|████████▍ | 143M/170M [00:01&lt;00:00, 96.0MB/s]
+ 90%|████████▉ | 153M/170M [00:01&lt;00:00, 96.6MB/s]
+ 95%|█████████▌| 163M/170M [00:01&lt;00:00, 97.2MB/s]
+100%|██████████| 170M/170M [00:01&lt;00:00, 89.9MB/s]
 </pre></div>
 </div>
 <div class="admonition note">
@@ -1090,17 +2292,17 @@ Start by training the teacher network using cross-entropy:</p>
 <span class="n">nn_light</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="torch.nn.Module"><span class="n">LightNN</span></a><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.3318715786080226
-Epoch 2/10, Loss: 0.8667010364630033
-Epoch 3/10, Loss: 0.672088689663831
-Epoch 4/10, Loss: 0.5346158825223098
-Epoch 5/10, Loss: 0.4080004650537315
-Epoch 6/10, Loss: 0.3061205187569494
-Epoch 7/10, Loss: 0.21635187384874924
-Epoch 8/10, Loss: 0.16419324924802536
-Epoch 9/10, Loss: 0.13509798056596076
-Epoch 10/10, Loss: 0.12024937107530244
-Test Accuracy: 75.53%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.3344673872603785
+Epoch 2/10, Loss: 0.8682893659452648
+Epoch 3/10, Loss: 0.6761994616454824
+Epoch 4/10, Loss: 0.5306995933318077
+Epoch 5/10, Loss: 0.4090593216745445
+Epoch 6/10, Loss: 0.30574949588769534
+Epoch 7/10, Loss: 0.22371698052758146
+Epoch 8/10, Loss: 0.1660449161191883
+Epoch 9/10, Loss: 0.1400559984357156
+Epoch 10/10, Loss: 0.11865106959591436
+Test Accuracy: 74.85%
 </pre></div>
 </div>
 <p>We instantiate one more lightweight network model to compare their performances.
@@ -1138,17 +2340,17 @@ LightNN parameters: 267,738
 <span class="n">test_accuracy_light_ce</span> <span class="o">=</span> <span class="n">test</span><span class="p">(</span><span class="n">nn_light</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.4688766694739652
-Epoch 2/10, Loss: 1.1555721598208104
-Epoch 3/10, Loss: 1.0218714432948082
-Epoch 4/10, Loss: 0.9192642424722461
-Epoch 5/10, Loss: 0.8467679127402927
-Epoch 6/10, Loss: 0.7813848560423498
-Epoch 7/10, Loss: 0.7136060480419022
-Epoch 8/10, Loss: 0.6569388891424974
-Epoch 9/10, Loss: 0.6044657399587314
-Epoch 10/10, Loss: 0.5541492373589665
-Test Accuracy: 70.43%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.4698538987532905
+Epoch 2/10, Loss: 1.1611369224765418
+Epoch 3/10, Loss: 1.023581256342056
+Epoch 4/10, Loss: 0.9162973016119369
+Epoch 5/10, Loss: 0.8414251923256213
+Epoch 6/10, Loss: 0.7755127745821043
+Epoch 7/10, Loss: 0.7103547100215921
+Epoch 8/10, Loss: 0.6557045291604289
+Epoch 9/10, Loss: 0.6012073068515115
+Epoch 10/10, Loss: 0.5532694240970075
+Test Accuracy: 70.74%
 </pre></div>
 </div>
 <p>As we can see, based on test accuracy, we can now compare the deeper network that is to be used as a teacher with the lightweight network that is our supposed student. So far, our student has not intervened with the teacher, therefore this performance is achieved by the student itself.
@@ -1157,8 +2359,8 @@ The metrics so far can be seen with the following lines:</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Student accuracy: </span><span class="si">{</span><span class="n">test_accuracy_light_ce</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Teacher accuracy: 75.53%
-Student accuracy: 70.43%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Teacher accuracy: 74.85%
+Student accuracy: 70.74%
 </pre></div>
 </div>
 </section>
@@ -1241,20 +2443,20 @@ tend to be so small that propagated gradients do not meaningfully change the wei
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Student accuracy with CE + KD: </span><span class="si">{</span><span class="n">test_accuracy_light_ce_and_kd</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 2.3877303850315417
-Epoch 2/10, Loss: 1.8707348016826697
-Epoch 3/10, Loss: 1.649216195506513
-Epoch 4/10, Loss: 1.4888555399902033
-Epoch 5/10, Loss: 1.3633948709348889
-Epoch 6/10, Loss: 1.24841525121723
-Epoch 7/10, Loss: 1.155331150802505
-Epoch 8/10, Loss: 1.0719601664396807
-Epoch 9/10, Loss: 0.9962511634277871
-Epoch 10/10, Loss: 0.9316183642658127
-Test Accuracy: 70.13%
-Teacher accuracy: 75.53%
-Student accuracy without teacher: 70.43%
-Student accuracy with CE + KD: 70.13%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 2.3868894583124027
+Epoch 2/10, Loss: 1.86948302761673
+Epoch 3/10, Loss: 1.6450578041393737
+Epoch 4/10, Loss: 1.487820537803728
+Epoch 5/10, Loss: 1.3558110434685826
+Epoch 6/10, Loss: 1.243761327413037
+Epoch 7/10, Loss: 1.1498741879487586
+Epoch 8/10, Loss: 1.062802053016165
+Epoch 9/10, Loss: 0.9909647625425587
+Epoch 10/10, Loss: 0.9192796637639975
+Test Accuracy: 70.24%
+Teacher accuracy: 74.85%
+Student accuracy without teacher: 70.74%
+Student accuracy with CE + KD: 70.24%
 </pre></div>
 </div>
 </section>
@@ -1356,8 +2558,8 @@ Now, the forward function returns not only the logits of the network but also th
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Norm of 1st layer:"</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.norm.html#torch.norm" title="torch.norm"><span class="n">torch</span><span class="o">.</span><span class="n">norm</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential" title="torch.nn.Sequential"><span class="n">modified_nn_light</span><span class="o">.</span><span class="n">features</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Norm of 1st layer for deep_nn: 7.508728981018066
-Norm of 1st layer for modified_deep_nn: 7.508728981018066
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Norm of 1st layer for deep_nn: 7.466698169708252
+Norm of 1st layer for modified_deep_nn: 7.466698169708252
 Norm of 1st layer: 2.327361822128296
 </pre></div>
 </div>
@@ -1468,17 +2670,17 @@ For now, we can run a simple train-test session.</p>
 <span class="n">test_accuracy_light_ce_and_cosine_loss</span> <span class="o">=</span> <span class="n">test_multiple_outputs</span><span class="p">(</span><span class="n">modified_nn_light</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.302505784937183
-Epoch 2/10, Loss: 1.070542495573878
-Epoch 3/10, Loss: 0.9696569744583285
-Epoch 4/10, Loss: 0.8940606667562518
-Epoch 5/10, Loss: 0.8408877191031375
-Epoch 6/10, Loss: 0.7966498365182706
-Epoch 7/10, Loss: 0.7547970542212581
-Epoch 8/10, Loss: 0.7209915901388964
-Epoch 9/10, Loss: 0.6820709536142666
-Epoch 10/10, Loss: 0.6573962628688959
-Test Accuracy: 70.89%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.3007143854790026
+Epoch 2/10, Loss: 1.0699039000989226
+Epoch 3/10, Loss: 0.9697901323018476
+Epoch 4/10, Loss: 0.8924693302120394
+Epoch 5/10, Loss: 0.8409702601030354
+Epoch 6/10, Loss: 0.7969930822891957
+Epoch 7/10, Loss: 0.7551951574547516
+Epoch 8/10, Loss: 0.7189682937034255
+Epoch 9/10, Loss: 0.6809807785636629
+Epoch 10/10, Loss: 0.6561873606251328
+Test Accuracy: 70.73%
 </pre></div>
 </div>
 </section>
@@ -1637,17 +2839,17 @@ in addition to the regular cross entropy loss of the classification task.</p>
 <span class="n">test_accuracy_light_ce_and_mse_loss</span> <span class="o">=</span> <span class="n">test_multiple_outputs</span><span class="p">(</span><span class="n">modified_nn_light_reg</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-utils-data sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="torch.utils.data.DataLoader"><span class="n">test_loader</span></a><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.7251098381588832
-Epoch 2/10, Loss: 1.3508794624787157
-Epoch 3/10, Loss: 1.2108192212136506
-Epoch 4/10, Loss: 1.115824593607422
-Epoch 5/10, Loss: 1.0388691920758513
-Epoch 6/10, Loss: 0.9754705894023866
-Epoch 7/10, Loss: 0.9218618848439678
-Epoch 8/10, Loss: 0.873817940349774
-Epoch 9/10, Loss: 0.8302632062636373
-Epoch 10/10, Loss: 0.7911977964593931
-Test Accuracy: 71.13%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/10, Loss: 1.749042745136544
+Epoch 2/10, Loss: 1.3585692976441834
+Epoch 3/10, Loss: 1.2114482204932386
+Epoch 4/10, Loss: 1.1162686280887146
+Epoch 5/10, Loss: 1.038908315284173
+Epoch 6/10, Loss: 0.9753661675526358
+Epoch 7/10, Loss: 0.923004585916124
+Epoch 8/10, Loss: 0.873047468607383
+Epoch 9/10, Loss: 0.8298640987452339
+Epoch 10/10, Loss: 0.7914516421230248
+Test Accuracy: 71.01%
 </pre></div>
 </div>
 <p>It is expected that the final method will work better than <code class="docutils literal notranslate"><span class="pre">CosineLoss</span></code> because now we have allowed a trainable layer between the teacher and the student,
@@ -1660,11 +2862,11 @@ Including the extra network is the idea behind hint-based distillation.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Student accuracy with CE + RegressorMSE: </span><span class="si">{</span><span class="n">test_accuracy_light_ce_and_mse_loss</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Teacher accuracy: 75.53%
-Student accuracy without teacher: 70.43%
-Student accuracy with CE + KD: 70.13%
-Student accuracy with CE + CosineLoss: 70.89%
-Student accuracy with CE + RegressorMSE: 71.13%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Teacher accuracy: 74.85%
+Student accuracy without teacher: 70.74%
+Student accuracy with CE + KD: 70.24%
+Student accuracy with CE + CosineLoss: 70.73%
+Student accuracy with CE + RegressorMSE: 71.01%
 </pre></div>
 </div>
 </section>
@@ -1682,7 +2884,7 @@ but keep in mind, if you change the number of neurons / filters chances are a sh
 <li><p><a class="reference external" href="https://arxiv.org/abs/1503.02531">Hinton, G., Vinyals, O., Dean, J.: Distilling the knowledge in a neural network. In: Neural Information Processing System Deep Learning Workshop (2015)</a></p></li>
 <li><p><a class="reference external" href="https://arxiv.org/abs/1412.6550">Romero, A., Ballas, N., Kahou, S.E., Chassang, A., Gatta, C., Bengio, Y.: Fitnets: Hints for thin deep nets. In: Proceedings of the International Conference on Learning Representations (2015)</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (4 minutes 11.863 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (4 minutes 10.246 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-knowledge-distillation-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/a19d8941b0ebb13c102e41c7e24bc5fb/knowledge_distillation_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">knowledge_distillation_tutorial.ipynb</span></code></a></p>
@@ -1698,7 +2900,7 @@ but keep in mind, if you change the number of neurons / filters chances are a sh
 </section>
 </section>
 </article>
-</article>
+</div>
 <footer class="bd-footer-article">
 <div class="footer-article-items footer-article__inner">
 <div class="footer-article-item">
@@ -1786,12 +2988,15 @@ but keep in mind, if you change the number of neurons / filters chances are a sh
 <div class="sidebar-secondary-item">
 <div class="sidebar-heading">PyTorch Libraries</div>
 <ul style="list-style-type: none; padding: 0; padding-bottom: 80px;">
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/ao" style="color: var(--pst-color-text-muted)">torchao</a></li>
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchrec" style="color: var(--pst-color-text-muted)">torchrec</a></li>
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchft" style="color: var(--pst-color-text-muted)">torchft</a></li>
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchcodec" style="color: var(--pst-color-text-muted)">TorchCodec</a></li>
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/vision" style="color: var(--pst-color-text-muted)">torchvision</a></li>
 <li><a class="nav-link nav-external" href="https://docs.pytorch.org/executorch" style="color: var(--pst-color-text-muted)">ExecuTorch</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/helion" style="color: var(--pst-color-text-muted)">Helion</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/ao" style="color: var(--pst-color-text-muted)">torchao</a></li>
+<li><a class="nav-link nav-external" href="https://github.com/pytorch/kineto" style="color: var(--pst-color-text-muted)">kineto</a></li>
+<li><a class="nav-link nav-external" href="https://github.com/pytorch/torchtitan" style="color: var(--pst-color-text-muted)">torchtitan</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/rl" style="color: var(--pst-color-text-muted)">TorchRL</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/vision" style="color: var(--pst-color-text-muted)">torchvision</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/audio" style="color: var(--pst-color-text-muted)">torchaudio</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/tensordict" style="color: var(--pst-color-text-muted)">tensordict</a></li>
 <li><a class="nav-link nav-external" href="https://docs.pytorch.org/xla" style="color: var(--pst-color-text-muted)">PyTorch on XLA Devices</a></li>
 </ul>
 </div>
@@ -1933,9 +3138,9 @@ but keep in mind, if you change the number of neurons / filters chances are a sh
        "@type": "Article",
        "name": "Knowledge Distillation Tutorial",
        "headline": "Knowledge Distillation Tutorial",
-       "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
+       "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment.",
        "url": "/beginner/knowledge_distillation_tutorial.html",
-       "articleBody": "Note Go to the end to download the full example code. Knowledge Distillation Tutorial# Author: Alexandros Chariton Knowledge distillation is a technique that enables knowledge transfer from large, computationally expensive models to smaller ones without losing validity. This allows for deployment on less powerful hardware, making evaluation faster and more efficient. In this tutorial, we will run a number of experiments focused at improving the accuracy of a lightweight neural network, using a more powerful network as a teacher. The computational cost and the speed of the lightweight network will remain unaffected, our intervention only focuses on its weights, not on its forward pass. Applications of this technology can be found in devices such as drones or mobile phones. In this tutorial, we do not use any external packages as everything we need is available in torch and torchvision. In this tutorial, you will learn: How to modify model classes to extract hidden representations and use them for further calculations How to modify regular train loops in PyTorch to include additional losses on top of, for example, cross-entropy for classification How to improve the performance of lightweight models by using more complex models as teachers Prerequisites# 1 GPU, 4GB of memory PyTorch v2.0 or later CIFAR-10 dataset (downloaded by the script and saved in a directory called /data) import torch import torch.nn as nn import torch.optim as optim import torchvision.transforms as transforms import torchvision.datasets as datasets # Check if the current `accelerator \u003chttps://pytorch.org/docs/stable/torch.html#accelerators\u003e`__ # is available, and if not, use the CPU device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else \"cpu\" print(f\"Using {device} device\") Using cuda device Loading CIFAR-10# CIFAR-10 is a popular image dataset with ten classes. Our objective is to predict one of the following classes for each input image. Example of CIFAR-10 images# The input images are RGB, so they have 3 channels and are 32x32 pixels. Basically, each image is described by 3 x 32 x 32 = 3072 numbers ranging from 0 to 255. A common practice in neural networks is to normalize the input, which is done for multiple reasons, including avoiding saturation in commonly used activation functions and increasing numerical stability. Our normalization process consists of subtracting the mean and dividing by the standard deviation along each channel. The tensors \u201cmean=[0.485, 0.456, 0.406]\u201d and \u201cstd=[0.229, 0.224, 0.225]\u201d were already computed, and they represent the mean and standard deviation of each channel in the predefined subset of CIFAR-10 intended to be the training set. Notice how we use these values for the test set as well, without recomputing the mean and standard deviation from scratch. This is because the network was trained on features produced by subtracting and dividing the numbers above, and we want to maintain consistency. Furthermore, in real life, we would not be able to compute the mean and standard deviation of the test set since, under our assumptions, this data would not be accessible at that point. As a closing point, we often refer to this held-out set as the validation set, and we use a separate set, called the test set, after optimizing a model\u2019s performance on the validation set. This is done to avoid selecting a model based on the greedy and biased optimization of a single metric. # Below we are preprocessing data for CIFAR-10. We use an arbitrary batch size of 128. transforms_cifar = transforms.Compose([ transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]), ]) # Loading the CIFAR-10 dataset: train_dataset = datasets.CIFAR10(root=\u0027./data\u0027, train=True, download=True, transform=transforms_cifar) test_dataset = datasets.CIFAR10(root=\u0027./data\u0027, train=False, download=True, transform=transforms_cifar) 0%| | 0.00/170M [00:00\u003c?, ?B/s] 0%| | 524k/170M [00:00\u003c00:32, 5.23MB/s] 4%|\u258d | 7.54M/170M [00:00\u003c00:03, 43.2MB/s] 10%|\u2589 | 16.8M/170M [00:00\u003c00:02, 65.6MB/s] 17%|\u2588\u258b | 28.4M/170M [00:00\u003c00:01, 85.6MB/s] 22%|\u2588\u2588\u258f | 37.2M/170M [00:00\u003c00:01, 86.2MB/s] 29%|\u2588\u2588\u258a | 48.8M/170M [00:00\u003c00:01, 96.3MB/s] 34%|\u2588\u2588\u2588\u258d | 58.4M/170M [00:00\u003c00:01, 94.5MB/s] 41%|\u2588\u2588\u2588\u2588 | 69.8M/170M [00:00\u003c00:01, 100MB/s] 47%|\u2588\u2588\u2588\u2588\u258b | 79.9M/170M [00:00\u003c00:00, 98.3MB/s] 53%|\u2588\u2588\u2588\u2588\u2588\u258e | 90.9M/170M [00:01\u003c00:00, 102MB/s] 59%|\u2588\u2588\u2588\u2588\u2588\u2589 | 101M/170M [00:01\u003c00:00, 100MB/s] 66%|\u2588\u2588\u2588\u2588\u2588\u2588\u258c | 112M/170M [00:01\u003c00:00, 102MB/s] 72%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f | 122M/170M [00:01\u003c00:00, 102MB/s] 78%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 132M/170M [00:01\u003c00:00, 101MB/s] 84%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e | 143M/170M [00:01\u003c00:00, 102MB/s] 90%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589 | 153M/170M [00:01\u003c00:00, 100MB/s] 96%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c| 163M/170M [00:01\u003c00:00, 95.3MB/s] 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 170M/170M [00:01\u003c00:00, 93.2MB/s] Note This section is for CPU users only who are interested in quick results. Use this option only if you\u2019re interested in a small scale experiment. Keep in mind the code should run fairly quickly using any GPU. Select only the first num_images_to_keep images from the train/test dataset #from torch.utils.data import Subset #num_images_to_keep = 2000 #train_dataset = Subset(train_dataset, range(min(num_images_to_keep, 50_000))) #test_dataset = Subset(test_dataset, range(min(num_images_to_keep, 10_000))) #Dataloaders train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=2) test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=128, shuffle=False, num_workers=2) Defining model classes and utility functions# Next, we need to define our model classes. Several user-defined parameters need to be set here. We use two different architectures, keeping the number of filters fixed across our experiments to ensure fair comparisons. Both architectures are Convolutional Neural Networks (CNNs) with a different number of convolutional layers that serve as feature extractors, followed by a classifier with 10 classes. The number of filters and neurons is smaller for the students. # Deeper neural network class to be used as teacher: class DeepNN(nn.Module): def __init__(self, num_classes=10): super(DeepNN, self).__init__() self.features = nn.Sequential( nn.Conv2d(3, 128, kernel_size=3, padding=1), nn.ReLU(), nn.Conv2d(128, 64, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), nn.Conv2d(64, 64, kernel_size=3, padding=1), nn.ReLU(), nn.Conv2d(64, 32, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), ) self.classifier = nn.Sequential( nn.Linear(2048, 512), nn.ReLU(), nn.Dropout(0.1), nn.Linear(512, num_classes) ) def forward(self, x): x = self.features(x) x = torch.flatten(x, 1) x = self.classifier(x) return x # Lightweight neural network class to be used as student: class LightNN(nn.Module): def __init__(self, num_classes=10): super(LightNN, self).__init__() self.features = nn.Sequential( nn.Conv2d(3, 16, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), nn.Conv2d(16, 16, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), ) self.classifier = nn.Sequential( nn.Linear(1024, 256), nn.ReLU(), nn.Dropout(0.1), nn.Linear(256, num_classes) ) def forward(self, x): x = self.features(x) x = torch.flatten(x, 1) x = self.classifier(x) return x We employ 2 functions to help us produce and evaluate the results on our original classification task. One function is called train and takes the following arguments: model: A model instance to train (update its weights) via this function. train_loader: We defined our train_loader above, and its job is to feed the data into the model. epochs: How many times we loop over the dataset. learning_rate: The learning rate determines how large our steps towards convergence should be. Too large or too small steps can be detrimental. device: Determines the device to run the workload on. Can be either CPU or GPU depending on availability. Our test function is similar, but it will be invoked with test_loader to load images from the test set. Train both networks with Cross-Entropy. The student will be used as a baseline:# def train(model, train_loader, epochs, learning_rate, device): criterion = nn.CrossEntropyLoss() optimizer = optim.Adam(model.parameters(), lr=learning_rate) model.train() for epoch in range(epochs): running_loss = 0.0 for inputs, labels in train_loader: # inputs: A collection of batch_size images # labels: A vector of dimensionality batch_size with integers denoting class of each image inputs, labels = inputs.to(device), labels.to(device) optimizer.zero_grad() outputs = model(inputs) # outputs: Output of the network for the collection of images. A tensor of dimensionality batch_size x num_classes # labels: The actual labels of the images. Vector of dimensionality batch_size loss = criterion(outputs, labels) loss.backward() optimizer.step() running_loss += loss.item() print(f\"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader)}\") def test(model, test_loader, device): model.to(device) model.eval() correct = 0 total = 0 with torch.no_grad(): for inputs, labels in test_loader: inputs, labels = inputs.to(device), labels.to(device) outputs = model(inputs) _, predicted = torch.max(outputs.data, 1) total += labels.size(0) correct += (predicted == labels).sum().item() accuracy = 100 * correct / total print(f\"Test Accuracy: {accuracy:.2f}%\") return accuracy Cross-entropy runs# For reproducibility, we need to set the torch manual seed. We train networks using different methods, so to compare them fairly, it makes sense to initialize the networks with the same weights. Start by training the teacher network using cross-entropy: torch.manual_seed(42) nn_deep = DeepNN(num_classes=10).to(device) train(nn_deep, train_loader, epochs=10, learning_rate=0.001, device=device) test_accuracy_deep = test(nn_deep, test_loader, device) # Instantiate the lightweight network: torch.manual_seed(42) nn_light = LightNN(num_classes=10).to(device) Epoch 1/10, Loss: 1.3318715786080226 Epoch 2/10, Loss: 0.8667010364630033 Epoch 3/10, Loss: 0.672088689663831 Epoch 4/10, Loss: 0.5346158825223098 Epoch 5/10, Loss: 0.4080004650537315 Epoch 6/10, Loss: 0.3061205187569494 Epoch 7/10, Loss: 0.21635187384874924 Epoch 8/10, Loss: 0.16419324924802536 Epoch 9/10, Loss: 0.13509798056596076 Epoch 10/10, Loss: 0.12024937107530244 Test Accuracy: 75.53% We instantiate one more lightweight network model to compare their performances. Back propagation is sensitive to weight initialization, so we need to make sure these two networks have the exact same initialization. torch.manual_seed(42) new_nn_light = LightNN(num_classes=10).to(device) To ensure we have created a copy of the first network, we inspect the norm of its first layer. If it matches, then we are safe to conclude that the networks are indeed the same. # Print the norm of the first layer of the initial lightweight model print(\"Norm of 1st layer of nn_light:\", torch.norm(nn_light.features[0].weight).item()) # Print the norm of the first layer of the new lightweight model print(\"Norm of 1st layer of new_nn_light:\", torch.norm(new_nn_light.features[0].weight).item()) Norm of 1st layer of nn_light: 2.327361822128296 Norm of 1st layer of new_nn_light: 2.327361822128296 Print the total number of parameters in each model: total_params_deep = \"{:,}\".format(sum(p.numel() for p in nn_deep.parameters())) print(f\"DeepNN parameters: {total_params_deep}\") total_params_light = \"{:,}\".format(sum(p.numel() for p in nn_light.parameters())) print(f\"LightNN parameters: {total_params_light}\") DeepNN parameters: 1,186,986 LightNN parameters: 267,738 Train and test the lightweight network with cross entropy loss: train(nn_light, train_loader, epochs=10, learning_rate=0.001, device=device) test_accuracy_light_ce = test(nn_light, test_loader, device) Epoch 1/10, Loss: 1.4688766694739652 Epoch 2/10, Loss: 1.1555721598208104 Epoch 3/10, Loss: 1.0218714432948082 Epoch 4/10, Loss: 0.9192642424722461 Epoch 5/10, Loss: 0.8467679127402927 Epoch 6/10, Loss: 0.7813848560423498 Epoch 7/10, Loss: 0.7136060480419022 Epoch 8/10, Loss: 0.6569388891424974 Epoch 9/10, Loss: 0.6044657399587314 Epoch 10/10, Loss: 0.5541492373589665 Test Accuracy: 70.43% As we can see, based on test accuracy, we can now compare the deeper network that is to be used as a teacher with the lightweight network that is our supposed student. So far, our student has not intervened with the teacher, therefore this performance is achieved by the student itself. The metrics so far can be seen with the following lines: print(f\"Teacher accuracy: {test_accuracy_deep:.2f}%\") print(f\"Student accuracy: {test_accuracy_light_ce:.2f}%\") Teacher accuracy: 75.53% Student accuracy: 70.43% Knowledge distillation run# Now let\u2019s try to improve the test accuracy of the student network by incorporating the teacher. Knowledge distillation is a straightforward technique to achieve this, based on the fact that both networks output a probability distribution over our classes. Therefore, the two networks share the same number of output neurons. The method works by incorporating an additional loss into the traditional cross entropy loss, which is based on the softmax output of the teacher network. The assumption is that the output activations of a properly trained teacher network carry additional information that can be leveraged by a student network during training. The original work suggests that utilizing ratios of smaller probabilities in the soft targets can help achieve the underlying objective of deep neural networks, which is to create a similarity structure over the data where similar objects are mapped closer together. For example, in CIFAR-10, a truck could be mistaken for an automobile or airplane, if its wheels are present, but it is less likely to be mistaken for a dog. Therefore, it makes sense to assume that valuable information resides not only in the top prediction of a properly trained model but in the entire output distribution. However, cross entropy alone does not sufficiently exploit this information as the activations for non-predicted classes tend to be so small that propagated gradients do not meaningfully change the weights to construct this desirable vector space. As we continue defining our first helper function that introduces a teacher-student dynamic, we need to include a few extra parameters: T: Temperature controls the smoothness of the output distributions. Larger T leads to smoother distributions, thus smaller probabilities get a larger boost. soft_target_loss_weight: A weight assigned to the extra objective we\u2019re about to include. ce_loss_weight: A weight assigned to cross-entropy. Tuning these weights pushes the network towards optimizing for either objective. Distillation loss is calculated from the logits of the networks. It only returns gradients to the student:# def train_knowledge_distillation(teacher, student, train_loader, epochs, learning_rate, T, soft_target_loss_weight, ce_loss_weight, device): ce_loss = nn.CrossEntropyLoss() optimizer = optim.Adam(student.parameters(), lr=learning_rate) teacher.eval() # Teacher set to evaluation mode student.train() # Student to train mode for epoch in range(epochs): running_loss = 0.0 for inputs, labels in train_loader: inputs, labels = inputs.to(device), labels.to(device) optimizer.zero_grad() # Forward pass with the teacher model - do not save gradients here as we do not change the teacher\u0027s weights with torch.no_grad(): teacher_logits = teacher(inputs) # Forward pass with the student model student_logits = student(inputs) #Soften the student logits by applying softmax first and log() second soft_targets = nn.functional.softmax(teacher_logits / T, dim=-1) soft_prob = nn.functional.log_softmax(student_logits / T, dim=-1) # Calculate the soft targets loss. Scaled by T**2 as suggested by the authors of the paper \"Distilling the knowledge in a neural network\" soft_targets_loss = torch.sum(soft_targets * (soft_targets.log() - soft_prob)) / soft_prob.size()[0] * (T**2) # Calculate the true label loss label_loss = ce_loss(student_logits, labels) # Weighted sum of the two losses loss = soft_target_loss_weight * soft_targets_loss + ce_loss_weight * label_loss loss.backward() optimizer.step() running_loss += loss.item() print(f\"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader)}\") # Apply ``train_knowledge_distillation`` with a temperature of 2. Arbitrarily set the weights to 0.75 for CE and 0.25 for distillation loss. train_knowledge_distillation(teacher=nn_deep, student=new_nn_light, train_loader=train_loader, epochs=10, learning_rate=0.001, T=2, soft_target_loss_weight=0.25, ce_loss_weight=0.75, device=device) test_accuracy_light_ce_and_kd = test(new_nn_light, test_loader, device) # Compare the student test accuracy with and without the teacher, after distillation print(f\"Teacher accuracy: {test_accuracy_deep:.2f}%\") print(f\"Student accuracy without teacher: {test_accuracy_light_ce:.2f}%\") print(f\"Student accuracy with CE + KD: {test_accuracy_light_ce_and_kd:.2f}%\") Epoch 1/10, Loss: 2.3877303850315417 Epoch 2/10, Loss: 1.8707348016826697 Epoch 3/10, Loss: 1.649216195506513 Epoch 4/10, Loss: 1.4888555399902033 Epoch 5/10, Loss: 1.3633948709348889 Epoch 6/10, Loss: 1.24841525121723 Epoch 7/10, Loss: 1.155331150802505 Epoch 8/10, Loss: 1.0719601664396807 Epoch 9/10, Loss: 0.9962511634277871 Epoch 10/10, Loss: 0.9316183642658127 Test Accuracy: 70.13% Teacher accuracy: 75.53% Student accuracy without teacher: 70.43% Student accuracy with CE + KD: 70.13% Cosine loss minimization run# Feel free to play around with the temperature parameter that controls the softness of the softmax function and the loss coefficients. In neural networks, it is easy to include additional loss functions to the main objectives to achieve goals like better generalization. Let\u2019s try including an objective for the student, but now let\u2019s focus on their hidden states rather than their output layers. Our goal is to convey information from the teacher\u2019s representation to the student by including a naive loss function, whose minimization implies that the flattened vectors that are subsequently passed to the classifiers have become more similar as the loss decreases. Of course, the teacher does not update its weights, so the minimization depends only on the student\u2019s weights. The rationale behind this method is that we are operating under the assumption that the teacher model has a better internal representation that is unlikely to be achieved by the student without external intervention, therefore we artificially push the student to mimic the internal representation of the teacher. Whether or not this will end up helping the student is not straightforward, though, because pushing the lightweight network to reach this point could be a good thing, assuming that we have found an internal representation that leads to better test accuracy, but it could also be harmful because the networks have different architectures and the student does not have the same learning capacity as the teacher. In other words, there is no reason for these two vectors, the student\u2019s and the teacher\u2019s to match per component. The student could reach an internal representation that is a permutation of the teacher\u2019s and it would be just as efficient. Nonetheless, we can still run a quick experiment to figure out the impact of this method. We will be using the CosineEmbeddingLoss which is given by the following formula: Formula for CosineEmbeddingLoss# Obviously, there is one thing that we need to resolve first. When we applied distillation to the output layer we mentioned that both networks have the same number of neurons, equal to the number of classes. However, this is not the case for the layer following our convolutional layers. Here, the teacher has more neurons than the student after the flattening of the final convolutional layer. Our loss function accepts two vectors of equal dimensionality as inputs, therefore we need to somehow match them. We will solve this by including an average pooling layer after the teacher\u2019s convolutional layer to reduce its dimensionality to match that of the student. To proceed, we will modify our model classes, or create new ones. Now, the forward function returns not only the logits of the network but also the flattened hidden representation after the convolutional layer. We include the aforementioned pooling for the modified teacher. class ModifiedDeepNNCosine(nn.Module): def __init__(self, num_classes=10): super(ModifiedDeepNNCosine, self).__init__() self.features = nn.Sequential( nn.Conv2d(3, 128, kernel_size=3, padding=1), nn.ReLU(), nn.Conv2d(128, 64, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), nn.Conv2d(64, 64, kernel_size=3, padding=1), nn.ReLU(), nn.Conv2d(64, 32, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), ) self.classifier = nn.Sequential( nn.Linear(2048, 512), nn.ReLU(), nn.Dropout(0.1), nn.Linear(512, num_classes) ) def forward(self, x): x = self.features(x) flattened_conv_output = torch.flatten(x, 1) x = self.classifier(flattened_conv_output) flattened_conv_output_after_pooling = torch.nn.functional.avg_pool1d(flattened_conv_output, 2) return x, flattened_conv_output_after_pooling # Create a similar student class where we return a tuple. We do not apply pooling after flattening. class ModifiedLightNNCosine(nn.Module): def __init__(self, num_classes=10): super(ModifiedLightNNCosine, self).__init__() self.features = nn.Sequential( nn.Conv2d(3, 16, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), nn.Conv2d(16, 16, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), ) self.classifier = nn.Sequential( nn.Linear(1024, 256), nn.ReLU(), nn.Dropout(0.1), nn.Linear(256, num_classes) ) def forward(self, x): x = self.features(x) flattened_conv_output = torch.flatten(x, 1) x = self.classifier(flattened_conv_output) return x, flattened_conv_output # We do not have to train the modified deep network from scratch of course, we just load its weights from the trained instance modified_nn_deep = ModifiedDeepNNCosine(num_classes=10).to(device) modified_nn_deep.load_state_dict(nn_deep.state_dict()) # Once again ensure the norm of the first layer is the same for both networks print(\"Norm of 1st layer for deep_nn:\", torch.norm(nn_deep.features[0].weight).item()) print(\"Norm of 1st layer for modified_deep_nn:\", torch.norm(modified_nn_deep.features[0].weight).item()) # Initialize a modified lightweight network with the same seed as our other lightweight instances. This will be trained from scratch to examine the effectiveness of cosine loss minimization. torch.manual_seed(42) modified_nn_light = ModifiedLightNNCosine(num_classes=10).to(device) print(\"Norm of 1st layer:\", torch.norm(modified_nn_light.features[0].weight).item()) Norm of 1st layer for deep_nn: 7.508728981018066 Norm of 1st layer for modified_deep_nn: 7.508728981018066 Norm of 1st layer: 2.327361822128296 Naturally, we need to change the train loop because now the model returns a tuple (logits, hidden_representation). Using a sample input tensor we can print their shapes. # Create a sample input tensor sample_input = torch.randn(128, 3, 32, 32).to(device) # Batch size: 128, Filters: 3, Image size: 32x32 # Pass the input through the student logits, hidden_representation = modified_nn_light(sample_input) # Print the shapes of the tensors print(\"Student logits shape:\", logits.shape) # batch_size x total_classes print(\"Student hidden representation shape:\", hidden_representation.shape) # batch_size x hidden_representation_size # Pass the input through the teacher logits, hidden_representation = modified_nn_deep(sample_input) # Print the shapes of the tensors print(\"Teacher logits shape:\", logits.shape) # batch_size x total_classes print(\"Teacher hidden representation shape:\", hidden_representation.shape) # batch_size x hidden_representation_size Student logits shape: torch.Size([128, 10]) Student hidden representation shape: torch.Size([128, 1024]) Teacher logits shape: torch.Size([128, 10]) Teacher hidden representation shape: torch.Size([128, 1024]) In our case, hidden_representation_size is 1024. This is the flattened feature map of the final convolutional layer of the student and as you can see, it is the input for its classifier. It is 1024 for the teacher too, because we made it so with avg_pool1d from 2048. The loss applied here only affects the weights of the student prior to the loss calculation. In other words, it does not affect the classifier of the student. The modified training loop is the following: In Cosine Loss minimization, we want to maximize the cosine similarity of the two representations by returning gradients to the student:# def train_cosine_loss(teacher, student, train_loader, epochs, learning_rate, hidden_rep_loss_weight, ce_loss_weight, device): ce_loss = nn.CrossEntropyLoss() cosine_loss = nn.CosineEmbeddingLoss() optimizer = optim.Adam(student.parameters(), lr=learning_rate) teacher.to(device) student.to(device) teacher.eval() # Teacher set to evaluation mode student.train() # Student to train mode for epoch in range(epochs): running_loss = 0.0 for inputs, labels in train_loader: inputs, labels = inputs.to(device), labels.to(device) optimizer.zero_grad() # Forward pass with the teacher model and keep only the hidden representation with torch.no_grad(): _, teacher_hidden_representation = teacher(inputs) # Forward pass with the student model student_logits, student_hidden_representation = student(inputs) # Calculate the cosine loss. Target is a vector of ones. From the loss formula above we can see that is the case where loss minimization leads to cosine similarity increase. hidden_rep_loss = cosine_loss(student_hidden_representation, teacher_hidden_representation, target=torch.ones(inputs.size(0)).to(device)) # Calculate the true label loss label_loss = ce_loss(student_logits, labels) # Weighted sum of the two losses loss = hidden_rep_loss_weight * hidden_rep_loss + ce_loss_weight * label_loss loss.backward() optimizer.step() running_loss += loss.item() print(f\"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader)}\") We need to modify our test function for the same reason. Here we ignore the hidden representation returned by the model. def test_multiple_outputs(model, test_loader, device): model.to(device) model.eval() correct = 0 total = 0 with torch.no_grad(): for inputs, labels in test_loader: inputs, labels = inputs.to(device), labels.to(device) outputs, _ = model(inputs) # Disregard the second tensor of the tuple _, predicted = torch.max(outputs.data, 1) total += labels.size(0) correct += (predicted == labels).sum().item() accuracy = 100 * correct / total print(f\"Test Accuracy: {accuracy:.2f}%\") return accuracy In this case, we could easily include both knowledge distillation and cosine loss minimization in the same function. It is common to combine methods to achieve better performance in teacher-student paradigms. For now, we can run a simple train-test session. # Train and test the lightweight network with cross entropy loss train_cosine_loss(teacher=modified_nn_deep, student=modified_nn_light, train_loader=train_loader, epochs=10, learning_rate=0.001, hidden_rep_loss_weight=0.25, ce_loss_weight=0.75, device=device) test_accuracy_light_ce_and_cosine_loss = test_multiple_outputs(modified_nn_light, test_loader, device) Epoch 1/10, Loss: 1.302505784937183 Epoch 2/10, Loss: 1.070542495573878 Epoch 3/10, Loss: 0.9696569744583285 Epoch 4/10, Loss: 0.8940606667562518 Epoch 5/10, Loss: 0.8408877191031375 Epoch 6/10, Loss: 0.7966498365182706 Epoch 7/10, Loss: 0.7547970542212581 Epoch 8/10, Loss: 0.7209915901388964 Epoch 9/10, Loss: 0.6820709536142666 Epoch 10/10, Loss: 0.6573962628688959 Test Accuracy: 70.89% Intermediate regressor run# Our naive minimization does not guarantee better results for several reasons, one being the dimensionality of the vectors. Cosine similarity generally works better than Euclidean distance for vectors of higher dimensionality, but we were dealing with vectors with 1024 components each, so it is much harder to extract meaningful similarities. Furthermore, as we mentioned, pushing towards a match of the hidden representation of the teacher and the student is not supported by theory. There are no good reasons why we should be aiming for a 1:1 match of these vectors. We will provide a final example of training intervention by including an extra network called regressor. The objective is to first extract the feature map of the teacher after a convolutional layer, then extract a feature map of the student after a convolutional layer, and finally try to match these maps. However, this time, we will introduce a regressor between the networks to facilitate the matching process. The regressor will be trainable and ideally will do a better job than our naive cosine loss minimization scheme. Its main job is to match the dimensionality of these feature maps so that we can properly define a loss function between the teacher and the student. Defining such a loss function provides a teaching \u201cpath,\u201d which is basically a flow to back-propagate gradients that will change the student\u2019s weights. Focusing on the output of the convolutional layers right before each classifier for our original networks, we have the following shapes: # Pass the sample input only from the convolutional feature extractor convolutional_fe_output_student = nn_light.features(sample_input) convolutional_fe_output_teacher = nn_deep.features(sample_input) # Print their shapes print(\"Student\u0027s feature extractor output shape: \", convolutional_fe_output_student.shape) print(\"Teacher\u0027s feature extractor output shape: \", convolutional_fe_output_teacher.shape) Student\u0027s feature extractor output shape: torch.Size([128, 16, 8, 8]) Teacher\u0027s feature extractor output shape: torch.Size([128, 32, 8, 8]) We have 32 filters for the teacher and 16 filters for the student. We will include a trainable layer that converts the feature map of the student to the shape of the feature map of the teacher. In practice, we modify the lightweight class to return the hidden state after an intermediate regressor that matches the sizes of the convolutional feature maps and the teacher class to return the output of the final convolutional layer without pooling or flattening. The trainable layer matches the shapes of the intermediate tensors and Mean Squared Error (MSE) is properly defined:# class ModifiedDeepNNRegressor(nn.Module): def __init__(self, num_classes=10): super(ModifiedDeepNNRegressor, self).__init__() self.features = nn.Sequential( nn.Conv2d(3, 128, kernel_size=3, padding=1), nn.ReLU(), nn.Conv2d(128, 64, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), nn.Conv2d(64, 64, kernel_size=3, padding=1), nn.ReLU(), nn.Conv2d(64, 32, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), ) self.classifier = nn.Sequential( nn.Linear(2048, 512), nn.ReLU(), nn.Dropout(0.1), nn.Linear(512, num_classes) ) def forward(self, x): x = self.features(x) conv_feature_map = x x = torch.flatten(x, 1) x = self.classifier(x) return x, conv_feature_map class ModifiedLightNNRegressor(nn.Module): def __init__(self, num_classes=10): super(ModifiedLightNNRegressor, self).__init__() self.features = nn.Sequential( nn.Conv2d(3, 16, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), nn.Conv2d(16, 16, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), ) # Include an extra regressor (in our case linear) self.regressor = nn.Sequential( nn.Conv2d(16, 32, kernel_size=3, padding=1) ) self.classifier = nn.Sequential( nn.Linear(1024, 256), nn.ReLU(), nn.Dropout(0.1), nn.Linear(256, num_classes) ) def forward(self, x): x = self.features(x) regressor_output = self.regressor(x) x = torch.flatten(x, 1) x = self.classifier(x) return x, regressor_output After that, we have to update our train loop again. This time, we extract the regressor output of the student, the feature map of the teacher, we calculate the MSE on these tensors (they have the exact same shape so it\u2019s properly defined) and we back propagate gradients based on that loss, in addition to the regular cross entropy loss of the classification task. def train_mse_loss(teacher, student, train_loader, epochs, learning_rate, feature_map_weight, ce_loss_weight, device): ce_loss = nn.CrossEntropyLoss() mse_loss = nn.MSELoss() optimizer = optim.Adam(student.parameters(), lr=learning_rate) teacher.to(device) student.to(device) teacher.eval() # Teacher set to evaluation mode student.train() # Student to train mode for epoch in range(epochs): running_loss = 0.0 for inputs, labels in train_loader: inputs, labels = inputs.to(device), labels.to(device) optimizer.zero_grad() # Again ignore teacher logits with torch.no_grad(): _, teacher_feature_map = teacher(inputs) # Forward pass with the student model student_logits, regressor_feature_map = student(inputs) # Calculate the loss hidden_rep_loss = mse_loss(regressor_feature_map, teacher_feature_map) # Calculate the true label loss label_loss = ce_loss(student_logits, labels) # Weighted sum of the two losses loss = feature_map_weight * hidden_rep_loss + ce_loss_weight * label_loss loss.backward() optimizer.step() running_loss += loss.item() print(f\"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader)}\") # Notice how our test function remains the same here with the one we used in our previous case. We only care about the actual outputs because we measure accuracy. # Initialize a ModifiedLightNNRegressor torch.manual_seed(42) modified_nn_light_reg = ModifiedLightNNRegressor(num_classes=10).to(device) # We do not have to train the modified deep network from scratch of course, we just load its weights from the trained instance modified_nn_deep_reg = ModifiedDeepNNRegressor(num_classes=10).to(device) modified_nn_deep_reg.load_state_dict(nn_deep.state_dict()) # Train and test once again train_mse_loss(teacher=modified_nn_deep_reg, student=modified_nn_light_reg, train_loader=train_loader, epochs=10, learning_rate=0.001, feature_map_weight=0.25, ce_loss_weight=0.75, device=device) test_accuracy_light_ce_and_mse_loss = test_multiple_outputs(modified_nn_light_reg, test_loader, device) Epoch 1/10, Loss: 1.7251098381588832 Epoch 2/10, Loss: 1.3508794624787157 Epoch 3/10, Loss: 1.2108192212136506 Epoch 4/10, Loss: 1.115824593607422 Epoch 5/10, Loss: 1.0388691920758513 Epoch 6/10, Loss: 0.9754705894023866 Epoch 7/10, Loss: 0.9218618848439678 Epoch 8/10, Loss: 0.873817940349774 Epoch 9/10, Loss: 0.8302632062636373 Epoch 10/10, Loss: 0.7911977964593931 Test Accuracy: 71.13% It is expected that the final method will work better than CosineLoss because now we have allowed a trainable layer between the teacher and the student, which gives the student some wiggle room when it comes to learning, rather than pushing the student to copy the teacher\u2019s representation. Including the extra network is the idea behind hint-based distillation. print(f\"Teacher accuracy: {test_accuracy_deep:.2f}%\") print(f\"Student accuracy without teacher: {test_accuracy_light_ce:.2f}%\") print(f\"Student accuracy with CE + KD: {test_accuracy_light_ce_and_kd:.2f}%\") print(f\"Student accuracy with CE + CosineLoss: {test_accuracy_light_ce_and_cosine_loss:.2f}%\") print(f\"Student accuracy with CE + RegressorMSE: {test_accuracy_light_ce_and_mse_loss:.2f}%\") Teacher accuracy: 75.53% Student accuracy without teacher: 70.43% Student accuracy with CE + KD: 70.13% Student accuracy with CE + CosineLoss: 70.89% Student accuracy with CE + RegressorMSE: 71.13% Conclusion# None of the methods above increases the number of parameters for the network or inference time, so the performance increase comes at the little cost of calculating gradients during training. In ML applications, we mostly care about inference time because training happens before the model deployment. If our lightweight model is still too heavy for deployment, we can apply different ideas, such as post-training quantization. Additional losses can be applied in many tasks, not just classification, and you can experiment with quantities like coefficients, temperature, or number of neurons. Feel free to tune any numbers in the tutorial above, but keep in mind, if you change the number of neurons / filters chances are a shape mismatch might occur. For more information, see: Hinton, G., Vinyals, O., Dean, J.: Distilling the knowledge in a neural network. In: Neural Information Processing System Deep Learning Workshop (2015) Romero, A., Ballas, N., Kahou, S.E., Chassang, A., Gatta, C., Bengio, Y.: Fitnets: Hints for thin deep nets. In: Proceedings of the International Conference on Learning Representations (2015) Total running time of the script: (4 minutes 11.863 seconds) Download Jupyter notebook: knowledge_distillation_tutorial.ipynb Download Python source code: knowledge_distillation_tutorial.py Download zipped: knowledge_distillation_tutorial.zip",
+       "articleBody": "Note Go to the end to download the full example code. Knowledge Distillation Tutorial# Author: Alexandros Chariton Knowledge distillation is a technique that enables knowledge transfer from large, computationally expensive models to smaller ones without losing validity. This allows for deployment on less powerful hardware, making evaluation faster and more efficient. In this tutorial, we will run a number of experiments focused at improving the accuracy of a lightweight neural network, using a more powerful network as a teacher. The computational cost and the speed of the lightweight network will remain unaffected, our intervention only focuses on its weights, not on its forward pass. Applications of this technology can be found in devices such as drones or mobile phones. In this tutorial, we do not use any external packages as everything we need is available in torch and torchvision. In this tutorial, you will learn: How to modify model classes to extract hidden representations and use them for further calculations How to modify regular train loops in PyTorch to include additional losses on top of, for example, cross-entropy for classification How to improve the performance of lightweight models by using more complex models as teachers Prerequisites# 1 GPU, 4GB of memory PyTorch v2.0 or later CIFAR-10 dataset (downloaded by the script and saved in a directory called /data) import torch import torch.nn as nn import torch.optim as optim import torchvision.transforms as transforms import torchvision.datasets as datasets # Check if the current `accelerator \u003chttps://pytorch.org/docs/stable/torch.html#accelerators\u003e`__ # is available, and if not, use the CPU device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else \"cpu\" print(f\"Using {device} device\") Using cuda device Loading CIFAR-10# CIFAR-10 is a popular image dataset with ten classes. Our objective is to predict one of the following classes for each input image. Example of CIFAR-10 images# The input images are RGB, so they have 3 channels and are 32x32 pixels. Basically, each image is described by 3 x 32 x 32 = 3072 numbers ranging from 0 to 255. A common practice in neural networks is to normalize the input, which is done for multiple reasons, including avoiding saturation in commonly used activation functions and increasing numerical stability. Our normalization process consists of subtracting the mean and dividing by the standard deviation along each channel. The tensors \u201cmean=[0.485, 0.456, 0.406]\u201d and \u201cstd=[0.229, 0.224, 0.225]\u201d were already computed, and they represent the mean and standard deviation of each channel in the predefined subset of CIFAR-10 intended to be the training set. Notice how we use these values for the test set as well, without recomputing the mean and standard deviation from scratch. This is because the network was trained on features produced by subtracting and dividing the numbers above, and we want to maintain consistency. Furthermore, in real life, we would not be able to compute the mean and standard deviation of the test set since, under our assumptions, this data would not be accessible at that point. As a closing point, we often refer to this held-out set as the validation set, and we use a separate set, called the test set, after optimizing a model\u2019s performance on the validation set. This is done to avoid selecting a model based on the greedy and biased optimization of a single metric. # Below we are preprocessing data for CIFAR-10. We use an arbitrary batch size of 128. transforms_cifar = transforms.Compose([ transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]), ]) # Loading the CIFAR-10 dataset: train_dataset = datasets.CIFAR10(root=\u0027./data\u0027, train=True, download=True, transform=transforms_cifar) test_dataset = datasets.CIFAR10(root=\u0027./data\u0027, train=False, download=True, transform=transforms_cifar) 0%| | 0.00/170M [00:00\u003c?, ?B/s] 0%| | 623k/170M [00:00\u003c00:27, 6.21MB/s] 4%|\u258e | 6.39M/170M [00:00\u003c00:04, 36.4MB/s] 9%|\u2589 | 16.1M/170M [00:00\u003c00:02, 64.1MB/s] 15%|\u2588\u258c | 26.0M/170M [00:00\u003c00:01, 77.6MB/s] 21%|\u2588\u2588 | 35.7M/170M [00:00\u003c00:01, 84.9MB/s] 27%|\u2588\u2588\u258b | 45.4M/170M [00:00\u003c00:01, 88.8MB/s] 32%|\u2588\u2588\u2588\u258f | 55.0M/170M [00:00\u003c00:01, 90.8MB/s] 38%|\u2588\u2588\u2588\u258a | 64.1M/170M [00:00\u003c00:01, 90.4MB/s] 43%|\u2588\u2588\u2588\u2588\u258e | 73.9M/170M [00:00\u003c00:01, 92.7MB/s] 49%|\u2588\u2588\u2588\u2588\u2589 | 83.6M/170M [00:01\u003c00:00, 94.1MB/s] 55%|\u2588\u2588\u2588\u2588\u2588\u258d | 93.6M/170M [00:01\u003c00:00, 95.7MB/s] 61%|\u2588\u2588\u2588\u2588\u2588\u2588 | 104M/170M [00:01\u003c00:00, 97.1MB/s] 66%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b | 113M/170M [00:01\u003c00:00, 97.0MB/s] 72%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f | 123M/170M [00:01\u003c00:00, 97.7MB/s] 78%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 133M/170M [00:01\u003c00:00, 94.9MB/s] 84%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d | 143M/170M [00:01\u003c00:00, 96.0MB/s] 90%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589 | 153M/170M [00:01\u003c00:00, 96.6MB/s] 95%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c| 163M/170M [00:01\u003c00:00, 97.2MB/s] 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 170M/170M [00:01\u003c00:00, 89.9MB/s] Note This section is for CPU users only who are interested in quick results. Use this option only if you\u2019re interested in a small scale experiment. Keep in mind the code should run fairly quickly using any GPU. Select only the first num_images_to_keep images from the train/test dataset #from torch.utils.data import Subset #num_images_to_keep = 2000 #train_dataset = Subset(train_dataset, range(min(num_images_to_keep, 50_000))) #test_dataset = Subset(test_dataset, range(min(num_images_to_keep, 10_000))) #Dataloaders train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=2) test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=128, shuffle=False, num_workers=2) Defining model classes and utility functions# Next, we need to define our model classes. Several user-defined parameters need to be set here. We use two different architectures, keeping the number of filters fixed across our experiments to ensure fair comparisons. Both architectures are Convolutional Neural Networks (CNNs) with a different number of convolutional layers that serve as feature extractors, followed by a classifier with 10 classes. The number of filters and neurons is smaller for the students. # Deeper neural network class to be used as teacher: class DeepNN(nn.Module): def __init__(self, num_classes=10): super(DeepNN, self).__init__() self.features = nn.Sequential( nn.Conv2d(3, 128, kernel_size=3, padding=1), nn.ReLU(), nn.Conv2d(128, 64, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), nn.Conv2d(64, 64, kernel_size=3, padding=1), nn.ReLU(), nn.Conv2d(64, 32, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), ) self.classifier = nn.Sequential( nn.Linear(2048, 512), nn.ReLU(), nn.Dropout(0.1), nn.Linear(512, num_classes) ) def forward(self, x): x = self.features(x) x = torch.flatten(x, 1) x = self.classifier(x) return x # Lightweight neural network class to be used as student: class LightNN(nn.Module): def __init__(self, num_classes=10): super(LightNN, self).__init__() self.features = nn.Sequential( nn.Conv2d(3, 16, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), nn.Conv2d(16, 16, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), ) self.classifier = nn.Sequential( nn.Linear(1024, 256), nn.ReLU(), nn.Dropout(0.1), nn.Linear(256, num_classes) ) def forward(self, x): x = self.features(x) x = torch.flatten(x, 1) x = self.classifier(x) return x We employ 2 functions to help us produce and evaluate the results on our original classification task. One function is called train and takes the following arguments: model: A model instance to train (update its weights) via this function. train_loader: We defined our train_loader above, and its job is to feed the data into the model. epochs: How many times we loop over the dataset. learning_rate: The learning rate determines how large our steps towards convergence should be. Too large or too small steps can be detrimental. device: Determines the device to run the workload on. Can be either CPU or GPU depending on availability. Our test function is similar, but it will be invoked with test_loader to load images from the test set. Train both networks with Cross-Entropy. The student will be used as a baseline:# def train(model, train_loader, epochs, learning_rate, device): criterion = nn.CrossEntropyLoss() optimizer = optim.Adam(model.parameters(), lr=learning_rate) model.train() for epoch in range(epochs): running_loss = 0.0 for inputs, labels in train_loader: # inputs: A collection of batch_size images # labels: A vector of dimensionality batch_size with integers denoting class of each image inputs, labels = inputs.to(device), labels.to(device) optimizer.zero_grad() outputs = model(inputs) # outputs: Output of the network for the collection of images. A tensor of dimensionality batch_size x num_classes # labels: The actual labels of the images. Vector of dimensionality batch_size loss = criterion(outputs, labels) loss.backward() optimizer.step() running_loss += loss.item() print(f\"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader)}\") def test(model, test_loader, device): model.to(device) model.eval() correct = 0 total = 0 with torch.no_grad(): for inputs, labels in test_loader: inputs, labels = inputs.to(device), labels.to(device) outputs = model(inputs) _, predicted = torch.max(outputs.data, 1) total += labels.size(0) correct += (predicted == labels).sum().item() accuracy = 100 * correct / total print(f\"Test Accuracy: {accuracy:.2f}%\") return accuracy Cross-entropy runs# For reproducibility, we need to set the torch manual seed. We train networks using different methods, so to compare them fairly, it makes sense to initialize the networks with the same weights. Start by training the teacher network using cross-entropy: torch.manual_seed(42) nn_deep = DeepNN(num_classes=10).to(device) train(nn_deep, train_loader, epochs=10, learning_rate=0.001, device=device) test_accuracy_deep = test(nn_deep, test_loader, device) # Instantiate the lightweight network: torch.manual_seed(42) nn_light = LightNN(num_classes=10).to(device) Epoch 1/10, Loss: 1.3344673872603785 Epoch 2/10, Loss: 0.8682893659452648 Epoch 3/10, Loss: 0.6761994616454824 Epoch 4/10, Loss: 0.5306995933318077 Epoch 5/10, Loss: 0.4090593216745445 Epoch 6/10, Loss: 0.30574949588769534 Epoch 7/10, Loss: 0.22371698052758146 Epoch 8/10, Loss: 0.1660449161191883 Epoch 9/10, Loss: 0.1400559984357156 Epoch 10/10, Loss: 0.11865106959591436 Test Accuracy: 74.85% We instantiate one more lightweight network model to compare their performances. Back propagation is sensitive to weight initialization, so we need to make sure these two networks have the exact same initialization. torch.manual_seed(42) new_nn_light = LightNN(num_classes=10).to(device) To ensure we have created a copy of the first network, we inspect the norm of its first layer. If it matches, then we are safe to conclude that the networks are indeed the same. # Print the norm of the first layer of the initial lightweight model print(\"Norm of 1st layer of nn_light:\", torch.norm(nn_light.features[0].weight).item()) # Print the norm of the first layer of the new lightweight model print(\"Norm of 1st layer of new_nn_light:\", torch.norm(new_nn_light.features[0].weight).item()) Norm of 1st layer of nn_light: 2.327361822128296 Norm of 1st layer of new_nn_light: 2.327361822128296 Print the total number of parameters in each model: total_params_deep = \"{:,}\".format(sum(p.numel() for p in nn_deep.parameters())) print(f\"DeepNN parameters: {total_params_deep}\") total_params_light = \"{:,}\".format(sum(p.numel() for p in nn_light.parameters())) print(f\"LightNN parameters: {total_params_light}\") DeepNN parameters: 1,186,986 LightNN parameters: 267,738 Train and test the lightweight network with cross entropy loss: train(nn_light, train_loader, epochs=10, learning_rate=0.001, device=device) test_accuracy_light_ce = test(nn_light, test_loader, device) Epoch 1/10, Loss: 1.4698538987532905 Epoch 2/10, Loss: 1.1611369224765418 Epoch 3/10, Loss: 1.023581256342056 Epoch 4/10, Loss: 0.9162973016119369 Epoch 5/10, Loss: 0.8414251923256213 Epoch 6/10, Loss: 0.7755127745821043 Epoch 7/10, Loss: 0.7103547100215921 Epoch 8/10, Loss: 0.6557045291604289 Epoch 9/10, Loss: 0.6012073068515115 Epoch 10/10, Loss: 0.5532694240970075 Test Accuracy: 70.74% As we can see, based on test accuracy, we can now compare the deeper network that is to be used as a teacher with the lightweight network that is our supposed student. So far, our student has not intervened with the teacher, therefore this performance is achieved by the student itself. The metrics so far can be seen with the following lines: print(f\"Teacher accuracy: {test_accuracy_deep:.2f}%\") print(f\"Student accuracy: {test_accuracy_light_ce:.2f}%\") Teacher accuracy: 74.85% Student accuracy: 70.74% Knowledge distillation run# Now let\u2019s try to improve the test accuracy of the student network by incorporating the teacher. Knowledge distillation is a straightforward technique to achieve this, based on the fact that both networks output a probability distribution over our classes. Therefore, the two networks share the same number of output neurons. The method works by incorporating an additional loss into the traditional cross entropy loss, which is based on the softmax output of the teacher network. The assumption is that the output activations of a properly trained teacher network carry additional information that can be leveraged by a student network during training. The original work suggests that utilizing ratios of smaller probabilities in the soft targets can help achieve the underlying objective of deep neural networks, which is to create a similarity structure over the data where similar objects are mapped closer together. For example, in CIFAR-10, a truck could be mistaken for an automobile or airplane, if its wheels are present, but it is less likely to be mistaken for a dog. Therefore, it makes sense to assume that valuable information resides not only in the top prediction of a properly trained model but in the entire output distribution. However, cross entropy alone does not sufficiently exploit this information as the activations for non-predicted classes tend to be so small that propagated gradients do not meaningfully change the weights to construct this desirable vector space. As we continue defining our first helper function that introduces a teacher-student dynamic, we need to include a few extra parameters: T: Temperature controls the smoothness of the output distributions. Larger T leads to smoother distributions, thus smaller probabilities get a larger boost. soft_target_loss_weight: A weight assigned to the extra objective we\u2019re about to include. ce_loss_weight: A weight assigned to cross-entropy. Tuning these weights pushes the network towards optimizing for either objective. Distillation loss is calculated from the logits of the networks. It only returns gradients to the student:# def train_knowledge_distillation(teacher, student, train_loader, epochs, learning_rate, T, soft_target_loss_weight, ce_loss_weight, device): ce_loss = nn.CrossEntropyLoss() optimizer = optim.Adam(student.parameters(), lr=learning_rate) teacher.eval() # Teacher set to evaluation mode student.train() # Student to train mode for epoch in range(epochs): running_loss = 0.0 for inputs, labels in train_loader: inputs, labels = inputs.to(device), labels.to(device) optimizer.zero_grad() # Forward pass with the teacher model - do not save gradients here as we do not change the teacher\u0027s weights with torch.no_grad(): teacher_logits = teacher(inputs) # Forward pass with the student model student_logits = student(inputs) #Soften the student logits by applying softmax first and log() second soft_targets = nn.functional.softmax(teacher_logits / T, dim=-1) soft_prob = nn.functional.log_softmax(student_logits / T, dim=-1) # Calculate the soft targets loss. Scaled by T**2 as suggested by the authors of the paper \"Distilling the knowledge in a neural network\" soft_targets_loss = torch.sum(soft_targets * (soft_targets.log() - soft_prob)) / soft_prob.size()[0] * (T**2) # Calculate the true label loss label_loss = ce_loss(student_logits, labels) # Weighted sum of the two losses loss = soft_target_loss_weight * soft_targets_loss + ce_loss_weight * label_loss loss.backward() optimizer.step() running_loss += loss.item() print(f\"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader)}\") # Apply ``train_knowledge_distillation`` with a temperature of 2. Arbitrarily set the weights to 0.75 for CE and 0.25 for distillation loss. train_knowledge_distillation(teacher=nn_deep, student=new_nn_light, train_loader=train_loader, epochs=10, learning_rate=0.001, T=2, soft_target_loss_weight=0.25, ce_loss_weight=0.75, device=device) test_accuracy_light_ce_and_kd = test(new_nn_light, test_loader, device) # Compare the student test accuracy with and without the teacher, after distillation print(f\"Teacher accuracy: {test_accuracy_deep:.2f}%\") print(f\"Student accuracy without teacher: {test_accuracy_light_ce:.2f}%\") print(f\"Student accuracy with CE + KD: {test_accuracy_light_ce_and_kd:.2f}%\") Epoch 1/10, Loss: 2.3868894583124027 Epoch 2/10, Loss: 1.86948302761673 Epoch 3/10, Loss: 1.6450578041393737 Epoch 4/10, Loss: 1.487820537803728 Epoch 5/10, Loss: 1.3558110434685826 Epoch 6/10, Loss: 1.243761327413037 Epoch 7/10, Loss: 1.1498741879487586 Epoch 8/10, Loss: 1.062802053016165 Epoch 9/10, Loss: 0.9909647625425587 Epoch 10/10, Loss: 0.9192796637639975 Test Accuracy: 70.24% Teacher accuracy: 74.85% Student accuracy without teacher: 70.74% Student accuracy with CE + KD: 70.24% Cosine loss minimization run# Feel free to play around with the temperature parameter that controls the softness of the softmax function and the loss coefficients. In neural networks, it is easy to include additional loss functions to the main objectives to achieve goals like better generalization. Let\u2019s try including an objective for the student, but now let\u2019s focus on their hidden states rather than their output layers. Our goal is to convey information from the teacher\u2019s representation to the student by including a naive loss function, whose minimization implies that the flattened vectors that are subsequently passed to the classifiers have become more similar as the loss decreases. Of course, the teacher does not update its weights, so the minimization depends only on the student\u2019s weights. The rationale behind this method is that we are operating under the assumption that the teacher model has a better internal representation that is unlikely to be achieved by the student without external intervention, therefore we artificially push the student to mimic the internal representation of the teacher. Whether or not this will end up helping the student is not straightforward, though, because pushing the lightweight network to reach this point could be a good thing, assuming that we have found an internal representation that leads to better test accuracy, but it could also be harmful because the networks have different architectures and the student does not have the same learning capacity as the teacher. In other words, there is no reason for these two vectors, the student\u2019s and the teacher\u2019s to match per component. The student could reach an internal representation that is a permutation of the teacher\u2019s and it would be just as efficient. Nonetheless, we can still run a quick experiment to figure out the impact of this method. We will be using the CosineEmbeddingLoss which is given by the following formula: Formula for CosineEmbeddingLoss# Obviously, there is one thing that we need to resolve first. When we applied distillation to the output layer we mentioned that both networks have the same number of neurons, equal to the number of classes. However, this is not the case for the layer following our convolutional layers. Here, the teacher has more neurons than the student after the flattening of the final convolutional layer. Our loss function accepts two vectors of equal dimensionality as inputs, therefore we need to somehow match them. We will solve this by including an average pooling layer after the teacher\u2019s convolutional layer to reduce its dimensionality to match that of the student. To proceed, we will modify our model classes, or create new ones. Now, the forward function returns not only the logits of the network but also the flattened hidden representation after the convolutional layer. We include the aforementioned pooling for the modified teacher. class ModifiedDeepNNCosine(nn.Module): def __init__(self, num_classes=10): super(ModifiedDeepNNCosine, self).__init__() self.features = nn.Sequential( nn.Conv2d(3, 128, kernel_size=3, padding=1), nn.ReLU(), nn.Conv2d(128, 64, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), nn.Conv2d(64, 64, kernel_size=3, padding=1), nn.ReLU(), nn.Conv2d(64, 32, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), ) self.classifier = nn.Sequential( nn.Linear(2048, 512), nn.ReLU(), nn.Dropout(0.1), nn.Linear(512, num_classes) ) def forward(self, x): x = self.features(x) flattened_conv_output = torch.flatten(x, 1) x = self.classifier(flattened_conv_output) flattened_conv_output_after_pooling = torch.nn.functional.avg_pool1d(flattened_conv_output, 2) return x, flattened_conv_output_after_pooling # Create a similar student class where we return a tuple. We do not apply pooling after flattening. class ModifiedLightNNCosine(nn.Module): def __init__(self, num_classes=10): super(ModifiedLightNNCosine, self).__init__() self.features = nn.Sequential( nn.Conv2d(3, 16, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), nn.Conv2d(16, 16, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), ) self.classifier = nn.Sequential( nn.Linear(1024, 256), nn.ReLU(), nn.Dropout(0.1), nn.Linear(256, num_classes) ) def forward(self, x): x = self.features(x) flattened_conv_output = torch.flatten(x, 1) x = self.classifier(flattened_conv_output) return x, flattened_conv_output # We do not have to train the modified deep network from scratch of course, we just load its weights from the trained instance modified_nn_deep = ModifiedDeepNNCosine(num_classes=10).to(device) modified_nn_deep.load_state_dict(nn_deep.state_dict()) # Once again ensure the norm of the first layer is the same for both networks print(\"Norm of 1st layer for deep_nn:\", torch.norm(nn_deep.features[0].weight).item()) print(\"Norm of 1st layer for modified_deep_nn:\", torch.norm(modified_nn_deep.features[0].weight).item()) # Initialize a modified lightweight network with the same seed as our other lightweight instances. This will be trained from scratch to examine the effectiveness of cosine loss minimization. torch.manual_seed(42) modified_nn_light = ModifiedLightNNCosine(num_classes=10).to(device) print(\"Norm of 1st layer:\", torch.norm(modified_nn_light.features[0].weight).item()) Norm of 1st layer for deep_nn: 7.466698169708252 Norm of 1st layer for modified_deep_nn: 7.466698169708252 Norm of 1st layer: 2.327361822128296 Naturally, we need to change the train loop because now the model returns a tuple (logits, hidden_representation). Using a sample input tensor we can print their shapes. # Create a sample input tensor sample_input = torch.randn(128, 3, 32, 32).to(device) # Batch size: 128, Filters: 3, Image size: 32x32 # Pass the input through the student logits, hidden_representation = modified_nn_light(sample_input) # Print the shapes of the tensors print(\"Student logits shape:\", logits.shape) # batch_size x total_classes print(\"Student hidden representation shape:\", hidden_representation.shape) # batch_size x hidden_representation_size # Pass the input through the teacher logits, hidden_representation = modified_nn_deep(sample_input) # Print the shapes of the tensors print(\"Teacher logits shape:\", logits.shape) # batch_size x total_classes print(\"Teacher hidden representation shape:\", hidden_representation.shape) # batch_size x hidden_representation_size Student logits shape: torch.Size([128, 10]) Student hidden representation shape: torch.Size([128, 1024]) Teacher logits shape: torch.Size([128, 10]) Teacher hidden representation shape: torch.Size([128, 1024]) In our case, hidden_representation_size is 1024. This is the flattened feature map of the final convolutional layer of the student and as you can see, it is the input for its classifier. It is 1024 for the teacher too, because we made it so with avg_pool1d from 2048. The loss applied here only affects the weights of the student prior to the loss calculation. In other words, it does not affect the classifier of the student. The modified training loop is the following: In Cosine Loss minimization, we want to maximize the cosine similarity of the two representations by returning gradients to the student:# def train_cosine_loss(teacher, student, train_loader, epochs, learning_rate, hidden_rep_loss_weight, ce_loss_weight, device): ce_loss = nn.CrossEntropyLoss() cosine_loss = nn.CosineEmbeddingLoss() optimizer = optim.Adam(student.parameters(), lr=learning_rate) teacher.to(device) student.to(device) teacher.eval() # Teacher set to evaluation mode student.train() # Student to train mode for epoch in range(epochs): running_loss = 0.0 for inputs, labels in train_loader: inputs, labels = inputs.to(device), labels.to(device) optimizer.zero_grad() # Forward pass with the teacher model and keep only the hidden representation with torch.no_grad(): _, teacher_hidden_representation = teacher(inputs) # Forward pass with the student model student_logits, student_hidden_representation = student(inputs) # Calculate the cosine loss. Target is a vector of ones. From the loss formula above we can see that is the case where loss minimization leads to cosine similarity increase. hidden_rep_loss = cosine_loss(student_hidden_representation, teacher_hidden_representation, target=torch.ones(inputs.size(0)).to(device)) # Calculate the true label loss label_loss = ce_loss(student_logits, labels) # Weighted sum of the two losses loss = hidden_rep_loss_weight * hidden_rep_loss + ce_loss_weight * label_loss loss.backward() optimizer.step() running_loss += loss.item() print(f\"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader)}\") We need to modify our test function for the same reason. Here we ignore the hidden representation returned by the model. def test_multiple_outputs(model, test_loader, device): model.to(device) model.eval() correct = 0 total = 0 with torch.no_grad(): for inputs, labels in test_loader: inputs, labels = inputs.to(device), labels.to(device) outputs, _ = model(inputs) # Disregard the second tensor of the tuple _, predicted = torch.max(outputs.data, 1) total += labels.size(0) correct += (predicted == labels).sum().item() accuracy = 100 * correct / total print(f\"Test Accuracy: {accuracy:.2f}%\") return accuracy In this case, we could easily include both knowledge distillation and cosine loss minimization in the same function. It is common to combine methods to achieve better performance in teacher-student paradigms. For now, we can run a simple train-test session. # Train and test the lightweight network with cross entropy loss train_cosine_loss(teacher=modified_nn_deep, student=modified_nn_light, train_loader=train_loader, epochs=10, learning_rate=0.001, hidden_rep_loss_weight=0.25, ce_loss_weight=0.75, device=device) test_accuracy_light_ce_and_cosine_loss = test_multiple_outputs(modified_nn_light, test_loader, device) Epoch 1/10, Loss: 1.3007143854790026 Epoch 2/10, Loss: 1.0699039000989226 Epoch 3/10, Loss: 0.9697901323018476 Epoch 4/10, Loss: 0.8924693302120394 Epoch 5/10, Loss: 0.8409702601030354 Epoch 6/10, Loss: 0.7969930822891957 Epoch 7/10, Loss: 0.7551951574547516 Epoch 8/10, Loss: 0.7189682937034255 Epoch 9/10, Loss: 0.6809807785636629 Epoch 10/10, Loss: 0.6561873606251328 Test Accuracy: 70.73% Intermediate regressor run# Our naive minimization does not guarantee better results for several reasons, one being the dimensionality of the vectors. Cosine similarity generally works better than Euclidean distance for vectors of higher dimensionality, but we were dealing with vectors with 1024 components each, so it is much harder to extract meaningful similarities. Furthermore, as we mentioned, pushing towards a match of the hidden representation of the teacher and the student is not supported by theory. There are no good reasons why we should be aiming for a 1:1 match of these vectors. We will provide a final example of training intervention by including an extra network called regressor. The objective is to first extract the feature map of the teacher after a convolutional layer, then extract a feature map of the student after a convolutional layer, and finally try to match these maps. However, this time, we will introduce a regressor between the networks to facilitate the matching process. The regressor will be trainable and ideally will do a better job than our naive cosine loss minimization scheme. Its main job is to match the dimensionality of these feature maps so that we can properly define a loss function between the teacher and the student. Defining such a loss function provides a teaching \u201cpath,\u201d which is basically a flow to back-propagate gradients that will change the student\u2019s weights. Focusing on the output of the convolutional layers right before each classifier for our original networks, we have the following shapes: # Pass the sample input only from the convolutional feature extractor convolutional_fe_output_student = nn_light.features(sample_input) convolutional_fe_output_teacher = nn_deep.features(sample_input) # Print their shapes print(\"Student\u0027s feature extractor output shape: \", convolutional_fe_output_student.shape) print(\"Teacher\u0027s feature extractor output shape: \", convolutional_fe_output_teacher.shape) Student\u0027s feature extractor output shape: torch.Size([128, 16, 8, 8]) Teacher\u0027s feature extractor output shape: torch.Size([128, 32, 8, 8]) We have 32 filters for the teacher and 16 filters for the student. We will include a trainable layer that converts the feature map of the student to the shape of the feature map of the teacher. In practice, we modify the lightweight class to return the hidden state after an intermediate regressor that matches the sizes of the convolutional feature maps and the teacher class to return the output of the final convolutional layer without pooling or flattening. The trainable layer matches the shapes of the intermediate tensors and Mean Squared Error (MSE) is properly defined:# class ModifiedDeepNNRegressor(nn.Module): def __init__(self, num_classes=10): super(ModifiedDeepNNRegressor, self).__init__() self.features = nn.Sequential( nn.Conv2d(3, 128, kernel_size=3, padding=1), nn.ReLU(), nn.Conv2d(128, 64, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), nn.Conv2d(64, 64, kernel_size=3, padding=1), nn.ReLU(), nn.Conv2d(64, 32, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), ) self.classifier = nn.Sequential( nn.Linear(2048, 512), nn.ReLU(), nn.Dropout(0.1), nn.Linear(512, num_classes) ) def forward(self, x): x = self.features(x) conv_feature_map = x x = torch.flatten(x, 1) x = self.classifier(x) return x, conv_feature_map class ModifiedLightNNRegressor(nn.Module): def __init__(self, num_classes=10): super(ModifiedLightNNRegressor, self).__init__() self.features = nn.Sequential( nn.Conv2d(3, 16, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), nn.Conv2d(16, 16, kernel_size=3, padding=1), nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2), ) # Include an extra regressor (in our case linear) self.regressor = nn.Sequential( nn.Conv2d(16, 32, kernel_size=3, padding=1) ) self.classifier = nn.Sequential( nn.Linear(1024, 256), nn.ReLU(), nn.Dropout(0.1), nn.Linear(256, num_classes) ) def forward(self, x): x = self.features(x) regressor_output = self.regressor(x) x = torch.flatten(x, 1) x = self.classifier(x) return x, regressor_output After that, we have to update our train loop again. This time, we extract the regressor output of the student, the feature map of the teacher, we calculate the MSE on these tensors (they have the exact same shape so it\u2019s properly defined) and we back propagate gradients based on that loss, in addition to the regular cross entropy loss of the classification task. def train_mse_loss(teacher, student, train_loader, epochs, learning_rate, feature_map_weight, ce_loss_weight, device): ce_loss = nn.CrossEntropyLoss() mse_loss = nn.MSELoss() optimizer = optim.Adam(student.parameters(), lr=learning_rate) teacher.to(device) student.to(device) teacher.eval() # Teacher set to evaluation mode student.train() # Student to train mode for epoch in range(epochs): running_loss = 0.0 for inputs, labels in train_loader: inputs, labels = inputs.to(device), labels.to(device) optimizer.zero_grad() # Again ignore teacher logits with torch.no_grad(): _, teacher_feature_map = teacher(inputs) # Forward pass with the student model student_logits, regressor_feature_map = student(inputs) # Calculate the loss hidden_rep_loss = mse_loss(regressor_feature_map, teacher_feature_map) # Calculate the true label loss label_loss = ce_loss(student_logits, labels) # Weighted sum of the two losses loss = feature_map_weight * hidden_rep_loss + ce_loss_weight * label_loss loss.backward() optimizer.step() running_loss += loss.item() print(f\"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader)}\") # Notice how our test function remains the same here with the one we used in our previous case. We only care about the actual outputs because we measure accuracy. # Initialize a ModifiedLightNNRegressor torch.manual_seed(42) modified_nn_light_reg = ModifiedLightNNRegressor(num_classes=10).to(device) # We do not have to train the modified deep network from scratch of course, we just load its weights from the trained instance modified_nn_deep_reg = ModifiedDeepNNRegressor(num_classes=10).to(device) modified_nn_deep_reg.load_state_dict(nn_deep.state_dict()) # Train and test once again train_mse_loss(teacher=modified_nn_deep_reg, student=modified_nn_light_reg, train_loader=train_loader, epochs=10, learning_rate=0.001, feature_map_weight=0.25, ce_loss_weight=0.75, device=device) test_accuracy_light_ce_and_mse_loss = test_multiple_outputs(modified_nn_light_reg, test_loader, device) Epoch 1/10, Loss: 1.749042745136544 Epoch 2/10, Loss: 1.3585692976441834 Epoch 3/10, Loss: 1.2114482204932386 Epoch 4/10, Loss: 1.1162686280887146 Epoch 5/10, Loss: 1.038908315284173 Epoch 6/10, Loss: 0.9753661675526358 Epoch 7/10, Loss: 0.923004585916124 Epoch 8/10, Loss: 0.873047468607383 Epoch 9/10, Loss: 0.8298640987452339 Epoch 10/10, Loss: 0.7914516421230248 Test Accuracy: 71.01% It is expected that the final method will work better than CosineLoss because now we have allowed a trainable layer between the teacher and the student, which gives the student some wiggle room when it comes to learning, rather than pushing the student to copy the teacher\u2019s representation. Including the extra network is the idea behind hint-based distillation. print(f\"Teacher accuracy: {test_accuracy_deep:.2f}%\") print(f\"Student accuracy without teacher: {test_accuracy_light_ce:.2f}%\") print(f\"Student accuracy with CE + KD: {test_accuracy_light_ce_and_kd:.2f}%\") print(f\"Student accuracy with CE + CosineLoss: {test_accuracy_light_ce_and_cosine_loss:.2f}%\") print(f\"Student accuracy with CE + RegressorMSE: {test_accuracy_light_ce_and_mse_loss:.2f}%\") Teacher accuracy: 74.85% Student accuracy without teacher: 70.74% Student accuracy with CE + KD: 70.24% Student accuracy with CE + CosineLoss: 70.73% Student accuracy with CE + RegressorMSE: 71.01% Conclusion# None of the methods above increases the number of parameters for the network or inference time, so the performance increase comes at the little cost of calculating gradients during training. In ML applications, we mostly care about inference time because training happens before the model deployment. If our lightweight model is still too heavy for deployment, we can apply different ideas, such as post-training quantization. Additional losses can be applied in many tasks, not just classification, and you can experiment with quantities like coefficients, temperature, or number of neurons. Feel free to tune any numbers in the tutorial above, but keep in mind, if you change the number of neurons / filters chances are a shape mismatch might occur. For more information, see: Hinton, G., Vinyals, O., Dean, J.: Distilling the knowledge in a neural network. In: Neural Information Processing System Deep Learning Workshop (2015) Romero, A., Ballas, N., Kahou, S.E., Chassang, A., Gatta, C., Bengio, Y.: Fitnets: Hints for thin deep nets. In: Proceedings of the International Conference on Learning Representations (2015) Total running time of the script: (4 minutes 10.246 seconds) Download Jupyter notebook: knowledge_distillation_tutorial.ipynb Download Python source code: knowledge_distillation_tutorial.py Download zipped: knowledge_distillation_tutorial.zip",
        "author": {
          "@type": "Organization",
          "name": "PyTorch Contributors",

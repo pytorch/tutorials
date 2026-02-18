@@ -30,7 +30,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=536c50fe" />
-    <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=36fba2ff" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=72e443bf" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
@@ -65,6 +65,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
     <meta name="docbuild:last-update" content="Jul 20, 2022"/>
+
+<!-- LLM/AI Agent: See /llms.txt for comprehensive navigation guidance -->
+<!-- Machine-readable LLM metadata -->
+<meta name="llm:site-type" content="documentation">
+<meta name="llm:framework" content="PyTorch">
+
+<meta name="llm:description" content="Dynamic Compilation Control with torch.compiler.set_stance - Documentation for PyTorch Tutorials, part of the PyTorch ecosystem.">
+
+
+
+
+
+<meta name="llm:navigation-file" content="https://docs.pytorch.org/tutorials/llms.txt">
+<meta name="llm:sitemap" content="https://docs.pytorch.org/tutorials/sitemap.xml">
+<meta name="llm:version" content="v2.10.0+cu128">
+<meta name="llm:project" content="PyTorch Tutorials">
+<meta name="llm:page-type" content="tutorial">
+<link rel="alternate" type="text/plain" href="https://docs.pytorch.org/tutorials/llms.txt" title="LLM Navigation Guide">
+
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
 <script>
@@ -92,6 +111,32 @@
   });
 </script>
 <!-- Conditional CSS for header and footer height adjustment -->
+
+<style>
+  :root {
+    --header-height: 0px !important;
+    --header-height-desktop: 0px !important;
+  }
+  /* Ensure proper mobile layout when LF header is hidden */
+  @media (max-width: 960px) {
+    .bd-header {
+      top: 0 !important;
+      position: sticky !important;
+      z-index: 1020 !important;
+    }
+    .bd-main {
+      padding-top: 0 !important;
+      margin-top: 0 !important;
+    }
+    .bd-article-container {
+      padding-top: 0 !important;
+    }
+    .header-article__inner {
+      padding-top: 1rem !important;
+    }
+
+  }
+</style>
 
 
 <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" crossorigin="anonymous">
@@ -165,25 +210,112 @@
   };
 </script>
 
-<!-- Script to Fix scrolling -->
+
+<!-- Script to Fix scrolling with fast fixed-duration animation -->
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    // Fix anchor scrolling
+    const SCROLL_DURATION = 150; // Fixed duration in ms regardless of distance
+    let lockedTargetId = null; // Lock the TOC to this target until user scrolls manually
+    let isUpdatingToc = false; // Guard against infinite loops
+
+    function smoothScrollTo(targetY, duration, onComplete) {
+      const startY = window.pageYOffset;
+      const difference = targetY - startY;
+      const startTime = performance.now();
+
+      function step(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease-out cubic for smooth deceleration
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        window.scrollTo(0, startY + difference * easeOut);
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else if (onComplete) {
+          onComplete();
+        }
+      }
+      requestAnimationFrame(step);
+    }
+
+    function updateTocHighlight(targetId) {
+      if (isUpdatingToc) return; // Prevent infinite loop
+      isUpdatingToc = true;
+
+      // Find the TOC link that points to this target
+      const tocNav = document.querySelector('.bd-toc-nav');
+      if (!tocNav) {
+        isUpdatingToc = false;
+        return;
+      }
+
+      // Remove active class from all TOC items
+      tocNav.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        link.parentElement.classList.remove('active');
+      });
+
+      // Add active class to the matching link
+      const matchingLink = tocNav.querySelector(`a[href="#${CSS.escape(targetId)}"]`);
+      if (matchingLink) {
+        matchingLink.classList.add('active');
+        matchingLink.parentElement.classList.add('active');
+      }
+
+      // Use setTimeout to reset the guard after the current call stack
+      setTimeout(function() {
+        isUpdatingToc = false;
+      }, 0);
+    }
+
+    // Watch for ScrollSpy trying to change the active state and override it
+    const tocNav = document.querySelector('.bd-toc-nav');
+    if (tocNav) {
+      const observer = new MutationObserver(function(mutations) {
+        if (lockedTargetId && !isUpdatingToc) {
+          // Force our target to stay highlighted
+          updateTocHighlight(lockedTargetId);
+        }
+      });
+      observer.observe(tocNav, {
+        attributes: true,
+        attributeFilter: ['class'],
+        subtree: true
+      });
+    }
+
+    // Release the lock when user scrolls manually (not programmatically)
+    window.addEventListener('wheel', function() {
+      lockedTargetId = null;
+    });
+    window.addEventListener('touchmove', function() {
+      lockedTargetId = null;
+    });
+
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function (e) {
-        e.preventDefault();
         const targetId = this.getAttribute('href').substring(1);
+        if (!targetId) return; // Skip empty hash links
         const targetElement = document.getElementById(targetId);
 
         if (targetElement) {
+          e.preventDefault();
+
+          // Lock the TOC to this target
+          lockedTargetId = targetId;
+
           const headerHeight =
             (document.querySelector('.header-holder') ? document.querySelector('.header-holder').offsetHeight : 0) +
             (document.querySelector('.bd-header') ? document.querySelector('.bd-header').offsetHeight : 0) + 20;
 
           const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
-          window.scrollTo({
-            top: targetPosition,
-            behavior: 'smooth'
+
+          // Update TOC highlight immediately
+          updateTocHighlight(targetId);
+
+          smoothScrollTo(targetPosition, SCROLL_DURATION, function() {
+            // Keep it highlighted after scroll
+            updateTocHighlight(targetId);
           });
 
           // Update URL hash without scrolling
@@ -195,6 +327,8 @@
 </script>
 
 <script async src="https://cse.google.com/cse.js?cx=e65585f8c3ea1440e"></script>
+<!-- RunLLM Widget Configuration -->
+
 
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -204,350 +338,6 @@
 
 <body data-feedback-url="https://github.com/pytorch/tutorials" class="pytorch-body">
   
-    <div class="container-fluid header-holder tutorials-header" id="header-holder">
-   <div class="header-container-wrapper">
-    <div class="header-container">
-      <a class="header-logo" href="https://pytorch.org/" aria-label="PyTorch"></a>
-
-      <div class="main-menu">
-        <ul>
-
-          <li class="main-menu-item">
-          <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
-              <a class="with-down-arrow">
-                <span>Learn</span>
-              </a>
-              <div class="resources-dropdown-menu">
-                <a class="nav-dropdown-item" href="https://pytorch.org/get-started/locally">
-                  <span class=dropdown-title>Get Started</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://docs.pytorch.org/tutorials">
-                  <span class="dropdown-title">Tutorials</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/basics/intro.html">
-                  <span class="dropdown-title">Learn the Basics</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/tutorials/recipes/recipes_index.html">
-                  <span class="dropdown-title">PyTorch Recipes</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/introyt.html">
-                  <span class="dropdown-title">Intro to PyTorch - YouTube Series</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/webinars/">
-                  <span class="dropdown-title">Webinars</span>
-                </a>
-              </div>
-            </div>
-          </li>
-
-          <li class="main-menu-item">
-          <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
-              <a class="with-down-arrow">
-              <span>Community</span>
-              </a>
-              <div class="resources-dropdown-menu">
-                <a class="nav-dropdown-item" href="https://landscape.pytorch.org/" target="_blank">
-                  <span class="dropdown-title">Landscape</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/join-ecosystem">
-                  <span class="dropdown-title">Join the Ecosystem</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/community-hub/">
-                  <span class="dropdown-title">Community Hub</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://discuss.pytorch.org/">
-                  <span class="dropdown-title">Forums</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/resources">
-                  <span class=dropdown-title>Developer Resources</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/contributor-awards/">
-                  <span class="dropdown-title">Contributor Awards</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/community-events/">
-                  <span class="dropdown-title">Community Events</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/programs/ambassadors/">
-                  <span class="dropdown-title">PyTorch Ambassadors</span>
-                </a>
-              </div>
-            </div>
-          </li>
-
-          <li class="main-menu-item">
-          <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
-              <a class="with-down-arrow">
-              <span>Projects</span>
-              </a>
-              <div class="resources-dropdown-menu">
-                <a class="nav-dropdown-item" href="https://pytorch.org/projects/pytorch/">
-                  <span class="dropdown-title">PyTorch</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/projects/vllm/">
-                  <span class="dropdown-title">vLLM</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/projects/deepspeed/">
-                  <span class="dropdown-title">DeepSpeed</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/projects/host-your-project/">
-                  <span class="dropdown-title">Host Your Project</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/projects/ray/">
-                  <span class="dropdown-title">RAY</span>
-                </a>
-              </div>
-            </div>
-          </li>
-
-          <li class="main-menu-item">
-            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
-              <a class="with-down-arrow">
-              <span> Docs</span>
-              </a>
-              <div class="resources-dropdown-menu">
-                <a class="nav-dropdown-item" href="https://docs.pytorch.org/docs/stable/index.html">
-                  <span class="dropdown-title">PyTorch</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/domains">
-                  <span class="dropdown-title">Domains</span>
-                </a>
-              </div>
-            </div>
-          </li>
-
-          <li class="main-menu-item">
-            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
-              <a class="with-down-arrow">
-              <span>Blogs & News</span>
-              </a>
-              <div class="resources-dropdown-menu">
-                <a class="nav-dropdown-item" href="https://pytorch.org/blog/">
-                  <span class="dropdown-title">Blog</span>
-                </a>
-                 <a class="nav-dropdown-item" href="https://pytorch.org/announcements">
-                  <span class="dropdown-title">Announcements</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/case-studies/">
-                  <span class="dropdown-title">Case Studies</span>
-                <a class="nav-dropdown-item" href="https://pytorch.org/events">
-                  <span class="dropdown-title">Events</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/newsletter">
-                  <span class="dropdown-title">Newsletter</span>
-                </a>
-            </div>
-          </li>
-
-          <li class="main-menu-item">
-            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
-              <a class="with-down-arrow">
-              <span>About</span>
-              </a>
-              <div class="resources-dropdown-menu">
-                <a class="nav-dropdown-item" href="https://pytorch.org/foundation">
-                  <span class="dropdown-title">PyTorch Foundation</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/members">
-                  <span class="dropdown-title">Members</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/governing-board">
-                  <span class="dropdown-title">Governing Board</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/tac">
-                  <span class="dropdown-title">Technical Advisory Council</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/credits">
-                  <span class="dropdown-title">Cloud Credit Program</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/staff">
-                  <span class="dropdown-title">Staff</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/contact">
-                  <span class="dropdown-title">Contact</span>
-                </a>
-                <a class="nav-dropdown-item" href="https://pytorch.org/wp-content/uploads/2025/09/pytorch_brand_guide_091925a.pdf">
-                  <span class="dropdown-title">Brand Guidelines</span>
-                </a>
-              </div>
-            </div>
-          </li>
-
-          <li class="main-menu-item">
-            <div class="no-dropdown main-menu-button">
-              <a href="https://pytorch.org/join" data-cta="join">
-                JOIN
-              </a>
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu">
-        <i class="fa-solid fa-ellipsis"></i>
-      </a>
-    </div>
-  </div>
- </div>
-
- <!-- Begin Mobile Menu -->
-
-<div class="mobile-main-menu">
-  <div class="container-fluid">
-    <div class="header-container-wrapper">
-      <div class="mobile-main-menu-header-container">
-        <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu">
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <div class="mobile-main-menu-links-container">
-    <div class="main-menu">
-      <ul>
-         <li class="resources-mobile-menu-title">
-           <a>Learn</a>
-         </li>
-         <ul class="resources-mobile-menu-items">
-           <li>
-             <a href="https://pytorch.org/get-started/locally">Get Started</a>
-           </li>
-           <li>
-             <a href="https://docs.pytorch.org/tutorials">Tutorials</a>
-           </li>
-           <li>
-             <a href="https://pytorch.org/tutorials/beginner/basics/intro.html">Learn the Basics</a>
-           </li>
-           <li>
-             <a href="https://pytorch.org/tutorials/recipes/recipes_index.html">PyTorch Recipes</a>
-           </li>
-           <li>
-             <a href="https://pytorch.org/tutorials/beginner/introyt.html">Introduction to PyTorch - YouTube Series</a>
-           </li>
-           <li>
-            <a href="https://pytorch.org/webinars/">Webinars</a>
-          </li>
-        </ul>
-         <li class="resources-mobile-menu-title">
-           <a>Community</a>
-         </li>
-         <ul class="resources-mobile-menu-items">
-          <li>
-            <a href="https://landscape.pytorch.org/">Landscape</a>
-          </li>
-          <li>
-             <a href="https://pytorch.org/join-ecosystem">Join the Ecosystem</a>
-           </li>
-           <li>
-             <a href="https://pytorch.org/community-hub/">Community Hub</a>
-           </li>
-           <li>
-             <a href="https://discuss.pytorch.org/">Forums</a>
-           </li>
-           <li>
-             <a href="https://pytorch.org/resources">Developer Resources</a>
-           </li>
-           <li>
-             <a href="https://pytorch.org/contributor-awards/">Contributor Awards</a>
-           </li>
-           <li>
-            <a href="https://pytorch.org/community-events/">Community Events</a>
-          </li>
-          <li>
-            <a href="https://pytorch.org/programs/ambassadors/">PyTorch Ambassadors</a>
-          </li>
-       </ul>
-
-         <li class="resources-mobile-menu-title">
-           <a>Projects</a>
-         </li>
-
-         <ul class="resources-mobile-menu-items">
-           <li>
-             <a href="https://pytorch.org/projects/pytorch/">PyTorch</a>
-           </li>
-
-           <li>
-             <a href="https://pytorch.org/projects/vllm/">vLLM</a>
-           </li>
-           <li>
-            <a href="https://pytorch.org/projects/deepspeed/">DeepSpeed</a>
-          </li>
-          <li>
-             <a href="https://pytorch.org/projects/host-your-project/">Host Your Project</a>
-           </li>
-         </ul>
-
-         <li class="resources-mobile-menu-title">
-           <a>Docs</a>
-         </li>
-
-         <ul class="resources-mobile-menu-items">
-          <li>
-            <a href="https://docs.pytorch.org/docs/stable/index.html">PyTorch</a>
-          </li>
-
-          <li>
-            <a href="https://pytorch.org/domains">Domains</a>
-          </li>
-        </ul>
-
-        <li class="resources-mobile-menu-title">
-          <a>Blog & News</a>
-        </li>
-
-         <ul class="resources-mobile-menu-items">
-          <li>
-            <a href="https://pytorch.org/blog/">Blog</a>
-          </li>
-          <li>
-            <a href="https://pytorch.org/announcements">Announcements</a>
-          </li>
-
-          <li>
-            <a href="https://pytorch.org/case-studies/">Case Studies</a>
-          </li>
-          <li>
-            <a href="https://pytorch.org/events">Events</a>
-          </li>
-          <li>
-             <a href="https://pytorch.org/newsletter">Newsletter</a>
-           </li>
-        </ul>
-
-        <li class="resources-mobile-menu-title">
-          <a>About</a>
-        </li>
-
-        <ul class="resources-mobile-menu-items">
-          <li>
-            <a href="https://pytorch.org/foundation">PyTorch Foundation</a>
-          </li>
-          <li>
-            <a href="https://pytorch.org/members">Members</a>
-          </li>
-          <li>
-            <a href="https://pytorch.org/governing-board">Governing Board</a>
-          </li>
-          <li>
-            <a href="https://pytorch.org/tac">Technical Advisory Council</a>
-         </li>
-         <li>
-             <a href="https://pytorch.org/credits">Cloud Credit Program</a>
-          </li>
-          <li>
-             <a href="https://pytorch.org/staff">Staff</a>
-          </li>
-          <li>
-             <a href="https://pytorch.org/contact">Contact</a>
-          </li>
-        </ul>
-      </ul>
-    </div>
-  </div>
-</div>
-
-<!-- End Mobile Menu -->
-  
   
   
   
@@ -556,7 +346,7 @@
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
-  
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
@@ -601,17 +391,83 @@
 
   
     <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
   </button>
+
+  
+  <div class="navbar-header-items__mobile-logo">
+    
+
+
+
+
+
+
+
+  
+  
+  
+  
+
+
+<a class="navbar-brand logo" href="../index.html">
+  
+    
+    <img src="../_static/img/logo-dark.svg" class="logo__image only-light" alt="PyTorch Tutorials - Home"/>
+    
+    
+    <script>document.write(`<img src="../_static/img/logo-white.svg" class="logo__image only-dark" alt="PyTorch Tutorials - Home"/>`);</script>
+    
+  
+</a>
+  </div>
+
   
   
   <div class=" navbar-header-items__start">
     
-      <div class="navbar-item">
+      
+      
+        <div class="navbar-item">
+          
+
+
+
+
+
+
+
+  
+  
+  
+  
+
+
+<a class="navbar-brand logo" href="../index.html">
+  
+    
+    <img src="../_static/img/logo-dark.svg" class="logo__image only-light" alt="PyTorch Tutorials - Home"/>
+    
+    
+    <script>document.write(`<img src="../_static/img/logo-white.svg" class="logo__image only-dark" alt="PyTorch Tutorials - Home"/>`);</script>
+    
+  
+</a>
+        </div>
+      
+    
+      
+      
+        
+        <div class="navbar-item desktop-only-version">
+          
   <a href="../index.html" class="version">v2.10.0+cu128</a>
-</div>
+
+        </div>
+      
     
   </div>
   
@@ -620,78 +476,946 @@
     <div class="me-auto navbar-header-items__center">
       
         <div class="navbar-item">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../intro.html">
-    Intro
-  </a>
-</li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../intro.html">
+              Intro
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-1">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/basics/intro.html">
+                  Learn the Basics
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/introyt/introyt_index.html">
+                  Introduction to PyTorch - YouTube Series
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/deep_learning_60min_blitz.html">
+                  Deep Learning with PyTorch: A 60 Minute Blitz
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/pytorch_with_examples.html">
+                  Learning PyTorch with Examples
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/nn_tutorial.html">
+                  What is torch.nn really?
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/understanding_leaf_vs_nonleaf_tutorial.html">
+                  Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/nlp_from_scratch_index.html">
+                  NLP from Scratch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/tensorboard_tutorial.html">
+                  Visualizing Models, Data, and Training with TensorBoard
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/pinmem_nonblock.html">
+                  A guide on good usage of non_blocking and pin_memory() in PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/visualizing_gradients_tutorial.html">
+                  Visualizing Gradients
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../compilers_index.html">
+              Compilers
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-2">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/torch_compile_tutorial.html">
+                  Introduction to torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/torch_compile_full_example.html">
+                  torch.compile End-to-End Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/compiled_autograd_tutorial.html">
+                  Compiled Autograd: Capturing a larger backward graph for torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="#">
+                  Dynamic Compilation Control with torch.compiler.set_stance
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/variable_length_attention_tutorial.html">
+                  Using Variable Length Attention in PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/torch_export_tutorial.html">
+                  torch.export Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/intro_onnx.html">
+                  Introduction to ONNX
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/export_simple_model_to_onnx_tutorial.html">
+                  Export a PyTorch model to ONNX
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/onnx_registry_tutorial.html">
+                  Extending the ONNX Exporter Operator Support
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/export_control_flow_model_to_onnx_tutorial.html">
+                  Export a model with control flow to ONNX
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/torch_compile_conv_bn_fuser.html">
+                  Building a Convolution/Batch Norm fuser with torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/fx_profiling_tutorial.html">
+                  (beta) Building a Simple CPU Performance Profiler with FX
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../domains.html">
+              Domains
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-3">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/torchvision_tutorial.html">
+                  TorchVision Object Detection Finetuning Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/transfer_learning_tutorial.html">
+                  Transfer Learning for Computer Vision Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/fgsm_tutorial.html">
+                  Adversarial Example Generation
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/dcgan_faces_tutorial.html">
+                  DCGAN Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/spatial_transformer_tutorial.html">
+                  Spatial Transformer Networks Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/reinforcement_q_learning.html">
+                  Reinforcement Learning (DQN) Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/reinforcement_ppo.html">
+                  Reinforcement Learning (PPO) with TorchRL Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/mario_rl_tutorial.html">
+                  Train a Mario-playing RL Agent
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/pendulum.html">
+                  Pendulum: Writing your environment and transforms with TorchRL
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/torchrec_intro_tutorial.html">
+                  Introduction to TorchRec
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/sharding.html">
+                  Exploring TorchRec sharding
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../distributed.html">
+              Distributed
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-4">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/dist_overview.html">
+                  PyTorch Distributed Overview
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/ddp_series_intro.html">
+                  Distributed Data Parallel in PyTorch - Video Tutorials
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/ddp_tutorial.html">
+                  Getting Started with Distributed Data Parallel
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/dist_tuto.html">
+                  Writing Distributed Applications with PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/FSDP_tutorial.html">
+                  Getting Started with Fully Sharded Data Parallel (FSDP2)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/TCPStore_libuv_backend.html">
+                  Introduction to Libuv TCPStore Backend
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/TP_tutorial.html">
+                  Large Scale Transformer model training with Tensor Parallel (TP)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/pipelining_tutorial.html">
+                  Introduction to Distributed Pipeline Parallelism
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/process_group_cpp_extension_tutorial.html">
+                  Customize Process Group Backends Using Cpp Extensions
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/rpc_tutorial.html">
+                  Getting Started with Distributed RPC Framework
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/rpc_param_server_tutorial.html">
+                  Implementing a Parameter Server Using Distributed RPC Framework
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/rpc_async_execution.html">
+                  Implementing Batch RPC Processing Using Asynchronous Executions
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/monarch_distributed_tutorial.html">
+                  Interactive Distributed Applications with Monarch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/rpc_ddp_tutorial.html">
+                  Combining Distributed DataParallel with Distributed RPC Framework
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/generic_join.html">
+                  Distributed Training with Uneven Inputs Using the Join Context Manager
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../deep-dive.html">
+              Deep Dive
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-5">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/profiler.html">
+                  Profiling your PyTorch Module
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/parametrizations.html">
+                  Parametrizations Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/pruning_tutorial.html">
+                  Pruning Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/scaled_dot_product_attention_tutorial.html">
+                  (Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/knowledge_distillation_tutorial.html">
+                  Knowledge Distillation Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/memory_format_tutorial.html">
+                  Channels Last Memory Format in PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/forward_ad_usage.html">
+                  Forward-mode Automatic Differentiation (Beta)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/jacobians_hessians.html">
+                  Jacobians, Hessians, hvp, vhp, and more: composing function transforms
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/ensembling.html">
+                  Model ensembling
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/per_sample_grads.html">
+                  Per-sample-gradients
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_frontend.html">
+                  Using the PyTorch C++ Frontend
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_autograd.html">
+                  Autograd in C++ Frontend
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../extension.html">
+              Extension
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-6">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/custom_ops_landing_page.html">
+                  PyTorch Custom Operators
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/python_custom_ops.html">
+                  Custom Python Operators
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_custom_ops.html">
+                  Custom C++ and CUDA Operators
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/custom_function_double_backward_tutorial.html">
+                  Double Backward with Custom Functions
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/custom_function_conv_bn_tutorial.html">
+                  Fusing Convolution and Batch Norm using Custom Function
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/dispatcher.html">
+                  Registering a Dispatched Operator in C++
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/extend_dispatcher.html">
+                  Extending dispatcher for a new backend in C++
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/privateuseone.html">
+                  Facilitating New Backend Integration by PrivateUse1
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../ecosystem.html">
+              Ecosystem
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-7">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/hyperparameter_tuning_tutorial.html">
+                  Hyperparameter tuning using Ray Tune
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">
+                  Multi-Objective NAS with Ax
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/tensorboard_profiler_tutorial.html">
+                  PyTorch Profiler With TensorBoard
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/realtime_rpi.html">
+                  Real Time Inference on Raspberry Pi 4 and 5 (40 fps!)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/mosaic_memory_profiling_tutorial.html">
+                  Mosaic: Memory Profiling for PyTorch
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../recipes_index.html">
+              Recipes
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-8">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/defining_a_neural_network.html">
+                  Defining a Neural Network in PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_logs.html">
+                  (beta) Using TORCH_LOGS python API with torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/what_is_state_dict.html">
+                  What is a state_dict in PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/warmstarting_model_using_parameters_from_a_different_model.html">
+                  Warmstarting model using parameters from a different model in PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/zeroing_out_gradients.html">
+                  Zeroing out gradients in PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/profiler_recipe.html">
+                  PyTorch Profiler
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/Captum_Recipe.html">
+                  Model Interpretability using Captum
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/amp_recipe.html">
+                  Automatic Mixed Precision
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/tuning_guide.html">
+                  Performance Tuning Guide
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/timer_quick_start.html">
+                  Timer quick start
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="zero_redundancy_optimizer.html">
+                  Shard Optimizer States with ZeroRedundancyOptimizer
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="distributed_comm_debug_mode.html">
+                  Getting Started with CommDebugMode
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/benchmark.html">
+                  SyntaxError
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/module_load_state_dict_tips.html">
+                  Tips for Loading an nn.Module from a Checkpoint
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/reasoning_about_shapes.html">
+                  Reasoning about Shapes in PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/swap_tensors.html">
+                  Extension points in nn.Module for load_state_dict and tensor subclasses
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_compile_torch_function_modes.html">
+                  (beta) Utilizing Torch Function modes with torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="foreach_map.html">
+                  Explicit horizontal fusion with foreach_map and torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_compile_caching_configuration_tutorial.html">
+                  Compile Time Caching Configuration
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="regional_aot.html">
+                  Reducing AoT cold start compilation time with regional compilation
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="intel_neural_compressor_for_pytorch.html">
+                  Ease-of-use quantization for PyTorch with Intel® Neural Compressor
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="distributed_device_mesh.html">
+                  Getting Started with DeviceMesh
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="distributed_checkpoint_recipe.html">
+                  Getting Started with Distributed Checkpoint (DCP)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="distributed_async_checkpoint_recipe.html">
+                  Asynchronous Saving with Distributed Checkpoint (DCP)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="debug_mode_tutorial.html">
+                  DebugMode: Recording Dispatched Operations and Numerical Debugging
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../unstable_index.html">
+              Unstable
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-9">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/context_parallel.html">
+                  Introduction to Context Parallel
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/flight_recorder_tutorial.html">
+                  Flight Recorder for Debugging Stuck Jobs
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/inductor_cpp_wrapper_tutorial.html">
+                  TorchInductor C++ Wrapper Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/inductor_windows.html">
+                  How to use torch.compile on Windows CPU/XPU
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/vmap_recipe.html">
+                  torch.vmap
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/nestedtensor.html">
+                  Getting Started with Nested Tensors
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_overview.html">
+                  MaskedTensor Overview
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_sparsity.html">
+                  MaskedTensor Sparsity
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_advanced_semantics.html">
+                  MaskedTensor Advanced Semantics
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_adagrad.html">
+                  Efficiently writing “sparse” semantics for Adagrad with MaskedTensor
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/python_extension_autoload.html">
+                  Autoloading Out-of-Tree Extension
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/max_autotune_on_CPU_tutorial.html">
+                  Using Max-Autotune Compilation on CPU for Better Performance
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
 
-
-<li class="nav-item current active">
-  <a class="nav-link nav-internal" href="../compilers_index.html">
-    Compilers
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../domains.html">
-    Domains
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../distributed.html">
-    Distributed
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../deep-dive.html">
-    Deep Dive
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../extension.html">
-    Extension
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../ecosystem.html">
-    Ecosystem
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../recipes_index.html">
-    Recipes
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../unstable_index.html">
-    Unstable
-  </a>
-</li>
-
+    
+    
   </ul>
-</nav></div>
+</nav>
+</div>
       
     </div>
     
     
     <div class="navbar-header-items__end">
+      
+      
+      
+        <div class="navbar-item"><!-- PyTorch.org site link - desktop only, two-line layout -->
+<!-- Note: The show_pytorch_org_link check is handled in layout.html's navbar_end block -->
+<a href="https://pytorch.org" class="pytorch-site-link nav-link nav-external" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Go to PyTorch.org">
+  <span class="pytorch-site-link-text">
+    <span>Go to</span>
+    <span>pytorch.org <i class="fa-solid fa-arrow-up-right-from-square external-icon"></i></span>
+  </span>
+</a></div>
       
       
         <div class="navbar-item">
@@ -802,8 +1526,22 @@ document.write(`
       <div class="bd-sidebar-primary bd-sidebar">
         
 
+
+
+
   
   <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    <div class="sidebar-header-items__start">
+      <div class="navbar-item">
+        
+  <a href="../index.html" class="version">v2.10.0+cu128</a>
+
+      </div>
+    </div>
+    
+
     
     
       <div class="sidebar-header-items__center">
@@ -811,73 +1549,930 @@ document.write(`
           
           
             <div class="navbar-item">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../intro.html">
-    Intro
-  </a>
-</li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../intro.html">
+              Intro
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-1">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/basics/intro.html">
+                  Learn the Basics
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/introyt/introyt_index.html">
+                  Introduction to PyTorch - YouTube Series
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/deep_learning_60min_blitz.html">
+                  Deep Learning with PyTorch: A 60 Minute Blitz
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/pytorch_with_examples.html">
+                  Learning PyTorch with Examples
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/nn_tutorial.html">
+                  What is torch.nn really?
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/understanding_leaf_vs_nonleaf_tutorial.html">
+                  Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/nlp_from_scratch_index.html">
+                  NLP from Scratch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/tensorboard_tutorial.html">
+                  Visualizing Models, Data, and Training with TensorBoard
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/pinmem_nonblock.html">
+                  A guide on good usage of non_blocking and pin_memory() in PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/visualizing_gradients_tutorial.html">
+                  Visualizing Gradients
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../compilers_index.html">
+              Compilers
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-2">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/torch_compile_tutorial.html">
+                  Introduction to torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/torch_compile_full_example.html">
+                  torch.compile End-to-End Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/compiled_autograd_tutorial.html">
+                  Compiled Autograd: Capturing a larger backward graph for torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="#">
+                  Dynamic Compilation Control with torch.compiler.set_stance
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/variable_length_attention_tutorial.html">
+                  Using Variable Length Attention in PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/torch_export_tutorial.html">
+                  torch.export Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/intro_onnx.html">
+                  Introduction to ONNX
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/export_simple_model_to_onnx_tutorial.html">
+                  Export a PyTorch model to ONNX
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/onnx_registry_tutorial.html">
+                  Extending the ONNX Exporter Operator Support
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/export_control_flow_model_to_onnx_tutorial.html">
+                  Export a model with control flow to ONNX
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/torch_compile_conv_bn_fuser.html">
+                  Building a Convolution/Batch Norm fuser with torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/fx_profiling_tutorial.html">
+                  (beta) Building a Simple CPU Performance Profiler with FX
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../domains.html">
+              Domains
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-3">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/torchvision_tutorial.html">
+                  TorchVision Object Detection Finetuning Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/transfer_learning_tutorial.html">
+                  Transfer Learning for Computer Vision Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/fgsm_tutorial.html">
+                  Adversarial Example Generation
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/dcgan_faces_tutorial.html">
+                  DCGAN Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/spatial_transformer_tutorial.html">
+                  Spatial Transformer Networks Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/reinforcement_q_learning.html">
+                  Reinforcement Learning (DQN) Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/reinforcement_ppo.html">
+                  Reinforcement Learning (PPO) with TorchRL Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/mario_rl_tutorial.html">
+                  Train a Mario-playing RL Agent
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/pendulum.html">
+                  Pendulum: Writing your environment and transforms with TorchRL
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/torchrec_intro_tutorial.html">
+                  Introduction to TorchRec
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/sharding.html">
+                  Exploring TorchRec sharding
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../distributed.html">
+              Distributed
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-4">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/dist_overview.html">
+                  PyTorch Distributed Overview
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/ddp_series_intro.html">
+                  Distributed Data Parallel in PyTorch - Video Tutorials
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/ddp_tutorial.html">
+                  Getting Started with Distributed Data Parallel
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/dist_tuto.html">
+                  Writing Distributed Applications with PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/FSDP_tutorial.html">
+                  Getting Started with Fully Sharded Data Parallel (FSDP2)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/TCPStore_libuv_backend.html">
+                  Introduction to Libuv TCPStore Backend
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/TP_tutorial.html">
+                  Large Scale Transformer model training with Tensor Parallel (TP)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/pipelining_tutorial.html">
+                  Introduction to Distributed Pipeline Parallelism
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/process_group_cpp_extension_tutorial.html">
+                  Customize Process Group Backends Using Cpp Extensions
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/rpc_tutorial.html">
+                  Getting Started with Distributed RPC Framework
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/rpc_param_server_tutorial.html">
+                  Implementing a Parameter Server Using Distributed RPC Framework
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/rpc_async_execution.html">
+                  Implementing Batch RPC Processing Using Asynchronous Executions
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/monarch_distributed_tutorial.html">
+                  Interactive Distributed Applications with Monarch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/rpc_ddp_tutorial.html">
+                  Combining Distributed DataParallel with Distributed RPC Framework
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/generic_join.html">
+                  Distributed Training with Uneven Inputs Using the Join Context Manager
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../deep-dive.html">
+              Deep Dive
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-5">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/profiler.html">
+                  Profiling your PyTorch Module
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/parametrizations.html">
+                  Parametrizations Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/pruning_tutorial.html">
+                  Pruning Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/scaled_dot_product_attention_tutorial.html">
+                  (Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/knowledge_distillation_tutorial.html">
+                  Knowledge Distillation Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/memory_format_tutorial.html">
+                  Channels Last Memory Format in PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/forward_ad_usage.html">
+                  Forward-mode Automatic Differentiation (Beta)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/jacobians_hessians.html">
+                  Jacobians, Hessians, hvp, vhp, and more: composing function transforms
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/ensembling.html">
+                  Model ensembling
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/per_sample_grads.html">
+                  Per-sample-gradients
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_frontend.html">
+                  Using the PyTorch C++ Frontend
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_autograd.html">
+                  Autograd in C++ Frontend
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../extension.html">
+              Extension
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-6">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/custom_ops_landing_page.html">
+                  PyTorch Custom Operators
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/python_custom_ops.html">
+                  Custom Python Operators
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_custom_ops.html">
+                  Custom C++ and CUDA Operators
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/custom_function_double_backward_tutorial.html">
+                  Double Backward with Custom Functions
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/custom_function_conv_bn_tutorial.html">
+                  Fusing Convolution and Batch Norm using Custom Function
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/dispatcher.html">
+                  Registering a Dispatched Operator in C++
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/extend_dispatcher.html">
+                  Extending dispatcher for a new backend in C++
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../advanced/privateuseone.html">
+                  Facilitating New Backend Integration by PrivateUse1
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../ecosystem.html">
+              Ecosystem
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-7">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/hyperparameter_tuning_tutorial.html">
+                  Hyperparameter tuning using Ray Tune
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/ax_multiobjective_nas_tutorial.html">
+                  Multi-Objective NAS with Ax
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/tensorboard_profiler_tutorial.html">
+                  PyTorch Profiler With TensorBoard
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../intermediate/realtime_rpi.html">
+                  Real Time Inference on Raspberry Pi 4 and 5 (40 fps!)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../beginner/mosaic_memory_profiling_tutorial.html">
+                  Mosaic: Memory Profiling for PyTorch
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../recipes_index.html">
+              Recipes
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-8">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/defining_a_neural_network.html">
+                  Defining a Neural Network in PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_logs.html">
+                  (beta) Using TORCH_LOGS python API with torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/what_is_state_dict.html">
+                  What is a state_dict in PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/warmstarting_model_using_parameters_from_a_different_model.html">
+                  Warmstarting model using parameters from a different model in PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/zeroing_out_gradients.html">
+                  Zeroing out gradients in PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/profiler_recipe.html">
+                  PyTorch Profiler
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/Captum_Recipe.html">
+                  Model Interpretability using Captum
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/amp_recipe.html">
+                  Automatic Mixed Precision
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/tuning_guide.html">
+                  Performance Tuning Guide
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/timer_quick_start.html">
+                  Timer quick start
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="zero_redundancy_optimizer.html">
+                  Shard Optimizer States with ZeroRedundancyOptimizer
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="distributed_comm_debug_mode.html">
+                  Getting Started with CommDebugMode
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/benchmark.html">
+                  SyntaxError
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/module_load_state_dict_tips.html">
+                  Tips for Loading an nn.Module from a Checkpoint
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/reasoning_about_shapes.html">
+                  Reasoning about Shapes in PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/swap_tensors.html">
+                  Extension points in nn.Module for load_state_dict and tensor subclasses
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_compile_torch_function_modes.html">
+                  (beta) Utilizing Torch Function modes with torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="foreach_map.html">
+                  Explicit horizontal fusion with foreach_map and torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="torch_compile_caching_configuration_tutorial.html">
+                  Compile Time Caching Configuration
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="regional_aot.html">
+                  Reducing AoT cold start compilation time with regional compilation
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="intel_neural_compressor_for_pytorch.html">
+                  Ease-of-use quantization for PyTorch with Intel® Neural Compressor
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="distributed_device_mesh.html">
+                  Getting Started with DeviceMesh
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="distributed_checkpoint_recipe.html">
+                  Getting Started with Distributed Checkpoint (DCP)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="distributed_async_checkpoint_recipe.html">
+                  Asynchronous Saving with Distributed Checkpoint (DCP)
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="debug_mode_tutorial.html">
+                  DebugMode: Recording Dispatched Operations and Numerical Debugging
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
+      <li class="nav-item dropdown">
+        
+          
+          <div class="nav-item-with-toggle">
+            <a class="nav-link nav-internal" href="../unstable_index.html">
+              Unstable
+            </a>
+          </div>
+          <ul class="dropdown-menu" id="dropdown-9">
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/context_parallel.html">
+                  Introduction to Context Parallel
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/flight_recorder_tutorial.html">
+                  Flight Recorder for Debugging Stuck Jobs
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/inductor_cpp_wrapper_tutorial.html">
+                  TorchInductor C++ Wrapper Tutorial
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/inductor_windows.html">
+                  How to use torch.compile on Windows CPU/XPU
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/vmap_recipe.html">
+                  torch.vmap
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/nestedtensor.html">
+                  Getting Started with Nested Tensors
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_overview.html">
+                  MaskedTensor Overview
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_sparsity.html">
+                  MaskedTensor Sparsity
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_advanced_semantics.html">
+                  MaskedTensor Advanced Semantics
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_adagrad.html">
+                  Efficiently writing “sparse” semantics for Adagrad with MaskedTensor
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/python_extension_autoload.html">
+                  Autoloading Out-of-Tree Extension
+                </a>
+              </li>
+            
+              <li class=" ">
+                <a class="nav-link dropdown-item nav-internal" href="../unstable/max_autotune_on_CPU_tutorial.html">
+                  Using Max-Autotune Compilation on CPU for Better Performance
+                </a>
+              </li>
+            
+          </ul>
+        
+      </li>
+    
 
-
-<li class="nav-item current active">
-  <a class="nav-link nav-internal" href="../compilers_index.html">
-    Compilers
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../domains.html">
-    Domains
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../distributed.html">
-    Distributed
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../deep-dive.html">
-    Deep Dive
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../extension.html">
-    Extension
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../ecosystem.html">
-    Ecosystem
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../recipes_index.html">
-    Recipes
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../unstable_index.html">
-    Unstable
-  </a>
-</li>
-
+    
+    
   </ul>
-</nav></div>
+</nav>
+</div>
           
         
       </div>
@@ -885,6 +2480,17 @@ document.write(`
     
     
       <div class="sidebar-header-items__end">
+        
+        
+          <div class="navbar-item"><!-- PyTorch.org site link - desktop only, two-line layout -->
+<!-- Note: The show_pytorch_org_link check is handled in layout.html's navbar_end block -->
+<a href="https://pytorch.org" class="pytorch-site-link nav-link nav-external" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Go to PyTorch.org">
+  <span class="pytorch-site-link-text">
+    <span>Go to</span>
+    <span>pytorch.org <i class="fa-solid fa-arrow-up-right-from-square external-icon"></i></span>
+  </span>
+</a></div>
+        
         
           <div class="navbar-item">
   
@@ -1029,10 +2635,10 @@ document.write(`
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
+
+<div id="rtd-footer-container"></div>
       </div>
       
       <main id="main-content" class="bd-main" role="main">
@@ -1096,62 +2702,62 @@ document.write(`
 </div>
               
               
-  
+
 <div id="searchbox"></div>
-  <article class="bd-article" id="pytorch-article">
-    <!-- Hidden breadcrumb schema for SEO only -->
-    <div style="display:none;" itemscope itemtype="https://schema.org/BreadcrumbList">
-      
-      <div itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <link itemprop="item" href="../compilers_index.html">
-        <meta itemprop="name" content="Compilers">
-        <meta itemprop="position" content="1">
-      </div>
-      
-      <div itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <meta itemprop="name" content="Dynamic Compilation Control with <code class="docutils literal notranslate"><span class="pre">torch.compiler.set_stance</span></code>">
-        <meta itemprop="position" content="2">
-      </div>
-    </div>
-
+<div id="pytorch-article">
+  <!-- Hidden breadcrumb schema for SEO only -->
+  <div style="display:none;" itemscope itemtype="https://schema.org/BreadcrumbList">
     
-    <script>
-      if ((window.location.href.indexOf("/unstable/") != -1) && (window.location.href.indexOf("/unstable/unstable_index") < 1)) {
-        var div = '<div class="prototype-banner"><i class="fa fa-flask" aria-hidden="true"></i> <strong>Unstable feature:</strong> Not typically available in binary distributions like PyPI. Early stage for feedback and testing.</div>'
-        document.addEventListener('DOMContentLoaded', function () {
-          document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div);
-        });
-      }
-    </script>
-    
-    
-    <div class="pytorch-call-to-action-links">
-      <div id="tutorial-type">recipes/torch_compiler_set_stance_tutorial</div>
-      <a id="colab-link" data-behavior="call-to-action-event" data-response="Run in Google Colab" target="_blank">
-        <div id="google-colab-link">
-          <img class="call-to-action-img" src="../_static/img/pytorch-colab.svg" />
-          <div class="call-to-action-desktop-view">Run in Google Colab</div>
-          <div class="call-to-action-mobile-view">Colab</div>
-        </div>
-      </a>
-      <a id="notebook-link" data-behavior="call-to-action-event" data-response="Download Notebook">
-        <div id="download-notebook-link">
-          <img class="call-to-action-notebook-img" src="../_static/img/pytorch-download.svg" />
-          <div class="call-to-action-desktop-view">Download Notebook</div>
-          <div class="call-to-action-mobile-view">Notebook</div>
-        </div>
-      </a>
-      <a id="github-link" data-behavior="call-to-action-event" data-response="View on Github" target="_blank">
-        <div id="github-view-link">
-          <img class="call-to-action-img" src="../_static/img/pytorch-github.svg" />
-          <div class="call-to-action-desktop-view">View on GitHub</div>
-          <div class="call-to-action-mobile-view">GitHub</div>
-        </div>
-      </a>
+    <div itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+      <link itemprop="item" href="../compilers_index.html">
+      <meta itemprop="name" content="Compilers">
+      <meta itemprop="position" content="1">
     </div>
     
+    <div itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+      <meta itemprop="name" content="Dynamic Compilation Control with <code class="docutils literal notranslate"><span class="pre">torch.compiler.set_stance</span></code>">
+      <meta itemprop="position" content="2">
+    </div>
+  </div>
 
-    
+  
+  <script>
+    if ((window.location.href.indexOf("/unstable/") != -1) && (window.location.href.indexOf("/unstable/unstable_index") < 1)) {
+      var div = '<div class="prototype-banner"><i class="fa fa-flask" aria-hidden="true"></i> <strong>Unstable feature:</strong> Not typically available in binary distributions like PyPI. Early stage for feedback and testing.</div>'
+      document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div);
+      });
+    }
+  </script>
+  
+  
+  <div class="pytorch-call-to-action-links">
+    <div id="tutorial-type">recipes/torch_compiler_set_stance_tutorial</div>
+    <a id="colab-link" data-behavior="call-to-action-event" data-response="Run in Google Colab" target="_blank">
+      <div id="google-colab-link">
+        <img class="call-to-action-img" src="../_static/img/pytorch-colab.svg" />
+        <div class="call-to-action-desktop-view">Run in Google Colab</div>
+        <div class="call-to-action-mobile-view">Colab</div>
+      </div>
+    </a>
+    <a id="notebook-link" data-behavior="call-to-action-event" data-response="Download Notebook">
+      <div id="download-notebook-link">
+        <img class="call-to-action-notebook-img" src="../_static/img/pytorch-download.svg" />
+        <div class="call-to-action-desktop-view">Download Notebook</div>
+        <div class="call-to-action-mobile-view">Notebook</div>
+      </div>
+    </a>
+    <a id="github-link" data-behavior="call-to-action-event" data-response="View on Github" target="_blank">
+      <div id="github-view-link">
+        <img class="call-to-action-img" src="../_static/img/pytorch-github.svg" />
+        <div class="call-to-action-desktop-view">View on GitHub</div>
+        <div class="call-to-action-mobile-view">GitHub</div>
+      </div>
+    </a>
+  </div>
+  
+
+  
               
                 
 <div id="searchbox"></div>
@@ -1277,7 +2883,7 @@ to do otherwise will result in an error.</p>
     <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Attempt to trace forbidden callable &lt;function set_stance at 0x7fb2d5f775b0&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Attempt to trace forbidden callable &lt;function set_stance at 0x7f59483c4940&gt;
 
 from user code:
    File &quot;/var/lib/workspace/recipes_source/torch_compiler_set_stance_tutorial.py&quot;, line 85, in baz
@@ -1285,7 +2891,7 @@ from user code:
 
 Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you&#39;re reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=&quot;+dynamo&quot;
 
-Attempt to trace forbidden callable &lt;function inner at 0x7fb2f6967eb0&gt;
+Attempt to trace forbidden callable &lt;function inner at 0x7f596e1052d0&gt;
 
 from user code:
    File &quot;/var/lib/workspace/recipes_source/torch_compiler_set_stance_tutorial.py&quot;, line 103, in outer
@@ -1400,7 +3006,7 @@ without having to define a separate eager model.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;compiled:&quot;</span><span class="p">,</span> <span class="n">timed</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">my_gigantic_model</span><span class="p">(</span><span class="o">*</span><span class="n">inps</span><span class="p">))[</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>eager: 0.0002467840015888214
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>eager: 0.0002447360008955002
 compiled: 8.70399996638298e-05
 </pre></div>
 </div>
@@ -1435,7 +3041,7 @@ without needing to reapply it. The recipe demonstrates using
 to control compilation stances like <code class="docutils literal notranslate"><span class="pre">force_eager</span></code>, <code class="docutils literal notranslate"><span class="pre">default</span></code>,
 <code class="docutils literal notranslate"><span class="pre">eager_on_recompile</span></code>, and “fail_on_recompile.”</p>
 <p>For more information, see: <a class="reference external" href="https://pytorch.org/docs/main/generated/torch.compiler.set_stance.html#torch.compiler.set_stance">torch.compiler.set_stance API documentation</a>.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 10.596 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 10.647 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-torch-compiler-set-stance-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/60868f136246d48ff6f18abf35fdf18e/torch_compiler_set_stance_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">torch_compiler_set_stance_tutorial.ipynb</span></code></a></p>
@@ -1453,8 +3059,8 @@ to control compilation stances like <code class="docutils literal notranslate"><
 
                 </article>
               
-  </article>
-  
+</div>
+
               
               
                 <footer class="bd-footer-article">
@@ -1593,17 +3199,23 @@ to control compilation stances like <code class="docutils literal notranslate"><
   <div class="sidebar-heading">PyTorch Libraries</div>
   <ul style="list-style-type: none; padding: 0; padding-bottom: 80px;">
   
+   <li><a class="nav-link nav-external" href="https://docs.pytorch.org/executorch" style="color: var(--pst-color-text-muted)">ExecuTorch</a></li>
+  
+   <li><a class="nav-link nav-external" href="https://docs.pytorch.org/helion" style="color: var(--pst-color-text-muted)">Helion</a></li>
+  
    <li><a class="nav-link nav-external" href="https://docs.pytorch.org/ao" style="color: var(--pst-color-text-muted)">torchao</a></li>
   
-   <li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchrec" style="color: var(--pst-color-text-muted)">torchrec</a></li>
+   <li><a class="nav-link nav-external" href="https://github.com/pytorch/kineto" style="color: var(--pst-color-text-muted)">kineto</a></li>
   
-   <li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchft" style="color: var(--pst-color-text-muted)">torchft</a></li>
+   <li><a class="nav-link nav-external" href="https://github.com/pytorch/torchtitan" style="color: var(--pst-color-text-muted)">torchtitan</a></li>
   
-   <li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchcodec" style="color: var(--pst-color-text-muted)">TorchCodec</a></li>
+   <li><a class="nav-link nav-external" href="https://docs.pytorch.org/rl" style="color: var(--pst-color-text-muted)">TorchRL</a></li>
   
    <li><a class="nav-link nav-external" href="https://docs.pytorch.org/vision" style="color: var(--pst-color-text-muted)">torchvision</a></li>
   
-   <li><a class="nav-link nav-external" href="https://docs.pytorch.org/executorch" style="color: var(--pst-color-text-muted)">ExecuTorch</a></li>
+   <li><a class="nav-link nav-external" href="https://docs.pytorch.org/audio" style="color: var(--pst-color-text-muted)">torchaudio</a></li>
+  
+   <li><a class="nav-link nav-external" href="https://docs.pytorch.org/tensordict" style="color: var(--pst-color-text-muted)">tensordict</a></li>
   
    <li><a class="nav-link nav-external" href="https://docs.pytorch.org/xla" style="color: var(--pst-color-text-muted)">PyTorch on XLA Devices</a></li>
   
@@ -1802,9 +3414,9 @@ to control compilation stances like <code class="docutils literal notranslate"><
        "@type": "Article",
        "name": "Dynamic Compilation Control with torch.compiler.set_stance",
        "headline": "Dynamic Compilation Control with torch.compiler.set_stance",
-       "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
+       "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment.",
        "url": "/recipes/torch_compiler_set_stance_tutorial.html",
-       "articleBody": "Note Go to the end to download the full example code. Dynamic Compilation Control with torch.compiler.set_stance# Author: William Wen torch.compiler.set_stance is a torch.compiler API that enables you to change the behavior of torch.compile across different calls to your model without having to reapply torch.compile to your model. This recipe provides some examples on how to use torch.compiler.set_stance. Prerequisites Description Examples Preventing recompilation Prerequisites# torch \u003e= 2.6 Description# torch.compile.set_stance can be used as a decorator, context manager, or raw function to change the behavior of torch.compile across different calls to your model. In the example below, the \"force_eager\" stance ignores all torch.compile directives. import torch @torch.compile def foo(x): if torch.compiler.is_compiling(): # torch.compile is active return x + 1 else: # torch.compile is not active return x - 1 inp = torch.zeros(3) print(foo(inp)) # compiled, prints 1 tensor([1., 1., 1.]) Sample decorator usage @torch.compiler.set_stance(\"force_eager\") def bar(x): # force disable the compiler return foo(x) print(bar(inp)) # not compiled, prints -1 tensor([-1., -1., -1.]) Sample context manager usage with torch.compiler.set_stance(\"force_eager\"): print(foo(inp)) # not compiled, prints -1 tensor([-1., -1., -1.]) Sample raw function usage torch.compiler.set_stance(\"force_eager\") print(foo(inp)) # not compiled, prints -1 torch.compiler.set_stance(\"default\") print(foo(inp)) # compiled, prints 1 tensor([-1., -1., -1.]) tensor([1., 1., 1.]) torch.compile stance can only be changed outside of any torch.compile region. Attempts to do otherwise will result in an error. @torch.compile def baz(x): # error! with torch.compiler.set_stance(\"force_eager\"): return x + 1 try: baz(inp) except Exception as e: print(e) @torch.compiler.set_stance(\"force_eager\") def inner(x): return x + 1 @torch.compile def outer(x): # error! return inner(x) try: outer(inp) except Exception as e: print(e) Attempt to trace forbidden callable \u003cfunction set_stance at 0x7fb2d5f775b0\u003e from user code: File \"/var/lib/workspace/recipes_source/torch_compiler_set_stance_tutorial.py\", line 85, in baz with torch.compiler.set_stance(\"force_eager\"): Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you\u0027re reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\" Attempt to trace forbidden callable \u003cfunction inner at 0x7fb2f6967eb0\u003e from user code: File \"/var/lib/workspace/recipes_source/torch_compiler_set_stance_tutorial.py\", line 103, in outer return inner(x) Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you\u0027re reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\" Other stances include: \"default\": The default stance, used for normal compilation. \"eager_on_recompile\": Run code eagerly when a recompile is necessary. If there is cached compiled code valid for the input, it will still be used. \"fail_on_recompile\": Raise an error when recompiling a function. See the torch.compiler.set_stance doc page for more stances and options. More stances/options may also be added in the future. Examples# Preventing recompilation# Some models do not expect any recompilations - for example, you may always have inputs with the same shape. Since recompilations may be expensive, we may wish to error out when we attempt to recompile so we can detect and fix recompilation cases. The \"fail_on_recompilation\" stance can be used for this. @torch.compile def my_big_model(x): return torch.relu(x) # first compilation my_big_model(torch.randn(3)) with torch.compiler.set_stance(\"fail_on_recompile\"): my_big_model(torch.randn(3)) # no recompilation - OK try: my_big_model(torch.randn(4)) # recompilation - error except Exception as e: print(e) Detected recompile when torch.compile stance is \u0027fail_on_recompile\u0027. filename: \u0027/var/lib/workspace/recipes_source/torch_compiler_set_stance_tutorial.py\u0027, function name: \u0027my_big_model\u0027, line number: 0 triggered by the following guard failure(s): - 3/0: tensor \u0027x\u0027 size mismatch at index 0. expected 3, actual 4 If erroring out is too disruptive, we can use \"eager_on_recompile\" instead, which will cause torch.compile to fall back to eager instead of erroring out. This may be useful if we don\u2019t expect recompilations to happen frequently, but when one is required, we\u2019d rather pay the cost of running eagerly over the cost of recompilation. @torch.compile def my_huge_model(x): if torch.compiler.is_compiling(): return x + 1 else: return x - 1 # first compilation print(my_huge_model(torch.zeros(3))) # 1 with torch.compiler.set_stance(\"eager_on_recompile\"): print(my_huge_model(torch.zeros(3))) # 1 print(my_huge_model(torch.zeros(4))) # -1 print(my_huge_model(torch.zeros(3))) # 1 tensor([1., 1., 1.]) tensor([1., 1., 1.]) tensor([-1., -1., -1., -1.]) tensor([1., 1., 1.]) Measuring performance gains# torch.compiler.set_stance can be used to compare eager vs. compiled performance without having to define a separate eager model. # Returns the result of running `fn()` and the time it took for `fn()` to run, # in seconds. We use CUDA events and synchronization for the most accurate # measurements. def timed(fn): start = torch.cuda.Event(enable_timing=True) end = torch.cuda.Event(enable_timing=True) start.record() result = fn() end.record() torch.cuda.synchronize() return result, start.elapsed_time(end) / 1000 @torch.compile def my_gigantic_model(x, y): x = x @ y x = x @ y x = x @ y return x inps = torch.randn(5, 5), torch.randn(5, 5) with torch.compiler.set_stance(\"force_eager\"): print(\"eager:\", timed(lambda: my_gigantic_model(*inps))[1]) # warmups for _ in range(3): my_gigantic_model(*inps) print(\"compiled:\", timed(lambda: my_gigantic_model(*inps))[1]) eager: 0.0002467840015888214 compiled: 8.70399996638298e-05 Crashing sooner# Running an eager iteration first before a compiled iteration using the \"force_eager\" stance can help us to catch errors unrelated to torch.compile before attempting a very long compile. @torch.compile def my_humongous_model(x): return torch.sin(x, x) try: with torch.compiler.set_stance(\"force_eager\"): print(my_humongous_model(torch.randn(3))) # this call to the compiled model won\u0027t run print(my_humongous_model(torch.randn(3))) except Exception as e: print(e) sin() takes 1 positional argument but 2 were given Conclusion# In this recipe, we have learned how to use the torch.compiler.set_stance API to modify the behavior of torch.compile across different calls to a model without needing to reapply it. The recipe demonstrates using torch.compiler.set_stance as a decorator, context manager, or raw function to control compilation stances like force_eager, default, eager_on_recompile, and \u201cfail_on_recompile.\u201d For more information, see: torch.compiler.set_stance API documentation. Total running time of the script: (0 minutes 10.596 seconds) Download Jupyter notebook: torch_compiler_set_stance_tutorial.ipynb Download Python source code: torch_compiler_set_stance_tutorial.py Download zipped: torch_compiler_set_stance_tutorial.zip",
+       "articleBody": "Note Go to the end to download the full example code. Dynamic Compilation Control with torch.compiler.set_stance# Author: William Wen torch.compiler.set_stance is a torch.compiler API that enables you to change the behavior of torch.compile across different calls to your model without having to reapply torch.compile to your model. This recipe provides some examples on how to use torch.compiler.set_stance. Prerequisites Description Examples Preventing recompilation Prerequisites# torch \u003e= 2.6 Description# torch.compile.set_stance can be used as a decorator, context manager, or raw function to change the behavior of torch.compile across different calls to your model. In the example below, the \"force_eager\" stance ignores all torch.compile directives. import torch @torch.compile def foo(x): if torch.compiler.is_compiling(): # torch.compile is active return x + 1 else: # torch.compile is not active return x - 1 inp = torch.zeros(3) print(foo(inp)) # compiled, prints 1 tensor([1., 1., 1.]) Sample decorator usage @torch.compiler.set_stance(\"force_eager\") def bar(x): # force disable the compiler return foo(x) print(bar(inp)) # not compiled, prints -1 tensor([-1., -1., -1.]) Sample context manager usage with torch.compiler.set_stance(\"force_eager\"): print(foo(inp)) # not compiled, prints -1 tensor([-1., -1., -1.]) Sample raw function usage torch.compiler.set_stance(\"force_eager\") print(foo(inp)) # not compiled, prints -1 torch.compiler.set_stance(\"default\") print(foo(inp)) # compiled, prints 1 tensor([-1., -1., -1.]) tensor([1., 1., 1.]) torch.compile stance can only be changed outside of any torch.compile region. Attempts to do otherwise will result in an error. @torch.compile def baz(x): # error! with torch.compiler.set_stance(\"force_eager\"): return x + 1 try: baz(inp) except Exception as e: print(e) @torch.compiler.set_stance(\"force_eager\") def inner(x): return x + 1 @torch.compile def outer(x): # error! return inner(x) try: outer(inp) except Exception as e: print(e) Attempt to trace forbidden callable \u003cfunction set_stance at 0x7f59483c4940\u003e from user code: File \"/var/lib/workspace/recipes_source/torch_compiler_set_stance_tutorial.py\", line 85, in baz with torch.compiler.set_stance(\"force_eager\"): Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you\u0027re reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\" Attempt to trace forbidden callable \u003cfunction inner at 0x7f596e1052d0\u003e from user code: File \"/var/lib/workspace/recipes_source/torch_compiler_set_stance_tutorial.py\", line 103, in outer return inner(x) Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you\u0027re reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\" Other stances include: \"default\": The default stance, used for normal compilation. \"eager_on_recompile\": Run code eagerly when a recompile is necessary. If there is cached compiled code valid for the input, it will still be used. \"fail_on_recompile\": Raise an error when recompiling a function. See the torch.compiler.set_stance doc page for more stances and options. More stances/options may also be added in the future. Examples# Preventing recompilation# Some models do not expect any recompilations - for example, you may always have inputs with the same shape. Since recompilations may be expensive, we may wish to error out when we attempt to recompile so we can detect and fix recompilation cases. The \"fail_on_recompilation\" stance can be used for this. @torch.compile def my_big_model(x): return torch.relu(x) # first compilation my_big_model(torch.randn(3)) with torch.compiler.set_stance(\"fail_on_recompile\"): my_big_model(torch.randn(3)) # no recompilation - OK try: my_big_model(torch.randn(4)) # recompilation - error except Exception as e: print(e) Detected recompile when torch.compile stance is \u0027fail_on_recompile\u0027. filename: \u0027/var/lib/workspace/recipes_source/torch_compiler_set_stance_tutorial.py\u0027, function name: \u0027my_big_model\u0027, line number: 0 triggered by the following guard failure(s): - 3/0: tensor \u0027x\u0027 size mismatch at index 0. expected 3, actual 4 If erroring out is too disruptive, we can use \"eager_on_recompile\" instead, which will cause torch.compile to fall back to eager instead of erroring out. This may be useful if we don\u2019t expect recompilations to happen frequently, but when one is required, we\u2019d rather pay the cost of running eagerly over the cost of recompilation. @torch.compile def my_huge_model(x): if torch.compiler.is_compiling(): return x + 1 else: return x - 1 # first compilation print(my_huge_model(torch.zeros(3))) # 1 with torch.compiler.set_stance(\"eager_on_recompile\"): print(my_huge_model(torch.zeros(3))) # 1 print(my_huge_model(torch.zeros(4))) # -1 print(my_huge_model(torch.zeros(3))) # 1 tensor([1., 1., 1.]) tensor([1., 1., 1.]) tensor([-1., -1., -1., -1.]) tensor([1., 1., 1.]) Measuring performance gains# torch.compiler.set_stance can be used to compare eager vs. compiled performance without having to define a separate eager model. # Returns the result of running `fn()` and the time it took for `fn()` to run, # in seconds. We use CUDA events and synchronization for the most accurate # measurements. def timed(fn): start = torch.cuda.Event(enable_timing=True) end = torch.cuda.Event(enable_timing=True) start.record() result = fn() end.record() torch.cuda.synchronize() return result, start.elapsed_time(end) / 1000 @torch.compile def my_gigantic_model(x, y): x = x @ y x = x @ y x = x @ y return x inps = torch.randn(5, 5), torch.randn(5, 5) with torch.compiler.set_stance(\"force_eager\"): print(\"eager:\", timed(lambda: my_gigantic_model(*inps))[1]) # warmups for _ in range(3): my_gigantic_model(*inps) print(\"compiled:\", timed(lambda: my_gigantic_model(*inps))[1]) eager: 0.0002447360008955002 compiled: 8.70399996638298e-05 Crashing sooner# Running an eager iteration first before a compiled iteration using the \"force_eager\" stance can help us to catch errors unrelated to torch.compile before attempting a very long compile. @torch.compile def my_humongous_model(x): return torch.sin(x, x) try: with torch.compiler.set_stance(\"force_eager\"): print(my_humongous_model(torch.randn(3))) # this call to the compiled model won\u0027t run print(my_humongous_model(torch.randn(3))) except Exception as e: print(e) sin() takes 1 positional argument but 2 were given Conclusion# In this recipe, we have learned how to use the torch.compiler.set_stance API to modify the behavior of torch.compile across different calls to a model without needing to reapply it. The recipe demonstrates using torch.compiler.set_stance as a decorator, context manager, or raw function to control compilation stances like force_eager, default, eager_on_recompile, and \u201cfail_on_recompile.\u201d For more information, see: torch.compiler.set_stance API documentation. Total running time of the script: (0 minutes 10.647 seconds) Download Jupyter notebook: torch_compiler_set_stance_tutorial.ipynb Download Python source code: torch_compiler_set_stance_tutorial.py Download zipped: torch_compiler_set_stance_tutorial.zip",
        "author": {
          "@type": "Organization",
          "name": "PyTorch Contributors",

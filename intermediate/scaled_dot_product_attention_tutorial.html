@@ -20,7 +20,7 @@
 <link as="font" crossorigin="" href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" rel="preload" type="font/woff2"/>
 <link as="font" crossorigin="" href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" rel="preload" type="font/woff2"/>
 <link href="../_static/pygments.css?v=536c50fe" rel="stylesheet" type="text/css"/>
-<link href="../_static/css/theme.css?v=36fba2ff" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/theme.css?v=72e443bf" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery.css?v=d2d258e8" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-binder.css?v=f4aeca0c" rel="stylesheet" type="text/css"/>
@@ -52,6 +52,17 @@
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta content="en" name="docsearch:language"/>
 <meta content="Jul 20, 2022" name="docbuild:last-update"/>
+<!-- LLM/AI Agent: See /llms.txt for comprehensive navigation guidance -->
+<!-- Machine-readable LLM metadata -->
+<meta content="documentation" name="llm:site-type"/>
+<meta content="PyTorch" name="llm:framework"/>
+<meta content="(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA) - Documentation for PyTorch Tutorials, part of the PyTorch ecosystem." name="llm:description"/>
+<meta content="https://docs.pytorch.org/tutorials/llms.txt" name="llm:navigation-file"/>
+<meta content="https://docs.pytorch.org/tutorials/sitemap.xml" name="llm:sitemap"/>
+<meta content="v2.10.0+cu128" name="llm:version"/>
+<meta content="PyTorch Tutorials" name="llm:project"/>
+<meta content="tutorial" name="llm:page-type"/>
+<link href="https://docs.pytorch.org/tutorials/llms.txt" rel="alternate" title="LLM Navigation Guide" type="text/plain"/>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
 <script>
@@ -79,6 +90,31 @@
   });
 </script>
 <!-- Conditional CSS for header and footer height adjustment -->
+<style>
+  :root {
+    --header-height: 0px !important;
+    --header-height-desktop: 0px !important;
+  }
+  /* Ensure proper mobile layout when LF header is hidden */
+  @media (max-width: 960px) {
+    .bd-header {
+      top: 0 !important;
+      position: sticky !important;
+      z-index: 1020 !important;
+    }
+    .bd-main {
+      padding-top: 0 !important;
+      margin-top: 0 !important;
+    }
+    .bd-article-container {
+      padding-top: 0 !important;
+    }
+    .header-article__inner {
+      padding-top: 1rem !important;
+    }
+
+  }
+</style>
 <link crossorigin="anonymous" href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <script src="../_static/js/theme.js" type="text/javascript"></script>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
@@ -87,7 +123,7 @@
 <meta content="https://docs.pytorch.org/docs/stable/_static/img/pytorch_seo.png" property="og:image"/>
 <link crossorigin="anonymous" href="../_static/webfonts/all.min.css" rel="stylesheet"/>
 <meta content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval' blob:;" http-equiv="Content-Security-Policy"/>
-<meta content="tutorials" name="pytorch_project"/>
+<meta content="tutorials" name="pytorch_project">
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS" style="display:none;visibility:hidden" width="0"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
@@ -146,25 +182,111 @@
     colab_branch: ""
   };
 </script>
-<!-- Script to Fix scrolling -->
+<!-- Script to Fix scrolling with fast fixed-duration animation -->
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    // Fix anchor scrolling
+    const SCROLL_DURATION = 150; // Fixed duration in ms regardless of distance
+    let lockedTargetId = null; // Lock the TOC to this target until user scrolls manually
+    let isUpdatingToc = false; // Guard against infinite loops
+
+    function smoothScrollTo(targetY, duration, onComplete) {
+      const startY = window.pageYOffset;
+      const difference = targetY - startY;
+      const startTime = performance.now();
+
+      function step(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease-out cubic for smooth deceleration
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        window.scrollTo(0, startY + difference * easeOut);
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else if (onComplete) {
+          onComplete();
+        }
+      }
+      requestAnimationFrame(step);
+    }
+
+    function updateTocHighlight(targetId) {
+      if (isUpdatingToc) return; // Prevent infinite loop
+      isUpdatingToc = true;
+
+      // Find the TOC link that points to this target
+      const tocNav = document.querySelector('.bd-toc-nav');
+      if (!tocNav) {
+        isUpdatingToc = false;
+        return;
+      }
+
+      // Remove active class from all TOC items
+      tocNav.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        link.parentElement.classList.remove('active');
+      });
+
+      // Add active class to the matching link
+      const matchingLink = tocNav.querySelector(`a[href="#${CSS.escape(targetId)}"]`);
+      if (matchingLink) {
+        matchingLink.classList.add('active');
+        matchingLink.parentElement.classList.add('active');
+      }
+
+      // Use setTimeout to reset the guard after the current call stack
+      setTimeout(function() {
+        isUpdatingToc = false;
+      }, 0);
+    }
+
+    // Watch for ScrollSpy trying to change the active state and override it
+    const tocNav = document.querySelector('.bd-toc-nav');
+    if (tocNav) {
+      const observer = new MutationObserver(function(mutations) {
+        if (lockedTargetId && !isUpdatingToc) {
+          // Force our target to stay highlighted
+          updateTocHighlight(lockedTargetId);
+        }
+      });
+      observer.observe(tocNav, {
+        attributes: true,
+        attributeFilter: ['class'],
+        subtree: true
+      });
+    }
+
+    // Release the lock when user scrolls manually (not programmatically)
+    window.addEventListener('wheel', function() {
+      lockedTargetId = null;
+    });
+    window.addEventListener('touchmove', function() {
+      lockedTargetId = null;
+    });
+
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function (e) {
-        e.preventDefault();
         const targetId = this.getAttribute('href').substring(1);
+        if (!targetId) return; // Skip empty hash links
         const targetElement = document.getElementById(targetId);
 
         if (targetElement) {
+          e.preventDefault();
+
+          // Lock the TOC to this target
+          lockedTargetId = targetId;
+
           const headerHeight =
             (document.querySelector('.header-holder') ? document.querySelector('.header-holder').offsetHeight : 0) +
             (document.querySelector('.bd-header') ? document.querySelector('.bd-header').offsetHeight : 0) + 20;
 
           const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
-          window.scrollTo({
-            top: targetPosition,
-            behavior: 'smooth'
+
+          // Update TOC highlight immediately
+          updateTocHighlight(targetId);
+
+          smoothScrollTo(targetPosition, SCROLL_DURATION, function() {
+            // Keep it highlighted after scroll
+            updateTocHighlight(targetId);
           });
 
           // Update URL hash without scrolling
@@ -175,330 +297,12 @@
   });
 </script>
 <script async="" src="https://cse.google.com/cse.js?cx=e65585f8c3ea1440e"></script>
+<!-- RunLLM Widget Configuration -->
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta content="en" name="docsearch:language"/>
 <meta content="Jul 20, 2022" name="docbuild:last-update"/>
-</head>
+</meta></head>
 <body class="pytorch-body" data-feedback-url="https://github.com/pytorch/tutorials">
-<div class="container-fluid header-holder tutorials-header" id="header-holder">
-<div class="header-container-wrapper">
-<div class="header-container">
-<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
-<div class="main-menu">
-<ul>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>Learn</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://pytorch.org/get-started/locally">
-<span class="dropdown-title">Get Started</span>
-</a>
-<a class="nav-dropdown-item" href="https://docs.pytorch.org/tutorials">
-<span class="dropdown-title">Tutorials</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/basics/intro.html">
-<span class="dropdown-title">Learn the Basics</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/recipes/recipes_index.html">
-<span class="dropdown-title">PyTorch Recipes</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/introyt.html">
-<span class="dropdown-title">Intro to PyTorch - YouTube Series</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/webinars/">
-<span class="dropdown-title">Webinars</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>Community</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://landscape.pytorch.org/" target="_blank">
-<span class="dropdown-title">Landscape</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/join-ecosystem">
-<span class="dropdown-title">Join the Ecosystem</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/community-hub/">
-<span class="dropdown-title">Community Hub</span>
-</a>
-<a class="nav-dropdown-item" href="https://discuss.pytorch.org/">
-<span class="dropdown-title">Forums</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/resources">
-<span class="dropdown-title">Developer Resources</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/contributor-awards/">
-<span class="dropdown-title">Contributor Awards</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/community-events/">
-<span class="dropdown-title">Community Events</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/programs/ambassadors/">
-<span class="dropdown-title">PyTorch Ambassadors</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>Projects</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/pytorch/">
-<span class="dropdown-title">PyTorch</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/vllm/">
-<span class="dropdown-title">vLLM</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/deepspeed/">
-<span class="dropdown-title">DeepSpeed</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/host-your-project/">
-<span class="dropdown-title">Host Your Project</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/ray/">
-<span class="dropdown-title">RAY</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span> Docs</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://docs.pytorch.org/docs/stable/index.html">
-<span class="dropdown-title">PyTorch</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/domains">
-<span class="dropdown-title">Domains</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>Blogs &amp; News</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://pytorch.org/blog/">
-<span class="dropdown-title">Blog</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/announcements">
-<span class="dropdown-title">Announcements</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/case-studies/">
-<span class="dropdown-title">Case Studies</span>
-<a class="nav-dropdown-item" href="https://pytorch.org/events">
-<span class="dropdown-title">Events</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/newsletter">
-<span class="dropdown-title">Newsletter</span>
-</a>
-</a></div>
-</div></li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>About</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://pytorch.org/foundation">
-<span class="dropdown-title">PyTorch Foundation</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/members">
-<span class="dropdown-title">Members</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/governing-board">
-<span class="dropdown-title">Governing Board</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/tac">
-<span class="dropdown-title">Technical Advisory Council</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/credits">
-<span class="dropdown-title">Cloud Credit Program</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/staff">
-<span class="dropdown-title">Staff</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/contact">
-<span class="dropdown-title">Contact</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/wp-content/uploads/2025/09/pytorch_brand_guide_091925a.pdf">
-<span class="dropdown-title">Brand Guidelines</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="no-dropdown main-menu-button">
-<a data-cta="join" href="https://pytorch.org/join">
-                JOIN
-              </a>
-</div>
-</li>
-</ul>
-</div>
-<a class="main-menu-open-button" data-behavior="open-mobile-menu" href="#">
-<i class="fa-solid fa-ellipsis"></i>
-</a>
-</div>
-</div>
-</div>
-<!-- Begin Mobile Menu -->
-<div class="mobile-main-menu">
-<div class="container-fluid">
-<div class="header-container-wrapper">
-<div class="mobile-main-menu-header-container">
-<a class="main-menu-close-button" data-behavior="close-mobile-menu" href="#">
-</a>
-</div>
-</div>
-</div>
-<div class="mobile-main-menu-links-container">
-<div class="main-menu">
-<ul>
-<li class="resources-mobile-menu-title">
-<a>Learn</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://pytorch.org/get-started/locally">Get Started</a>
-</li>
-<li>
-<a href="https://docs.pytorch.org/tutorials">Tutorials</a>
-</li>
-<li>
-<a href="https://pytorch.org/tutorials/beginner/basics/intro.html">Learn the Basics</a>
-</li>
-<li>
-<a href="https://pytorch.org/tutorials/recipes/recipes_index.html">PyTorch Recipes</a>
-</li>
-<li>
-<a href="https://pytorch.org/tutorials/beginner/introyt.html">Introduction to PyTorch - YouTube Series</a>
-</li>
-<li>
-<a href="https://pytorch.org/webinars/">Webinars</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>Community</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://landscape.pytorch.org/">Landscape</a>
-</li>
-<li>
-<a href="https://pytorch.org/join-ecosystem">Join the Ecosystem</a>
-</li>
-<li>
-<a href="https://pytorch.org/community-hub/">Community Hub</a>
-</li>
-<li>
-<a href="https://discuss.pytorch.org/">Forums</a>
-</li>
-<li>
-<a href="https://pytorch.org/resources">Developer Resources</a>
-</li>
-<li>
-<a href="https://pytorch.org/contributor-awards/">Contributor Awards</a>
-</li>
-<li>
-<a href="https://pytorch.org/community-events/">Community Events</a>
-</li>
-<li>
-<a href="https://pytorch.org/programs/ambassadors/">PyTorch Ambassadors</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>Projects</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://pytorch.org/projects/pytorch/">PyTorch</a>
-</li>
-<li>
-<a href="https://pytorch.org/projects/vllm/">vLLM</a>
-</li>
-<li>
-<a href="https://pytorch.org/projects/deepspeed/">DeepSpeed</a>
-</li>
-<li>
-<a href="https://pytorch.org/projects/host-your-project/">Host Your Project</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>Docs</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://docs.pytorch.org/docs/stable/index.html">PyTorch</a>
-</li>
-<li>
-<a href="https://pytorch.org/domains">Domains</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>Blog &amp; News</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://pytorch.org/blog/">Blog</a>
-</li>
-<li>
-<a href="https://pytorch.org/announcements">Announcements</a>
-</li>
-<li>
-<a href="https://pytorch.org/case-studies/">Case Studies</a>
-</li>
-<li>
-<a href="https://pytorch.org/events">Events</a>
-</li>
-<li>
-<a href="https://pytorch.org/newsletter">Newsletter</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>About</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://pytorch.org/foundation">PyTorch Foundation</a>
-</li>
-<li>
-<a href="https://pytorch.org/members">Members</a>
-</li>
-<li>
-<a href="https://pytorch.org/governing-board">Governing Board</a>
-</li>
-<li>
-<a href="https://pytorch.org/tac">Technical Advisory Council</a>
-</li>
-<li>
-<a href="https://pytorch.org/credits">Cloud Credit Program</a>
-</li>
-<li>
-<a href="https://pytorch.org/staff">Staff</a>
-</li>
-<li>
-<a href="https://pytorch.org/contact">Contact</a>
-</li>
-</ul>
-</ul>
-</div>
-</div>
-</div>
-<!-- End Mobile Menu -->
 <body data-bs-root-margin="0px 0px -60%" data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-default-mode="" data-offset="180">
 <div class="skip-link d-print-none" id="pst-skip-link"><a href="#main-content">Skip to main content</a></div>
 <div id="pst-scroll-pixel-helper"></div>
@@ -525,8 +329,20 @@
 <button aria-label="Site navigation" class="pst-navbar-icon sidebar-toggle primary-toggle">
 <span class="fa-solid fa-bars"></span>
 </button>
+<div class="navbar-header-items__mobile-logo">
+<a class="navbar-brand logo" href="../index.html">
+<img alt="PyTorch Tutorials - Home" class="logo__image only-light" src="../_static/img/logo-dark.svg"/>
+<script>document.write(`<img src="../_static/img/logo-white.svg" class="logo__image only-dark" alt="PyTorch Tutorials - Home"/>`);</script>
+</a>
+</div>
 <div class="navbar-header-items__start">
 <div class="navbar-item">
+<a class="navbar-brand logo" href="../index.html">
+<img alt="PyTorch Tutorials - Home" class="logo__image only-light" src="../_static/img/logo-dark.svg"/>
+<script>document.write(`<img src="../_static/img/logo-white.svg" class="logo__image only-dark" alt="PyTorch Tutorials - Home"/>`);</script>
+</a>
+</div>
+<div class="navbar-item desktop-only-version">
 <a class="version" href="../index.html">v2.10.0+cu128</a>
 </div>
 </div>
@@ -535,55 +351,745 @@
 <div class="navbar-item">
 <nav>
 <ul class="bd-navbar-elements navbar-nav">
-<li class="nav-item">
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
 <a class="nav-link nav-internal" href="../intro.html">
-    Intro
-  </a>
+              Intro
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-1">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/basics/intro.html">
+                  Learn the Basics
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../compilers_index.html">
-    Compilers
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/introyt/introyt_index.html">
+                  Introduction to PyTorch - YouTube Series
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../domains.html">
-    Domains
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/deep_learning_60min_blitz.html">
+                  Deep Learning with PyTorch: A 60 Minute Blitz
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../distributed.html">
-    Distributed
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/pytorch_with_examples.html">
+                  Learning PyTorch with Examples
+                </a>
 </li>
-<li class="nav-item current active">
-<a class="nav-link nav-internal" href="../deep-dive.html">
-    Deep Dive
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/nn_tutorial.html">
+                  What is torch.nn really?
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../extension.html">
-    Extension
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/understanding_leaf_vs_nonleaf_tutorial.html">
+                  Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../ecosystem.html">
-    Ecosystem
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="nlp_from_scratch_index.html">
+                  NLP from Scratch
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../recipes_index.html">
-    Recipes
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="tensorboard_tutorial.html">
+                  Visualizing Models, Data, and Training with TensorBoard
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../unstable_index.html">
-    Unstable
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="pinmem_nonblock.html">
+                  A guide on good usage of non_blocking and pin_memory() in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="visualizing_gradients_tutorial.html">
+                  Visualizing Gradients
+                </a>
 </li>
 </ul>
-</nav></div>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../compilers_index.html">
+              Compilers
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-2">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torch_compile_tutorial.html">
+                  Introduction to torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torch_compile_full_example.html">
+                  torch.compile End-to-End Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="compiled_autograd_tutorial.html">
+                  Compiled Autograd: Capturing a larger backward graph for torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compiler_set_stance_tutorial.html">
+                  Dynamic Compilation Control with torch.compiler.set_stance
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="variable_length_attention_tutorial.html">
+                  Using Variable Length Attention in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torch_export_tutorial.html">
+                  torch.export Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/intro_onnx.html">
+                  Introduction to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/export_simple_model_to_onnx_tutorial.html">
+                  Export a PyTorch model to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/onnx_registry_tutorial.html">
+                  Extending the ONNX Exporter Operator Support
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/export_control_flow_model_to_onnx_tutorial.html">
+                  Export a model with control flow to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torch_compile_conv_bn_fuser.html">
+                  Building a Convolution/Batch Norm fuser with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="fx_profiling_tutorial.html">
+                  (beta) Building a Simple CPU Performance Profiler with FX
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../domains.html">
+              Domains
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-3">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torchvision_tutorial.html">
+                  TorchVision Object Detection Finetuning Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/transfer_learning_tutorial.html">
+                  Transfer Learning for Computer Vision Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/fgsm_tutorial.html">
+                  Adversarial Example Generation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/dcgan_faces_tutorial.html">
+                  DCGAN Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="spatial_transformer_tutorial.html">
+                  Spatial Transformer Networks Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="reinforcement_q_learning.html">
+                  Reinforcement Learning (DQN) Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="reinforcement_ppo.html">
+                  Reinforcement Learning (PPO) with TorchRL Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="mario_rl_tutorial.html">
+                  Train a Mario-playing RL Agent
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/pendulum.html">
+                  Pendulum: Writing your environment and transforms with TorchRL
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torchrec_intro_tutorial.html">
+                  Introduction to TorchRec
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/sharding.html">
+                  Exploring TorchRec sharding
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../distributed.html">
+              Distributed
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-4">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/dist_overview.html">
+                  PyTorch Distributed Overview
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/ddp_series_intro.html">
+                  Distributed Data Parallel in PyTorch - Video Tutorials
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="ddp_tutorial.html">
+                  Getting Started with Distributed Data Parallel
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="dist_tuto.html">
+                  Writing Distributed Applications with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="FSDP_tutorial.html">
+                  Getting Started with Fully Sharded Data Parallel (FSDP2)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="TCPStore_libuv_backend.html">
+                  Introduction to Libuv TCPStore Backend
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="TP_tutorial.html">
+                  Large Scale Transformer model training with Tensor Parallel (TP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="pipelining_tutorial.html">
+                  Introduction to Distributed Pipeline Parallelism
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="process_group_cpp_extension_tutorial.html">
+                  Customize Process Group Backends Using Cpp Extensions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="rpc_tutorial.html">
+                  Getting Started with Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="rpc_param_server_tutorial.html">
+                  Implementing a Parameter Server Using Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="rpc_async_execution.html">
+                  Implementing Batch RPC Processing Using Asynchronous Executions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="monarch_distributed_tutorial.html">
+                  Interactive Distributed Applications with Monarch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/rpc_ddp_tutorial.html">
+                  Combining Distributed DataParallel with Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/generic_join.html">
+                  Distributed Training with Uneven Inputs Using the Join Context Manager
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../deep-dive.html">
+              Deep Dive
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-5">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/profiler.html">
+                  Profiling your PyTorch Module
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="parametrizations.html">
+                  Parametrizations Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="pruning_tutorial.html">
+                  Pruning Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="#">
+                  (Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/knowledge_distillation_tutorial.html">
+                  Knowledge Distillation Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="memory_format_tutorial.html">
+                  Channels Last Memory Format in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="forward_ad_usage.html">
+                  Forward-mode Automatic Differentiation (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="jacobians_hessians.html">
+                  Jacobians, Hessians, hvp, vhp, and more: composing function transforms
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="ensembling.html">
+                  Model ensembling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="per_sample_grads.html">
+                  Per-sample-gradients
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_frontend.html">
+                  Using the PyTorch C++ Frontend
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_autograd.html">
+                  Autograd in C++ Frontend
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../extension.html">
+              Extension
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-6">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/custom_ops_landing_page.html">
+                  PyTorch Custom Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/python_custom_ops.html">
+                  Custom Python Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_custom_ops.html">
+                  Custom C++ and CUDA Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="custom_function_double_backward_tutorial.html">
+                  Double Backward with Custom Functions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="custom_function_conv_bn_tutorial.html">
+                  Fusing Convolution and Batch Norm using Custom Function
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/dispatcher.html">
+                  Registering a Dispatched Operator in C++
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/extend_dispatcher.html">
+                  Extending dispatcher for a new backend in C++
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/privateuseone.html">
+                  Facilitating New Backend Integration by PrivateUse1
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../ecosystem.html">
+              Ecosystem
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-7">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/hyperparameter_tuning_tutorial.html">
+                  Hyperparameter tuning using Ray Tune
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="ax_multiobjective_nas_tutorial.html">
+                  Multi-Objective NAS with Ax
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="tensorboard_profiler_tutorial.html">
+                  PyTorch Profiler With TensorBoard
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="realtime_rpi.html">
+                  Real Time Inference on Raspberry Pi 4 and 5 (40 fps!)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/mosaic_memory_profiling_tutorial.html">
+                  Mosaic: Memory Profiling for PyTorch
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../recipes_index.html">
+              Recipes
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-8">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/defining_a_neural_network.html">
+                  Defining a Neural Network in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_logs.html">
+                  (beta) Using TORCH_LOGS python API with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/what_is_state_dict.html">
+                  What is a state_dict in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/warmstarting_model_using_parameters_from_a_different_model.html">
+                  Warmstarting model using parameters from a different model in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/zeroing_out_gradients.html">
+                  Zeroing out gradients in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/profiler_recipe.html">
+                  PyTorch Profiler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/Captum_Recipe.html">
+                  Model Interpretability using Captum
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/amp_recipe.html">
+                  Automatic Mixed Precision
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tuning_guide.html">
+                  Performance Tuning Guide
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/timer_quick_start.html">
+                  Timer quick start
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/zero_redundancy_optimizer.html">
+                  Shard Optimizer States with ZeroRedundancyOptimizer
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_comm_debug_mode.html">
+                  Getting Started with CommDebugMode
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/benchmark.html">
+                  SyntaxError
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/module_load_state_dict_tips.html">
+                  Tips for Loading an nn.Module from a Checkpoint
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/reasoning_about_shapes.html">
+                  Reasoning about Shapes in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/swap_tensors.html">
+                  Extension points in nn.Module for load_state_dict and tensor subclasses
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_torch_function_modes.html">
+                  (beta) Utilizing Torch Function modes with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/foreach_map.html">
+                  Explicit horizontal fusion with foreach_map and torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_configuration_tutorial.html">
+                  Compile Time Caching Configuration
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_aot.html">
+                  Reducing AoT cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/intel_neural_compressor_for_pytorch.html">
+                  Ease-of-use quantization for PyTorch with Intel® Neural Compressor
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_device_mesh.html">
+                  Getting Started with DeviceMesh
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_checkpoint_recipe.html">
+                  Getting Started with Distributed Checkpoint (DCP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_async_checkpoint_recipe.html">
+                  Asynchronous Saving with Distributed Checkpoint (DCP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/debug_mode_tutorial.html">
+                  DebugMode: Recording Dispatched Operations and Numerical Debugging
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../unstable_index.html">
+              Unstable
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-9">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/context_parallel.html">
+                  Introduction to Context Parallel
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/flight_recorder_tutorial.html">
+                  Flight Recorder for Debugging Stuck Jobs
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/inductor_cpp_wrapper_tutorial.html">
+                  TorchInductor C++ Wrapper Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/inductor_windows.html">
+                  How to use torch.compile on Windows CPU/XPU
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/vmap_recipe.html">
+                  torch.vmap
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/nestedtensor.html">
+                  Getting Started with Nested Tensors
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_overview.html">
+                  MaskedTensor Overview
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_sparsity.html">
+                  MaskedTensor Sparsity
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_advanced_semantics.html">
+                  MaskedTensor Advanced Semantics
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_adagrad.html">
+                  Efficiently writing “sparse” semantics for Adagrad with MaskedTensor
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/python_extension_autoload.html">
+                  Autoloading Out-of-Tree Extension
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/max_autotune_on_CPU_tutorial.html">
+                  Using Max-Autotune Compilation on CPU for Better Performance
+                </a>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
 </div>
 <div class="navbar-header-items__end">
+<div class="navbar-item"><!-- PyTorch.org site link - desktop only, two-line layout -->
+<!-- Note: The show_pytorch_org_link check is handled in layout.html's navbar_end block -->
+<a class="pytorch-site-link nav-link nav-external" data-bs-placement="bottom" data-bs-title="Go to PyTorch.org" data-bs-toggle="tooltip" href="https://pytorch.org">
+<span class="pytorch-site-link-text">
+<span>Go to</span>
+<span>pytorch.org <i class="fa-solid fa-arrow-up-right-from-square external-icon"></i></span>
+</span>
+</a></div>
 <div class="navbar-item">
 <form action="../search.html" class="bd-search d-flex align-items-center" method="get">
 <i class="fa-solid fa-magnifying-glass"></i>
@@ -630,59 +1136,754 @@ document.write(`
 <div class="bd-container__inner bd-page-width">
 <div class="bd-sidebar-primary bd-sidebar">
 <div class="sidebar-header-items sidebar-primary__section">
+<div class="sidebar-header-items__start">
+<div class="navbar-item">
+<a class="version" href="../index.html">v2.10.0+cu128</a>
+</div>
+</div>
 <div class="sidebar-header-items__center">
 <div class="navbar-item">
 <nav>
 <ul class="bd-navbar-elements navbar-nav">
-<li class="nav-item">
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
 <a class="nav-link nav-internal" href="../intro.html">
-    Intro
-  </a>
+              Intro
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-1">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/basics/intro.html">
+                  Learn the Basics
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../compilers_index.html">
-    Compilers
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/introyt/introyt_index.html">
+                  Introduction to PyTorch - YouTube Series
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../domains.html">
-    Domains
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/deep_learning_60min_blitz.html">
+                  Deep Learning with PyTorch: A 60 Minute Blitz
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../distributed.html">
-    Distributed
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/pytorch_with_examples.html">
+                  Learning PyTorch with Examples
+                </a>
 </li>
-<li class="nav-item current active">
-<a class="nav-link nav-internal" href="../deep-dive.html">
-    Deep Dive
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/nn_tutorial.html">
+                  What is torch.nn really?
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../extension.html">
-    Extension
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/understanding_leaf_vs_nonleaf_tutorial.html">
+                  Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../ecosystem.html">
-    Ecosystem
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="nlp_from_scratch_index.html">
+                  NLP from Scratch
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../recipes_index.html">
-    Recipes
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="tensorboard_tutorial.html">
+                  Visualizing Models, Data, and Training with TensorBoard
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../unstable_index.html">
-    Unstable
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="pinmem_nonblock.html">
+                  A guide on good usage of non_blocking and pin_memory() in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="visualizing_gradients_tutorial.html">
+                  Visualizing Gradients
+                </a>
 </li>
 </ul>
-</nav></div>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../compilers_index.html">
+              Compilers
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-2">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torch_compile_tutorial.html">
+                  Introduction to torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torch_compile_full_example.html">
+                  torch.compile End-to-End Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="compiled_autograd_tutorial.html">
+                  Compiled Autograd: Capturing a larger backward graph for torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compiler_set_stance_tutorial.html">
+                  Dynamic Compilation Control with torch.compiler.set_stance
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="variable_length_attention_tutorial.html">
+                  Using Variable Length Attention in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torch_export_tutorial.html">
+                  torch.export Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/intro_onnx.html">
+                  Introduction to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/export_simple_model_to_onnx_tutorial.html">
+                  Export a PyTorch model to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/onnx_registry_tutorial.html">
+                  Extending the ONNX Exporter Operator Support
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/export_control_flow_model_to_onnx_tutorial.html">
+                  Export a model with control flow to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torch_compile_conv_bn_fuser.html">
+                  Building a Convolution/Batch Norm fuser with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="fx_profiling_tutorial.html">
+                  (beta) Building a Simple CPU Performance Profiler with FX
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../domains.html">
+              Domains
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-3">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torchvision_tutorial.html">
+                  TorchVision Object Detection Finetuning Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/transfer_learning_tutorial.html">
+                  Transfer Learning for Computer Vision Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/fgsm_tutorial.html">
+                  Adversarial Example Generation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/dcgan_faces_tutorial.html">
+                  DCGAN Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="spatial_transformer_tutorial.html">
+                  Spatial Transformer Networks Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="reinforcement_q_learning.html">
+                  Reinforcement Learning (DQN) Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="reinforcement_ppo.html">
+                  Reinforcement Learning (PPO) with TorchRL Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="mario_rl_tutorial.html">
+                  Train a Mario-playing RL Agent
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/pendulum.html">
+                  Pendulum: Writing your environment and transforms with TorchRL
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torchrec_intro_tutorial.html">
+                  Introduction to TorchRec
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/sharding.html">
+                  Exploring TorchRec sharding
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../distributed.html">
+              Distributed
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-4">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/dist_overview.html">
+                  PyTorch Distributed Overview
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/ddp_series_intro.html">
+                  Distributed Data Parallel in PyTorch - Video Tutorials
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="ddp_tutorial.html">
+                  Getting Started with Distributed Data Parallel
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="dist_tuto.html">
+                  Writing Distributed Applications with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="FSDP_tutorial.html">
+                  Getting Started with Fully Sharded Data Parallel (FSDP2)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="TCPStore_libuv_backend.html">
+                  Introduction to Libuv TCPStore Backend
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="TP_tutorial.html">
+                  Large Scale Transformer model training with Tensor Parallel (TP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="pipelining_tutorial.html">
+                  Introduction to Distributed Pipeline Parallelism
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="process_group_cpp_extension_tutorial.html">
+                  Customize Process Group Backends Using Cpp Extensions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="rpc_tutorial.html">
+                  Getting Started with Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="rpc_param_server_tutorial.html">
+                  Implementing a Parameter Server Using Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="rpc_async_execution.html">
+                  Implementing Batch RPC Processing Using Asynchronous Executions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="monarch_distributed_tutorial.html">
+                  Interactive Distributed Applications with Monarch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/rpc_ddp_tutorial.html">
+                  Combining Distributed DataParallel with Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/generic_join.html">
+                  Distributed Training with Uneven Inputs Using the Join Context Manager
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../deep-dive.html">
+              Deep Dive
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-5">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/profiler.html">
+                  Profiling your PyTorch Module
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="parametrizations.html">
+                  Parametrizations Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="pruning_tutorial.html">
+                  Pruning Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="#">
+                  (Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/knowledge_distillation_tutorial.html">
+                  Knowledge Distillation Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="memory_format_tutorial.html">
+                  Channels Last Memory Format in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="forward_ad_usage.html">
+                  Forward-mode Automatic Differentiation (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="jacobians_hessians.html">
+                  Jacobians, Hessians, hvp, vhp, and more: composing function transforms
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="ensembling.html">
+                  Model ensembling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="per_sample_grads.html">
+                  Per-sample-gradients
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_frontend.html">
+                  Using the PyTorch C++ Frontend
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_autograd.html">
+                  Autograd in C++ Frontend
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../extension.html">
+              Extension
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-6">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/custom_ops_landing_page.html">
+                  PyTorch Custom Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/python_custom_ops.html">
+                  Custom Python Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_custom_ops.html">
+                  Custom C++ and CUDA Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="custom_function_double_backward_tutorial.html">
+                  Double Backward with Custom Functions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="custom_function_conv_bn_tutorial.html">
+                  Fusing Convolution and Batch Norm using Custom Function
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/dispatcher.html">
+                  Registering a Dispatched Operator in C++
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/extend_dispatcher.html">
+                  Extending dispatcher for a new backend in C++
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/privateuseone.html">
+                  Facilitating New Backend Integration by PrivateUse1
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../ecosystem.html">
+              Ecosystem
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-7">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/hyperparameter_tuning_tutorial.html">
+                  Hyperparameter tuning using Ray Tune
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="ax_multiobjective_nas_tutorial.html">
+                  Multi-Objective NAS with Ax
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="tensorboard_profiler_tutorial.html">
+                  PyTorch Profiler With TensorBoard
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="realtime_rpi.html">
+                  Real Time Inference on Raspberry Pi 4 and 5 (40 fps!)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/mosaic_memory_profiling_tutorial.html">
+                  Mosaic: Memory Profiling for PyTorch
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../recipes_index.html">
+              Recipes
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-8">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/defining_a_neural_network.html">
+                  Defining a Neural Network in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_logs.html">
+                  (beta) Using TORCH_LOGS python API with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/what_is_state_dict.html">
+                  What is a state_dict in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/warmstarting_model_using_parameters_from_a_different_model.html">
+                  Warmstarting model using parameters from a different model in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/zeroing_out_gradients.html">
+                  Zeroing out gradients in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/profiler_recipe.html">
+                  PyTorch Profiler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/Captum_Recipe.html">
+                  Model Interpretability using Captum
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/amp_recipe.html">
+                  Automatic Mixed Precision
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tuning_guide.html">
+                  Performance Tuning Guide
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/timer_quick_start.html">
+                  Timer quick start
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/zero_redundancy_optimizer.html">
+                  Shard Optimizer States with ZeroRedundancyOptimizer
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_comm_debug_mode.html">
+                  Getting Started with CommDebugMode
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/benchmark.html">
+                  SyntaxError
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/module_load_state_dict_tips.html">
+                  Tips for Loading an nn.Module from a Checkpoint
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/reasoning_about_shapes.html">
+                  Reasoning about Shapes in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/swap_tensors.html">
+                  Extension points in nn.Module for load_state_dict and tensor subclasses
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_torch_function_modes.html">
+                  (beta) Utilizing Torch Function modes with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/foreach_map.html">
+                  Explicit horizontal fusion with foreach_map and torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_configuration_tutorial.html">
+                  Compile Time Caching Configuration
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_aot.html">
+                  Reducing AoT cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/intel_neural_compressor_for_pytorch.html">
+                  Ease-of-use quantization for PyTorch with Intel® Neural Compressor
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_device_mesh.html">
+                  Getting Started with DeviceMesh
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_checkpoint_recipe.html">
+                  Getting Started with Distributed Checkpoint (DCP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_async_checkpoint_recipe.html">
+                  Asynchronous Saving with Distributed Checkpoint (DCP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/debug_mode_tutorial.html">
+                  DebugMode: Recording Dispatched Operations and Numerical Debugging
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../unstable_index.html">
+              Unstable
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-9">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/context_parallel.html">
+                  Introduction to Context Parallel
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/flight_recorder_tutorial.html">
+                  Flight Recorder for Debugging Stuck Jobs
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/inductor_cpp_wrapper_tutorial.html">
+                  TorchInductor C++ Wrapper Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/inductor_windows.html">
+                  How to use torch.compile on Windows CPU/XPU
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/vmap_recipe.html">
+                  torch.vmap
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/nestedtensor.html">
+                  Getting Started with Nested Tensors
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_overview.html">
+                  MaskedTensor Overview
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_sparsity.html">
+                  MaskedTensor Sparsity
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_advanced_semantics.html">
+                  MaskedTensor Advanced Semantics
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_adagrad.html">
+                  Efficiently writing “sparse” semantics for Adagrad with MaskedTensor
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/python_extension_autoload.html">
+                  Autoloading Out-of-Tree Extension
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/max_autotune_on_CPU_tutorial.html">
+                  Using Max-Autotune Compilation on CPU for Better Performance
+                </a>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
 </div>
 <div class="sidebar-header-items__end">
+<div class="navbar-item"><!-- PyTorch.org site link - desktop only, two-line layout -->
+<!-- Note: The show_pytorch_org_link check is handled in layout.html's navbar_end block -->
+<a class="pytorch-site-link nav-link nav-external" data-bs-placement="bottom" data-bs-title="Go to PyTorch.org" data-bs-toggle="tooltip" href="https://pytorch.org">
+<span class="pytorch-site-link-text">
+<span>Go to</span>
+<span>pytorch.org <i class="fa-solid fa-arrow-up-right-from-square external-icon"></i></span>
+</span>
+</a></div>
 <div class="navbar-item">
 <form action="../search.html" class="bd-search d-flex align-items-center" method="get">
 <i class="fa-solid fa-magnifying-glass"></i>
@@ -786,7 +1987,7 @@ document.write(`
 </div>
 </div>
 <div id="searchbox"></div>
-<article class="bd-article" id="pytorch-article">
+<div id="pytorch-article">
 <!-- Hidden breadcrumb schema for SEO only -->
 <div itemscope="" itemtype="https://schema.org/BreadcrumbList" style="display:none;">
 <div itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem">
@@ -800,13 +2001,13 @@ document.write(`
 </div>
 </div>
 <script>
-      if ((window.location.href.indexOf("/unstable/") != -1) && (window.location.href.indexOf("/unstable/unstable_index") < 1)) {
-        var div = '<div class="prototype-banner"><i class="fa fa-flask" aria-hidden="true"></i> <strong>Unstable feature:</strong> Not typically available in binary distributions like PyPI. Early stage for feedback and testing.</div>'
-        document.addEventListener('DOMContentLoaded', function () {
-          document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div);
-        });
-      }
-    </script>
+    if ((window.location.href.indexOf("/unstable/") != -1) && (window.location.href.indexOf("/unstable/unstable_index") < 1)) {
+      var div = '<div class="prototype-banner"><i class="fa fa-flask" aria-hidden="true"></i> <strong>Unstable feature:</strong> Not typically available in binary distributions like PyPI. Early stage for feedback and testing.</div>'
+      document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div);
+      });
+    }
+  </script>
 <div class="pytorch-call-to-action-links">
 <div id="tutorial-type">intermediate/scaled_dot_product_attention_tutorial</div>
 <a data-behavior="call-to-action-event" data-response="Run in Google Colab" id="colab-link" target="_blank">
@@ -881,19 +2082,19 @@ implementations:</p>
 <a class="sphx-glr-backref-module-torch-nn-functional sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html#torch.nn.functional.scaled_dot_product_attention" title="torch.nn.functional.scaled_dot_product_attention"><span class="n">F</span><span class="o">.</span><span class="n">scaled_dot_product_attention</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">query</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">key</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">value</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[-0.5916, -0.1511,  1.3721, -1.2001,  1.2014, -0.5893, -0.0795,
-          -0.4335],
-         [-0.2182, -0.2432,  0.8937, -0.3624,  1.3514,  0.3502,  0.7861,
-          -0.4329],
-         [-0.2327, -0.2912,  1.1747, -0.5998,  1.3899,  0.2065,  0.6370,
-          -0.4885]],
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[ 6.2211e-01, -2.6008e-02, -1.3073e-01,  1.0870e+00,  3.7143e-01,
+          -1.0349e+00,  1.9780e-01, -1.3446e+00],
+         [ 3.4150e-01,  2.1157e-01,  6.0263e-02,  8.7375e-01,  5.2707e-01,
+          -9.2106e-03, -2.1995e-01, -1.0264e+00],
+         [ 9.0610e-01,  2.5639e-02,  3.3470e-01,  1.7529e+00,  5.6325e-01,
+          -1.1589e+00,  4.1417e-01, -1.2121e+00]],
 
-        [[ 0.1090,  0.5594,  0.6921,  0.6216,  0.8380, -1.3714,  0.3990,
-          -0.3449],
-         [ 0.2344,  0.8744,  0.3410,  0.8697,  0.8334, -0.9502,  0.3848,
-          -0.1536],
-         [ 0.2881,  0.7716,  0.4148,  0.9087,  0.7781, -1.1544,  0.4828,
-          -0.2226]]], device='cuda:0')
+        [[ 6.7825e-01, -6.7130e-01, -5.4039e-01,  9.8979e-04,  4.3772e-01,
+          -6.7396e-01, -1.9248e-01, -2.5541e-01],
+         [ 7.2674e-01, -7.7932e-01, -6.4763e-01,  1.2875e-01,  5.5364e-01,
+          -7.1471e-01, -1.4728e-01, -2.0139e-01],
+         [ 7.6666e-01, -6.4126e-01, -3.6398e-01, -1.8815e-01, -1.8899e-01,
+          -7.9202e-01, -4.9106e-01,  6.4050e-04]]], device='cuda:0')
 </pre></div>
 </div>
 </section>
@@ -951,10 +2152,10 @@ measuring performance.</p>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"EfficientAttention is not supported. See warnings for reasons."</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>The default implementation runs in 2274.904 microseconds
-The math implementation runs in 87566.340 microseconds
-The flash attention implementation runs in 2279.742 microseconds
-The memory efficient implementation runs in 4400.460 microseconds
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>The default implementation runs in 2273.585 microseconds
+The math implementation runs in 87415.010 microseconds
+The flash attention implementation runs in 2281.882 microseconds
+The memory efficient implementation runs in 4336.222 microseconds
 </pre></div>
 </div>
 </section>
@@ -1092,8 +2293,8 @@ without needing to pad each sequence to the maximum length in the batch. For mor
 
 The PyTorch API of nested tensors is in prototype stage and will change in the near future. We recommend specifying layout=torch.jagged when constructing a nested tensor, as this layout receives active development, has better operator coverage, and works with torch.compile. (Triggered internally at /pytorch/aten/src/ATen/NestedTensorImpl.cpp:178.)
 
-Random NT runs in 593.209 microseconds
-Random Dense runs in 951.257 microseconds
+Random NT runs in 596.120 microseconds
+Random Dense runs in 953.638 microseconds
 </pre></div>
 </div>
 </section>
@@ -1121,8 +2322,8 @@ To demonstrate this, let’s compile the <code class="docutils literal notransla
     <span class="sa">f</span><span class="s2">"The compiled module runs in  </span><span class="si">{</span><span class="n">benchmark_torch_function_in_microseconds</span><span class="p">(</span><span class="n">compiled_model</span><span class="p">,</span><span class="w"> </span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> microseconds"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>The non compiled module runs in  425.056 microseconds
-The compiled module runs in  527.297 microseconds
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>The non compiled module runs in  425.250 microseconds
+The compiled module runs in  526.963 microseconds
 </pre></div>
 </div>
 <p>The exact execution time is dependent on machine, however the results for mine:
@@ -1163,36 +2364,36 @@ Warning: Profiler clears events at the end of each cycle.Only events from the cu
 -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
                                                    Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg    # of Calls
 -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
-                         Non-Compilied Causal Attention        16.67%       2.111ms        73.09%       9.259ms       9.259ms       0.000us         0.00%      10.855ms      10.855ms             1
-                         Non-Compilied Causal Attention         0.00%       0.000us         0.00%       0.000us       0.000us      10.702ms       100.66%      10.702ms      10.702ms             1
-                                           aten::linear         0.91%     115.124us        34.30%       4.345ms      86.902us       0.000us         0.00%       8.027ms     160.547us            50
-                                           aten::matmul         1.77%     224.326us        31.08%       3.938ms      78.754us       0.000us         0.00%       8.027ms     160.547us            50
-                                               aten::mm         9.70%       1.229ms        27.29%       3.457ms      69.130us       7.804ms        73.40%       8.027ms     160.547us            50
-         ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn         0.00%       0.000us         0.00%       0.000us       0.000us       5.587ms        52.56%       5.587ms     223.498us            25
-                     aten::scaled_dot_product_attention         1.50%     189.640us        14.08%       1.783ms      71.336us       0.000us         0.00%       2.828ms     113.106us            25
-              aten::_scaled_dot_product_flash_attention         2.28%     288.490us        12.58%       1.594ms      63.751us       0.000us         0.00%       2.828ms     113.106us            25
-                         aten::_flash_attention_forward         2.41%     305.163us         9.13%       1.157ms      46.283us       2.828ms        26.60%       2.828ms     113.106us            25
-void pytorch_flash::flash_fwd_kernel&lt;Flash_fwd_kerne...         0.00%       0.000us         0.00%       0.000us       0.000us       2.828ms        26.60%       2.828ms     113.106us            25
+                         Non-Compilied Causal Attention        15.93%       2.007ms        71.28%       8.980ms       8.980ms       0.000us         0.00%      10.830ms      10.830ms             1
+                         Non-Compilied Causal Attention         0.00%       0.000us         0.00%       0.000us       0.000us      10.674ms       100.63%      10.674ms      10.674ms             1
+                                           aten::linear         0.92%     116.032us        33.57%       4.229ms      84.588us       0.000us         0.00%       8.004ms     160.075us            50
+                                           aten::matmul         1.67%     210.553us        30.49%       3.842ms      76.833us       0.000us         0.00%       8.004ms     160.075us            50
+                                               aten::mm         9.52%       1.199ms        26.97%       3.397ms      67.944us       7.782ms        73.36%       8.004ms     160.075us            50
+         ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn         0.00%       0.000us         0.00%       0.000us       0.000us       5.569ms        52.50%       5.569ms     222.743us            25
+                     aten::scaled_dot_product_attention         1.47%     184.942us        14.06%       1.771ms      70.831us       0.000us         0.00%       2.826ms     113.041us            25
+              aten::_scaled_dot_product_flash_attention         2.20%     277.722us        12.59%       1.586ms      63.433us       0.000us         0.00%       2.826ms     113.041us            25
+                         aten::_flash_attention_forward         2.42%     304.764us         9.20%       1.159ms      46.376us       2.826ms        26.64%       2.826ms     113.041us            25
+void pytorch_flash::flash_fwd_kernel&lt;Flash_fwd_kerne...         0.00%       0.000us         0.00%       0.000us       0.000us       2.826ms        26.64%       2.826ms     113.041us            25
 -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
-Self CPU time total: 12.668ms
-Self CUDA time total: 10.631ms
+Self CPU time total: 12.598ms
+Self CUDA time total: 10.608ms
 
 -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
                                                    Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg    # of Calls
 -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
-## Call CompiledFxGraph fqx5bihyr4fofpxza7jgtbig3nwj...         0.00%       0.000us         0.00%       0.000us       0.000us      10.661ms       100.37%      10.661ms     426.452us            25
-                              Compiled Causal Attention         7.92%       1.024ms        84.02%      10.858ms      10.858ms       0.000us         0.00%      10.622ms      10.622ms             1
-                             Torch-Compiled Region: 0/0         6.88%     889.403us        73.93%       9.554ms     382.165us       0.000us         0.00%      10.622ms     424.880us            25
-                                       CompiledFunction         8.38%       1.083ms        64.90%       8.388ms     335.501us       0.000us         0.00%      10.622ms     424.880us            25
-## Call CompiledFxGraph fqx5bihyr4fofpxza7jgtbig3nwj...        19.67%       2.542ms        56.52%       7.305ms     292.187us       0.000us         0.00%      10.622ms     424.880us            25
-                                               aten::mm         7.32%     946.620us        11.27%       1.456ms      29.122us       7.804ms        73.47%       7.804ms     156.076us            50
-         ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn         0.00%       0.000us         0.00%       0.000us       0.000us       5.587ms        52.60%       5.587ms     223.478us            25
-              aten::_scaled_dot_product_flash_attention         1.81%     234.515us        12.01%       1.552ms      62.081us       0.000us         0.00%       2.818ms     112.728us            25
-                         aten::_flash_attention_forward         2.53%     326.898us         8.77%       1.134ms      45.360us       2.818ms        26.53%       2.818ms     112.728us            25
-void pytorch_flash::flash_fwd_kernel&lt;Flash_fwd_kerne...         0.00%       0.000us         0.00%       0.000us       0.000us       2.818ms        26.53%       2.818ms     112.728us            25
+## Call CompiledFxGraph fqx5bihyr4fofpxza7jgtbig3nwj...         0.00%       0.000us         0.00%       0.000us       0.000us      10.649ms       100.42%      10.649ms     425.975us            25
+                              Compiled Causal Attention         8.03%       1.036ms        83.83%      10.804ms      10.804ms       0.000us         0.00%      10.605ms      10.605ms             1
+                             Torch-Compiled Region: 0/0         6.96%     896.559us        73.65%       9.493ms     379.723us       0.000us         0.00%      10.605ms     424.197us            25
+                                       CompiledFunction         8.56%       1.103ms        64.47%       8.309ms     332.375us       0.000us         0.00%      10.605ms     424.197us            25
+## Call CompiledFxGraph fqx5bihyr4fofpxza7jgtbig3nwj...        19.40%       2.500ms        55.91%       7.206ms     288.255us       0.000us         0.00%      10.605ms     424.197us            25
+                                               aten::mm         7.19%     926.895us        11.25%       1.450ms      29.001us       7.786ms        73.42%       7.786ms     155.719us            50
+         ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn         0.00%       0.000us         0.00%       0.000us       0.000us       5.571ms        52.53%       5.571ms     222.823us            25
+              aten::_scaled_dot_product_flash_attention         1.79%     230.177us        11.83%       1.524ms      60.972us       0.000us         0.00%       2.819ms     112.758us            25
+                         aten::_flash_attention_forward         2.35%     303.494us         8.60%       1.109ms      44.358us       2.819ms        26.58%       2.819ms     112.758us            25
+void pytorch_flash::flash_fwd_kernel&lt;Flash_fwd_kerne...         0.00%       0.000us         0.00%       0.000us       0.000us       2.819ms        26.58%       2.819ms     112.758us            25
 -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
-Self CPU time total: 12.923ms
-Self CUDA time total: 10.622ms
+Self CPU time total: 12.889ms
+Self CUDA time total: 10.605ms
 </pre></div>
 </div>
 <p>The previous code snippet generates a report of the top 10 PyTorch functions
@@ -1296,7 +2497,7 @@ implementation is used on GPU. As well, we built a simple
 compilable. In the process we have shown how to the profiling tools can
 be used to explore the performance characteristics of a user defined
 module.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 6.625 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 6.027 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-scaled-dot-product-attention-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/fc133e4ffc6275f9d1c3a74ddd10e0a2/scaled_dot_product_attention_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">scaled_dot_product_attention_tutorial.ipynb</span></code></a></p>
@@ -1311,7 +2512,7 @@ module.</p>
 </section>
 </section>
 </article>
-</article>
+</div>
 <footer class="bd-footer-article">
 <div class="footer-article-items footer-article__inner">
 <div class="footer-article-item">
@@ -1401,12 +2602,15 @@ module.</p>
 <div class="sidebar-secondary-item">
 <div class="sidebar-heading">PyTorch Libraries</div>
 <ul style="list-style-type: none; padding: 0; padding-bottom: 80px;">
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/ao" style="color: var(--pst-color-text-muted)">torchao</a></li>
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchrec" style="color: var(--pst-color-text-muted)">torchrec</a></li>
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchft" style="color: var(--pst-color-text-muted)">torchft</a></li>
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchcodec" style="color: var(--pst-color-text-muted)">TorchCodec</a></li>
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/vision" style="color: var(--pst-color-text-muted)">torchvision</a></li>
 <li><a class="nav-link nav-external" href="https://docs.pytorch.org/executorch" style="color: var(--pst-color-text-muted)">ExecuTorch</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/helion" style="color: var(--pst-color-text-muted)">Helion</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/ao" style="color: var(--pst-color-text-muted)">torchao</a></li>
+<li><a class="nav-link nav-external" href="https://github.com/pytorch/kineto" style="color: var(--pst-color-text-muted)">kineto</a></li>
+<li><a class="nav-link nav-external" href="https://github.com/pytorch/torchtitan" style="color: var(--pst-color-text-muted)">torchtitan</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/rl" style="color: var(--pst-color-text-muted)">TorchRL</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/vision" style="color: var(--pst-color-text-muted)">torchvision</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/audio" style="color: var(--pst-color-text-muted)">torchaudio</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/tensordict" style="color: var(--pst-color-text-muted)">tensordict</a></li>
 <li><a class="nav-link nav-external" href="https://docs.pytorch.org/xla" style="color: var(--pst-color-text-muted)">PyTorch on XLA Devices</a></li>
 </ul>
 </div>
@@ -1548,9 +2752,9 @@ module.</p>
        "@type": "Article",
        "name": "(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)",
        "headline": "(Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)",
-       "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
+       "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment.",
        "url": "/intermediate/scaled_dot_product_attention_tutorial.html",
-       "articleBody": "Note Go to the end to download the full example code. (Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)# Author: Driss Guessous Summary# In this tutorial, we want to highlight a new torch.nn.functional function that can be helpful for implementing transformer architectures. The function is named torch.nn.functional.scaled_dot_product_attention. For detailed description of the function, see the PyTorch documentation. This function has already been incorporated into torch.nn.MultiheadAttention and torch.nn.TransformerEncoderLayer. Overview# At a high level, this PyTorch function calculates the scaled dot product attention (SDPA) between query, key, and value according to the definition found in the paper Attention is all you need. While this function can be written in PyTorch using existing functions, a fused implementation can provide large performance benefits over a naive implementation. Fused implementations# For CUDA tensor inputs, the function will dispatch into one of the following implementations: FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness Memory-Efficient Attention A PyTorch implementation defined in C++ Note This tutorial requires PyTorch 2.0.0 or later. import torch import torch.nn as nn import torch.nn.functional as F device = \"cuda\" if torch.cuda.is_available() else \"cpu\" # Example Usage: query, key, value = torch.randn(2, 3, 8, device=device), torch.randn(2, 3, 8, device=device), torch.randn(2, 3, 8, device=device) F.scaled_dot_product_attention(query, key, value) tensor([[[-0.5916, -0.1511, 1.3721, -1.2001, 1.2014, -0.5893, -0.0795, -0.4335], [-0.2182, -0.2432, 0.8937, -0.3624, 1.3514, 0.3502, 0.7861, -0.4329], [-0.2327, -0.2912, 1.1747, -0.5998, 1.3899, 0.2065, 0.6370, -0.4885]], [[ 0.1090, 0.5594, 0.6921, 0.6216, 0.8380, -1.3714, 0.3990, -0.3449], [ 0.2344, 0.8744, 0.3410, 0.8697, 0.8334, -0.9502, 0.3848, -0.1536], [ 0.2881, 0.7716, 0.4148, 0.9087, 0.7781, -1.1544, 0.4828, -0.2226]]], device=\u0027cuda:0\u0027) Explicit Dispatcher Control# While the function will implicitly dispatch to one of the three implementations, the user can also explicitly control the dispatch via the use of a context manager. This context manager allows users to explicitly disable certain implementations. If a user wants to ensure the function is indeed using the fastest implementation for their specific inputs, the context manager can be used to sweep through measuring performance. # Lets define a helpful benchmarking function: import torch.utils.benchmark as benchmark def benchmark_torch_function_in_microseconds(f, *args, **kwargs): t0 = benchmark.Timer( stmt=\"f(*args, **kwargs)\", globals={\"args\": args, \"kwargs\": kwargs, \"f\": f} ) return t0.blocked_autorange().mean * 1e6 # Lets define the hyper-parameters of our input batch_size = 32 max_sequence_len = 1024 num_heads = 32 embed_dimension = 32 dtype = torch.float16 query = torch.rand(batch_size, num_heads, max_sequence_len, embed_dimension, device=device, dtype=dtype) key = torch.rand(batch_size, num_heads, max_sequence_len, embed_dimension, device=device, dtype=dtype) value = torch.rand(batch_size, num_heads, max_sequence_len, embed_dimension, device=device, dtype=dtype) print(f\"The default implementation runs in {benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value):.3f} microseconds\") # Lets explore the speed of each of the 3 implementations from torch.nn.attention import SDPBackend, sdpa_kernel with sdpa_kernel(SDPBackend.MATH): math_time=benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value) print(f\"The math implementation runs in {math_time:.3f} microseconds\") with sdpa_kernel(SDPBackend.FLASH_ATTENTION): try: flash_time=benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value) print(f\"The flash attention implementation runs in {flash_time:.3f} microseconds\") except RuntimeError: print(\"FlashAttention is not supported. See warnings for reasons.\") with sdpa_kernel(SDPBackend.EFFICIENT_ATTENTION): try: efficient_time=benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value) print(f\"The memory efficient implementation runs in {efficient_time:.3f} microseconds\") except RuntimeError: print(\"EfficientAttention is not supported. See warnings for reasons.\") The default implementation runs in 2274.904 microseconds The math implementation runs in 87566.340 microseconds The flash attention implementation runs in 2279.742 microseconds The memory efficient implementation runs in 4400.460 microseconds Hardware dependence# Depending on what machine you ran the above cell on and what hardware is available, your results might be different. - If you don\u2019t have a GPU and are running on CPU then with FP32 the context manager will have no effect and all three runs should return similar timings. - Depending on what compute capability your graphics card supports flash attention or memory efficient might have failed. Causal Self Attention# Below is an example implementation of a multi-headed causal self attention block inspired by Andrej Karpathy NanoGPT repository. class CausalSelfAttention(nn.Module): def __init__(self, num_heads: int, embed_dimension: int, bias: bool=False, is_causal: bool=False, dropout:float=0.0): super().__init__() assert embed_dimension % num_heads == 0 # key, query, value projections for all heads, but in a batch self.c_attn = nn.Linear(embed_dimension, 3 * embed_dimension, bias=bias) # output projection self.c_proj = nn.Linear(embed_dimension, embed_dimension, bias=bias) # regularization self.dropout = dropout self.resid_dropout = nn.Dropout(dropout) self.num_heads = num_heads self.embed_dimension = embed_dimension # Perform causal masking self.is_causal = is_causal def forward(self, x): # calculate query, key, values for all heads in batch and move head forward to be the batch dim query_projected = self.c_attn(x) batch_size = query_projected.size(0) embed_dim = query_projected.size(2) head_dim = embed_dim // (self.num_heads * 3) query, key, value = query_projected.chunk(3, -1) query = query.view(batch_size, -1, self.num_heads, head_dim).transpose(1, 2) key = key.view(batch_size, -1, self.num_heads, head_dim).transpose(1, 2) value = value.view(batch_size, -1, self.num_heads, head_dim).transpose(1, 2) if self.training: dropout = self.dropout is_causal = self.is_causal else: dropout = 0.0 is_causal = False y = F.scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=dropout, is_causal=is_causal) y = y.transpose(1, 2).view(batch_size, -1, self.num_heads * head_dim) y = self.resid_dropout(self.c_proj(y)) return y num_heads = 8 heads_per_dim = 64 embed_dimension = num_heads * heads_per_dim dtype = torch.float16 model = CausalSelfAttention(num_heads=num_heads, embed_dimension=embed_dimension, bias=False, is_causal=True, dropout=0.1).to(\"cuda\").to(dtype).eval() print(model) CausalSelfAttention( (c_attn): Linear(in_features=512, out_features=1536, bias=False) (c_proj): Linear(in_features=512, out_features=512, bias=False) (resid_dropout): Dropout(p=0.1, inplace=False) ) NestedTensor and Dense tensor support# SDPA supports both NestedTensor and Dense tensor inputs. NestedTensors handle the case where the input is a batch of variable length sequences without needing to pad each sequence to the maximum length in the batch. For more information about NestedTensors see torch.nested and NestedTensors Tutorial. import random def generate_rand_batch( batch_size, max_sequence_len, embed_dimension, pad_percentage=None, dtype=torch.float16, device=\"cuda\", ): if not pad_percentage: return ( torch.randn( batch_size, max_sequence_len, embed_dimension, dtype=dtype, device=device, ), None, ) # Random sequence lengths seq_len_list = [ int(max_sequence_len * (1 - random.gauss(pad_percentage, 0.01))) for _ in range(batch_size) ] # Make random entry in the batch have max sequence length seq_len_list[random.randint(0, batch_size - 1)] = max_sequence_len return ( torch.nested.nested_tensor( [ torch.randn(seq_len, embed_dimension, dtype=dtype, device=device) for seq_len in seq_len_list ] ), seq_len_list, ) random_nt, _ = generate_rand_batch(32, 512, embed_dimension, pad_percentage=0.5, dtype=dtype, device=device) random_dense, _ = generate_rand_batch(32, 512, embed_dimension, pad_percentage=None, dtype=dtype, device=device) # Currently the fused implementations don\u0027t support ``NestedTensor`` for training model.eval() with sdpa_kernel(SDPBackend.FLASH_ATTENTION): try: print(f\"Random NT runs in {benchmark_torch_function_in_microseconds(model, random_nt):.3f} microseconds\") print(f\"Random Dense runs in {benchmark_torch_function_in_microseconds(model, random_dense):.3f} microseconds\") except RuntimeError: print(\"FlashAttention is not supported. See warnings for reasons.\") /usr/local/lib/python3.10/dist-packages/torch/nested/__init__.py:250: UserWarning: The PyTorch API of nested tensors is in prototype stage and will change in the near future. We recommend specifying layout=torch.jagged when constructing a nested tensor, as this layout receives active development, has better operator coverage, and works with torch.compile. (Triggered internally at /pytorch/aten/src/ATen/NestedTensorImpl.cpp:178.) Random NT runs in 593.209 microseconds Random Dense runs in 951.257 microseconds Using SDPA with torch.compile# With the release of PyTorch 2.0, a new feature called torch.compile() has been introduced, which can provide significant performance improvements over eager mode. Scaled dot product attention is fully composable with torch.compile(). To demonstrate this, let\u2019s compile the CausalSelfAttention module using torch.compile() and observe the resulting performance improvements. batch_size = 32 max_sequence_len = 256 x = torch.rand(batch_size, max_sequence_len, embed_dimension, device=device, dtype=dtype) print( f\"The non compiled module runs in {benchmark_torch_function_in_microseconds(model, x):.3f} microseconds\") compiled_model = torch.compile(model) # Let\u0027s compile it compiled_model(x) print( f\"The compiled module runs in {benchmark_torch_function_in_microseconds(compiled_model, x):.3f} microseconds\") The non compiled module runs in 425.056 microseconds The compiled module runs in 527.297 microseconds The exact execution time is dependent on machine, however the results for mine: The non compiled module runs in 166.616 microseconds The compiled module runs in 166.726 microseconds That is not what we were expecting. Let\u2019s dig a little deeper. PyTorch comes with an amazing built-in profiler that you can use to inspect the performance characteristics of your code. from torch.profiler import profile, record_function, ProfilerActivity activities = [ProfilerActivity.CPU] if device == \u0027cuda\u0027: activities.append(ProfilerActivity.CUDA) with profile(activities=activities, record_shapes=False) as prof: with record_function(\" Non-Compilied Causal Attention\"): for _ in range(25): model(x) print(prof.key_averages().table(sort_by=\"cuda_time_total\", row_limit=10)) with profile(activities=activities, record_shapes=False) as prof: with record_function(\"Compiled Causal Attention\"): for _ in range(25): compiled_model(x) print(prof.key_averages().table(sort_by=\"cuda_time_total\", row_limit=10)) # For even more insights, you can export the trace and use ``chrome://tracing`` to view the results # # .. code-block:: python # # prof.export_chrome_trace(\"compiled_causal_attention_trace.json\"). /usr/local/lib/python3.10/dist-packages/torch/profiler/profiler.py:217: UserWarning: Warning: Profiler clears events at the end of each cycle.Only events from the current cycle will be reported.To keep events across cycles, set acc_events=True. ------------------------------------------------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ Name Self CPU % Self CPU CPU total % CPU total CPU time avg Self CUDA Self CUDA % CUDA total CUDA time avg # of Calls ------------------------------------------------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ Non-Compilied Causal Attention 16.67% 2.111ms 73.09% 9.259ms 9.259ms 0.000us 0.00% 10.855ms 10.855ms 1 Non-Compilied Causal Attention 0.00% 0.000us 0.00% 0.000us 0.000us 10.702ms 100.66% 10.702ms 10.702ms 1 aten::linear 0.91% 115.124us 34.30% 4.345ms 86.902us 0.000us 0.00% 8.027ms 160.547us 50 aten::matmul 1.77% 224.326us 31.08% 3.938ms 78.754us 0.000us 0.00% 8.027ms 160.547us 50 aten::mm 9.70% 1.229ms 27.29% 3.457ms 69.130us 7.804ms 73.40% 8.027ms 160.547us 50 ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn 0.00% 0.000us 0.00% 0.000us 0.000us 5.587ms 52.56% 5.587ms 223.498us 25 aten::scaled_dot_product_attention 1.50% 189.640us 14.08% 1.783ms 71.336us 0.000us 0.00% 2.828ms 113.106us 25 aten::_scaled_dot_product_flash_attention 2.28% 288.490us 12.58% 1.594ms 63.751us 0.000us 0.00% 2.828ms 113.106us 25 aten::_flash_attention_forward 2.41% 305.163us 9.13% 1.157ms 46.283us 2.828ms 26.60% 2.828ms 113.106us 25 void pytorch_flash::flash_fwd_kernel\u003cFlash_fwd_kerne... 0.00% 0.000us 0.00% 0.000us 0.000us 2.828ms 26.60% 2.828ms 113.106us 25 ------------------------------------------------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ Self CPU time total: 12.668ms Self CUDA time total: 10.631ms ------------------------------------------------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ Name Self CPU % Self CPU CPU total % CPU total CPU time avg Self CUDA Self CUDA % CUDA total CUDA time avg # of Calls ------------------------------------------------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ## Call CompiledFxGraph fqx5bihyr4fofpxza7jgtbig3nwj... 0.00% 0.000us 0.00% 0.000us 0.000us 10.661ms 100.37% 10.661ms 426.452us 25 Compiled Causal Attention 7.92% 1.024ms 84.02% 10.858ms 10.858ms 0.000us 0.00% 10.622ms 10.622ms 1 Torch-Compiled Region: 0/0 6.88% 889.403us 73.93% 9.554ms 382.165us 0.000us 0.00% 10.622ms 424.880us 25 CompiledFunction 8.38% 1.083ms 64.90% 8.388ms 335.501us 0.000us 0.00% 10.622ms 424.880us 25 ## Call CompiledFxGraph fqx5bihyr4fofpxza7jgtbig3nwj... 19.67% 2.542ms 56.52% 7.305ms 292.187us 0.000us 0.00% 10.622ms 424.880us 25 aten::mm 7.32% 946.620us 11.27% 1.456ms 29.122us 7.804ms 73.47% 7.804ms 156.076us 50 ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn 0.00% 0.000us 0.00% 0.000us 0.000us 5.587ms 52.60% 5.587ms 223.478us 25 aten::_scaled_dot_product_flash_attention 1.81% 234.515us 12.01% 1.552ms 62.081us 0.000us 0.00% 2.818ms 112.728us 25 aten::_flash_attention_forward 2.53% 326.898us 8.77% 1.134ms 45.360us 2.818ms 26.53% 2.818ms 112.728us 25 void pytorch_flash::flash_fwd_kernel\u003cFlash_fwd_kerne... 0.00% 0.000us 0.00% 0.000us 0.000us 2.818ms 26.53% 2.818ms 112.728us 25 ------------------------------------------------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ Self CPU time total: 12.923ms Self CUDA time total: 10.622ms The previous code snippet generates a report of the top 10 PyTorch functions that consumed the most GPU execution time, for both the compiled and non-compiled module. The analysis reveals that the majority of time spent on the GPU is concentrated on the same set of functions for both modules. The reason for this here is that torch.compile is very good at removing the framework overhead associated with PyTorch. If your model is launching large, efficient CUDA kernels, which in this case CausalSelfAttention is, then the overhead of PyTorch can be hidden. In reality, your module does not normally consist of a singular CausalSelfAttention block. When experimenting with Andrej Karpathy NanoGPT repository, compiling the module took the time per train step from: 6090.49ms to 3273.17ms! This was done on commit: ae3a8d5 of NanoGPT training on the Shakespeare dataset. Using SDPA with attn_bias subclasses# # As of PyTorch 2.3, we have added a new submodule that contains tensor subclasses. # Designed to be used with ``torch.nn.functional.scaled_dot_product_attention``. # The module is named ``torch.nn.attention.bias`` and contains the following two # utilities for generating causal attention variants: # # - ``torch.nn.attention.bias.causal_upper_left`` # - ``torch.nn.attention.bias.causal_lower_right`` # # .. note:: # The current argument ``is_causal`` in ``torch.nn.functional.scaled_dot_product_attention`` # is the same as using ``torch.nn.attention.bias.causal_upper_left``. # from torch.nn.attention.bias import causal_lower_right, causal_upper_left batch_size = 32 sequence_length_q = 2 sequence_length_kv = 10 num_heads = 16 embed_dimension = 32 dtype = torch.float16 query = torch.rand(batch_size, num_heads, sequence_length_q, embed_dimension, device=device, dtype=dtype) key = torch.rand(batch_size, num_heads, sequence_length_kv, embed_dimension, device=device, dtype=dtype) value = torch.rand(batch_size, num_heads, sequence_length_kv, embed_dimension, device=device, dtype=dtype) upper_left_bias = causal_upper_left(sequence_length_q, sequence_length_kv) lower_right_bias = causal_lower_right(sequence_length_q, sequence_length_kv) print(type(upper_left_bias)) print(type(lower_right_bias)) assert type(upper_left_bias) == type(lower_right_bias) assert issubclass(type(upper_left_bias), torch.Tensor) # As you can see from the previous output, are the same type ``torch.nn.attention.bias.CausalBias`` # and subclass ``torch.Tensor`` # Lets see what these tensors look like print(upper_left_bias) print(lower_right_bias) # Upper Left Bias aligns the causal attention mask to the upper left corner of the attention scores matrix. # This only has an impact when the attention scores matrix is not square, which is common for decoding use cases. # Another way of thinking about this concept is that when you use upper left bias, # the 0th token in the query is aligned to the 0th token in the key, while for lower right bias, # Assuming the attention score matrix is two dimensional, ``attn_score[0][0]`` is the attention score # between the 0th token in the query and the 0th token in the key. # For lower right bias, the sequence of q is aligned so that the last token in q is aligned to the last token in k # (for example, ``attn_score[-1][-1])`` is all True since the last token in q is at the same position as the last token in k # even if the sequence length of q and k are different. # These objects are intended to be used with sdpa out_upper_left = F.scaled_dot_product_attention(query, key, value, upper_left_bias) out_lower_right = F.scaled_dot_product_attention(query, key, value, lower_right_bias) out_is_causal = F.scaled_dot_product_attention(query, key, value, is_causal=True) assert torch.allclose(out_upper_left, out_is_causal) assert not torch.allclose(out_upper_left, out_lower_right) # These attention biases should also be compatible with torch.compile compiled_sdpa = torch.compile(F.scaled_dot_product_attention, fullgraph=True) out_upper_left = compiled_sdpa(query, key, value, upper_left_bias) \u003cclass \u0027torch.nn.attention.bias.CausalBias\u0027\u003e \u003cclass \u0027torch.nn.attention.bias.CausalBias\u0027\u003e tensor([[ True, False, False, False, False, False, False, False, False, False], [ True, True, False, False, False, False, False, False, False, False]]) tensor([[ True, True, True, True, True, True, True, True, True, False], [ True, True, True, True, True, True, True, True, True, True]]) Conclusion# In this tutorial, we have demonstrated the basic usage of torch.nn.functional.scaled_dot_product_attention. We have shown how the sdpa_kernel context manager can be used to assert a certain implementation is used on GPU. As well, we built a simple CausalSelfAttention module that works with NestedTensor and is torch compilable. In the process we have shown how to the profiling tools can be used to explore the performance characteristics of a user defined module. Total running time of the script: (0 minutes 6.625 seconds) Download Jupyter notebook: scaled_dot_product_attention_tutorial.ipynb Download Python source code: scaled_dot_product_attention_tutorial.py Download zipped: scaled_dot_product_attention_tutorial.zip",
+       "articleBody": "Note Go to the end to download the full example code. (Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)# Author: Driss Guessous Summary# In this tutorial, we want to highlight a new torch.nn.functional function that can be helpful for implementing transformer architectures. The function is named torch.nn.functional.scaled_dot_product_attention. For detailed description of the function, see the PyTorch documentation. This function has already been incorporated into torch.nn.MultiheadAttention and torch.nn.TransformerEncoderLayer. Overview# At a high level, this PyTorch function calculates the scaled dot product attention (SDPA) between query, key, and value according to the definition found in the paper Attention is all you need. While this function can be written in PyTorch using existing functions, a fused implementation can provide large performance benefits over a naive implementation. Fused implementations# For CUDA tensor inputs, the function will dispatch into one of the following implementations: FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness Memory-Efficient Attention A PyTorch implementation defined in C++ Note This tutorial requires PyTorch 2.0.0 or later. import torch import torch.nn as nn import torch.nn.functional as F device = \"cuda\" if torch.cuda.is_available() else \"cpu\" # Example Usage: query, key, value = torch.randn(2, 3, 8, device=device), torch.randn(2, 3, 8, device=device), torch.randn(2, 3, 8, device=device) F.scaled_dot_product_attention(query, key, value) tensor([[[ 6.2211e-01, -2.6008e-02, -1.3073e-01, 1.0870e+00, 3.7143e-01, -1.0349e+00, 1.9780e-01, -1.3446e+00], [ 3.4150e-01, 2.1157e-01, 6.0263e-02, 8.7375e-01, 5.2707e-01, -9.2106e-03, -2.1995e-01, -1.0264e+00], [ 9.0610e-01, 2.5639e-02, 3.3470e-01, 1.7529e+00, 5.6325e-01, -1.1589e+00, 4.1417e-01, -1.2121e+00]], [[ 6.7825e-01, -6.7130e-01, -5.4039e-01, 9.8979e-04, 4.3772e-01, -6.7396e-01, -1.9248e-01, -2.5541e-01], [ 7.2674e-01, -7.7932e-01, -6.4763e-01, 1.2875e-01, 5.5364e-01, -7.1471e-01, -1.4728e-01, -2.0139e-01], [ 7.6666e-01, -6.4126e-01, -3.6398e-01, -1.8815e-01, -1.8899e-01, -7.9202e-01, -4.9106e-01, 6.4050e-04]]], device=\u0027cuda:0\u0027) Explicit Dispatcher Control# While the function will implicitly dispatch to one of the three implementations, the user can also explicitly control the dispatch via the use of a context manager. This context manager allows users to explicitly disable certain implementations. If a user wants to ensure the function is indeed using the fastest implementation for their specific inputs, the context manager can be used to sweep through measuring performance. # Lets define a helpful benchmarking function: import torch.utils.benchmark as benchmark def benchmark_torch_function_in_microseconds(f, *args, **kwargs): t0 = benchmark.Timer( stmt=\"f(*args, **kwargs)\", globals={\"args\": args, \"kwargs\": kwargs, \"f\": f} ) return t0.blocked_autorange().mean * 1e6 # Lets define the hyper-parameters of our input batch_size = 32 max_sequence_len = 1024 num_heads = 32 embed_dimension = 32 dtype = torch.float16 query = torch.rand(batch_size, num_heads, max_sequence_len, embed_dimension, device=device, dtype=dtype) key = torch.rand(batch_size, num_heads, max_sequence_len, embed_dimension, device=device, dtype=dtype) value = torch.rand(batch_size, num_heads, max_sequence_len, embed_dimension, device=device, dtype=dtype) print(f\"The default implementation runs in {benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value):.3f} microseconds\") # Lets explore the speed of each of the 3 implementations from torch.nn.attention import SDPBackend, sdpa_kernel with sdpa_kernel(SDPBackend.MATH): math_time=benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value) print(f\"The math implementation runs in {math_time:.3f} microseconds\") with sdpa_kernel(SDPBackend.FLASH_ATTENTION): try: flash_time=benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value) print(f\"The flash attention implementation runs in {flash_time:.3f} microseconds\") except RuntimeError: print(\"FlashAttention is not supported. See warnings for reasons.\") with sdpa_kernel(SDPBackend.EFFICIENT_ATTENTION): try: efficient_time=benchmark_torch_function_in_microseconds(F.scaled_dot_product_attention, query, key, value) print(f\"The memory efficient implementation runs in {efficient_time:.3f} microseconds\") except RuntimeError: print(\"EfficientAttention is not supported. See warnings for reasons.\") The default implementation runs in 2273.585 microseconds The math implementation runs in 87415.010 microseconds The flash attention implementation runs in 2281.882 microseconds The memory efficient implementation runs in 4336.222 microseconds Hardware dependence# Depending on what machine you ran the above cell on and what hardware is available, your results might be different. - If you don\u2019t have a GPU and are running on CPU then with FP32 the context manager will have no effect and all three runs should return similar timings. - Depending on what compute capability your graphics card supports flash attention or memory efficient might have failed. Causal Self Attention# Below is an example implementation of a multi-headed causal self attention block inspired by Andrej Karpathy NanoGPT repository. class CausalSelfAttention(nn.Module): def __init__(self, num_heads: int, embed_dimension: int, bias: bool=False, is_causal: bool=False, dropout:float=0.0): super().__init__() assert embed_dimension % num_heads == 0 # key, query, value projections for all heads, but in a batch self.c_attn = nn.Linear(embed_dimension, 3 * embed_dimension, bias=bias) # output projection self.c_proj = nn.Linear(embed_dimension, embed_dimension, bias=bias) # regularization self.dropout = dropout self.resid_dropout = nn.Dropout(dropout) self.num_heads = num_heads self.embed_dimension = embed_dimension # Perform causal masking self.is_causal = is_causal def forward(self, x): # calculate query, key, values for all heads in batch and move head forward to be the batch dim query_projected = self.c_attn(x) batch_size = query_projected.size(0) embed_dim = query_projected.size(2) head_dim = embed_dim // (self.num_heads * 3) query, key, value = query_projected.chunk(3, -1) query = query.view(batch_size, -1, self.num_heads, head_dim).transpose(1, 2) key = key.view(batch_size, -1, self.num_heads, head_dim).transpose(1, 2) value = value.view(batch_size, -1, self.num_heads, head_dim).transpose(1, 2) if self.training: dropout = self.dropout is_causal = self.is_causal else: dropout = 0.0 is_causal = False y = F.scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=dropout, is_causal=is_causal) y = y.transpose(1, 2).view(batch_size, -1, self.num_heads * head_dim) y = self.resid_dropout(self.c_proj(y)) return y num_heads = 8 heads_per_dim = 64 embed_dimension = num_heads * heads_per_dim dtype = torch.float16 model = CausalSelfAttention(num_heads=num_heads, embed_dimension=embed_dimension, bias=False, is_causal=True, dropout=0.1).to(\"cuda\").to(dtype).eval() print(model) CausalSelfAttention( (c_attn): Linear(in_features=512, out_features=1536, bias=False) (c_proj): Linear(in_features=512, out_features=512, bias=False) (resid_dropout): Dropout(p=0.1, inplace=False) ) NestedTensor and Dense tensor support# SDPA supports both NestedTensor and Dense tensor inputs. NestedTensors handle the case where the input is a batch of variable length sequences without needing to pad each sequence to the maximum length in the batch. For more information about NestedTensors see torch.nested and NestedTensors Tutorial. import random def generate_rand_batch( batch_size, max_sequence_len, embed_dimension, pad_percentage=None, dtype=torch.float16, device=\"cuda\", ): if not pad_percentage: return ( torch.randn( batch_size, max_sequence_len, embed_dimension, dtype=dtype, device=device, ), None, ) # Random sequence lengths seq_len_list = [ int(max_sequence_len * (1 - random.gauss(pad_percentage, 0.01))) for _ in range(batch_size) ] # Make random entry in the batch have max sequence length seq_len_list[random.randint(0, batch_size - 1)] = max_sequence_len return ( torch.nested.nested_tensor( [ torch.randn(seq_len, embed_dimension, dtype=dtype, device=device) for seq_len in seq_len_list ] ), seq_len_list, ) random_nt, _ = generate_rand_batch(32, 512, embed_dimension, pad_percentage=0.5, dtype=dtype, device=device) random_dense, _ = generate_rand_batch(32, 512, embed_dimension, pad_percentage=None, dtype=dtype, device=device) # Currently the fused implementations don\u0027t support ``NestedTensor`` for training model.eval() with sdpa_kernel(SDPBackend.FLASH_ATTENTION): try: print(f\"Random NT runs in {benchmark_torch_function_in_microseconds(model, random_nt):.3f} microseconds\") print(f\"Random Dense runs in {benchmark_torch_function_in_microseconds(model, random_dense):.3f} microseconds\") except RuntimeError: print(\"FlashAttention is not supported. See warnings for reasons.\") /usr/local/lib/python3.10/dist-packages/torch/nested/__init__.py:250: UserWarning: The PyTorch API of nested tensors is in prototype stage and will change in the near future. We recommend specifying layout=torch.jagged when constructing a nested tensor, as this layout receives active development, has better operator coverage, and works with torch.compile. (Triggered internally at /pytorch/aten/src/ATen/NestedTensorImpl.cpp:178.) Random NT runs in 596.120 microseconds Random Dense runs in 953.638 microseconds Using SDPA with torch.compile# With the release of PyTorch 2.0, a new feature called torch.compile() has been introduced, which can provide significant performance improvements over eager mode. Scaled dot product attention is fully composable with torch.compile(). To demonstrate this, let\u2019s compile the CausalSelfAttention module using torch.compile() and observe the resulting performance improvements. batch_size = 32 max_sequence_len = 256 x = torch.rand(batch_size, max_sequence_len, embed_dimension, device=device, dtype=dtype) print( f\"The non compiled module runs in {benchmark_torch_function_in_microseconds(model, x):.3f} microseconds\") compiled_model = torch.compile(model) # Let\u0027s compile it compiled_model(x) print( f\"The compiled module runs in {benchmark_torch_function_in_microseconds(compiled_model, x):.3f} microseconds\") The non compiled module runs in 425.250 microseconds The compiled module runs in 526.963 microseconds The exact execution time is dependent on machine, however the results for mine: The non compiled module runs in 166.616 microseconds The compiled module runs in 166.726 microseconds That is not what we were expecting. Let\u2019s dig a little deeper. PyTorch comes with an amazing built-in profiler that you can use to inspect the performance characteristics of your code. from torch.profiler import profile, record_function, ProfilerActivity activities = [ProfilerActivity.CPU] if device == \u0027cuda\u0027: activities.append(ProfilerActivity.CUDA) with profile(activities=activities, record_shapes=False) as prof: with record_function(\" Non-Compilied Causal Attention\"): for _ in range(25): model(x) print(prof.key_averages().table(sort_by=\"cuda_time_total\", row_limit=10)) with profile(activities=activities, record_shapes=False) as prof: with record_function(\"Compiled Causal Attention\"): for _ in range(25): compiled_model(x) print(prof.key_averages().table(sort_by=\"cuda_time_total\", row_limit=10)) # For even more insights, you can export the trace and use ``chrome://tracing`` to view the results # # .. code-block:: python # # prof.export_chrome_trace(\"compiled_causal_attention_trace.json\"). /usr/local/lib/python3.10/dist-packages/torch/profiler/profiler.py:217: UserWarning: Warning: Profiler clears events at the end of each cycle.Only events from the current cycle will be reported.To keep events across cycles, set acc_events=True. ------------------------------------------------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ Name Self CPU % Self CPU CPU total % CPU total CPU time avg Self CUDA Self CUDA % CUDA total CUDA time avg # of Calls ------------------------------------------------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ Non-Compilied Causal Attention 15.93% 2.007ms 71.28% 8.980ms 8.980ms 0.000us 0.00% 10.830ms 10.830ms 1 Non-Compilied Causal Attention 0.00% 0.000us 0.00% 0.000us 0.000us 10.674ms 100.63% 10.674ms 10.674ms 1 aten::linear 0.92% 116.032us 33.57% 4.229ms 84.588us 0.000us 0.00% 8.004ms 160.075us 50 aten::matmul 1.67% 210.553us 30.49% 3.842ms 76.833us 0.000us 0.00% 8.004ms 160.075us 50 aten::mm 9.52% 1.199ms 26.97% 3.397ms 67.944us 7.782ms 73.36% 8.004ms 160.075us 50 ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn 0.00% 0.000us 0.00% 0.000us 0.000us 5.569ms 52.50% 5.569ms 222.743us 25 aten::scaled_dot_product_attention 1.47% 184.942us 14.06% 1.771ms 70.831us 0.000us 0.00% 2.826ms 113.041us 25 aten::_scaled_dot_product_flash_attention 2.20% 277.722us 12.59% 1.586ms 63.433us 0.000us 0.00% 2.826ms 113.041us 25 aten::_flash_attention_forward 2.42% 304.764us 9.20% 1.159ms 46.376us 2.826ms 26.64% 2.826ms 113.041us 25 void pytorch_flash::flash_fwd_kernel\u003cFlash_fwd_kerne... 0.00% 0.000us 0.00% 0.000us 0.000us 2.826ms 26.64% 2.826ms 113.041us 25 ------------------------------------------------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ Self CPU time total: 12.598ms Self CUDA time total: 10.608ms ------------------------------------------------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ Name Self CPU % Self CPU CPU total % CPU total CPU time avg Self CUDA Self CUDA % CUDA total CUDA time avg # of Calls ------------------------------------------------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ## Call CompiledFxGraph fqx5bihyr4fofpxza7jgtbig3nwj... 0.00% 0.000us 0.00% 0.000us 0.000us 10.649ms 100.42% 10.649ms 425.975us 25 Compiled Causal Attention 8.03% 1.036ms 83.83% 10.804ms 10.804ms 0.000us 0.00% 10.605ms 10.605ms 1 Torch-Compiled Region: 0/0 6.96% 896.559us 73.65% 9.493ms 379.723us 0.000us 0.00% 10.605ms 424.197us 25 CompiledFunction 8.56% 1.103ms 64.47% 8.309ms 332.375us 0.000us 0.00% 10.605ms 424.197us 25 ## Call CompiledFxGraph fqx5bihyr4fofpxza7jgtbig3nwj... 19.40% 2.500ms 55.91% 7.206ms 288.255us 0.000us 0.00% 10.605ms 424.197us 25 aten::mm 7.19% 926.895us 11.25% 1.450ms 29.001us 7.786ms 73.42% 7.786ms 155.719us 50 ampere_fp16_s1688gemm_fp16_128x128_ldg8_f2f_tn 0.00% 0.000us 0.00% 0.000us 0.000us 5.571ms 52.53% 5.571ms 222.823us 25 aten::_scaled_dot_product_flash_attention 1.79% 230.177us 11.83% 1.524ms 60.972us 0.000us 0.00% 2.819ms 112.758us 25 aten::_flash_attention_forward 2.35% 303.494us 8.60% 1.109ms 44.358us 2.819ms 26.58% 2.819ms 112.758us 25 void pytorch_flash::flash_fwd_kernel\u003cFlash_fwd_kerne... 0.00% 0.000us 0.00% 0.000us 0.000us 2.819ms 26.58% 2.819ms 112.758us 25 ------------------------------------------------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ Self CPU time total: 12.889ms Self CUDA time total: 10.605ms The previous code snippet generates a report of the top 10 PyTorch functions that consumed the most GPU execution time, for both the compiled and non-compiled module. The analysis reveals that the majority of time spent on the GPU is concentrated on the same set of functions for both modules. The reason for this here is that torch.compile is very good at removing the framework overhead associated with PyTorch. If your model is launching large, efficient CUDA kernels, which in this case CausalSelfAttention is, then the overhead of PyTorch can be hidden. In reality, your module does not normally consist of a singular CausalSelfAttention block. When experimenting with Andrej Karpathy NanoGPT repository, compiling the module took the time per train step from: 6090.49ms to 3273.17ms! This was done on commit: ae3a8d5 of NanoGPT training on the Shakespeare dataset. Using SDPA with attn_bias subclasses# # As of PyTorch 2.3, we have added a new submodule that contains tensor subclasses. # Designed to be used with ``torch.nn.functional.scaled_dot_product_attention``. # The module is named ``torch.nn.attention.bias`` and contains the following two # utilities for generating causal attention variants: # # - ``torch.nn.attention.bias.causal_upper_left`` # - ``torch.nn.attention.bias.causal_lower_right`` # # .. note:: # The current argument ``is_causal`` in ``torch.nn.functional.scaled_dot_product_attention`` # is the same as using ``torch.nn.attention.bias.causal_upper_left``. # from torch.nn.attention.bias import causal_lower_right, causal_upper_left batch_size = 32 sequence_length_q = 2 sequence_length_kv = 10 num_heads = 16 embed_dimension = 32 dtype = torch.float16 query = torch.rand(batch_size, num_heads, sequence_length_q, embed_dimension, device=device, dtype=dtype) key = torch.rand(batch_size, num_heads, sequence_length_kv, embed_dimension, device=device, dtype=dtype) value = torch.rand(batch_size, num_heads, sequence_length_kv, embed_dimension, device=device, dtype=dtype) upper_left_bias = causal_upper_left(sequence_length_q, sequence_length_kv) lower_right_bias = causal_lower_right(sequence_length_q, sequence_length_kv) print(type(upper_left_bias)) print(type(lower_right_bias)) assert type(upper_left_bias) == type(lower_right_bias) assert issubclass(type(upper_left_bias), torch.Tensor) # As you can see from the previous output, are the same type ``torch.nn.attention.bias.CausalBias`` # and subclass ``torch.Tensor`` # Lets see what these tensors look like print(upper_left_bias) print(lower_right_bias) # Upper Left Bias aligns the causal attention mask to the upper left corner of the attention scores matrix. # This only has an impact when the attention scores matrix is not square, which is common for decoding use cases. # Another way of thinking about this concept is that when you use upper left bias, # the 0th token in the query is aligned to the 0th token in the key, while for lower right bias, # Assuming the attention score matrix is two dimensional, ``attn_score[0][0]`` is the attention score # between the 0th token in the query and the 0th token in the key. # For lower right bias, the sequence of q is aligned so that the last token in q is aligned to the last token in k # (for example, ``attn_score[-1][-1])`` is all True since the last token in q is at the same position as the last token in k # even if the sequence length of q and k are different. # These objects are intended to be used with sdpa out_upper_left = F.scaled_dot_product_attention(query, key, value, upper_left_bias) out_lower_right = F.scaled_dot_product_attention(query, key, value, lower_right_bias) out_is_causal = F.scaled_dot_product_attention(query, key, value, is_causal=True) assert torch.allclose(out_upper_left, out_is_causal) assert not torch.allclose(out_upper_left, out_lower_right) # These attention biases should also be compatible with torch.compile compiled_sdpa = torch.compile(F.scaled_dot_product_attention, fullgraph=True) out_upper_left = compiled_sdpa(query, key, value, upper_left_bias) \u003cclass \u0027torch.nn.attention.bias.CausalBias\u0027\u003e \u003cclass \u0027torch.nn.attention.bias.CausalBias\u0027\u003e tensor([[ True, False, False, False, False, False, False, False, False, False], [ True, True, False, False, False, False, False, False, False, False]]) tensor([[ True, True, True, True, True, True, True, True, True, False], [ True, True, True, True, True, True, True, True, True, True]]) Conclusion# In this tutorial, we have demonstrated the basic usage of torch.nn.functional.scaled_dot_product_attention. We have shown how the sdpa_kernel context manager can be used to assert a certain implementation is used on GPU. As well, we built a simple CausalSelfAttention module that works with NestedTensor and is torch compilable. In the process we have shown how to the profiling tools can be used to explore the performance characteristics of a user defined module. Total running time of the script: (0 minutes 6.027 seconds) Download Jupyter notebook: scaled_dot_product_attention_tutorial.ipynb Download Python source code: scaled_dot_product_attention_tutorial.py Download zipped: scaled_dot_product_attention_tutorial.zip",
        "author": {
          "@type": "Organization",
          "name": "PyTorch Contributors",

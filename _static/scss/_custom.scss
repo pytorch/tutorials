@@ -1,5 +1,10 @@
 @use 'variables' as *;
 
+// Disable Bootstrap's smooth scroll behavior for instant navigation
+html {
+  scroll-behavior: auto !important;
+}
+
 .prev-next-footer {
   display: none;
 }
@@ -22,6 +27,24 @@ dt {
 
 span.highlighted {
   background-color: $pytorch-red;
+}
+
+// Hide the "Hide Search Matches" button that Sphinx adds when highlighting search terms
+p.highlight-link {
+  display: none;
+}
+
+// Remove search highlighting from footer and sidebars - only show in main content
+.bd-footer span.highlighted,
+.bd-sidebar-primary span.highlighted,
+.bd-sidebar-secondary span.highlighted,
+footer span.highlighted,
+.footer-items span.highlighted,
+.site-footer span.highlighted,
+.site-footer .highlighted,
+.privacy-policy span.highlighted,
+.docs-tutorials-resources span.highlighted {
+  background-color: transparent;
 }
 
 .form-control {
@@ -59,10 +82,74 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-// Hide logo on mobile
-.navbar-brand {
-  @media (max-width: 767px) {
+// Hide logo on mobile in the navbar-header-items__start (desktop logo area)
+// The mobile logo is shown separately via navbar-header-items__mobile-logo
+.navbar-header-items__start .navbar-brand {
+  @media (max-width: 959px) {
     display: none;
+  }
+
+  .logo__image {
+    max-height: 20px;
+    width: auto;
+  }
+}
+
+// Add spacing between logo and version/switcher in the navbar
+.navbar-header-items__start .desktop-only-version {
+  margin-left: 0.5rem;
+}
+
+// Style the version switcher with truncation so "v2.11.0 (cu128)" shows as "v2.11.0"
+button.btn.version-switcher__button {
+  max-width: 5.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  padding-right: 1.2rem;
+  color: var(--pst-color-primary);
+  font-weight: 600;
+
+  &::after {
+    position: absolute;
+    right: 0.3rem;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  &:hover,
+  &:focus,
+  &:active {
+    color: var(--pst-color-primary);
+  }
+}
+
+// Hide version and version-switcher in mobile header (shown in sidebar instead)
+// Uses a dedicated class added in the template for better control
+.desktop-only-version {
+  @media (max-width: 959px) {
+    display: none !important;
+  }
+}
+
+// Mobile logo - shown only on mobile, positioned after hamburger menu
+.navbar-header-items__mobile-logo {
+  display: none; // Hidden on desktop
+
+  @media (max-width: 959px) {
+    display: flex;
+    align-items: center;
+    margin-left: 0.5rem; // Small gap after hamburger menu
+
+    .navbar-brand {
+      display: flex !important;
+    }
+
+    .logo__image {
+      max-height: 24px;
+      width: auto;
+    }
   }
 }
 
@@ -77,21 +164,69 @@ nav.bd-links li>a {
 }
 
 .bd-sidebar-primary {
-  width: 18%;
-  padding: 1rem 1rem 1rem;
+  width: 15%;
+  min-width: 200px;
+  padding: 1rem 1.5rem 1rem 3rem;
 
   @media (max-width: 959.98px) {
     width: 75%;
-    top: 30px;
+    padding: 1rem;
+    // Don't set top here - let Bootstrap offcanvas handle positioning
   }
 }
 
 .bd-sidebar-secondary {
-  padding: 1rem 1rem 1rem;
+  width: 15%;
+  min-width: 180px;
+  padding: 1rem 3rem 1rem 1rem;
 
   @media (max-width: 959.98px) {
     width: 75%;
     top: 30px;
+    padding: 1rem;
+  }
+}
+
+// When primary sidebar is hidden on wide screens, align article content with navbar-header-items__center
+// The navbar structure: bd-header padding (2rem) + navbar-brand logo = where nav items start
+// Using --navbar-brand-width CSS variable defined in _variables.scss for consistency
+.bd-sidebar-primary.hide-on-wide ~ .bd-main .bd-content .bd-article-container {
+  // Align with first navbar item: bd-header padding (2rem) + logo width (--navbar-brand-width)
+  padding-left: calc(var(--navbar-brand-width) + 2rem) !important;
+  padding-right: 3rem !important;
+
+  // Tablets (iPad) - flush to the left
+  @media (max-width: 1199.98px) and (min-width: 960px) {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  // Mobile - flush to the left
+  @media (max-width: 959.98px) {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+.bd-header button.primary-toggle {
+    margin-right: 0rem !important;
+}
+
+// Alternative selector using :has() for broader browser support
+.bd-container:has(.bd-sidebar-primary.hide-on-wide) .bd-article-container {
+  padding-left: calc(var(--navbar-brand-width) + 2rem) !important;
+  padding-right: 3rem !important;
+
+  // Tablets (iPad) - flush to the left
+  @media (max-width: 1199.98px) and (min-width: 960px) {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  // Mobile - flush to the left
+  @media (max-width: 959.98px) {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
   }
 }
 
@@ -104,4 +239,82 @@ html[data-theme="dark"] .highlight {
 h1[id], h2[id], h3[id], h4[id], h5[id], h6[id] {
   scroll-margin-top: 150px !important;
   scroll-padding-top: 150px !important;
+}
+
+// PyTorch.org site link - responsive layout
+.pytorch-site-link {
+  display: none; // Hidden by default
+  align-items: center;
+  text-decoration: none;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  padding: 0.25rem 0.5rem;
+  margin-right: 0.5rem;
+
+  // Hide the default nav-external icon
+  &.nav-external::after {
+    display: none;
+  }
+
+  // Override nav-link default color
+  &.nav-link {
+    color: var(--pst-color-text-base);
+
+    &:hover {
+      color: var(--pst-color-primary);
+      text-decoration: underline;
+      text-decoration-thickness: 3px;
+      text-underline-offset: 3px;
+    }
+  }
+
+  .pytorch-site-link-text {
+    display: flex;
+    flex-direction: column;
+    white-space: nowrap;
+    text-align: left;
+
+    span:first-child {
+      font-size: 0.65rem;
+    }
+
+    span:last-child {
+      font-weight: 600;
+
+      .external-icon {
+        font-size: 0.55rem;
+        margin-left: 0.2rem;
+        vertical-align: middle;
+      }
+    }
+  }
+
+  // Show only on wide desktop (1200px and above)
+  @media (min-width: 1200px) {
+    display: flex;
+  }
+}
+
+// Mobile sidebar: show pytorch-site-link with nav link style
+@media (max-width: 991.98px) {
+  .bd-sidebar-primary .sidebar-header-items .sidebar-header-items__end {
+    .pytorch-site-link {
+      display: flex;
+      width: 100%;
+      margin-top: 0;
+      margin-right: 0;
+      padding: 0.5rem 0;
+
+      .pytorch-site-link-text {
+        flex-direction: row;
+        gap: 0.25rem;
+
+        span:first-child,
+        span:last-child {
+          font-size: 1rem;
+          font-weight: normal;
+        }
+      }
+    }
+  }
 }

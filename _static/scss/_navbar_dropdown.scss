@@ -1,0 +1,148 @@
+// Navbar dropdown styles for toctree subsections
+// Ensure our dropdowns inherit the same styles as the "More" dropdown
+@use 'variables';
+
+// External link icon in navbar - match text size
+.bd-header ul.navbar-nav .nav-link .external-icon {
+  font-size: 0.85em;
+  vertical-align: baseline;
+}
+
+// Desktop: hover to show dropdown
+// Mobile: no dropdown children shown, just a link to the parent page
+.bd-header ul.navbar-nav .dropdown {
+  position: relative;
+
+  // Container for link + toggle button
+  .nav-item-with-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  // Dropdown toggle button - hidden everywhere (we use CSS hover on desktop)
+  .dropdown-toggle-btn {
+    display: none;
+  }
+
+  // "More" dropdown toggle styling - matches other nav-links
+  .more-toggle {
+    cursor: pointer;
+    white-space: nowrap; // Keep "More" and arrow on same line
+
+    // Show dropdown arrow after "More" text on desktop
+    &::after {
+      display: inline-block;
+      margin-left: 0.25em;
+      vertical-align: middle;
+      content: "";
+      border-top: 0.3em solid;
+      border-right: 0.3em solid transparent;
+      border-bottom: 0;
+      border-left: 0.3em solid transparent;
+    }
+  }
+
+  // Ensure dropdown menu is positioned correctly below the nav item
+  // Use padding-top to create visual gap while maintaining hover continuity
+  > .dropdown-menu,
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0;
+    padding-top: 0.75rem; // Visual gap between nav item and dropdown content
+    max-height: 50vh !important; // Limit height to 50% of viewport
+    overflow-y: auto !important; // Enable scroll for long lists
+
+    // Create a pseudo-element to bridge any remaining gap for hover
+    &::before {
+      content: "";
+      position: absolute;
+      top: -0.25rem;
+      left: 0;
+      right: 0;
+      height: 0.25rem;
+    }
+  }
+
+  // Desktop: Hover behavior to show dropdown
+  @media (min-width: 960px) {
+    // Show dropdown arrow after link text on desktop
+    .nav-item-with-toggle > a.nav-link::after {
+      display: inline-block;
+      margin-left: 0.25em;
+      vertical-align: middle;
+      content: "";
+      border-top: 0.3em solid;
+      border-right: 0.3em solid transparent;
+      border-bottom: 0;
+      border-left: 0.3em solid transparent;
+    }
+
+    // Show dropdown on hover of the entire dropdown container (including menu)
+    &:hover > .dropdown-menu,
+    &:hover .dropdown-menu,
+    &:focus-within > .dropdown-menu,
+    &:focus-within .dropdown-menu {
+      display: block;
+    }
+  }
+}
+
+// Mobile: Hide dropdown children completely - users click the parent link
+@media (max-width: 959px) {
+  .bd-header ul.navbar-nav .dropdown .dropdown-menu,
+  .bd-sidebar-primary .navbar-nav .dropdown .dropdown-menu,
+  .sidebar-header-items .navbar-nav .dropdown .dropdown-menu {
+    display: none !important;
+  }
+
+  // Also hide the toggle button on mobile since we're not using it
+  .bd-header ul.navbar-nav .dropdown .dropdown-toggle-btn,
+  .bd-sidebar-primary .navbar-nav .dropdown .dropdown-toggle-btn,
+  .sidebar-header-items .navbar-nav .dropdown .dropdown-toggle-btn {
+    display: none !important;
+  }
+
+  // Remove the dropdown arrow on mobile
+  .bd-header ul.navbar-nav .dropdown .nav-item-with-toggle > a.nav-link::after,
+  .bd-sidebar-primary .navbar-nav .dropdown .nav-item-with-toggle > a.nav-link::after,
+  .sidebar-header-items .navbar-nav .dropdown .nav-item-with-toggle > a.nav-link::after {
+    display: none !important;
+  }
+}
+
+// Ensure dropdown menus are scrollable for long toctrees (desktop)
+// This needs high specificity to override Bootstrap/pydata defaults
+@media (min-width: 960px) {
+  // Force the dropdown container to allow overflow
+  .bd-header,
+  .bd-header .navbar-header-items,
+  .bd-header .navbar-header-items__center,
+  .bd-header ul.navbar-nav,
+  .bd-header ul.navbar-nav .nav-item.dropdown {
+    overflow: visible !important;
+  }
+
+  // Scrollable dropdown menus with CSS scroll shadow
+  .bd-header ul.navbar-nav .dropdown-menu {
+    max-height: 50vh !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+
+    // CSS Scroll Shadow technique:
+    // - "cover" uses background-attachment: local (scrolls with content)
+    // - "shadow" uses background-attachment: scroll (stays fixed)
+    // When scrolled to bottom, the cover hides the shadow
+    background:
+      // Shadow cover - scrolls with content, hides shadow when at bottom
+      linear-gradient(rgba(255, 255, 255, 0), var(--pst-color-background, white) 70%) 0 100%,
+      // Shadow - stays fixed at bottom, visible when there's more to scroll
+      radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0)) 0 100%;
+    background-repeat: no-repeat;
+    background-color: var(--pst-color-background, white);
+    background-size: 100% 40px, 100% 14px;
+    background-attachment: local, scroll;
+  }
+}

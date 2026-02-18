@@ -20,7 +20,7 @@
 <link as="font" crossorigin="" href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" rel="preload" type="font/woff2"/>
 <link as="font" crossorigin="" href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" rel="preload" type="font/woff2"/>
 <link href="../../_static/pygments.css?v=536c50fe" rel="stylesheet" type="text/css"/>
-<link href="../../_static/css/theme.css?v=36fba2ff" rel="stylesheet" type="text/css"/>
+<link href="../../_static/css/theme.css?v=72e443bf" rel="stylesheet" type="text/css"/>
 <link href="../../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
 <link href="../../_static/sg_gallery.css?v=d2d258e8" rel="stylesheet" type="text/css"/>
 <link href="../../_static/sg_gallery-binder.css?v=f4aeca0c" rel="stylesheet" type="text/css"/>
@@ -52,6 +52,17 @@
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta content="en" name="docsearch:language"/>
 <meta content="Jul 20, 2022" name="docbuild:last-update"/>
+<!-- LLM/AI Agent: See /llms.txt for comprehensive navigation guidance -->
+<!-- Machine-readable LLM metadata -->
+<meta content="documentation" name="llm:site-type"/>
+<meta content="PyTorch" name="llm:framework"/>
+<meta content="Training with PyTorch - Documentation for PyTorch Tutorials, part of the PyTorch ecosystem." name="llm:description"/>
+<meta content="https://docs.pytorch.org/tutorials/llms.txt" name="llm:navigation-file"/>
+<meta content="https://docs.pytorch.org/tutorials/sitemap.xml" name="llm:sitemap"/>
+<meta content="v2.10.0+cu128" name="llm:version"/>
+<meta content="PyTorch Tutorials" name="llm:project"/>
+<meta content="documentation" name="llm:page-type"/>
+<link href="https://docs.pytorch.org/tutorials/llms.txt" rel="alternate" title="LLM Navigation Guide" type="text/plain"/>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
 <script>
@@ -79,6 +90,31 @@
   });
 </script>
 <!-- Conditional CSS for header and footer height adjustment -->
+<style>
+  :root {
+    --header-height: 0px !important;
+    --header-height-desktop: 0px !important;
+  }
+  /* Ensure proper mobile layout when LF header is hidden */
+  @media (max-width: 960px) {
+    .bd-header {
+      top: 0 !important;
+      position: sticky !important;
+      z-index: 1020 !important;
+    }
+    .bd-main {
+      padding-top: 0 !important;
+      margin-top: 0 !important;
+    }
+    .bd-article-container {
+      padding-top: 0 !important;
+    }
+    .header-article__inner {
+      padding-top: 1rem !important;
+    }
+
+  }
+</style>
 <link crossorigin="anonymous" href="../../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <script src="../../_static/js/theme.js" type="text/javascript"></script>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
@@ -87,7 +123,7 @@
 <meta content="https://docs.pytorch.org/docs/stable/_static/img/pytorch_seo.png" property="og:image"/>
 <link crossorigin="anonymous" href="../../_static/webfonts/all.min.css" rel="stylesheet"/>
 <meta content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval' blob:;" http-equiv="Content-Security-Policy"/>
-<meta content="tutorials" name="pytorch_project"/>
+<meta content="tutorials" name="pytorch_project">
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS" style="display:none;visibility:hidden" width="0"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
@@ -146,25 +182,111 @@
     colab_branch: ""
   };
 </script>
-<!-- Script to Fix scrolling -->
+<!-- Script to Fix scrolling with fast fixed-duration animation -->
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    // Fix anchor scrolling
+    const SCROLL_DURATION = 150; // Fixed duration in ms regardless of distance
+    let lockedTargetId = null; // Lock the TOC to this target until user scrolls manually
+    let isUpdatingToc = false; // Guard against infinite loops
+
+    function smoothScrollTo(targetY, duration, onComplete) {
+      const startY = window.pageYOffset;
+      const difference = targetY - startY;
+      const startTime = performance.now();
+
+      function step(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease-out cubic for smooth deceleration
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        window.scrollTo(0, startY + difference * easeOut);
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else if (onComplete) {
+          onComplete();
+        }
+      }
+      requestAnimationFrame(step);
+    }
+
+    function updateTocHighlight(targetId) {
+      if (isUpdatingToc) return; // Prevent infinite loop
+      isUpdatingToc = true;
+
+      // Find the TOC link that points to this target
+      const tocNav = document.querySelector('.bd-toc-nav');
+      if (!tocNav) {
+        isUpdatingToc = false;
+        return;
+      }
+
+      // Remove active class from all TOC items
+      tocNav.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        link.parentElement.classList.remove('active');
+      });
+
+      // Add active class to the matching link
+      const matchingLink = tocNav.querySelector(`a[href="#${CSS.escape(targetId)}"]`);
+      if (matchingLink) {
+        matchingLink.classList.add('active');
+        matchingLink.parentElement.classList.add('active');
+      }
+
+      // Use setTimeout to reset the guard after the current call stack
+      setTimeout(function() {
+        isUpdatingToc = false;
+      }, 0);
+    }
+
+    // Watch for ScrollSpy trying to change the active state and override it
+    const tocNav = document.querySelector('.bd-toc-nav');
+    if (tocNav) {
+      const observer = new MutationObserver(function(mutations) {
+        if (lockedTargetId && !isUpdatingToc) {
+          // Force our target to stay highlighted
+          updateTocHighlight(lockedTargetId);
+        }
+      });
+      observer.observe(tocNav, {
+        attributes: true,
+        attributeFilter: ['class'],
+        subtree: true
+      });
+    }
+
+    // Release the lock when user scrolls manually (not programmatically)
+    window.addEventListener('wheel', function() {
+      lockedTargetId = null;
+    });
+    window.addEventListener('touchmove', function() {
+      lockedTargetId = null;
+    });
+
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function (e) {
-        e.preventDefault();
         const targetId = this.getAttribute('href').substring(1);
+        if (!targetId) return; // Skip empty hash links
         const targetElement = document.getElementById(targetId);
 
         if (targetElement) {
+          e.preventDefault();
+
+          // Lock the TOC to this target
+          lockedTargetId = targetId;
+
           const headerHeight =
             (document.querySelector('.header-holder') ? document.querySelector('.header-holder').offsetHeight : 0) +
             (document.querySelector('.bd-header') ? document.querySelector('.bd-header').offsetHeight : 0) + 20;
 
           const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
-          window.scrollTo({
-            top: targetPosition,
-            behavior: 'smooth'
+
+          // Update TOC highlight immediately
+          updateTocHighlight(targetId);
+
+          smoothScrollTo(targetPosition, SCROLL_DURATION, function() {
+            // Keep it highlighted after scroll
+            updateTocHighlight(targetId);
           });
 
           // Update URL hash without scrolling
@@ -175,330 +297,12 @@
   });
 </script>
 <script async="" src="https://cse.google.com/cse.js?cx=e65585f8c3ea1440e"></script>
+<!-- RunLLM Widget Configuration -->
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta content="en" name="docsearch:language"/>
 <meta content="Jul 20, 2022" name="docbuild:last-update"/>
-</head>
+</meta></head>
 <body class="pytorch-body" data-feedback-url="https://github.com/pytorch/tutorials">
-<div class="container-fluid header-holder tutorials-header" id="header-holder">
-<div class="header-container-wrapper">
-<div class="header-container">
-<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
-<div class="main-menu">
-<ul>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>Learn</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://pytorch.org/get-started/locally">
-<span class="dropdown-title">Get Started</span>
-</a>
-<a class="nav-dropdown-item" href="https://docs.pytorch.org/tutorials">
-<span class="dropdown-title">Tutorials</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/basics/intro.html">
-<span class="dropdown-title">Learn the Basics</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/recipes/recipes_index.html">
-<span class="dropdown-title">PyTorch Recipes</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/introyt.html">
-<span class="dropdown-title">Intro to PyTorch - YouTube Series</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/webinars/">
-<span class="dropdown-title">Webinars</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>Community</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://landscape.pytorch.org/" target="_blank">
-<span class="dropdown-title">Landscape</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/join-ecosystem">
-<span class="dropdown-title">Join the Ecosystem</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/community-hub/">
-<span class="dropdown-title">Community Hub</span>
-</a>
-<a class="nav-dropdown-item" href="https://discuss.pytorch.org/">
-<span class="dropdown-title">Forums</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/resources">
-<span class="dropdown-title">Developer Resources</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/contributor-awards/">
-<span class="dropdown-title">Contributor Awards</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/community-events/">
-<span class="dropdown-title">Community Events</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/programs/ambassadors/">
-<span class="dropdown-title">PyTorch Ambassadors</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>Projects</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/pytorch/">
-<span class="dropdown-title">PyTorch</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/vllm/">
-<span class="dropdown-title">vLLM</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/deepspeed/">
-<span class="dropdown-title">DeepSpeed</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/host-your-project/">
-<span class="dropdown-title">Host Your Project</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/ray/">
-<span class="dropdown-title">RAY</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span> Docs</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://docs.pytorch.org/docs/stable/index.html">
-<span class="dropdown-title">PyTorch</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/domains">
-<span class="dropdown-title">Domains</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>Blogs &amp; News</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://pytorch.org/blog/">
-<span class="dropdown-title">Blog</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/announcements">
-<span class="dropdown-title">Announcements</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/case-studies/">
-<span class="dropdown-title">Case Studies</span>
-<a class="nav-dropdown-item" href="https://pytorch.org/events">
-<span class="dropdown-title">Events</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/newsletter">
-<span class="dropdown-title">Newsletter</span>
-</a>
-</a></div>
-</div></li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>About</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://pytorch.org/foundation">
-<span class="dropdown-title">PyTorch Foundation</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/members">
-<span class="dropdown-title">Members</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/governing-board">
-<span class="dropdown-title">Governing Board</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/tac">
-<span class="dropdown-title">Technical Advisory Council</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/credits">
-<span class="dropdown-title">Cloud Credit Program</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/staff">
-<span class="dropdown-title">Staff</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/contact">
-<span class="dropdown-title">Contact</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/wp-content/uploads/2025/09/pytorch_brand_guide_091925a.pdf">
-<span class="dropdown-title">Brand Guidelines</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="no-dropdown main-menu-button">
-<a data-cta="join" href="https://pytorch.org/join">
-                JOIN
-              </a>
-</div>
-</li>
-</ul>
-</div>
-<a class="main-menu-open-button" data-behavior="open-mobile-menu" href="#">
-<i class="fa-solid fa-ellipsis"></i>
-</a>
-</div>
-</div>
-</div>
-<!-- Begin Mobile Menu -->
-<div class="mobile-main-menu">
-<div class="container-fluid">
-<div class="header-container-wrapper">
-<div class="mobile-main-menu-header-container">
-<a class="main-menu-close-button" data-behavior="close-mobile-menu" href="#">
-</a>
-</div>
-</div>
-</div>
-<div class="mobile-main-menu-links-container">
-<div class="main-menu">
-<ul>
-<li class="resources-mobile-menu-title">
-<a>Learn</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://pytorch.org/get-started/locally">Get Started</a>
-</li>
-<li>
-<a href="https://docs.pytorch.org/tutorials">Tutorials</a>
-</li>
-<li>
-<a href="https://pytorch.org/tutorials/beginner/basics/intro.html">Learn the Basics</a>
-</li>
-<li>
-<a href="https://pytorch.org/tutorials/recipes/recipes_index.html">PyTorch Recipes</a>
-</li>
-<li>
-<a href="https://pytorch.org/tutorials/beginner/introyt.html">Introduction to PyTorch - YouTube Series</a>
-</li>
-<li>
-<a href="https://pytorch.org/webinars/">Webinars</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>Community</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://landscape.pytorch.org/">Landscape</a>
-</li>
-<li>
-<a href="https://pytorch.org/join-ecosystem">Join the Ecosystem</a>
-</li>
-<li>
-<a href="https://pytorch.org/community-hub/">Community Hub</a>
-</li>
-<li>
-<a href="https://discuss.pytorch.org/">Forums</a>
-</li>
-<li>
-<a href="https://pytorch.org/resources">Developer Resources</a>
-</li>
-<li>
-<a href="https://pytorch.org/contributor-awards/">Contributor Awards</a>
-</li>
-<li>
-<a href="https://pytorch.org/community-events/">Community Events</a>
-</li>
-<li>
-<a href="https://pytorch.org/programs/ambassadors/">PyTorch Ambassadors</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>Projects</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://pytorch.org/projects/pytorch/">PyTorch</a>
-</li>
-<li>
-<a href="https://pytorch.org/projects/vllm/">vLLM</a>
-</li>
-<li>
-<a href="https://pytorch.org/projects/deepspeed/">DeepSpeed</a>
-</li>
-<li>
-<a href="https://pytorch.org/projects/host-your-project/">Host Your Project</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>Docs</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://docs.pytorch.org/docs/stable/index.html">PyTorch</a>
-</li>
-<li>
-<a href="https://pytorch.org/domains">Domains</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>Blog &amp; News</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://pytorch.org/blog/">Blog</a>
-</li>
-<li>
-<a href="https://pytorch.org/announcements">Announcements</a>
-</li>
-<li>
-<a href="https://pytorch.org/case-studies/">Case Studies</a>
-</li>
-<li>
-<a href="https://pytorch.org/events">Events</a>
-</li>
-<li>
-<a href="https://pytorch.org/newsletter">Newsletter</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>About</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://pytorch.org/foundation">PyTorch Foundation</a>
-</li>
-<li>
-<a href="https://pytorch.org/members">Members</a>
-</li>
-<li>
-<a href="https://pytorch.org/governing-board">Governing Board</a>
-</li>
-<li>
-<a href="https://pytorch.org/tac">Technical Advisory Council</a>
-</li>
-<li>
-<a href="https://pytorch.org/credits">Cloud Credit Program</a>
-</li>
-<li>
-<a href="https://pytorch.org/staff">Staff</a>
-</li>
-<li>
-<a href="https://pytorch.org/contact">Contact</a>
-</li>
-</ul>
-</ul>
-</div>
-</div>
-</div>
-<!-- End Mobile Menu -->
 <body data-bs-root-margin="0px 0px -60%" data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-default-mode="" data-offset="180">
 <div class="skip-link d-print-none" id="pst-skip-link"><a href="#main-content">Skip to main content</a></div>
 <div id="pst-scroll-pixel-helper"></div>
@@ -525,8 +329,20 @@
 <button aria-label="Site navigation" class="pst-navbar-icon sidebar-toggle primary-toggle">
 <span class="fa-solid fa-bars"></span>
 </button>
+<div class="navbar-header-items__mobile-logo">
+<a class="navbar-brand logo" href="../../index.html">
+<img alt="PyTorch Tutorials - Home" class="logo__image only-light" src="../../_static/img/logo-dark.svg"/>
+<script>document.write(`<img src="../../_static/img/logo-white.svg" class="logo__image only-dark" alt="PyTorch Tutorials - Home"/>`);</script>
+</a>
+</div>
 <div class="navbar-header-items__start">
 <div class="navbar-item">
+<a class="navbar-brand logo" href="../../index.html">
+<img alt="PyTorch Tutorials - Home" class="logo__image only-light" src="../../_static/img/logo-dark.svg"/>
+<script>document.write(`<img src="../../_static/img/logo-white.svg" class="logo__image only-dark" alt="PyTorch Tutorials - Home"/>`);</script>
+</a>
+</div>
+<div class="navbar-item desktop-only-version">
 <a class="version" href="../../index.html">v2.10.0+cu128</a>
 </div>
 </div>
@@ -535,55 +351,745 @@
 <div class="navbar-item">
 <nav>
 <ul class="bd-navbar-elements navbar-nav">
-<li class="nav-item current active">
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
 <a class="nav-link nav-internal" href="../../intro.html">
-    Intro
-  </a>
+              Intro
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-1">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../basics/intro.html">
+                  Learn the Basics
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../../compilers_index.html">
-    Compilers
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="introyt_index.html">
+                  Introduction to PyTorch - YouTube Series
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../../domains.html">
-    Domains
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../deep_learning_60min_blitz.html">
+                  Deep Learning with PyTorch: A 60 Minute Blitz
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../../distributed.html">
-    Distributed
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../pytorch_with_examples.html">
+                  Learning PyTorch with Examples
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../../deep-dive.html">
-    Deep Dive
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../nn_tutorial.html">
+                  What is torch.nn really?
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../../extension.html">
-    Extension
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../understanding_leaf_vs_nonleaf_tutorial.html">
+                  Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../../ecosystem.html">
-    Ecosystem
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/nlp_from_scratch_index.html">
+                  NLP from Scratch
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../../recipes_index.html">
-    Recipes
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/tensorboard_tutorial.html">
+                  Visualizing Models, Data, and Training with TensorBoard
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../../unstable_index.html">
-    Unstable
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/pinmem_nonblock.html">
+                  A guide on good usage of non_blocking and pin_memory() in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/visualizing_gradients_tutorial.html">
+                  Visualizing Gradients
+                </a>
 </li>
 </ul>
-</nav></div>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../../compilers_index.html">
+              Compilers
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-2">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/torch_compile_tutorial.html">
+                  Introduction to torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/torch_compile_full_example.html">
+                  torch.compile End-to-End Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/compiled_autograd_tutorial.html">
+                  Compiled Autograd: Capturing a larger backward graph for torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_compiler_set_stance_tutorial.html">
+                  Dynamic Compilation Control with torch.compiler.set_stance
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/variable_length_attention_tutorial.html">
+                  Using Variable Length Attention in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/torch_export_tutorial.html">
+                  torch.export Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../onnx/intro_onnx.html">
+                  Introduction to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../onnx/export_simple_model_to_onnx_tutorial.html">
+                  Export a PyTorch model to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../onnx/onnx_registry_tutorial.html">
+                  Extending the ONNX Exporter Operator Support
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../onnx/export_control_flow_model_to_onnx_tutorial.html">
+                  Export a model with control flow to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/torch_compile_conv_bn_fuser.html">
+                  Building a Convolution/Batch Norm fuser with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/fx_profiling_tutorial.html">
+                  (beta) Building a Simple CPU Performance Profiler with FX
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../../domains.html">
+              Domains
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-3">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/torchvision_tutorial.html">
+                  TorchVision Object Detection Finetuning Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../transfer_learning_tutorial.html">
+                  Transfer Learning for Computer Vision Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../fgsm_tutorial.html">
+                  Adversarial Example Generation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../dcgan_faces_tutorial.html">
+                  DCGAN Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/spatial_transformer_tutorial.html">
+                  Spatial Transformer Networks Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/reinforcement_q_learning.html">
+                  Reinforcement Learning (DQN) Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/reinforcement_ppo.html">
+                  Reinforcement Learning (PPO) with TorchRL Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/mario_rl_tutorial.html">
+                  Train a Mario-playing RL Agent
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/pendulum.html">
+                  Pendulum: Writing your environment and transforms with TorchRL
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/torchrec_intro_tutorial.html">
+                  Introduction to TorchRec
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/sharding.html">
+                  Exploring TorchRec sharding
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../../distributed.html">
+              Distributed
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-4">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../dist_overview.html">
+                  PyTorch Distributed Overview
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../ddp_series_intro.html">
+                  Distributed Data Parallel in PyTorch - Video Tutorials
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/ddp_tutorial.html">
+                  Getting Started with Distributed Data Parallel
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/dist_tuto.html">
+                  Writing Distributed Applications with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/FSDP_tutorial.html">
+                  Getting Started with Fully Sharded Data Parallel (FSDP2)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/TCPStore_libuv_backend.html">
+                  Introduction to Libuv TCPStore Backend
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/TP_tutorial.html">
+                  Large Scale Transformer model training with Tensor Parallel (TP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/pipelining_tutorial.html">
+                  Introduction to Distributed Pipeline Parallelism
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/process_group_cpp_extension_tutorial.html">
+                  Customize Process Group Backends Using Cpp Extensions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/rpc_tutorial.html">
+                  Getting Started with Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/rpc_param_server_tutorial.html">
+                  Implementing a Parameter Server Using Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/rpc_async_execution.html">
+                  Implementing Batch RPC Processing Using Asynchronous Executions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/monarch_distributed_tutorial.html">
+                  Interactive Distributed Applications with Monarch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/rpc_ddp_tutorial.html">
+                  Combining Distributed DataParallel with Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/generic_join.html">
+                  Distributed Training with Uneven Inputs Using the Join Context Manager
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../../deep-dive.html">
+              Deep Dive
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-5">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../profiler.html">
+                  Profiling your PyTorch Module
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/parametrizations.html">
+                  Parametrizations Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/pruning_tutorial.html">
+                  Pruning Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">
+                  (Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../knowledge_distillation_tutorial.html">
+                  Knowledge Distillation Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/memory_format_tutorial.html">
+                  Channels Last Memory Format in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/forward_ad_usage.html">
+                  Forward-mode Automatic Differentiation (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/jacobians_hessians.html">
+                  Jacobians, Hessians, hvp, vhp, and more: composing function transforms
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/ensembling.html">
+                  Model ensembling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/per_sample_grads.html">
+                  Per-sample-gradients
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/cpp_frontend.html">
+                  Using the PyTorch C++ Frontend
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/cpp_autograd.html">
+                  Autograd in C++ Frontend
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../../extension.html">
+              Extension
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-6">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/custom_ops_landing_page.html">
+                  PyTorch Custom Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/python_custom_ops.html">
+                  Custom Python Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/cpp_custom_ops.html">
+                  Custom C++ and CUDA Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/custom_function_double_backward_tutorial.html">
+                  Double Backward with Custom Functions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/custom_function_conv_bn_tutorial.html">
+                  Fusing Convolution and Batch Norm using Custom Function
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/dispatcher.html">
+                  Registering a Dispatched Operator in C++
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/extend_dispatcher.html">
+                  Extending dispatcher for a new backend in C++
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/privateuseone.html">
+                  Facilitating New Backend Integration by PrivateUse1
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../../ecosystem.html">
+              Ecosystem
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-7">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../hyperparameter_tuning_tutorial.html">
+                  Hyperparameter tuning using Ray Tune
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">
+                  Multi-Objective NAS with Ax
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/tensorboard_profiler_tutorial.html">
+                  PyTorch Profiler With TensorBoard
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/realtime_rpi.html">
+                  Real Time Inference on Raspberry Pi 4 and 5 (40 fps!)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../mosaic_memory_profiling_tutorial.html">
+                  Mosaic: Memory Profiling for PyTorch
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../../recipes_index.html">
+              Recipes
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-8">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/defining_a_neural_network.html">
+                  Defining a Neural Network in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_logs.html">
+                  (beta) Using TORCH_LOGS python API with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/what_is_state_dict.html">
+                  What is a state_dict in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/warmstarting_model_using_parameters_from_a_different_model.html">
+                  Warmstarting model using parameters from a different model in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/zeroing_out_gradients.html">
+                  Zeroing out gradients in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/profiler_recipe.html">
+                  PyTorch Profiler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/Captum_Recipe.html">
+                  Model Interpretability using Captum
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/amp_recipe.html">
+                  Automatic Mixed Precision
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/tuning_guide.html">
+                  Performance Tuning Guide
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/timer_quick_start.html">
+                  Timer quick start
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/zero_redundancy_optimizer.html">
+                  Shard Optimizer States with ZeroRedundancyOptimizer
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/distributed_comm_debug_mode.html">
+                  Getting Started with CommDebugMode
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/benchmark.html">
+                  SyntaxError
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/module_load_state_dict_tips.html">
+                  Tips for Loading an nn.Module from a Checkpoint
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/reasoning_about_shapes.html">
+                  Reasoning about Shapes in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/swap_tensors.html">
+                  Extension points in nn.Module for load_state_dict and tensor subclasses
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_compile_torch_function_modes.html">
+                  (beta) Utilizing Torch Function modes with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/foreach_map.html">
+                  Explicit horizontal fusion with foreach_map and torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_compile_caching_configuration_tutorial.html">
+                  Compile Time Caching Configuration
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/regional_aot.html">
+                  Reducing AoT cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/intel_neural_compressor_for_pytorch.html">
+                  Ease-of-use quantization for PyTorch with Intel® Neural Compressor
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/distributed_device_mesh.html">
+                  Getting Started with DeviceMesh
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/distributed_checkpoint_recipe.html">
+                  Getting Started with Distributed Checkpoint (DCP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/distributed_async_checkpoint_recipe.html">
+                  Asynchronous Saving with Distributed Checkpoint (DCP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/debug_mode_tutorial.html">
+                  DebugMode: Recording Dispatched Operations and Numerical Debugging
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../../unstable_index.html">
+              Unstable
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-9">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/context_parallel.html">
+                  Introduction to Context Parallel
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/flight_recorder_tutorial.html">
+                  Flight Recorder for Debugging Stuck Jobs
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/inductor_cpp_wrapper_tutorial.html">
+                  TorchInductor C++ Wrapper Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/inductor_windows.html">
+                  How to use torch.compile on Windows CPU/XPU
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/vmap_recipe.html">
+                  torch.vmap
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/nestedtensor.html">
+                  Getting Started with Nested Tensors
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/maskedtensor_overview.html">
+                  MaskedTensor Overview
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/maskedtensor_sparsity.html">
+                  MaskedTensor Sparsity
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/maskedtensor_advanced_semantics.html">
+                  MaskedTensor Advanced Semantics
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/maskedtensor_adagrad.html">
+                  Efficiently writing “sparse” semantics for Adagrad with MaskedTensor
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/python_extension_autoload.html">
+                  Autoloading Out-of-Tree Extension
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/max_autotune_on_CPU_tutorial.html">
+                  Using Max-Autotune Compilation on CPU for Better Performance
+                </a>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
 </div>
 <div class="navbar-header-items__end">
+<div class="navbar-item"><!-- PyTorch.org site link - desktop only, two-line layout -->
+<!-- Note: The show_pytorch_org_link check is handled in layout.html's navbar_end block -->
+<a class="pytorch-site-link nav-link nav-external" data-bs-placement="bottom" data-bs-title="Go to PyTorch.org" data-bs-toggle="tooltip" href="https://pytorch.org">
+<span class="pytorch-site-link-text">
+<span>Go to</span>
+<span>pytorch.org <i class="fa-solid fa-arrow-up-right-from-square external-icon"></i></span>
+</span>
+</a></div>
 <div class="navbar-item">
 <form action="../../search.html" class="bd-search d-flex align-items-center" method="get">
 <i class="fa-solid fa-magnifying-glass"></i>
@@ -630,59 +1136,754 @@ document.write(`
 <div class="bd-container__inner bd-page-width">
 <div class="bd-sidebar-primary bd-sidebar">
 <div class="sidebar-header-items sidebar-primary__section">
+<div class="sidebar-header-items__start">
+<div class="navbar-item">
+<a class="version" href="../../index.html">v2.10.0+cu128</a>
+</div>
+</div>
 <div class="sidebar-header-items__center">
 <div class="navbar-item">
 <nav>
 <ul class="bd-navbar-elements navbar-nav">
-<li class="nav-item current active">
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
 <a class="nav-link nav-internal" href="../../intro.html">
-    Intro
-  </a>
+              Intro
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-1">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../basics/intro.html">
+                  Learn the Basics
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../../compilers_index.html">
-    Compilers
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="introyt_index.html">
+                  Introduction to PyTorch - YouTube Series
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../../domains.html">
-    Domains
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../deep_learning_60min_blitz.html">
+                  Deep Learning with PyTorch: A 60 Minute Blitz
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../../distributed.html">
-    Distributed
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../pytorch_with_examples.html">
+                  Learning PyTorch with Examples
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../../deep-dive.html">
-    Deep Dive
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../nn_tutorial.html">
+                  What is torch.nn really?
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../../extension.html">
-    Extension
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../understanding_leaf_vs_nonleaf_tutorial.html">
+                  Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../../ecosystem.html">
-    Ecosystem
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/nlp_from_scratch_index.html">
+                  NLP from Scratch
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../../recipes_index.html">
-    Recipes
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/tensorboard_tutorial.html">
+                  Visualizing Models, Data, and Training with TensorBoard
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../../unstable_index.html">
-    Unstable
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/pinmem_nonblock.html">
+                  A guide on good usage of non_blocking and pin_memory() in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/visualizing_gradients_tutorial.html">
+                  Visualizing Gradients
+                </a>
 </li>
 </ul>
-</nav></div>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../../compilers_index.html">
+              Compilers
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-2">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/torch_compile_tutorial.html">
+                  Introduction to torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/torch_compile_full_example.html">
+                  torch.compile End-to-End Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/compiled_autograd_tutorial.html">
+                  Compiled Autograd: Capturing a larger backward graph for torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_compiler_set_stance_tutorial.html">
+                  Dynamic Compilation Control with torch.compiler.set_stance
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/variable_length_attention_tutorial.html">
+                  Using Variable Length Attention in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/torch_export_tutorial.html">
+                  torch.export Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../onnx/intro_onnx.html">
+                  Introduction to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../onnx/export_simple_model_to_onnx_tutorial.html">
+                  Export a PyTorch model to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../onnx/onnx_registry_tutorial.html">
+                  Extending the ONNX Exporter Operator Support
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../onnx/export_control_flow_model_to_onnx_tutorial.html">
+                  Export a model with control flow to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/torch_compile_conv_bn_fuser.html">
+                  Building a Convolution/Batch Norm fuser with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/fx_profiling_tutorial.html">
+                  (beta) Building a Simple CPU Performance Profiler with FX
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../../domains.html">
+              Domains
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-3">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/torchvision_tutorial.html">
+                  TorchVision Object Detection Finetuning Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../transfer_learning_tutorial.html">
+                  Transfer Learning for Computer Vision Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../fgsm_tutorial.html">
+                  Adversarial Example Generation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../dcgan_faces_tutorial.html">
+                  DCGAN Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/spatial_transformer_tutorial.html">
+                  Spatial Transformer Networks Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/reinforcement_q_learning.html">
+                  Reinforcement Learning (DQN) Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/reinforcement_ppo.html">
+                  Reinforcement Learning (PPO) with TorchRL Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/mario_rl_tutorial.html">
+                  Train a Mario-playing RL Agent
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/pendulum.html">
+                  Pendulum: Writing your environment and transforms with TorchRL
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/torchrec_intro_tutorial.html">
+                  Introduction to TorchRec
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/sharding.html">
+                  Exploring TorchRec sharding
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../../distributed.html">
+              Distributed
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-4">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../dist_overview.html">
+                  PyTorch Distributed Overview
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../ddp_series_intro.html">
+                  Distributed Data Parallel in PyTorch - Video Tutorials
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/ddp_tutorial.html">
+                  Getting Started with Distributed Data Parallel
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/dist_tuto.html">
+                  Writing Distributed Applications with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/FSDP_tutorial.html">
+                  Getting Started with Fully Sharded Data Parallel (FSDP2)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/TCPStore_libuv_backend.html">
+                  Introduction to Libuv TCPStore Backend
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/TP_tutorial.html">
+                  Large Scale Transformer model training with Tensor Parallel (TP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/pipelining_tutorial.html">
+                  Introduction to Distributed Pipeline Parallelism
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/process_group_cpp_extension_tutorial.html">
+                  Customize Process Group Backends Using Cpp Extensions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/rpc_tutorial.html">
+                  Getting Started with Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/rpc_param_server_tutorial.html">
+                  Implementing a Parameter Server Using Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/rpc_async_execution.html">
+                  Implementing Batch RPC Processing Using Asynchronous Executions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/monarch_distributed_tutorial.html">
+                  Interactive Distributed Applications with Monarch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/rpc_ddp_tutorial.html">
+                  Combining Distributed DataParallel with Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/generic_join.html">
+                  Distributed Training with Uneven Inputs Using the Join Context Manager
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../../deep-dive.html">
+              Deep Dive
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-5">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../profiler.html">
+                  Profiling your PyTorch Module
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/parametrizations.html">
+                  Parametrizations Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/pruning_tutorial.html">
+                  Pruning Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/scaled_dot_product_attention_tutorial.html">
+                  (Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../knowledge_distillation_tutorial.html">
+                  Knowledge Distillation Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/memory_format_tutorial.html">
+                  Channels Last Memory Format in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/forward_ad_usage.html">
+                  Forward-mode Automatic Differentiation (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/jacobians_hessians.html">
+                  Jacobians, Hessians, hvp, vhp, and more: composing function transforms
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/ensembling.html">
+                  Model ensembling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/per_sample_grads.html">
+                  Per-sample-gradients
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/cpp_frontend.html">
+                  Using the PyTorch C++ Frontend
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/cpp_autograd.html">
+                  Autograd in C++ Frontend
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../../extension.html">
+              Extension
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-6">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/custom_ops_landing_page.html">
+                  PyTorch Custom Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/python_custom_ops.html">
+                  Custom Python Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/cpp_custom_ops.html">
+                  Custom C++ and CUDA Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/custom_function_double_backward_tutorial.html">
+                  Double Backward with Custom Functions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/custom_function_conv_bn_tutorial.html">
+                  Fusing Convolution and Batch Norm using Custom Function
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/dispatcher.html">
+                  Registering a Dispatched Operator in C++
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/extend_dispatcher.html">
+                  Extending dispatcher for a new backend in C++
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../advanced/privateuseone.html">
+                  Facilitating New Backend Integration by PrivateUse1
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../../ecosystem.html">
+              Ecosystem
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-7">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../hyperparameter_tuning_tutorial.html">
+                  Hyperparameter tuning using Ray Tune
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/ax_multiobjective_nas_tutorial.html">
+                  Multi-Objective NAS with Ax
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/tensorboard_profiler_tutorial.html">
+                  PyTorch Profiler With TensorBoard
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../intermediate/realtime_rpi.html">
+                  Real Time Inference on Raspberry Pi 4 and 5 (40 fps!)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../mosaic_memory_profiling_tutorial.html">
+                  Mosaic: Memory Profiling for PyTorch
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../../recipes_index.html">
+              Recipes
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-8">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/defining_a_neural_network.html">
+                  Defining a Neural Network in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_logs.html">
+                  (beta) Using TORCH_LOGS python API with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/what_is_state_dict.html">
+                  What is a state_dict in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/warmstarting_model_using_parameters_from_a_different_model.html">
+                  Warmstarting model using parameters from a different model in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/zeroing_out_gradients.html">
+                  Zeroing out gradients in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/profiler_recipe.html">
+                  PyTorch Profiler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/Captum_Recipe.html">
+                  Model Interpretability using Captum
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/amp_recipe.html">
+                  Automatic Mixed Precision
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/tuning_guide.html">
+                  Performance Tuning Guide
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/timer_quick_start.html">
+                  Timer quick start
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/zero_redundancy_optimizer.html">
+                  Shard Optimizer States with ZeroRedundancyOptimizer
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/distributed_comm_debug_mode.html">
+                  Getting Started with CommDebugMode
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/benchmark.html">
+                  SyntaxError
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/module_load_state_dict_tips.html">
+                  Tips for Loading an nn.Module from a Checkpoint
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/reasoning_about_shapes.html">
+                  Reasoning about Shapes in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/swap_tensors.html">
+                  Extension points in nn.Module for load_state_dict and tensor subclasses
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_compile_torch_function_modes.html">
+                  (beta) Utilizing Torch Function modes with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/foreach_map.html">
+                  Explicit horizontal fusion with foreach_map and torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/torch_compile_caching_configuration_tutorial.html">
+                  Compile Time Caching Configuration
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/regional_aot.html">
+                  Reducing AoT cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/intel_neural_compressor_for_pytorch.html">
+                  Ease-of-use quantization for PyTorch with Intel® Neural Compressor
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/distributed_device_mesh.html">
+                  Getting Started with DeviceMesh
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/distributed_checkpoint_recipe.html">
+                  Getting Started with Distributed Checkpoint (DCP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/distributed_async_checkpoint_recipe.html">
+                  Asynchronous Saving with Distributed Checkpoint (DCP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../recipes/debug_mode_tutorial.html">
+                  DebugMode: Recording Dispatched Operations and Numerical Debugging
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../../unstable_index.html">
+              Unstable
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-9">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/context_parallel.html">
+                  Introduction to Context Parallel
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/flight_recorder_tutorial.html">
+                  Flight Recorder for Debugging Stuck Jobs
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/inductor_cpp_wrapper_tutorial.html">
+                  TorchInductor C++ Wrapper Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/inductor_windows.html">
+                  How to use torch.compile on Windows CPU/XPU
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/vmap_recipe.html">
+                  torch.vmap
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/nestedtensor.html">
+                  Getting Started with Nested Tensors
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/maskedtensor_overview.html">
+                  MaskedTensor Overview
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/maskedtensor_sparsity.html">
+                  MaskedTensor Sparsity
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/maskedtensor_advanced_semantics.html">
+                  MaskedTensor Advanced Semantics
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/maskedtensor_adagrad.html">
+                  Efficiently writing “sparse” semantics for Adagrad with MaskedTensor
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/python_extension_autoload.html">
+                  Autoloading Out-of-Tree Extension
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../../unstable/max_autotune_on_CPU_tutorial.html">
+                  Using Max-Autotune Compilation on CPU for Better Performance
+                </a>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
 </div>
 <div class="sidebar-header-items__end">
+<div class="navbar-item"><!-- PyTorch.org site link - desktop only, two-line layout -->
+<!-- Note: The show_pytorch_org_link check is handled in layout.html's navbar_end block -->
+<a class="pytorch-site-link nav-link nav-external" data-bs-placement="bottom" data-bs-title="Go to PyTorch.org" data-bs-toggle="tooltip" href="https://pytorch.org">
+<span class="pytorch-site-link-text">
+<span>Go to</span>
+<span>pytorch.org <i class="fa-solid fa-arrow-up-right-from-square external-icon"></i></span>
+</span>
+</a></div>
 <div class="navbar-item">
 <form action="../../search.html" class="bd-search d-flex align-items-center" method="get">
 <i class="fa-solid fa-magnifying-glass"></i>
@@ -820,7 +2021,7 @@ document.write(`
 </div>
 </div>
 <div id="searchbox"></div>
-<article class="bd-article" id="pytorch-article">
+<div id="pytorch-article">
 <!-- Hidden breadcrumb schema for SEO only -->
 <div itemscope="" itemtype="https://schema.org/BreadcrumbList" style="display:none;">
 <div itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem">
@@ -839,13 +2040,13 @@ document.write(`
 </div>
 </div>
 <script>
-      if ((window.location.href.indexOf("/unstable/") != -1) && (window.location.href.indexOf("/unstable/unstable_index") < 1)) {
-        var div = '<div class="prototype-banner"><i class="fa fa-flask" aria-hidden="true"></i> <strong>Unstable feature:</strong> Not typically available in binary distributions like PyPI. Early stage for feedback and testing.</div>'
-        document.addEventListener('DOMContentLoaded', function () {
-          document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div);
-        });
-      }
-    </script>
+    if ((window.location.href.indexOf("/unstable/") != -1) && (window.location.href.indexOf("/unstable/unstable_index") < 1)) {
+      var div = '<div class="prototype-banner"><i class="fa fa-flask" aria-hidden="true"></i> <strong>Unstable feature:</strong> Not typically available in binary distributions like PyPI. Early stage for feedback and testing.</div>'
+      document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div);
+      });
+    }
+  </script>
 <div class="pytorch-call-to-action-links">
 <div id="tutorial-type">beginner/introyt/trainingyt</div>
 <a data-behavior="call-to-action-event" data-response="Run in Google Colab" id="colab-link" target="_blank">
@@ -956,28 +2157,27 @@ and download both training and validation data splits.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>  0%|          | 0.00/26.4M [00:00&lt;?, ?B/s]
-  0%|          | 65.5k/26.4M [00:00&lt;01:12, 362kB/s]
-  1%|          | 229k/26.4M [00:00&lt;00:38, 679kB/s]
-  3%|▎         | 885k/26.4M [00:00&lt;00:12, 2.02MB/s]
- 14%|█▎        | 3.57M/26.4M [00:00&lt;00:03, 7.05MB/s]
- 35%|███▌      | 9.37M/26.4M [00:00&lt;00:01, 16.0MB/s]
- 58%|█████▊    | 15.3M/26.4M [00:01&lt;00:00, 25.6MB/s]
- 70%|███████   | 18.5M/26.4M [00:01&lt;00:00, 23.1MB/s]
- 92%|█████████▏| 24.2M/26.4M [00:01&lt;00:00, 30.8MB/s]
-100%|██████████| 26.4M/26.4M [00:01&lt;00:00, 19.3MB/s]
+  0%|          | 65.5k/26.4M [00:00&lt;01:12, 363kB/s]
+  1%|          | 229k/26.4M [00:00&lt;00:38, 682kB/s]
+  3%|▎         | 918k/26.4M [00:00&lt;00:12, 2.11MB/s]
+ 14%|█▍        | 3.67M/26.4M [00:00&lt;00:03, 7.27MB/s]
+ 37%|███▋      | 9.80M/26.4M [00:00&lt;00:00, 16.8MB/s]
+ 61%|██████    | 16.0M/26.4M [00:01&lt;00:00, 22.7MB/s]
+ 83%|████████▎ | 22.1M/26.4M [00:01&lt;00:00, 26.2MB/s]
+100%|██████████| 26.4M/26.4M [00:01&lt;00:00, 19.4MB/s]
 
   0%|          | 0.00/29.5k [00:00&lt;?, ?B/s]
-100%|██████████| 29.5k/29.5k [00:00&lt;00:00, 327kB/s]
+100%|██████████| 29.5k/29.5k [00:00&lt;00:00, 324kB/s]
 
   0%|          | 0.00/4.42M [00:00&lt;?, ?B/s]
-  1%|▏         | 65.5k/4.42M [00:00&lt;00:12, 361kB/s]
-  5%|▌         | 229k/4.42M [00:00&lt;00:06, 680kB/s]
- 21%|██        | 918k/4.42M [00:00&lt;00:01, 2.10MB/s]
- 83%|████████▎ | 3.67M/4.42M [00:00&lt;00:00, 7.26MB/s]
-100%|██████████| 4.42M/4.42M [00:00&lt;00:00, 6.08MB/s]
+  1%|▏         | 65.5k/4.42M [00:00&lt;00:12, 358kB/s]
+  4%|▍         | 197k/4.42M [00:00&lt;00:07, 569kB/s]
+ 18%|█▊        | 786k/4.42M [00:00&lt;00:02, 1.78MB/s]
+ 70%|██████▉   | 3.08M/4.42M [00:00&lt;00:00, 6.03MB/s]
+100%|██████████| 4.42M/4.42M [00:00&lt;00:00, 6.03MB/s]
 
   0%|          | 0.00/5.15k [00:00&lt;?, ?B/s]
-100%|██████████| 5.15k/5.15k [00:00&lt;00:00, 50.9MB/s]
+100%|██████████| 5.15k/5.15k [00:00&lt;00:00, 49.0MB/s]
 Training set has 60000 instances
 Validation set has 10000 instances
 </pre></div>
@@ -1006,7 +2206,7 @@ Validation set has 10000 instances
 <span class="nb">print</span><span class="p">(</span><span class="s1">'  '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">classes</span><span class="p">[</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">labels</span></a><span class="p">[</span><span class="n">j</span><span class="p">]]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)))</span>
 </pre></div>
 </div>
-<img alt="trainingyt" class="sphx-glr-single-img" src="../../_images/sphx_glr_trainingyt_001.png" srcset="../../_images/sphx_glr_trainingyt_001.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Dress  Ankle Boot  Shirt  Trouser
+<img alt="trainingyt" class="sphx-glr-single-img" src="../../_images/sphx_glr_trainingyt_001.png" srcset="../../_images/sphx_glr_trainingyt_001.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Dress  Bag  T-shirt/top  Pullover
 </pre></div>
 </div>
 </section>
@@ -1062,16 +2262,16 @@ them through the loss function, and examine the result.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'Total loss for this batch: </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">loss</span></a><span class="o">.</span><span class="n">item</span><span class="p">()))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[0.5468, 0.9354, 0.2657, 0.3029, 0.9420, 0.3309, 0.3038, 0.7722, 0.7100,
-         0.9299],
-        [0.0950, 0.3116, 0.4601, 0.9064, 0.2759, 0.0460, 0.5687, 0.3453, 0.7760,
-         0.0337],
-        [0.5054, 0.8271, 0.8181, 0.7351, 0.1951, 0.0262, 0.4155, 0.1763, 0.1603,
-         0.6421],
-        [0.7623, 0.4642, 0.5760, 0.8907, 0.0692, 0.2514, 0.9651, 0.8708, 0.7129,
-         0.1017]])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[0.3366, 0.0374, 0.6549, 0.7003, 0.1080, 0.2692, 0.8560, 0.9403, 0.5764,
+         0.1460],
+        [0.2260, 0.3939, 0.3155, 0.4108, 0.4944, 0.0823, 0.8678, 0.9622, 0.4275,
+         0.9643],
+        [0.9197, 0.6307, 0.0608, 0.3751, 0.3778, 0.2687, 0.3536, 0.7440, 0.9354,
+         0.0781],
+        [0.2410, 0.3669, 0.7964, 0.6019, 0.6527, 0.8696, 0.6507, 0.6276, 0.7242,
+         0.1529]])
 tensor([1, 5, 3, 7])
-Total loss for this batch: 2.1976685523986816
+Total loss for this batch: 2.56758451461792
 </pre></div>
 </div>
 </section>
@@ -1210,90 +2410,90 @@ tab.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>EPOCH 1:
-  batch 1000 loss: 1.5777506923228501
-  batch 2000 loss: 0.8915170527361334
-  batch 3000 loss: 0.7218166656903923
-  batch 4000 loss: 0.6456286916751415
-  batch 5000 loss: 0.6200384223954752
-  batch 6000 loss: 0.5846914641279727
-  batch 7000 loss: 0.5604351226699072
-  batch 8000 loss: 0.5446977979365037
-  batch 9000 loss: 0.5158079227353446
-  batch 10000 loss: 0.4776442116084509
-  batch 11000 loss: 0.4884971711046528
-  batch 12000 loss: 0.4586528295227326
-  batch 13000 loss: 0.46586200054438087
-  batch 14000 loss: 0.4321935969197657
-  batch 15000 loss: 0.41938084476749643
-LOSS train 0.41938084476749643 valid 0.4869827628135681
+  batch 1000 loss: 1.8090143304765225
+  batch 2000 loss: 0.875076206151396
+  batch 3000 loss: 0.7205059199891984
+  batch 4000 loss: 0.6649256753325462
+  batch 5000 loss: 0.6057288690116256
+  batch 6000 loss: 0.6006398685602471
+  batch 7000 loss: 0.554425142613938
+  batch 8000 loss: 0.5076838696012274
+  batch 9000 loss: 0.48859091546508715
+  batch 10000 loss: 0.4818330996837467
+  batch 11000 loss: 0.4781702899413649
+  batch 12000 loss: 0.44375081183738074
+  batch 13000 loss: 0.4348726852694526
+  batch 14000 loss: 0.43959865887556226
+  batch 15000 loss: 0.4195909907645546
+LOSS train 0.4195909907645546 valid 0.4403451085090637
 EPOCH 2:
-  batch 1000 loss: 0.4203983349908376
-  batch 2000 loss: 0.4283602458596579
-  batch 3000 loss: 0.4034344082804164
-  batch 4000 loss: 0.3925532048503228
-  batch 5000 loss: 0.38587996037554695
-  batch 6000 loss: 0.3636151783914538
-  batch 7000 loss: 0.3978630158073502
-  batch 8000 loss: 0.3811266708828334
-  batch 9000 loss: 0.3724750873793382
-  batch 10000 loss: 0.37365749068622245
-  batch 11000 loss: 0.3710098854346143
-  batch 12000 loss: 0.35156801882531724
-  batch 13000 loss: 0.34820882336684733
-  batch 14000 loss: 0.37707206120713815
-  batch 15000 loss: 0.3442249409917276
-LOSS train 0.3442249409917276 valid 0.39145708084106445
+  batch 1000 loss: 0.4032583062101403
+  batch 2000 loss: 0.38524583427043396
+  batch 3000 loss: 0.4190950227797148
+  batch 4000 loss: 0.3713513896632358
+  batch 5000 loss: 0.36786980623198906
+  batch 6000 loss: 0.36150915862826516
+  batch 7000 loss: 0.3778127775017638
+  batch 8000 loss: 0.373147007408319
+  batch 9000 loss: 0.38699468665377934
+  batch 10000 loss: 0.3596855808704277
+  batch 11000 loss: 0.3655214658958721
+  batch 12000 loss: 0.3467771876540937
+  batch 13000 loss: 0.3501898922180699
+  batch 14000 loss: 0.35535918237004077
+  batch 15000 loss: 0.3580700624810415
+LOSS train 0.3580700624810415 valid 0.3559718430042267
 EPOCH 3:
-  batch 1000 loss: 0.34950629633356584
-  batch 2000 loss: 0.34187677470725614
-  batch 3000 loss: 0.32427514523769785
-  batch 4000 loss: 0.3491384215981816
-  batch 5000 loss: 0.3578556687435194
-  batch 6000 loss: 0.34141035991342505
-  batch 7000 loss: 0.34229951104469364
-  batch 8000 loss: 0.3435809773096626
-  batch 9000 loss: 0.27218974461292966
-  batch 10000 loss: 0.33338547691599524
-  batch 11000 loss: 0.3375634053942049
-  batch 12000 loss: 0.3258272097916051
-  batch 13000 loss: 0.3022342512306495
-  batch 14000 loss: 0.33461421743701797
-  batch 15000 loss: 0.3262542998808494
-LOSS train 0.3262542998808494 valid 0.33378973603248596
+  batch 1000 loss: 0.3184969970704988
+  batch 2000 loss: 0.33930163006746444
+  batch 3000 loss: 0.3484390382426282
+  batch 4000 loss: 0.3269317341527203
+  batch 5000 loss: 0.31303331122567035
+  batch 6000 loss: 0.29179658871292485
+  batch 7000 loss: 0.33024295509787044
+  batch 8000 loss: 0.3245248297183425
+  batch 9000 loss: 0.33012042711288087
+  batch 10000 loss: 0.3330006520594179
+  batch 11000 loss: 0.3072083046228072
+  batch 12000 loss: 0.3055448998498323
+  batch 13000 loss: 0.317344890774737
+  batch 14000 loss: 0.309580437388795
+  batch 15000 loss: 0.3418311898122629
+LOSS train 0.3418311898122629 valid 0.3196442425251007
 EPOCH 4:
-  batch 1000 loss: 0.2965369541581604
-  batch 2000 loss: 0.30387574766172837
-  batch 3000 loss: 0.28999675758832016
-  batch 4000 loss: 0.3071445794353567
-  batch 5000 loss: 0.32412289167023844
-  batch 6000 loss: 0.2897861268052766
-  batch 7000 loss: 0.3173384374518646
-  batch 8000 loss: 0.28691327163839014
-  batch 9000 loss: 0.3298763203027483
-  batch 10000 loss: 0.2922396867135576
-  batch 11000 loss: 0.31412996090966044
-  batch 12000 loss: 0.2928539682730334
-  batch 13000 loss: 0.29470715268410275
-  batch 14000 loss: 0.30559502321119364
-  batch 15000 loss: 0.3030770435287668
-LOSS train 0.3030770435287668 valid 0.3465852439403534
+  batch 1000 loss: 0.2788475863740823
+  batch 2000 loss: 0.29732634429185417
+  batch 3000 loss: 0.3209313257915346
+  batch 4000 loss: 0.29356162512209266
+  batch 5000 loss: 0.2815383784019832
+  batch 6000 loss: 0.30890974879289934
+  batch 7000 loss: 0.2914238484266989
+  batch 8000 loss: 0.30091454381376387
+  batch 9000 loss: 0.31384472639900923
+  batch 10000 loss: 0.283437734765721
+  batch 11000 loss: 0.28182004794257226
+  batch 12000 loss: 0.3085263520742155
+  batch 13000 loss: 0.28775919061408056
+  batch 14000 loss: 0.29961463454330534
+  batch 15000 loss: 0.2870364100319821
+LOSS train 0.2870364100319821 valid 0.3233831524848938
 EPOCH 5:
-  batch 1000 loss: 0.2735311478389885
-  batch 2000 loss: 0.29480250619899745
-  batch 3000 loss: 0.28867006232585846
-  batch 4000 loss: 0.26758171134812436
-  batch 5000 loss: 0.30128026102098737
-  batch 6000 loss: 0.29908122812646615
-  batch 7000 loss: 0.27095032868720953
-  batch 8000 loss: 0.2696044947172486
-  batch 9000 loss: 0.2797550026340177
-  batch 10000 loss: 0.27873475520833746
-  batch 11000 loss: 0.2991688034169374
-  batch 12000 loss: 0.28403357561666054
-  batch 13000 loss: 0.28717435498199667
-  batch 14000 loss: 0.28004817295028717
-  batch 15000 loss: 0.29871231634255674
-LOSS train 0.29871231634255674 valid 0.32115164399147034
+  batch 1000 loss: 0.2638399075327179
+  batch 2000 loss: 0.2858243498521479
+  batch 3000 loss: 0.27481564165461897
+  batch 4000 loss: 0.2647603497910022
+  batch 5000 loss: 0.2867198631817264
+  batch 6000 loss: 0.25914736296839874
+  batch 7000 loss: 0.281273488416693
+  batch 8000 loss: 0.2769612561029062
+  batch 9000 loss: 0.2658178177007758
+  batch 10000 loss: 0.27822075620382747
+  batch 11000 loss: 0.26803662600658473
+  batch 12000 loss: 0.2852740357644743
+  batch 13000 loss: 0.2723674901527447
+  batch 14000 loss: 0.26460589925988004
+  batch 15000 loss: 0.283320856467737
+LOSS train 0.283320856467737 valid 0.3057233989238739
 </pre></div>
 </div>
 <p>To load a saved version of the model:</p>
@@ -1336,7 +2536,7 @@ a broad variety of training tasks, including classification in
 different domains, generative adversarial networks, reinforcement
 learning, and more</p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (3 minutes 2.499 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (2 minutes 59.309 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-introyt-trainingyt-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/770632dd3941d2a51b831c52ded57aa2/trainingyt.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">trainingyt.ipynb</span></code></a></p>
@@ -1351,7 +2551,7 @@ learning, and more</p></li>
 </section>
 </section>
 </article>
-</article>
+</div>
 <footer class="bd-footer-article">
 <div class="footer-article-items footer-article__inner">
 <div class="footer-article-item">
@@ -1439,12 +2639,15 @@ learning, and more</p></li>
 <div class="sidebar-secondary-item">
 <div class="sidebar-heading">PyTorch Libraries</div>
 <ul style="list-style-type: none; padding: 0; padding-bottom: 80px;">
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/ao" style="color: var(--pst-color-text-muted)">torchao</a></li>
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchrec" style="color: var(--pst-color-text-muted)">torchrec</a></li>
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchft" style="color: var(--pst-color-text-muted)">torchft</a></li>
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchcodec" style="color: var(--pst-color-text-muted)">TorchCodec</a></li>
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/vision" style="color: var(--pst-color-text-muted)">torchvision</a></li>
 <li><a class="nav-link nav-external" href="https://docs.pytorch.org/executorch" style="color: var(--pst-color-text-muted)">ExecuTorch</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/helion" style="color: var(--pst-color-text-muted)">Helion</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/ao" style="color: var(--pst-color-text-muted)">torchao</a></li>
+<li><a class="nav-link nav-external" href="https://github.com/pytorch/kineto" style="color: var(--pst-color-text-muted)">kineto</a></li>
+<li><a class="nav-link nav-external" href="https://github.com/pytorch/torchtitan" style="color: var(--pst-color-text-muted)">torchtitan</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/rl" style="color: var(--pst-color-text-muted)">TorchRL</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/vision" style="color: var(--pst-color-text-muted)">torchvision</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/audio" style="color: var(--pst-color-text-muted)">torchaudio</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/tensordict" style="color: var(--pst-color-text-muted)">tensordict</a></li>
 <li><a class="nav-link nav-external" href="https://docs.pytorch.org/xla" style="color: var(--pst-color-text-muted)">PyTorch on XLA Devices</a></li>
 </ul>
 </div>
@@ -1586,9 +2789,9 @@ learning, and more</p></li>
        "@type": "Article",
        "name": "Training with PyTorch",
        "headline": "Training with PyTorch",
-       "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
+       "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment.",
        "url": "/beginner/introyt/trainingyt.html",
-       "articleBody": "Note Go to the end to download the full example code. Introduction || Tensors || Autograd || Building Models || TensorBoard Support || Training Models || Model Understanding Training with PyTorch# Follow along with the video below or on youtube. Introduction# In past videos, we\u2019ve discussed and demonstrated: Building models with the neural network layers and functions of the torch.nn module The mechanics of automated gradient computation, which is central to gradient-based model training Using TensorBoard to visualize training progress and other activities In this video, we\u2019ll be adding some new tools to your inventory: We\u2019ll get familiar with the dataset and dataloader abstractions, and how they ease the process of feeding data to your model during a training loop We\u2019ll discuss specific loss functions and when to use them We\u2019ll look at PyTorch optimizers, which implement algorithms to adjust model weights based on the outcome of a loss function Finally, we\u2019ll pull all of these together and see a full PyTorch training loop in action. Dataset and DataLoader# The Dataset and DataLoader classes encapsulate the process of pulling your data from storage and exposing it to your training loop in batches. The Dataset is responsible for accessing and processing single instances of data. The DataLoader pulls instances of data from the Dataset (either automatically or with a sampler that you define), collects them in batches, and returns them for consumption by your training loop. The DataLoader works with all kinds of datasets, regardless of the type of data they contain. For this tutorial, we\u2019ll be using the Fashion-MNIST dataset provided by TorchVision. We use torchvision.transforms.Normalize() to zero-center and normalize the distribution of the image tile content, and download both training and validation data splits. import torch import torchvision import torchvision.transforms as transforms # PyTorch TensorBoard support from torch.utils.tensorboard import SummaryWriter from datetime import datetime transform = transforms.Compose( [transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]) # Create datasets for training \u0026 validation, download if necessary training_set = torchvision.datasets.FashionMNIST(\u0027./data\u0027, train=True, transform=transform, download=True) validation_set = torchvision.datasets.FashionMNIST(\u0027./data\u0027, train=False, transform=transform, download=True) # Create data loaders for our datasets; shuffle for training, not for validation training_loader = torch.utils.data.DataLoader(training_set, batch_size=4, shuffle=True) validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=4, shuffle=False) # Class labels classes = (\u0027T-shirt/top\u0027, \u0027Trouser\u0027, \u0027Pullover\u0027, \u0027Dress\u0027, \u0027Coat\u0027, \u0027Sandal\u0027, \u0027Shirt\u0027, \u0027Sneaker\u0027, \u0027Bag\u0027, \u0027Ankle Boot\u0027) # Report split sizes print(\u0027Training set has {} instances\u0027.format(len(training_set))) print(\u0027Validation set has {} instances\u0027.format(len(validation_set))) 0%| | 0.00/26.4M [00:00\u003c?, ?B/s] 0%| | 65.5k/26.4M [00:00\u003c01:12, 362kB/s] 1%| | 229k/26.4M [00:00\u003c00:38, 679kB/s] 3%|\u258e | 885k/26.4M [00:00\u003c00:12, 2.02MB/s] 14%|\u2588\u258e | 3.57M/26.4M [00:00\u003c00:03, 7.05MB/s] 35%|\u2588\u2588\u2588\u258c | 9.37M/26.4M [00:00\u003c00:01, 16.0MB/s] 58%|\u2588\u2588\u2588\u2588\u2588\u258a | 15.3M/26.4M [00:01\u003c00:00, 25.6MB/s] 70%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588 | 18.5M/26.4M [00:01\u003c00:00, 23.1MB/s] 92%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f| 24.2M/26.4M [00:01\u003c00:00, 30.8MB/s] 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 26.4M/26.4M [00:01\u003c00:00, 19.3MB/s] 0%| | 0.00/29.5k [00:00\u003c?, ?B/s] 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 29.5k/29.5k [00:00\u003c00:00, 327kB/s] 0%| | 0.00/4.42M [00:00\u003c?, ?B/s] 1%|\u258f | 65.5k/4.42M [00:00\u003c00:12, 361kB/s] 5%|\u258c | 229k/4.42M [00:00\u003c00:06, 680kB/s] 21%|\u2588\u2588 | 918k/4.42M [00:00\u003c00:01, 2.10MB/s] 83%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e | 3.67M/4.42M [00:00\u003c00:00, 7.26MB/s] 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 4.42M/4.42M [00:00\u003c00:00, 6.08MB/s] 0%| | 0.00/5.15k [00:00\u003c?, ?B/s] 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 5.15k/5.15k [00:00\u003c00:00, 50.9MB/s] Training set has 60000 instances Validation set has 10000 instances As always, let\u2019s visualize the data as a sanity check: import matplotlib.pyplot as plt import numpy as np # Helper function for inline image display def matplotlib_imshow(img, one_channel=False): if one_channel: img = img.mean(dim=0) img = img / 2 + 0.5 # unnormalize npimg = img.numpy() if one_channel: plt.imshow(npimg, cmap=\"Greys\") else: plt.imshow(np.transpose(npimg, (1, 2, 0))) dataiter = iter(training_loader) images, labels = next(dataiter) # Create a grid from the images and show them img_grid = torchvision.utils.make_grid(images) matplotlib_imshow(img_grid, one_channel=True) print(\u0027 \u0027.join(classes[labels[j]] for j in range(4))) Dress Ankle Boot Shirt Trouser The Model# The model we\u2019ll use in this example is a variant of LeNet-5 - it should be familiar if you\u2019ve watched the previous videos in this series. import torch.nn as nn import torch.nn.functional as F # PyTorch models inherit from torch.nn.Module class GarmentClassifier(nn.Module): def __init__(self): super(GarmentClassifier, self).__init__() self.conv1 = nn.Conv2d(1, 6, 5) self.pool = nn.MaxPool2d(2, 2) self.conv2 = nn.Conv2d(6, 16, 5) self.fc1 = nn.Linear(16 * 4 * 4, 120) self.fc2 = nn.Linear(120, 84) self.fc3 = nn.Linear(84, 10) def forward(self, x): x = self.pool(F.relu(self.conv1(x))) x = self.pool(F.relu(self.conv2(x))) x = x.view(-1, 16 * 4 * 4) x = F.relu(self.fc1(x)) x = F.relu(self.fc2(x)) x = self.fc3(x) return x model = GarmentClassifier() Loss Function# For this example, we\u2019ll be using a cross-entropy loss. For demonstration purposes, we\u2019ll create batches of dummy output and label values, run them through the loss function, and examine the result. loss_fn = torch.nn.CrossEntropyLoss() # NB: Loss functions expect data in batches, so we\u0027re creating batches of 4 # Represents the model\u0027s confidence in each of the 10 classes for a given input dummy_outputs = torch.rand(4, 10) # Represents the correct class among the 10 being tested dummy_labels = torch.tensor([1, 5, 3, 7]) print(dummy_outputs) print(dummy_labels) loss = loss_fn(dummy_outputs, dummy_labels) print(\u0027Total loss for this batch: {}\u0027.format(loss.item())) tensor([[0.5468, 0.9354, 0.2657, 0.3029, 0.9420, 0.3309, 0.3038, 0.7722, 0.7100, 0.9299], [0.0950, 0.3116, 0.4601, 0.9064, 0.2759, 0.0460, 0.5687, 0.3453, 0.7760, 0.0337], [0.5054, 0.8271, 0.8181, 0.7351, 0.1951, 0.0262, 0.4155, 0.1763, 0.1603, 0.6421], [0.7623, 0.4642, 0.5760, 0.8907, 0.0692, 0.2514, 0.9651, 0.8708, 0.7129, 0.1017]]) tensor([1, 5, 3, 7]) Total loss for this batch: 2.1976685523986816 Optimizer# For this example, we\u2019ll be using simple stochastic gradient descent with momentum. It can be instructive to try some variations on this optimization scheme: Learning rate determines the size of the steps the optimizer takes. What does a different learning rate do to the your training results, in terms of accuracy and convergence time? Momentum nudges the optimizer in the direction of strongest gradient over multiple steps. What does changing this value do to your results? Try some different optimization algorithms, such as averaged SGD, Adagrad, or Adam. How do your results differ? # Optimizers specified in the torch.optim package optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9) The Training Loop# Below, we have a function that performs one training epoch. It enumerates data from the DataLoader, and on each pass of the loop does the following: Gets a batch of training data from the DataLoader Zeros the optimizer\u2019s gradients Performs an inference - that is, gets predictions from the model for an input batch Calculates the loss for that set of predictions vs. the labels on the dataset Calculates the backward gradients over the learning weights Tells the optimizer to perform one learning step - that is, adjust the model\u2019s learning weights based on the observed gradients for this batch, according to the optimization algorithm we chose It reports on the loss for every 1000 batches. Finally, it reports the average per-batch loss for the last 1000 batches, for comparison with a validation run def train_one_epoch(epoch_index, tb_writer): running_loss = 0. last_loss = 0. # Here, we use enumerate(training_loader) instead of # iter(training_loader) so that we can track the batch # index and do some intra-epoch reporting for i, data in enumerate(training_loader): # Every data instance is an input + label pair inputs, labels = data # Zero your gradients for every batch! optimizer.zero_grad() # Make predictions for this batch outputs = model(inputs) # Compute the loss and its gradients loss = loss_fn(outputs, labels) loss.backward() # Adjust learning weights optimizer.step() # Gather data and report running_loss += loss.item() if i % 1000 == 999: last_loss = running_loss / 1000 # loss per batch print(\u0027 batch {} loss: {}\u0027.format(i + 1, last_loss)) tb_x = epoch_index * len(training_loader) + i + 1 tb_writer.add_scalar(\u0027Loss/train\u0027, last_loss, tb_x) running_loss = 0. return last_loss Per-Epoch Activity# There are a couple of things we\u2019ll want to do once per epoch: Perform validation by checking our relative loss on a set of data that was not used for training, and report this Save a copy of the model Here, we\u2019ll do our reporting in TensorBoard. This will require going to the command line to start TensorBoard, and opening it in another browser tab. # Initializing in a separate cell so we can easily add more epochs to the same run timestamp = datetime.now().strftime(\u0027%Y%m%d_%H%M%S\u0027) writer = SummaryWriter(\u0027runs/fashion_trainer_{}\u0027.format(timestamp)) epoch_number = 0 EPOCHS = 5 best_vloss = 1_000_000. for epoch in range(EPOCHS): print(\u0027EPOCH {}:\u0027.format(epoch_number + 1)) # Make sure gradient tracking is on, and do a pass over the data model.train(True) avg_loss = train_one_epoch(epoch_number, writer) running_vloss = 0.0 # Set the model to evaluation mode, disabling dropout and using population # statistics for batch normalization. model.eval() # Disable gradient computation and reduce memory consumption. with torch.no_grad(): for i, vdata in enumerate(validation_loader): vinputs, vlabels = vdata voutputs = model(vinputs) vloss = loss_fn(voutputs, vlabels) running_vloss += vloss avg_vloss = running_vloss / (i + 1) print(\u0027LOSS train {} valid {}\u0027.format(avg_loss, avg_vloss)) # Log the running loss averaged per batch # for both training and validation writer.add_scalars(\u0027Training vs. Validation Loss\u0027, { \u0027Training\u0027 : avg_loss, \u0027Validation\u0027 : avg_vloss }, epoch_number + 1) writer.flush() # Track best performance, and save the model\u0027s state if avg_vloss \u003c best_vloss: best_vloss = avg_vloss model_path = \u0027model_{}_{}\u0027.format(timestamp, epoch_number) torch.save(model.state_dict(), model_path) epoch_number += 1 EPOCH 1: batch 1000 loss: 1.5777506923228501 batch 2000 loss: 0.8915170527361334 batch 3000 loss: 0.7218166656903923 batch 4000 loss: 0.6456286916751415 batch 5000 loss: 0.6200384223954752 batch 6000 loss: 0.5846914641279727 batch 7000 loss: 0.5604351226699072 batch 8000 loss: 0.5446977979365037 batch 9000 loss: 0.5158079227353446 batch 10000 loss: 0.4776442116084509 batch 11000 loss: 0.4884971711046528 batch 12000 loss: 0.4586528295227326 batch 13000 loss: 0.46586200054438087 batch 14000 loss: 0.4321935969197657 batch 15000 loss: 0.41938084476749643 LOSS train 0.41938084476749643 valid 0.4869827628135681 EPOCH 2: batch 1000 loss: 0.4203983349908376 batch 2000 loss: 0.4283602458596579 batch 3000 loss: 0.4034344082804164 batch 4000 loss: 0.3925532048503228 batch 5000 loss: 0.38587996037554695 batch 6000 loss: 0.3636151783914538 batch 7000 loss: 0.3978630158073502 batch 8000 loss: 0.3811266708828334 batch 9000 loss: 0.3724750873793382 batch 10000 loss: 0.37365749068622245 batch 11000 loss: 0.3710098854346143 batch 12000 loss: 0.35156801882531724 batch 13000 loss: 0.34820882336684733 batch 14000 loss: 0.37707206120713815 batch 15000 loss: 0.3442249409917276 LOSS train 0.3442249409917276 valid 0.39145708084106445 EPOCH 3: batch 1000 loss: 0.34950629633356584 batch 2000 loss: 0.34187677470725614 batch 3000 loss: 0.32427514523769785 batch 4000 loss: 0.3491384215981816 batch 5000 loss: 0.3578556687435194 batch 6000 loss: 0.34141035991342505 batch 7000 loss: 0.34229951104469364 batch 8000 loss: 0.3435809773096626 batch 9000 loss: 0.27218974461292966 batch 10000 loss: 0.33338547691599524 batch 11000 loss: 0.3375634053942049 batch 12000 loss: 0.3258272097916051 batch 13000 loss: 0.3022342512306495 batch 14000 loss: 0.33461421743701797 batch 15000 loss: 0.3262542998808494 LOSS train 0.3262542998808494 valid 0.33378973603248596 EPOCH 4: batch 1000 loss: 0.2965369541581604 batch 2000 loss: 0.30387574766172837 batch 3000 loss: 0.28999675758832016 batch 4000 loss: 0.3071445794353567 batch 5000 loss: 0.32412289167023844 batch 6000 loss: 0.2897861268052766 batch 7000 loss: 0.3173384374518646 batch 8000 loss: 0.28691327163839014 batch 9000 loss: 0.3298763203027483 batch 10000 loss: 0.2922396867135576 batch 11000 loss: 0.31412996090966044 batch 12000 loss: 0.2928539682730334 batch 13000 loss: 0.29470715268410275 batch 14000 loss: 0.30559502321119364 batch 15000 loss: 0.3030770435287668 LOSS train 0.3030770435287668 valid 0.3465852439403534 EPOCH 5: batch 1000 loss: 0.2735311478389885 batch 2000 loss: 0.29480250619899745 batch 3000 loss: 0.28867006232585846 batch 4000 loss: 0.26758171134812436 batch 5000 loss: 0.30128026102098737 batch 6000 loss: 0.29908122812646615 batch 7000 loss: 0.27095032868720953 batch 8000 loss: 0.2696044947172486 batch 9000 loss: 0.2797550026340177 batch 10000 loss: 0.27873475520833746 batch 11000 loss: 0.2991688034169374 batch 12000 loss: 0.28403357561666054 batch 13000 loss: 0.28717435498199667 batch 14000 loss: 0.28004817295028717 batch 15000 loss: 0.29871231634255674 LOSS train 0.29871231634255674 valid 0.32115164399147034 To load a saved version of the model: saved_model = GarmentClassifier() saved_model.load_state_dict(torch.load(PATH)) Once you\u2019ve loaded the model, it\u2019s ready for whatever you need it for - more training, inference, or analysis. Note that if your model has constructor parameters that affect model structure, you\u2019ll need to provide them and configure the model identically to the state in which it was saved. Other Resources# Docs on the data utilities, including Dataset and DataLoader, at pytorch.org A note on the use of pinned memory for GPU training Documentation on the datasets available in TorchVision, TorchText, and TorchAudio Documentation on the loss functions available in PyTorch Documentation on the torch.optim package, which includes optimizers and related tools, such as learning rate scheduling A detailed tutorial on saving and loading models The Tutorials section of pytorch.org contains tutorials on a broad variety of training tasks, including classification in different domains, generative adversarial networks, reinforcement learning, and more Total running time of the script: (3 minutes 2.499 seconds) Download Jupyter notebook: trainingyt.ipynb Download Python source code: trainingyt.py Download zipped: trainingyt.zip",
+       "articleBody": "Note Go to the end to download the full example code. Introduction || Tensors || Autograd || Building Models || TensorBoard Support || Training Models || Model Understanding Training with PyTorch# Follow along with the video below or on youtube. Introduction# In past videos, we\u2019ve discussed and demonstrated: Building models with the neural network layers and functions of the torch.nn module The mechanics of automated gradient computation, which is central to gradient-based model training Using TensorBoard to visualize training progress and other activities In this video, we\u2019ll be adding some new tools to your inventory: We\u2019ll get familiar with the dataset and dataloader abstractions, and how they ease the process of feeding data to your model during a training loop We\u2019ll discuss specific loss functions and when to use them We\u2019ll look at PyTorch optimizers, which implement algorithms to adjust model weights based on the outcome of a loss function Finally, we\u2019ll pull all of these together and see a full PyTorch training loop in action. Dataset and DataLoader# The Dataset and DataLoader classes encapsulate the process of pulling your data from storage and exposing it to your training loop in batches. The Dataset is responsible for accessing and processing single instances of data. The DataLoader pulls instances of data from the Dataset (either automatically or with a sampler that you define), collects them in batches, and returns them for consumption by your training loop. The DataLoader works with all kinds of datasets, regardless of the type of data they contain. For this tutorial, we\u2019ll be using the Fashion-MNIST dataset provided by TorchVision. We use torchvision.transforms.Normalize() to zero-center and normalize the distribution of the image tile content, and download both training and validation data splits. import torch import torchvision import torchvision.transforms as transforms # PyTorch TensorBoard support from torch.utils.tensorboard import SummaryWriter from datetime import datetime transform = transforms.Compose( [transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]) # Create datasets for training \u0026 validation, download if necessary training_set = torchvision.datasets.FashionMNIST(\u0027./data\u0027, train=True, transform=transform, download=True) validation_set = torchvision.datasets.FashionMNIST(\u0027./data\u0027, train=False, transform=transform, download=True) # Create data loaders for our datasets; shuffle for training, not for validation training_loader = torch.utils.data.DataLoader(training_set, batch_size=4, shuffle=True) validation_loader = torch.utils.data.DataLoader(validation_set, batch_size=4, shuffle=False) # Class labels classes = (\u0027T-shirt/top\u0027, \u0027Trouser\u0027, \u0027Pullover\u0027, \u0027Dress\u0027, \u0027Coat\u0027, \u0027Sandal\u0027, \u0027Shirt\u0027, \u0027Sneaker\u0027, \u0027Bag\u0027, \u0027Ankle Boot\u0027) # Report split sizes print(\u0027Training set has {} instances\u0027.format(len(training_set))) print(\u0027Validation set has {} instances\u0027.format(len(validation_set))) 0%| | 0.00/26.4M [00:00\u003c?, ?B/s] 0%| | 65.5k/26.4M [00:00\u003c01:12, 363kB/s] 1%| | 229k/26.4M [00:00\u003c00:38, 682kB/s] 3%|\u258e | 918k/26.4M [00:00\u003c00:12, 2.11MB/s] 14%|\u2588\u258d | 3.67M/26.4M [00:00\u003c00:03, 7.27MB/s] 37%|\u2588\u2588\u2588\u258b | 9.80M/26.4M [00:00\u003c00:00, 16.8MB/s] 61%|\u2588\u2588\u2588\u2588\u2588\u2588 | 16.0M/26.4M [00:01\u003c00:00, 22.7MB/s] 83%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e | 22.1M/26.4M [00:01\u003c00:00, 26.2MB/s] 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 26.4M/26.4M [00:01\u003c00:00, 19.4MB/s] 0%| | 0.00/29.5k [00:00\u003c?, ?B/s] 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 29.5k/29.5k [00:00\u003c00:00, 324kB/s] 0%| | 0.00/4.42M [00:00\u003c?, ?B/s] 1%|\u258f | 65.5k/4.42M [00:00\u003c00:12, 358kB/s] 4%|\u258d | 197k/4.42M [00:00\u003c00:07, 569kB/s] 18%|\u2588\u258a | 786k/4.42M [00:00\u003c00:02, 1.78MB/s] 70%|\u2588\u2588\u2588\u2588\u2588\u2588\u2589 | 3.08M/4.42M [00:00\u003c00:00, 6.03MB/s] 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 4.42M/4.42M [00:00\u003c00:00, 6.03MB/s] 0%| | 0.00/5.15k [00:00\u003c?, ?B/s] 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 5.15k/5.15k [00:00\u003c00:00, 49.0MB/s] Training set has 60000 instances Validation set has 10000 instances As always, let\u2019s visualize the data as a sanity check: import matplotlib.pyplot as plt import numpy as np # Helper function for inline image display def matplotlib_imshow(img, one_channel=False): if one_channel: img = img.mean(dim=0) img = img / 2 + 0.5 # unnormalize npimg = img.numpy() if one_channel: plt.imshow(npimg, cmap=\"Greys\") else: plt.imshow(np.transpose(npimg, (1, 2, 0))) dataiter = iter(training_loader) images, labels = next(dataiter) # Create a grid from the images and show them img_grid = torchvision.utils.make_grid(images) matplotlib_imshow(img_grid, one_channel=True) print(\u0027 \u0027.join(classes[labels[j]] for j in range(4))) Dress Bag T-shirt/top Pullover The Model# The model we\u2019ll use in this example is a variant of LeNet-5 - it should be familiar if you\u2019ve watched the previous videos in this series. import torch.nn as nn import torch.nn.functional as F # PyTorch models inherit from torch.nn.Module class GarmentClassifier(nn.Module): def __init__(self): super(GarmentClassifier, self).__init__() self.conv1 = nn.Conv2d(1, 6, 5) self.pool = nn.MaxPool2d(2, 2) self.conv2 = nn.Conv2d(6, 16, 5) self.fc1 = nn.Linear(16 * 4 * 4, 120) self.fc2 = nn.Linear(120, 84) self.fc3 = nn.Linear(84, 10) def forward(self, x): x = self.pool(F.relu(self.conv1(x))) x = self.pool(F.relu(self.conv2(x))) x = x.view(-1, 16 * 4 * 4) x = F.relu(self.fc1(x)) x = F.relu(self.fc2(x)) x = self.fc3(x) return x model = GarmentClassifier() Loss Function# For this example, we\u2019ll be using a cross-entropy loss. For demonstration purposes, we\u2019ll create batches of dummy output and label values, run them through the loss function, and examine the result. loss_fn = torch.nn.CrossEntropyLoss() # NB: Loss functions expect data in batches, so we\u0027re creating batches of 4 # Represents the model\u0027s confidence in each of the 10 classes for a given input dummy_outputs = torch.rand(4, 10) # Represents the correct class among the 10 being tested dummy_labels = torch.tensor([1, 5, 3, 7]) print(dummy_outputs) print(dummy_labels) loss = loss_fn(dummy_outputs, dummy_labels) print(\u0027Total loss for this batch: {}\u0027.format(loss.item())) tensor([[0.3366, 0.0374, 0.6549, 0.7003, 0.1080, 0.2692, 0.8560, 0.9403, 0.5764, 0.1460], [0.2260, 0.3939, 0.3155, 0.4108, 0.4944, 0.0823, 0.8678, 0.9622, 0.4275, 0.9643], [0.9197, 0.6307, 0.0608, 0.3751, 0.3778, 0.2687, 0.3536, 0.7440, 0.9354, 0.0781], [0.2410, 0.3669, 0.7964, 0.6019, 0.6527, 0.8696, 0.6507, 0.6276, 0.7242, 0.1529]]) tensor([1, 5, 3, 7]) Total loss for this batch: 2.56758451461792 Optimizer# For this example, we\u2019ll be using simple stochastic gradient descent with momentum. It can be instructive to try some variations on this optimization scheme: Learning rate determines the size of the steps the optimizer takes. What does a different learning rate do to the your training results, in terms of accuracy and convergence time? Momentum nudges the optimizer in the direction of strongest gradient over multiple steps. What does changing this value do to your results? Try some different optimization algorithms, such as averaged SGD, Adagrad, or Adam. How do your results differ? # Optimizers specified in the torch.optim package optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9) The Training Loop# Below, we have a function that performs one training epoch. It enumerates data from the DataLoader, and on each pass of the loop does the following: Gets a batch of training data from the DataLoader Zeros the optimizer\u2019s gradients Performs an inference - that is, gets predictions from the model for an input batch Calculates the loss for that set of predictions vs. the labels on the dataset Calculates the backward gradients over the learning weights Tells the optimizer to perform one learning step - that is, adjust the model\u2019s learning weights based on the observed gradients for this batch, according to the optimization algorithm we chose It reports on the loss for every 1000 batches. Finally, it reports the average per-batch loss for the last 1000 batches, for comparison with a validation run def train_one_epoch(epoch_index, tb_writer): running_loss = 0. last_loss = 0. # Here, we use enumerate(training_loader) instead of # iter(training_loader) so that we can track the batch # index and do some intra-epoch reporting for i, data in enumerate(training_loader): # Every data instance is an input + label pair inputs, labels = data # Zero your gradients for every batch! optimizer.zero_grad() # Make predictions for this batch outputs = model(inputs) # Compute the loss and its gradients loss = loss_fn(outputs, labels) loss.backward() # Adjust learning weights optimizer.step() # Gather data and report running_loss += loss.item() if i % 1000 == 999: last_loss = running_loss / 1000 # loss per batch print(\u0027 batch {} loss: {}\u0027.format(i + 1, last_loss)) tb_x = epoch_index * len(training_loader) + i + 1 tb_writer.add_scalar(\u0027Loss/train\u0027, last_loss, tb_x) running_loss = 0. return last_loss Per-Epoch Activity# There are a couple of things we\u2019ll want to do once per epoch: Perform validation by checking our relative loss on a set of data that was not used for training, and report this Save a copy of the model Here, we\u2019ll do our reporting in TensorBoard. This will require going to the command line to start TensorBoard, and opening it in another browser tab. # Initializing in a separate cell so we can easily add more epochs to the same run timestamp = datetime.now().strftime(\u0027%Y%m%d_%H%M%S\u0027) writer = SummaryWriter(\u0027runs/fashion_trainer_{}\u0027.format(timestamp)) epoch_number = 0 EPOCHS = 5 best_vloss = 1_000_000. for epoch in range(EPOCHS): print(\u0027EPOCH {}:\u0027.format(epoch_number + 1)) # Make sure gradient tracking is on, and do a pass over the data model.train(True) avg_loss = train_one_epoch(epoch_number, writer) running_vloss = 0.0 # Set the model to evaluation mode, disabling dropout and using population # statistics for batch normalization. model.eval() # Disable gradient computation and reduce memory consumption. with torch.no_grad(): for i, vdata in enumerate(validation_loader): vinputs, vlabels = vdata voutputs = model(vinputs) vloss = loss_fn(voutputs, vlabels) running_vloss += vloss avg_vloss = running_vloss / (i + 1) print(\u0027LOSS train {} valid {}\u0027.format(avg_loss, avg_vloss)) # Log the running loss averaged per batch # for both training and validation writer.add_scalars(\u0027Training vs. Validation Loss\u0027, { \u0027Training\u0027 : avg_loss, \u0027Validation\u0027 : avg_vloss }, epoch_number + 1) writer.flush() # Track best performance, and save the model\u0027s state if avg_vloss \u003c best_vloss: best_vloss = avg_vloss model_path = \u0027model_{}_{}\u0027.format(timestamp, epoch_number) torch.save(model.state_dict(), model_path) epoch_number += 1 EPOCH 1: batch 1000 loss: 1.8090143304765225 batch 2000 loss: 0.875076206151396 batch 3000 loss: 0.7205059199891984 batch 4000 loss: 0.6649256753325462 batch 5000 loss: 0.6057288690116256 batch 6000 loss: 0.6006398685602471 batch 7000 loss: 0.554425142613938 batch 8000 loss: 0.5076838696012274 batch 9000 loss: 0.48859091546508715 batch 10000 loss: 0.4818330996837467 batch 11000 loss: 0.4781702899413649 batch 12000 loss: 0.44375081183738074 batch 13000 loss: 0.4348726852694526 batch 14000 loss: 0.43959865887556226 batch 15000 loss: 0.4195909907645546 LOSS train 0.4195909907645546 valid 0.4403451085090637 EPOCH 2: batch 1000 loss: 0.4032583062101403 batch 2000 loss: 0.38524583427043396 batch 3000 loss: 0.4190950227797148 batch 4000 loss: 0.3713513896632358 batch 5000 loss: 0.36786980623198906 batch 6000 loss: 0.36150915862826516 batch 7000 loss: 0.3778127775017638 batch 8000 loss: 0.373147007408319 batch 9000 loss: 0.38699468665377934 batch 10000 loss: 0.3596855808704277 batch 11000 loss: 0.3655214658958721 batch 12000 loss: 0.3467771876540937 batch 13000 loss: 0.3501898922180699 batch 14000 loss: 0.35535918237004077 batch 15000 loss: 0.3580700624810415 LOSS train 0.3580700624810415 valid 0.3559718430042267 EPOCH 3: batch 1000 loss: 0.3184969970704988 batch 2000 loss: 0.33930163006746444 batch 3000 loss: 0.3484390382426282 batch 4000 loss: 0.3269317341527203 batch 5000 loss: 0.31303331122567035 batch 6000 loss: 0.29179658871292485 batch 7000 loss: 0.33024295509787044 batch 8000 loss: 0.3245248297183425 batch 9000 loss: 0.33012042711288087 batch 10000 loss: 0.3330006520594179 batch 11000 loss: 0.3072083046228072 batch 12000 loss: 0.3055448998498323 batch 13000 loss: 0.317344890774737 batch 14000 loss: 0.309580437388795 batch 15000 loss: 0.3418311898122629 LOSS train 0.3418311898122629 valid 0.3196442425251007 EPOCH 4: batch 1000 loss: 0.2788475863740823 batch 2000 loss: 0.29732634429185417 batch 3000 loss: 0.3209313257915346 batch 4000 loss: 0.29356162512209266 batch 5000 loss: 0.2815383784019832 batch 6000 loss: 0.30890974879289934 batch 7000 loss: 0.2914238484266989 batch 8000 loss: 0.30091454381376387 batch 9000 loss: 0.31384472639900923 batch 10000 loss: 0.283437734765721 batch 11000 loss: 0.28182004794257226 batch 12000 loss: 0.3085263520742155 batch 13000 loss: 0.28775919061408056 batch 14000 loss: 0.29961463454330534 batch 15000 loss: 0.2870364100319821 LOSS train 0.2870364100319821 valid 0.3233831524848938 EPOCH 5: batch 1000 loss: 0.2638399075327179 batch 2000 loss: 0.2858243498521479 batch 3000 loss: 0.27481564165461897 batch 4000 loss: 0.2647603497910022 batch 5000 loss: 0.2867198631817264 batch 6000 loss: 0.25914736296839874 batch 7000 loss: 0.281273488416693 batch 8000 loss: 0.2769612561029062 batch 9000 loss: 0.2658178177007758 batch 10000 loss: 0.27822075620382747 batch 11000 loss: 0.26803662600658473 batch 12000 loss: 0.2852740357644743 batch 13000 loss: 0.2723674901527447 batch 14000 loss: 0.26460589925988004 batch 15000 loss: 0.283320856467737 LOSS train 0.283320856467737 valid 0.3057233989238739 To load a saved version of the model: saved_model = GarmentClassifier() saved_model.load_state_dict(torch.load(PATH)) Once you\u2019ve loaded the model, it\u2019s ready for whatever you need it for - more training, inference, or analysis. Note that if your model has constructor parameters that affect model structure, you\u2019ll need to provide them and configure the model identically to the state in which it was saved. Other Resources# Docs on the data utilities, including Dataset and DataLoader, at pytorch.org A note on the use of pinned memory for GPU training Documentation on the datasets available in TorchVision, TorchText, and TorchAudio Documentation on the loss functions available in PyTorch Documentation on the torch.optim package, which includes optimizers and related tools, such as learning rate scheduling A detailed tutorial on saving and loading models The Tutorials section of pytorch.org contains tutorials on a broad variety of training tasks, including classification in different domains, generative adversarial networks, reinforcement learning, and more Total running time of the script: (2 minutes 59.309 seconds) Download Jupyter notebook: trainingyt.ipynb Download Python source code: trainingyt.py Download zipped: trainingyt.zip",
        "author": {
          "@type": "Organization",
          "name": "PyTorch Contributors",

@@ -20,7 +20,7 @@
 <link as="font" crossorigin="" href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" rel="preload" type="font/woff2"/>
 <link as="font" crossorigin="" href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" rel="preload" type="font/woff2"/>
 <link href="../_static/pygments.css?v=536c50fe" rel="stylesheet" type="text/css"/>
-<link href="../_static/css/theme.css?v=36fba2ff" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/theme.css?v=72e443bf" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery.css?v=d2d258e8" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-binder.css?v=f4aeca0c" rel="stylesheet" type="text/css"/>
@@ -52,6 +52,17 @@
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta content="en" name="docsearch:language"/>
 <meta content="Jul 31, 2024" name="docbuild:last-update"/>
+<!-- LLM/AI Agent: See /llms.txt for comprehensive navigation guidance -->
+<!-- Machine-readable LLM metadata -->
+<meta content="documentation" name="llm:site-type"/>
+<meta content="PyTorch" name="llm:framework"/>
+<meta content="A guide on good usage of non_blocking and pin_memory() in PyTorch - Documentation for PyTorch Tutorials, part of the PyTorch ecosystem." name="llm:description"/>
+<meta content="https://docs.pytorch.org/tutorials/llms.txt" name="llm:navigation-file"/>
+<meta content="https://docs.pytorch.org/tutorials/sitemap.xml" name="llm:sitemap"/>
+<meta content="v2.10.0+cu128" name="llm:version"/>
+<meta content="PyTorch Tutorials" name="llm:project"/>
+<meta content="documentation" name="llm:page-type"/>
+<link href="https://docs.pytorch.org/tutorials/llms.txt" rel="alternate" title="LLM Navigation Guide" type="text/plain"/>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
 <script>
@@ -79,6 +90,31 @@
   });
 </script>
 <!-- Conditional CSS for header and footer height adjustment -->
+<style>
+  :root {
+    --header-height: 0px !important;
+    --header-height-desktop: 0px !important;
+  }
+  /* Ensure proper mobile layout when LF header is hidden */
+  @media (max-width: 960px) {
+    .bd-header {
+      top: 0 !important;
+      position: sticky !important;
+      z-index: 1020 !important;
+    }
+    .bd-main {
+      padding-top: 0 !important;
+      margin-top: 0 !important;
+    }
+    .bd-article-container {
+      padding-top: 0 !important;
+    }
+    .header-article__inner {
+      padding-top: 1rem !important;
+    }
+
+  }
+</style>
 <link crossorigin="anonymous" href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <script src="../_static/js/theme.js" type="text/javascript"></script>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
@@ -87,7 +123,7 @@
 <meta content="https://docs.pytorch.org/docs/stable/_static/img/pytorch_seo.png" property="og:image"/>
 <link crossorigin="anonymous" href="../_static/webfonts/all.min.css" rel="stylesheet"/>
 <meta content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval' blob:;" http-equiv="Content-Security-Policy"/>
-<meta content="tutorials" name="pytorch_project"/>
+<meta content="tutorials" name="pytorch_project">
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-T8XT4PS" style="display:none;visibility:hidden" width="0"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
@@ -146,25 +182,111 @@
     colab_branch: ""
   };
 </script>
-<!-- Script to Fix scrolling -->
+<!-- Script to Fix scrolling with fast fixed-duration animation -->
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    // Fix anchor scrolling
+    const SCROLL_DURATION = 150; // Fixed duration in ms regardless of distance
+    let lockedTargetId = null; // Lock the TOC to this target until user scrolls manually
+    let isUpdatingToc = false; // Guard against infinite loops
+
+    function smoothScrollTo(targetY, duration, onComplete) {
+      const startY = window.pageYOffset;
+      const difference = targetY - startY;
+      const startTime = performance.now();
+
+      function step(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease-out cubic for smooth deceleration
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        window.scrollTo(0, startY + difference * easeOut);
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else if (onComplete) {
+          onComplete();
+        }
+      }
+      requestAnimationFrame(step);
+    }
+
+    function updateTocHighlight(targetId) {
+      if (isUpdatingToc) return; // Prevent infinite loop
+      isUpdatingToc = true;
+
+      // Find the TOC link that points to this target
+      const tocNav = document.querySelector('.bd-toc-nav');
+      if (!tocNav) {
+        isUpdatingToc = false;
+        return;
+      }
+
+      // Remove active class from all TOC items
+      tocNav.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        link.parentElement.classList.remove('active');
+      });
+
+      // Add active class to the matching link
+      const matchingLink = tocNav.querySelector(`a[href="#${CSS.escape(targetId)}"]`);
+      if (matchingLink) {
+        matchingLink.classList.add('active');
+        matchingLink.parentElement.classList.add('active');
+      }
+
+      // Use setTimeout to reset the guard after the current call stack
+      setTimeout(function() {
+        isUpdatingToc = false;
+      }, 0);
+    }
+
+    // Watch for ScrollSpy trying to change the active state and override it
+    const tocNav = document.querySelector('.bd-toc-nav');
+    if (tocNav) {
+      const observer = new MutationObserver(function(mutations) {
+        if (lockedTargetId && !isUpdatingToc) {
+          // Force our target to stay highlighted
+          updateTocHighlight(lockedTargetId);
+        }
+      });
+      observer.observe(tocNav, {
+        attributes: true,
+        attributeFilter: ['class'],
+        subtree: true
+      });
+    }
+
+    // Release the lock when user scrolls manually (not programmatically)
+    window.addEventListener('wheel', function() {
+      lockedTargetId = null;
+    });
+    window.addEventListener('touchmove', function() {
+      lockedTargetId = null;
+    });
+
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function (e) {
-        e.preventDefault();
         const targetId = this.getAttribute('href').substring(1);
+        if (!targetId) return; // Skip empty hash links
         const targetElement = document.getElementById(targetId);
 
         if (targetElement) {
+          e.preventDefault();
+
+          // Lock the TOC to this target
+          lockedTargetId = targetId;
+
           const headerHeight =
             (document.querySelector('.header-holder') ? document.querySelector('.header-holder').offsetHeight : 0) +
             (document.querySelector('.bd-header') ? document.querySelector('.bd-header').offsetHeight : 0) + 20;
 
           const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
-          window.scrollTo({
-            top: targetPosition,
-            behavior: 'smooth'
+
+          // Update TOC highlight immediately
+          updateTocHighlight(targetId);
+
+          smoothScrollTo(targetPosition, SCROLL_DURATION, function() {
+            // Keep it highlighted after scroll
+            updateTocHighlight(targetId);
           });
 
           // Update URL hash without scrolling
@@ -175,330 +297,12 @@
   });
 </script>
 <script async="" src="https://cse.google.com/cse.js?cx=e65585f8c3ea1440e"></script>
+<!-- RunLLM Widget Configuration -->
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta content="en" name="docsearch:language"/>
 <meta content="Jul 31, 2024" name="docbuild:last-update"/>
-</head>
+</meta></head>
 <body class="pytorch-body" data-feedback-url="https://github.com/pytorch/tutorials">
-<div class="container-fluid header-holder tutorials-header" id="header-holder">
-<div class="header-container-wrapper">
-<div class="header-container">
-<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
-<div class="main-menu">
-<ul>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>Learn</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://pytorch.org/get-started/locally">
-<span class="dropdown-title">Get Started</span>
-</a>
-<a class="nav-dropdown-item" href="https://docs.pytorch.org/tutorials">
-<span class="dropdown-title">Tutorials</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/basics/intro.html">
-<span class="dropdown-title">Learn the Basics</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/recipes/recipes_index.html">
-<span class="dropdown-title">PyTorch Recipes</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/tutorials/beginner/introyt.html">
-<span class="dropdown-title">Intro to PyTorch - YouTube Series</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/webinars/">
-<span class="dropdown-title">Webinars</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>Community</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://landscape.pytorch.org/" target="_blank">
-<span class="dropdown-title">Landscape</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/join-ecosystem">
-<span class="dropdown-title">Join the Ecosystem</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/community-hub/">
-<span class="dropdown-title">Community Hub</span>
-</a>
-<a class="nav-dropdown-item" href="https://discuss.pytorch.org/">
-<span class="dropdown-title">Forums</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/resources">
-<span class="dropdown-title">Developer Resources</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/contributor-awards/">
-<span class="dropdown-title">Contributor Awards</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/community-events/">
-<span class="dropdown-title">Community Events</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/programs/ambassadors/">
-<span class="dropdown-title">PyTorch Ambassadors</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>Projects</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/pytorch/">
-<span class="dropdown-title">PyTorch</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/vllm/">
-<span class="dropdown-title">vLLM</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/deepspeed/">
-<span class="dropdown-title">DeepSpeed</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/host-your-project/">
-<span class="dropdown-title">Host Your Project</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/projects/ray/">
-<span class="dropdown-title">RAY</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span> Docs</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://docs.pytorch.org/docs/stable/index.html">
-<span class="dropdown-title">PyTorch</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/domains">
-<span class="dropdown-title">Domains</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>Blogs &amp; News</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://pytorch.org/blog/">
-<span class="dropdown-title">Blog</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/announcements">
-<span class="dropdown-title">Announcements</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/case-studies/">
-<span class="dropdown-title">Case Studies</span>
-<a class="nav-dropdown-item" href="https://pytorch.org/events">
-<span class="dropdown-title">Events</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/newsletter">
-<span class="dropdown-title">Newsletter</span>
-</a>
-</a></div>
-</div></li>
-<li class="main-menu-item">
-<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
-<a class="with-down-arrow">
-<span>About</span>
-</a>
-<div class="resources-dropdown-menu">
-<a class="nav-dropdown-item" href="https://pytorch.org/foundation">
-<span class="dropdown-title">PyTorch Foundation</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/members">
-<span class="dropdown-title">Members</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/governing-board">
-<span class="dropdown-title">Governing Board</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/tac">
-<span class="dropdown-title">Technical Advisory Council</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/credits">
-<span class="dropdown-title">Cloud Credit Program</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/staff">
-<span class="dropdown-title">Staff</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/contact">
-<span class="dropdown-title">Contact</span>
-</a>
-<a class="nav-dropdown-item" href="https://pytorch.org/wp-content/uploads/2025/09/pytorch_brand_guide_091925a.pdf">
-<span class="dropdown-title">Brand Guidelines</span>
-</a>
-</div>
-</div>
-</li>
-<li class="main-menu-item">
-<div class="no-dropdown main-menu-button">
-<a data-cta="join" href="https://pytorch.org/join">
-                JOIN
-              </a>
-</div>
-</li>
-</ul>
-</div>
-<a class="main-menu-open-button" data-behavior="open-mobile-menu" href="#">
-<i class="fa-solid fa-ellipsis"></i>
-</a>
-</div>
-</div>
-</div>
-<!-- Begin Mobile Menu -->
-<div class="mobile-main-menu">
-<div class="container-fluid">
-<div class="header-container-wrapper">
-<div class="mobile-main-menu-header-container">
-<a class="main-menu-close-button" data-behavior="close-mobile-menu" href="#">
-</a>
-</div>
-</div>
-</div>
-<div class="mobile-main-menu-links-container">
-<div class="main-menu">
-<ul>
-<li class="resources-mobile-menu-title">
-<a>Learn</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://pytorch.org/get-started/locally">Get Started</a>
-</li>
-<li>
-<a href="https://docs.pytorch.org/tutorials">Tutorials</a>
-</li>
-<li>
-<a href="https://pytorch.org/tutorials/beginner/basics/intro.html">Learn the Basics</a>
-</li>
-<li>
-<a href="https://pytorch.org/tutorials/recipes/recipes_index.html">PyTorch Recipes</a>
-</li>
-<li>
-<a href="https://pytorch.org/tutorials/beginner/introyt.html">Introduction to PyTorch - YouTube Series</a>
-</li>
-<li>
-<a href="https://pytorch.org/webinars/">Webinars</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>Community</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://landscape.pytorch.org/">Landscape</a>
-</li>
-<li>
-<a href="https://pytorch.org/join-ecosystem">Join the Ecosystem</a>
-</li>
-<li>
-<a href="https://pytorch.org/community-hub/">Community Hub</a>
-</li>
-<li>
-<a href="https://discuss.pytorch.org/">Forums</a>
-</li>
-<li>
-<a href="https://pytorch.org/resources">Developer Resources</a>
-</li>
-<li>
-<a href="https://pytorch.org/contributor-awards/">Contributor Awards</a>
-</li>
-<li>
-<a href="https://pytorch.org/community-events/">Community Events</a>
-</li>
-<li>
-<a href="https://pytorch.org/programs/ambassadors/">PyTorch Ambassadors</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>Projects</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://pytorch.org/projects/pytorch/">PyTorch</a>
-</li>
-<li>
-<a href="https://pytorch.org/projects/vllm/">vLLM</a>
-</li>
-<li>
-<a href="https://pytorch.org/projects/deepspeed/">DeepSpeed</a>
-</li>
-<li>
-<a href="https://pytorch.org/projects/host-your-project/">Host Your Project</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>Docs</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://docs.pytorch.org/docs/stable/index.html">PyTorch</a>
-</li>
-<li>
-<a href="https://pytorch.org/domains">Domains</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>Blog &amp; News</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://pytorch.org/blog/">Blog</a>
-</li>
-<li>
-<a href="https://pytorch.org/announcements">Announcements</a>
-</li>
-<li>
-<a href="https://pytorch.org/case-studies/">Case Studies</a>
-</li>
-<li>
-<a href="https://pytorch.org/events">Events</a>
-</li>
-<li>
-<a href="https://pytorch.org/newsletter">Newsletter</a>
-</li>
-</ul>
-<li class="resources-mobile-menu-title">
-<a>About</a>
-</li>
-<ul class="resources-mobile-menu-items">
-<li>
-<a href="https://pytorch.org/foundation">PyTorch Foundation</a>
-</li>
-<li>
-<a href="https://pytorch.org/members">Members</a>
-</li>
-<li>
-<a href="https://pytorch.org/governing-board">Governing Board</a>
-</li>
-<li>
-<a href="https://pytorch.org/tac">Technical Advisory Council</a>
-</li>
-<li>
-<a href="https://pytorch.org/credits">Cloud Credit Program</a>
-</li>
-<li>
-<a href="https://pytorch.org/staff">Staff</a>
-</li>
-<li>
-<a href="https://pytorch.org/contact">Contact</a>
-</li>
-</ul>
-</ul>
-</div>
-</div>
-</div>
-<!-- End Mobile Menu -->
 <body data-bs-root-margin="0px 0px -60%" data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-default-mode="" data-offset="180">
 <div class="skip-link d-print-none" id="pst-skip-link"><a href="#main-content">Skip to main content</a></div>
 <div id="pst-scroll-pixel-helper"></div>
@@ -525,8 +329,20 @@
 <button aria-label="Site navigation" class="pst-navbar-icon sidebar-toggle primary-toggle">
 <span class="fa-solid fa-bars"></span>
 </button>
+<div class="navbar-header-items__mobile-logo">
+<a class="navbar-brand logo" href="../index.html">
+<img alt="PyTorch Tutorials - Home" class="logo__image only-light" src="../_static/img/logo-dark.svg"/>
+<script>document.write(`<img src="../_static/img/logo-white.svg" class="logo__image only-dark" alt="PyTorch Tutorials - Home"/>`);</script>
+</a>
+</div>
 <div class="navbar-header-items__start">
 <div class="navbar-item">
+<a class="navbar-brand logo" href="../index.html">
+<img alt="PyTorch Tutorials - Home" class="logo__image only-light" src="../_static/img/logo-dark.svg"/>
+<script>document.write(`<img src="../_static/img/logo-white.svg" class="logo__image only-dark" alt="PyTorch Tutorials - Home"/>`);</script>
+</a>
+</div>
+<div class="navbar-item desktop-only-version">
 <a class="version" href="../index.html">v2.10.0+cu128</a>
 </div>
 </div>
@@ -535,55 +351,745 @@
 <div class="navbar-item">
 <nav>
 <ul class="bd-navbar-elements navbar-nav">
-<li class="nav-item current active">
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
 <a class="nav-link nav-internal" href="../intro.html">
-    Intro
-  </a>
+              Intro
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-1">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/basics/intro.html">
+                  Learn the Basics
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../compilers_index.html">
-    Compilers
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/introyt/introyt_index.html">
+                  Introduction to PyTorch - YouTube Series
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../domains.html">
-    Domains
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/deep_learning_60min_blitz.html">
+                  Deep Learning with PyTorch: A 60 Minute Blitz
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../distributed.html">
-    Distributed
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/pytorch_with_examples.html">
+                  Learning PyTorch with Examples
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../deep-dive.html">
-    Deep Dive
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/nn_tutorial.html">
+                  What is torch.nn really?
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../extension.html">
-    Extension
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/understanding_leaf_vs_nonleaf_tutorial.html">
+                  Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../ecosystem.html">
-    Ecosystem
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="nlp_from_scratch_index.html">
+                  NLP from Scratch
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../recipes_index.html">
-    Recipes
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="tensorboard_tutorial.html">
+                  Visualizing Models, Data, and Training with TensorBoard
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../unstable_index.html">
-    Unstable
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="#">
+                  A guide on good usage of non_blocking and pin_memory() in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="visualizing_gradients_tutorial.html">
+                  Visualizing Gradients
+                </a>
 </li>
 </ul>
-</nav></div>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../compilers_index.html">
+              Compilers
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-2">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torch_compile_tutorial.html">
+                  Introduction to torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torch_compile_full_example.html">
+                  torch.compile End-to-End Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="compiled_autograd_tutorial.html">
+                  Compiled Autograd: Capturing a larger backward graph for torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compiler_set_stance_tutorial.html">
+                  Dynamic Compilation Control with torch.compiler.set_stance
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="variable_length_attention_tutorial.html">
+                  Using Variable Length Attention in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torch_export_tutorial.html">
+                  torch.export Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/intro_onnx.html">
+                  Introduction to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/export_simple_model_to_onnx_tutorial.html">
+                  Export a PyTorch model to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/onnx_registry_tutorial.html">
+                  Extending the ONNX Exporter Operator Support
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/export_control_flow_model_to_onnx_tutorial.html">
+                  Export a model with control flow to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torch_compile_conv_bn_fuser.html">
+                  Building a Convolution/Batch Norm fuser with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="fx_profiling_tutorial.html">
+                  (beta) Building a Simple CPU Performance Profiler with FX
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../domains.html">
+              Domains
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-3">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torchvision_tutorial.html">
+                  TorchVision Object Detection Finetuning Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/transfer_learning_tutorial.html">
+                  Transfer Learning for Computer Vision Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/fgsm_tutorial.html">
+                  Adversarial Example Generation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/dcgan_faces_tutorial.html">
+                  DCGAN Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="spatial_transformer_tutorial.html">
+                  Spatial Transformer Networks Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="reinforcement_q_learning.html">
+                  Reinforcement Learning (DQN) Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="reinforcement_ppo.html">
+                  Reinforcement Learning (PPO) with TorchRL Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="mario_rl_tutorial.html">
+                  Train a Mario-playing RL Agent
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/pendulum.html">
+                  Pendulum: Writing your environment and transforms with TorchRL
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torchrec_intro_tutorial.html">
+                  Introduction to TorchRec
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/sharding.html">
+                  Exploring TorchRec sharding
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../distributed.html">
+              Distributed
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-4">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/dist_overview.html">
+                  PyTorch Distributed Overview
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/ddp_series_intro.html">
+                  Distributed Data Parallel in PyTorch - Video Tutorials
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="ddp_tutorial.html">
+                  Getting Started with Distributed Data Parallel
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="dist_tuto.html">
+                  Writing Distributed Applications with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="FSDP_tutorial.html">
+                  Getting Started with Fully Sharded Data Parallel (FSDP2)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="TCPStore_libuv_backend.html">
+                  Introduction to Libuv TCPStore Backend
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="TP_tutorial.html">
+                  Large Scale Transformer model training with Tensor Parallel (TP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="pipelining_tutorial.html">
+                  Introduction to Distributed Pipeline Parallelism
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="process_group_cpp_extension_tutorial.html">
+                  Customize Process Group Backends Using Cpp Extensions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="rpc_tutorial.html">
+                  Getting Started with Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="rpc_param_server_tutorial.html">
+                  Implementing a Parameter Server Using Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="rpc_async_execution.html">
+                  Implementing Batch RPC Processing Using Asynchronous Executions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="monarch_distributed_tutorial.html">
+                  Interactive Distributed Applications with Monarch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/rpc_ddp_tutorial.html">
+                  Combining Distributed DataParallel with Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/generic_join.html">
+                  Distributed Training with Uneven Inputs Using the Join Context Manager
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../deep-dive.html">
+              Deep Dive
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-5">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/profiler.html">
+                  Profiling your PyTorch Module
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="parametrizations.html">
+                  Parametrizations Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="pruning_tutorial.html">
+                  Pruning Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="scaled_dot_product_attention_tutorial.html">
+                  (Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/knowledge_distillation_tutorial.html">
+                  Knowledge Distillation Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="memory_format_tutorial.html">
+                  Channels Last Memory Format in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="forward_ad_usage.html">
+                  Forward-mode Automatic Differentiation (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="jacobians_hessians.html">
+                  Jacobians, Hessians, hvp, vhp, and more: composing function transforms
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="ensembling.html">
+                  Model ensembling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="per_sample_grads.html">
+                  Per-sample-gradients
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_frontend.html">
+                  Using the PyTorch C++ Frontend
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_autograd.html">
+                  Autograd in C++ Frontend
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../extension.html">
+              Extension
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-6">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/custom_ops_landing_page.html">
+                  PyTorch Custom Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/python_custom_ops.html">
+                  Custom Python Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_custom_ops.html">
+                  Custom C++ and CUDA Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="custom_function_double_backward_tutorial.html">
+                  Double Backward with Custom Functions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="custom_function_conv_bn_tutorial.html">
+                  Fusing Convolution and Batch Norm using Custom Function
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/dispatcher.html">
+                  Registering a Dispatched Operator in C++
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/extend_dispatcher.html">
+                  Extending dispatcher for a new backend in C++
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/privateuseone.html">
+                  Facilitating New Backend Integration by PrivateUse1
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../ecosystem.html">
+              Ecosystem
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-7">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/hyperparameter_tuning_tutorial.html">
+                  Hyperparameter tuning using Ray Tune
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="ax_multiobjective_nas_tutorial.html">
+                  Multi-Objective NAS with Ax
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="tensorboard_profiler_tutorial.html">
+                  PyTorch Profiler With TensorBoard
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="realtime_rpi.html">
+                  Real Time Inference on Raspberry Pi 4 and 5 (40 fps!)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/mosaic_memory_profiling_tutorial.html">
+                  Mosaic: Memory Profiling for PyTorch
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../recipes_index.html">
+              Recipes
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-8">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/defining_a_neural_network.html">
+                  Defining a Neural Network in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_logs.html">
+                  (beta) Using TORCH_LOGS python API with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/what_is_state_dict.html">
+                  What is a state_dict in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/warmstarting_model_using_parameters_from_a_different_model.html">
+                  Warmstarting model using parameters from a different model in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/zeroing_out_gradients.html">
+                  Zeroing out gradients in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/profiler_recipe.html">
+                  PyTorch Profiler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/Captum_Recipe.html">
+                  Model Interpretability using Captum
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/amp_recipe.html">
+                  Automatic Mixed Precision
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tuning_guide.html">
+                  Performance Tuning Guide
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/timer_quick_start.html">
+                  Timer quick start
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/zero_redundancy_optimizer.html">
+                  Shard Optimizer States with ZeroRedundancyOptimizer
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_comm_debug_mode.html">
+                  Getting Started with CommDebugMode
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/benchmark.html">
+                  SyntaxError
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/module_load_state_dict_tips.html">
+                  Tips for Loading an nn.Module from a Checkpoint
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/reasoning_about_shapes.html">
+                  Reasoning about Shapes in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/swap_tensors.html">
+                  Extension points in nn.Module for load_state_dict and tensor subclasses
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_torch_function_modes.html">
+                  (beta) Utilizing Torch Function modes with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/foreach_map.html">
+                  Explicit horizontal fusion with foreach_map and torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_configuration_tutorial.html">
+                  Compile Time Caching Configuration
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_aot.html">
+                  Reducing AoT cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/intel_neural_compressor_for_pytorch.html">
+                  Ease-of-use quantization for PyTorch with Intel® Neural Compressor
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_device_mesh.html">
+                  Getting Started with DeviceMesh
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_checkpoint_recipe.html">
+                  Getting Started with Distributed Checkpoint (DCP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_async_checkpoint_recipe.html">
+                  Asynchronous Saving with Distributed Checkpoint (DCP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/debug_mode_tutorial.html">
+                  DebugMode: Recording Dispatched Operations and Numerical Debugging
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../unstable_index.html">
+              Unstable
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-9">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/context_parallel.html">
+                  Introduction to Context Parallel
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/flight_recorder_tutorial.html">
+                  Flight Recorder for Debugging Stuck Jobs
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/inductor_cpp_wrapper_tutorial.html">
+                  TorchInductor C++ Wrapper Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/inductor_windows.html">
+                  How to use torch.compile on Windows CPU/XPU
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/vmap_recipe.html">
+                  torch.vmap
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/nestedtensor.html">
+                  Getting Started with Nested Tensors
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_overview.html">
+                  MaskedTensor Overview
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_sparsity.html">
+                  MaskedTensor Sparsity
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_advanced_semantics.html">
+                  MaskedTensor Advanced Semantics
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_adagrad.html">
+                  Efficiently writing “sparse” semantics for Adagrad with MaskedTensor
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/python_extension_autoload.html">
+                  Autoloading Out-of-Tree Extension
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/max_autotune_on_CPU_tutorial.html">
+                  Using Max-Autotune Compilation on CPU for Better Performance
+                </a>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
 </div>
 <div class="navbar-header-items__end">
+<div class="navbar-item"><!-- PyTorch.org site link - desktop only, two-line layout -->
+<!-- Note: The show_pytorch_org_link check is handled in layout.html's navbar_end block -->
+<a class="pytorch-site-link nav-link nav-external" data-bs-placement="bottom" data-bs-title="Go to PyTorch.org" data-bs-toggle="tooltip" href="https://pytorch.org">
+<span class="pytorch-site-link-text">
+<span>Go to</span>
+<span>pytorch.org <i class="fa-solid fa-arrow-up-right-from-square external-icon"></i></span>
+</span>
+</a></div>
 <div class="navbar-item">
 <form action="../search.html" class="bd-search d-flex align-items-center" method="get">
 <i class="fa-solid fa-magnifying-glass"></i>
@@ -630,59 +1136,754 @@ document.write(`
 <div class="bd-container__inner bd-page-width">
 <div class="bd-sidebar-primary bd-sidebar">
 <div class="sidebar-header-items sidebar-primary__section">
+<div class="sidebar-header-items__start">
+<div class="navbar-item">
+<a class="version" href="../index.html">v2.10.0+cu128</a>
+</div>
+</div>
 <div class="sidebar-header-items__center">
 <div class="navbar-item">
 <nav>
 <ul class="bd-navbar-elements navbar-nav">
-<li class="nav-item current active">
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
 <a class="nav-link nav-internal" href="../intro.html">
-    Intro
-  </a>
+              Intro
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-1">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/basics/intro.html">
+                  Learn the Basics
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../compilers_index.html">
-    Compilers
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/introyt/introyt_index.html">
+                  Introduction to PyTorch - YouTube Series
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../domains.html">
-    Domains
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/deep_learning_60min_blitz.html">
+                  Deep Learning with PyTorch: A 60 Minute Blitz
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../distributed.html">
-    Distributed
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/pytorch_with_examples.html">
+                  Learning PyTorch with Examples
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../deep-dive.html">
-    Deep Dive
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/nn_tutorial.html">
+                  What is torch.nn really?
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../extension.html">
-    Extension
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/understanding_leaf_vs_nonleaf_tutorial.html">
+                  Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../ecosystem.html">
-    Ecosystem
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="nlp_from_scratch_index.html">
+                  NLP from Scratch
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../recipes_index.html">
-    Recipes
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="tensorboard_tutorial.html">
+                  Visualizing Models, Data, and Training with TensorBoard
+                </a>
 </li>
-<li class="nav-item">
-<a class="nav-link nav-internal" href="../unstable_index.html">
-    Unstable
-  </a>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="#">
+                  A guide on good usage of non_blocking and pin_memory() in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="visualizing_gradients_tutorial.html">
+                  Visualizing Gradients
+                </a>
 </li>
 </ul>
-</nav></div>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../compilers_index.html">
+              Compilers
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-2">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torch_compile_tutorial.html">
+                  Introduction to torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torch_compile_full_example.html">
+                  torch.compile End-to-End Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="compiled_autograd_tutorial.html">
+                  Compiled Autograd: Capturing a larger backward graph for torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compiler_set_stance_tutorial.html">
+                  Dynamic Compilation Control with torch.compiler.set_stance
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="variable_length_attention_tutorial.html">
+                  Using Variable Length Attention in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torch_export_tutorial.html">
+                  torch.export Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/intro_onnx.html">
+                  Introduction to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/export_simple_model_to_onnx_tutorial.html">
+                  Export a PyTorch model to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/onnx_registry_tutorial.html">
+                  Extending the ONNX Exporter Operator Support
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/onnx/export_control_flow_model_to_onnx_tutorial.html">
+                  Export a model with control flow to ONNX
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torch_compile_conv_bn_fuser.html">
+                  Building a Convolution/Batch Norm fuser with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="fx_profiling_tutorial.html">
+                  (beta) Building a Simple CPU Performance Profiler with FX
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../domains.html">
+              Domains
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-3">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torchvision_tutorial.html">
+                  TorchVision Object Detection Finetuning Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/transfer_learning_tutorial.html">
+                  Transfer Learning for Computer Vision Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/fgsm_tutorial.html">
+                  Adversarial Example Generation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/dcgan_faces_tutorial.html">
+                  DCGAN Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="spatial_transformer_tutorial.html">
+                  Spatial Transformer Networks Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="reinforcement_q_learning.html">
+                  Reinforcement Learning (DQN) Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="reinforcement_ppo.html">
+                  Reinforcement Learning (PPO) with TorchRL Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="mario_rl_tutorial.html">
+                  Train a Mario-playing RL Agent
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/pendulum.html">
+                  Pendulum: Writing your environment and transforms with TorchRL
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="torchrec_intro_tutorial.html">
+                  Introduction to TorchRec
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/sharding.html">
+                  Exploring TorchRec sharding
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../distributed.html">
+              Distributed
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-4">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/dist_overview.html">
+                  PyTorch Distributed Overview
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/ddp_series_intro.html">
+                  Distributed Data Parallel in PyTorch - Video Tutorials
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="ddp_tutorial.html">
+                  Getting Started with Distributed Data Parallel
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="dist_tuto.html">
+                  Writing Distributed Applications with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="FSDP_tutorial.html">
+                  Getting Started with Fully Sharded Data Parallel (FSDP2)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="TCPStore_libuv_backend.html">
+                  Introduction to Libuv TCPStore Backend
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="TP_tutorial.html">
+                  Large Scale Transformer model training with Tensor Parallel (TP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="pipelining_tutorial.html">
+                  Introduction to Distributed Pipeline Parallelism
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="process_group_cpp_extension_tutorial.html">
+                  Customize Process Group Backends Using Cpp Extensions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="rpc_tutorial.html">
+                  Getting Started with Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="rpc_param_server_tutorial.html">
+                  Implementing a Parameter Server Using Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="rpc_async_execution.html">
+                  Implementing Batch RPC Processing Using Asynchronous Executions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="monarch_distributed_tutorial.html">
+                  Interactive Distributed Applications with Monarch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/rpc_ddp_tutorial.html">
+                  Combining Distributed DataParallel with Distributed RPC Framework
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/generic_join.html">
+                  Distributed Training with Uneven Inputs Using the Join Context Manager
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../deep-dive.html">
+              Deep Dive
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-5">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/profiler.html">
+                  Profiling your PyTorch Module
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="parametrizations.html">
+                  Parametrizations Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="pruning_tutorial.html">
+                  Pruning Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="inductor_debug_cpu.html">
+                  Inductor CPU backend debugging and profiling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="scaled_dot_product_attention_tutorial.html">
+                  (Beta) Implementing High-Performance Transformers with Scaled Dot Product Attention (SDPA)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/knowledge_distillation_tutorial.html">
+                  Knowledge Distillation Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="memory_format_tutorial.html">
+                  Channels Last Memory Format in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="forward_ad_usage.html">
+                  Forward-mode Automatic Differentiation (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="jacobians_hessians.html">
+                  Jacobians, Hessians, hvp, vhp, and more: composing function transforms
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="ensembling.html">
+                  Model ensembling
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="per_sample_grads.html">
+                  Per-sample-gradients
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_frontend.html">
+                  Using the PyTorch C++ Frontend
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_autograd.html">
+                  Autograd in C++ Frontend
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../extension.html">
+              Extension
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-6">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/custom_ops_landing_page.html">
+                  PyTorch Custom Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/python_custom_ops.html">
+                  Custom Python Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/cpp_custom_ops.html">
+                  Custom C++ and CUDA Operators
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="custom_function_double_backward_tutorial.html">
+                  Double Backward with Custom Functions
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="custom_function_conv_bn_tutorial.html">
+                  Fusing Convolution and Batch Norm using Custom Function
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/dispatcher.html">
+                  Registering a Dispatched Operator in C++
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/extend_dispatcher.html">
+                  Extending dispatcher for a new backend in C++
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../advanced/privateuseone.html">
+                  Facilitating New Backend Integration by PrivateUse1
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../ecosystem.html">
+              Ecosystem
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-7">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/hyperparameter_tuning_tutorial.html">
+                  Hyperparameter tuning using Ray Tune
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="ax_multiobjective_nas_tutorial.html">
+                  Multi-Objective NAS with Ax
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="tensorboard_profiler_tutorial.html">
+                  PyTorch Profiler With TensorBoard
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="realtime_rpi.html">
+                  Real Time Inference on Raspberry Pi 4 and 5 (40 fps!)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../beginner/mosaic_memory_profiling_tutorial.html">
+                  Mosaic: Memory Profiling for PyTorch
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../recipes_index.html">
+              Recipes
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-8">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/defining_a_neural_network.html">
+                  Defining a Neural Network in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_logs.html">
+                  (beta) Using TORCH_LOGS python API with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/what_is_state_dict.html">
+                  What is a state_dict in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/warmstarting_model_using_parameters_from_a_different_model.html">
+                  Warmstarting model using parameters from a different model in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/zeroing_out_gradients.html">
+                  Zeroing out gradients in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/profiler_recipe.html">
+                  PyTorch Profiler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/Captum_Recipe.html">
+                  Model Interpretability using Captum
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/amp_recipe.html">
+                  Automatic Mixed Precision
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tuning_guide.html">
+                  Performance Tuning Guide
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer.html">
+                  (beta) Compiling the optimizer with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/timer_quick_start.html">
+                  Timer quick start
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/zero_redundancy_optimizer.html">
+                  Shard Optimizer States with ZeroRedundancyOptimizer
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_comm_debug_mode.html">
+                  Getting Started with CommDebugMode
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_challenges_solutions.html">
+                  Demonstration of torch.export flow, common challenges and the solutions to address them
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/benchmark.html">
+                  SyntaxError
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/module_load_state_dict_tips.html">
+                  Tips for Loading an nn.Module from a Checkpoint
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/reasoning_about_shapes.html">
+                  Reasoning about Shapes in PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/swap_tensors.html">
+                  Extension points in nn.Module for load_state_dict and tensor subclasses
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_export_aoti_python.html">
+                  torch.export AOTInductor Tutorial for Python runtime (Beta)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/recipes/tensorboard_with_pytorch.html">
+                  How to use TensorBoard with PyTorch
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_torch_function_modes.html">
+                  (beta) Utilizing Torch Function modes with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/compiling_optimizer_lr_scheduler.html">
+                  (beta) Running the compiled optimizer with an LR Scheduler
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/foreach_map.html">
+                  Explicit horizontal fusion with foreach_map and torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_user_defined_triton_kernel_tutorial.html">
+                  Using User-Defined Triton Kernels with torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_tutorial.html">
+                  Compile Time Caching in torch.compile
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/torch_compile_caching_configuration_tutorial.html">
+                  Compile Time Caching Configuration
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_compilation.html">
+                  Reducing torch.compile cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/regional_aot.html">
+                  Reducing AoT cold start compilation time with regional compilation
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/intel_neural_compressor_for_pytorch.html">
+                  Ease-of-use quantization for PyTorch with Intel® Neural Compressor
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_device_mesh.html">
+                  Getting Started with DeviceMesh
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_checkpoint_recipe.html">
+                  Getting Started with Distributed Checkpoint (DCP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/distributed_async_checkpoint_recipe.html">
+                  Asynchronous Saving with Distributed Checkpoint (DCP)
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../recipes/debug_mode_tutorial.html">
+                  DebugMode: Recording Dispatched Operations and Numerical Debugging
+                </a>
+</li>
+</ul>
+</li>
+<li class="nav-item dropdown">
+<div class="nav-item-with-toggle">
+<a class="nav-link nav-internal" href="../unstable_index.html">
+              Unstable
+            </a>
+</div>
+<ul class="dropdown-menu" id="dropdown-9">
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/context_parallel.html">
+                  Introduction to Context Parallel
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/flight_recorder_tutorial.html">
+                  Flight Recorder for Debugging Stuck Jobs
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/inductor_cpp_wrapper_tutorial.html">
+                  TorchInductor C++ Wrapper Tutorial
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/inductor_windows.html">
+                  How to use torch.compile on Windows CPU/XPU
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/vmap_recipe.html">
+                  torch.vmap
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/nestedtensor.html">
+                  Getting Started with Nested Tensors
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_overview.html">
+                  MaskedTensor Overview
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_sparsity.html">
+                  MaskedTensor Sparsity
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_advanced_semantics.html">
+                  MaskedTensor Advanced Semantics
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/maskedtensor_adagrad.html">
+                  Efficiently writing “sparse” semantics for Adagrad with MaskedTensor
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/python_extension_autoload.html">
+                  Autoloading Out-of-Tree Extension
+                </a>
+</li>
+<li class="">
+<a class="nav-link dropdown-item nav-internal" href="../unstable/max_autotune_on_CPU_tutorial.html">
+                  Using Max-Autotune Compilation on CPU for Better Performance
+                </a>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
 </div>
 <div class="sidebar-header-items__end">
+<div class="navbar-item"><!-- PyTorch.org site link - desktop only, two-line layout -->
+<!-- Note: The show_pytorch_org_link check is handled in layout.html's navbar_end block -->
+<a class="pytorch-site-link nav-link nav-external" data-bs-placement="bottom" data-bs-title="Go to PyTorch.org" data-bs-toggle="tooltip" href="https://pytorch.org">
+<span class="pytorch-site-link-text">
+<span>Go to</span>
+<span>pytorch.org <i class="fa-solid fa-arrow-up-right-from-square external-icon"></i></span>
+</span>
+</a></div>
 <div class="navbar-item">
 <form action="../search.html" class="bd-search d-flex align-items-center" method="get">
 <i class="fa-solid fa-magnifying-glass"></i>
@@ -819,7 +2020,7 @@ document.write(`
 </div>
 </div>
 <div id="searchbox"></div>
-<article class="bd-article" id="pytorch-article">
+<div id="pytorch-article">
 <!-- Hidden breadcrumb schema for SEO only -->
 <div itemscope="" itemtype="https://schema.org/BreadcrumbList" style="display:none;">
 <div itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem">
@@ -829,17 +2030,17 @@ document.write(`
 </div>
 <div itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem">
 <meta content="A guide on good usage of &lt;code class=" docutils="" itemprop="name" literal="" notranslate"=""/><span class="pre">non_blocking</span> and <code class="docutils literal notranslate"><span class="pre">pin_memory()</span></code> in PyTorch"&gt;
-        <meta content="2" itemprop="position"/>
+      <meta content="2" itemprop="position"/>
 </div>
 </div>
 <script>
-      if ((window.location.href.indexOf("/unstable/") != -1) && (window.location.href.indexOf("/unstable/unstable_index") < 1)) {
-        var div = '<div class="prototype-banner"><i class="fa fa-flask" aria-hidden="true"></i> <strong>Unstable feature:</strong> Not typically available in binary distributions like PyPI. Early stage for feedback and testing.</div>'
-        document.addEventListener('DOMContentLoaded', function () {
-          document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div);
-        });
-      }
-    </script>
+    if ((window.location.href.indexOf("/unstable/") != -1) && (window.location.href.indexOf("/unstable/unstable_index") < 1)) {
+      var div = '<div class="prototype-banner"><i class="fa fa-flask" aria-hidden="true"></i> <strong>Unstable feature:</strong> Not typically available in binary distributions like PyPI. Early stage for feedback and testing.</div>'
+      document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById("pytorch-article").insertAdjacentHTML('afterBegin', div);
+      });
+    }
+  </script>
 <div class="pytorch-call-to-action-links">
 <div id="tutorial-type">intermediate/pinmem_nonblock</div>
 <a data-behavior="call-to-action-event" data-response="Run in Google Colab" id="colab-link" target="_blank">
@@ -1154,10 +2355,10 @@ constructors.</p>
 <span class="n">_</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="Device casting runtime (pin-memory)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_001.png" srcset="../_images/sphx_glr_pinmem_nonblock_001.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>pageable_tensor.to('cuda:0'):  0.3678 ms
-pinned_tensor.to('cuda:0'):  0.3141 ms
-pageable_tensor.pin_memory():  0.1086 ms
-pageable_tensor.pin_memory().to('cuda:0'):  0.4269 ms
+<img alt="Device casting runtime (pin-memory)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_001.png" srcset="../_images/sphx_glr_pinmem_nonblock_001.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>pageable_tensor.to('cuda:0'):  0.3681 ms
+pinned_tensor.to('cuda:0'):  0.3145 ms
+pageable_tensor.pin_memory():  0.1162 ms
+pageable_tensor.pin_memory().to('cuda:0'):  0.4363 ms
 </pre></div>
 </div>
 <p>We can observe that casting a pinned-memory tensor to GPU is indeed much faster than a pageable tensor, because under
@@ -1229,8 +2430,8 @@ experiment since we want to assess how fast it is to send multiple tensors to GP
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="Device casting runtime (non-blocking)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_002.png" srcset="../_images/sphx_glr_pinmem_nonblock_002.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>copy_to_device(*tensors):  16.6504 ms
-copy_to_device_nonblocking(*tensors):  11.4875 ms
+<img alt="Device casting runtime (non-blocking)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_002.png" srcset="../_images/sphx_glr_pinmem_nonblock_002.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>copy_to_device(*tensors):  16.7523 ms
+copy_to_device_nonblocking(*tensors):  12.0046 ms
 </pre></div>
 </div>
 <p>To get a better sense of what is happening here, let us profile these two functions:</p>
@@ -1252,14 +2453,14 @@ copy_to_device_nonblocking(*tensors):  11.4875 ms
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
                      Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
-                 aten::to         3.67%     759.601us       100.00%      20.684ms      20.684us          1000
-           aten::_to_copy        12.09%       2.501ms        96.33%      19.924ms      19.924us          1000
-      aten::empty_strided        20.14%       4.166ms        20.14%       4.166ms       4.166us          1000
-              aten::copy_        21.43%       4.432ms        64.09%      13.257ms      13.257us          1000
-          cudaMemcpyAsync        18.25%       3.774ms        18.25%       3.774ms       3.774us          1000
-    cudaStreamSynchronize        24.42%       5.051ms        24.42%       5.051ms       5.051us          1000
+                 aten::to         3.48%     725.470us       100.00%      20.829ms      20.829us          1000
+           aten::_to_copy        12.07%       2.515ms        96.52%      20.103ms      20.103us          1000
+      aten::empty_strided        20.07%       4.180ms        20.07%       4.180ms       4.180us          1000
+              aten::copy_        22.45%       4.676ms        64.37%      13.408ms      13.408us          1000
+          cudaMemcpyAsync        17.91%       3.731ms        17.91%       3.731ms       3.731us          1000
+    cudaStreamSynchronize        24.01%       5.001ms        24.01%       5.001ms       5.001us          1000
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
-Self CPU time total: 20.684ms
+Self CPU time total: 20.829ms
 
 Call to `to(device)` None
 </pre></div>
@@ -1275,14 +2476,14 @@ Call to `to(device)` None
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
                      Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
-                 aten::to         4.62%     699.256us        99.84%      15.105ms      15.105us          1000
-           aten::_to_copy        15.36%       2.325ms        95.22%      14.406ms      14.406us          1000
-      aten::empty_strided        25.47%       3.853ms        25.47%       3.853ms       3.853us          1000
-              aten::copy_        30.47%       4.611ms        54.39%       8.228ms       8.228us          1000
-          cudaMemcpyAsync        23.91%       3.618ms        23.91%       3.618ms       3.618us          1000
-    cudaDeviceSynchronize         0.16%      24.311us         0.16%      24.311us      24.311us             1
+                 aten::to         4.53%     721.822us        99.85%      15.898ms      15.898us          1000
+           aten::_to_copy        15.18%       2.417ms        95.32%      15.176ms      15.176us          1000
+      aten::empty_strided        25.53%       4.064ms        25.53%       4.064ms       4.064us          1000
+              aten::copy_        31.20%       4.968ms        54.61%       8.695ms       8.695us          1000
+          cudaMemcpyAsync        23.41%       3.728ms        23.41%       3.728ms       3.728us          1000
+    cudaDeviceSynchronize         0.15%      23.220us         0.15%      23.220us      23.220us             1
 -------------------------  ------------  ------------  ------------  ------------  ------------  ------------
-Self CPU time total: 15.129ms
+Self CPU time total: 15.921ms
 
 Call to `to(device, non_blocking=True)` None
 </pre></div>
@@ -1368,12 +2569,12 @@ somewhat large batches of large tensors:</p>
 <span class="n">_</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="Runtime (pin-mem and non-blocking)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_003.png" srcset="../_images/sphx_glr_pinmem_nonblock_003.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>copy_to_device(*tensors):  384.6747 ms
-copy_to_device_nonblocking(*tensors):  307.5825 ms
-copy_to_device(*tensors_pinned):  314.5431 ms
-copy_to_device_nonblocking(*tensors_pinned):  299.7393 ms
-pin_copy_to_device(*tensors):  551.8234 ms
-pin_copy_to_device_nonblocking(*tensors):  334.9971 ms
+<img alt="Runtime (pin-mem and non-blocking)" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_003.png" srcset="../_images/sphx_glr_pinmem_nonblock_003.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>copy_to_device(*tensors):  384.3999 ms
+copy_to_device_nonblocking(*tensors):  306.4849 ms
+copy_to_device(*tensors_pinned):  314.7969 ms
+copy_to_device_nonblocking(*tensors_pinned):  299.6911 ms
+pin_copy_to_device(*tensors):  552.5909 ms
+pin_copy_to_device_nonblocking(*tensors):  340.1701 ms
 </pre></div>
 </div>
 </section>
@@ -1545,10 +2746,10 @@ This approach can further accelerate data transfers, as demonstrated in the foll
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="Device casting runtime" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_004.png" srcset="../_images/sphx_glr_pinmem_nonblock_004.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>td.to('cuda:0', non_blocking=False):  388.0533 ms
-td.to('cuda:0'):  310.2830 ms
-td.to('cuda:0', non_blocking_pin=True, num_threads=0):  322.5969 ms
-td.to('cuda:0', non_blocking_pin=True, num_threads=4):  301.6174 ms
+<img alt="Device casting runtime" class="sphx-glr-single-img" src="../_images/sphx_glr_pinmem_nonblock_004.png" srcset="../_images/sphx_glr_pinmem_nonblock_004.png"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>td.to('cuda:0', non_blocking=False):  387.4433 ms
+td.to('cuda:0'):  308.7121 ms
+td.to('cuda:0', non_blocking_pin=True, num_threads=0):  313.6654 ms
+td.to('cuda:0', non_blocking_pin=True, num_threads=4):  301.3148 ms
 </pre></div>
 </div>
 <p>In this example, we are transferring many large tensors from the CPU to the GPU.
@@ -1625,7 +2826,7 @@ what was discussed in this tutorial, check the following references:</p>
 <li><p><a class="reference external" href="https://developer.nvidia.com/blog/how-optimize-data-transfers-cuda-cc/">How to Optimize Data Transfers in CUDA C/C++</a>;</p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tensordict/stable/index.html">tensordict doc</a> and <a class="reference external" href="https://github.com/pytorch/tensordict">repo</a>.</p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 0.971 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 1.079 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-pinmem-nonblock-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/6a760a243fcbf87fb3368be3d4d860ee/pinmem_nonblock.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">pinmem_nonblock.ipynb</span></code></a></p>
@@ -1640,7 +2841,7 @@ what was discussed in this tutorial, check the following references:</p>
 </section>
 </section>
 </article>
-</article>
+</div>
 <footer class="bd-footer-article">
 <div class="footer-article-items footer-article__inner">
 <div class="footer-article-item">
@@ -1740,12 +2941,15 @@ what was discussed in this tutorial, check the following references:</p>
 <div class="sidebar-secondary-item">
 <div class="sidebar-heading">PyTorch Libraries</div>
 <ul style="list-style-type: none; padding: 0; padding-bottom: 80px;">
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/ao" style="color: var(--pst-color-text-muted)">torchao</a></li>
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchrec" style="color: var(--pst-color-text-muted)">torchrec</a></li>
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchft" style="color: var(--pst-color-text-muted)">torchft</a></li>
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/torchcodec" style="color: var(--pst-color-text-muted)">TorchCodec</a></li>
-<li><a class="nav-link nav-external" href="https://docs.pytorch.org/vision" style="color: var(--pst-color-text-muted)">torchvision</a></li>
 <li><a class="nav-link nav-external" href="https://docs.pytorch.org/executorch" style="color: var(--pst-color-text-muted)">ExecuTorch</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/helion" style="color: var(--pst-color-text-muted)">Helion</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/ao" style="color: var(--pst-color-text-muted)">torchao</a></li>
+<li><a class="nav-link nav-external" href="https://github.com/pytorch/kineto" style="color: var(--pst-color-text-muted)">kineto</a></li>
+<li><a class="nav-link nav-external" href="https://github.com/pytorch/torchtitan" style="color: var(--pst-color-text-muted)">torchtitan</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/rl" style="color: var(--pst-color-text-muted)">TorchRL</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/vision" style="color: var(--pst-color-text-muted)">torchvision</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/audio" style="color: var(--pst-color-text-muted)">torchaudio</a></li>
+<li><a class="nav-link nav-external" href="https://docs.pytorch.org/tensordict" style="color: var(--pst-color-text-muted)">tensordict</a></li>
 <li><a class="nav-link nav-external" href="https://docs.pytorch.org/xla" style="color: var(--pst-color-text-muted)">PyTorch on XLA Devices</a></li>
 </ul>
 </div>
@@ -1887,9 +3091,9 @@ what was discussed in this tutorial, check the following references:</p>
        "@type": "Article",
        "name": "A guide on good usage of non_blocking and pin_memory() in PyTorch",
        "headline": "A guide on good usage of non_blocking and pin_memory() in PyTorch",
-       "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment. Discover tutorials, API references, and guides to help you build and deploy deep learning models efficiently.",
+       "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment.",
        "url": "/intermediate/pinmem_nonblock.html",
-       "articleBody": "Note Go to the end to download the full example code. A guide on good usage of non_blocking and pin_memory() in PyTorch# Author: Vincent Moens Introduction# Transferring data from the CPU to the GPU is fundamental in many PyTorch applications. It\u2019s crucial for users to understand the most effective tools and options available for moving data between devices. This tutorial examines two key methods for device-to-device data transfer in PyTorch: pin_memory() and to() with the non_blocking=True option. What you will learn# Optimizing the transfer of tensors from the CPU to the GPU can be achieved through asynchronous transfers and memory pinning. However, there are important considerations: Using tensor.pin_memory().to(device, non_blocking=True) can be up to twice as slow as a straightforward tensor.to(device). Generally, tensor.to(device, non_blocking=True) is an effective choice for enhancing transfer speed. While cpu_tensor.to(\"cuda\", non_blocking=True).mean() executes correctly, attempting cuda_tensor.to(\"cpu\", non_blocking=True).mean() will result in erroneous outputs. Preamble# The performance reported in this tutorial are conditioned on the system used to build the tutorial. Although the conclusions are applicable across different systems, the specific observations may vary slightly depending on the hardware available, especially on older hardware. The primary objective of this tutorial is to offer a theoretical framework for understanding CPU to GPU data transfers. However, any design decisions should be tailored to individual cases and guided by benchmarked throughput measurements, as well as the specific requirements of the task at hand. import torch assert torch.cuda.is_available(), \"A cuda device is required to run this tutorial\" This tutorial requires tensordict to be installed. If you don\u2019t have tensordict in your environment yet, install it by running the following command in a separate cell: # Install tensordict with the following command !pip3 install tensordict We start by outlining the theory surrounding these concepts, and then move to concrete test examples of the features. Background# Memory management basics# When one creates a CPU tensor in PyTorch, the content of this tensor needs to be placed in memory. The memory we talk about here is a rather complex concept worth looking at carefully. We distinguish two types of memory that are handled by the Memory Management Unit: the RAM (for simplicity) and the swap space on disk (which may or may not be the hard drive). Together, the available space in disk and RAM (physical memory) make up the virtual memory, which is an abstraction of the total resources available. In short, the virtual memory makes it so that the available space is larger than what can be found on RAM in isolation and creates the illusion that the main memory is larger than it actually is. In normal circumstances, a regular CPU tensor is pageable which means that it is divided in blocks called pages that can live anywhere in the virtual memory (both in RAM or on disk). As mentioned earlier, this has the advantage that the memory seems larger than what the main memory actually is. Typically, when a program accesses a page that is not in RAM, a \u201cpage fault\u201d occurs and the operating system (OS) then brings back this page into RAM (\u201cswap in\u201d or \u201cpage in\u201d). In turn, the OS may have to swap out (or \u201cpage out\u201d) another page to make room for the new page. In contrast to pageable memory, a pinned (or page-locked or non-pageable) memory is a type of memory that cannot be swapped out to disk. It allows for faster and more predictable access times, but has the downside that it is more limited than the pageable memory (aka the main memory). CUDA and (non-)pageable memory# To understand how CUDA copies a tensor from CPU to CUDA, let\u2019s consider the two scenarios above: If the memory is page-locked, the device can access the memory directly in the main memory. The memory addresses are well defined and functions that need to read these data can be significantly accelerated. If the memory is pageable, all the pages will have to be brought to the main memory before being sent to the GPU. This operation may take time and is less predictable than when executed on page-locked tensors. More precisely, when CUDA sends pageable data from CPU to GPU, it must first create a page-locked copy of that data before making the transfer. Asynchronous vs. Synchronous Operations with non_blocking=True (CUDA cudaMemcpyAsync)# When executing a copy from a host (such as, CPU) to a device (such as, GPU), the CUDA toolkit offers modalities to do these operations synchronously or asynchronously with respect to the host. In practice, when calling to(), PyTorch always makes a call to cudaMemcpyAsync. If non_blocking=False (default), a cudaStreamSynchronize will be called after each and every cudaMemcpyAsync, making the call to to() blocking in the main thread. If non_blocking=True, no synchronization is triggered, and the main thread on the host is not blocked. Therefore, from the host perspective, multiple tensors can be sent to the device simultaneously, as the thread does not need to wait for one transfer to be completed to initiate the other. Note In general, the transfer is blocking on the device side (even if it isn\u2019t on the host side): the copy on the device cannot occur while another operation is being executed. However, in some advanced scenarios, a copy and a kernel execution can be done simultaneously on the GPU side. As the following example will show, three requirements must be met to enable this: The device must have at least one free DMA (Direct Memory Access) engine. Modern GPU architectures such as Volterra, Tesla, or H100 devices have more than one DMA engine. The transfer must be done on a separate, non-default cuda stream. In PyTorch, cuda streams can be handles using Stream. The source data must be in pinned memory. We demonstrate this by running profiles on the following script. import contextlib from torch.cuda import Stream s = Stream() torch.manual_seed(42) t1_cpu_pinned = torch.randn(1024**2 * 5, pin_memory=True) t2_cpu_paged = torch.randn(1024**2 * 5, pin_memory=False) t3_cuda = torch.randn(1024**2 * 5, device=\"cuda:0\") assert torch.cuda.is_available() device = torch.device(\"cuda\", torch.cuda.current_device()) # The function we want to profile def inner(pinned: bool, streamed: bool): with torch.cuda.stream(s) if streamed else contextlib.nullcontext(): if pinned: t1_cuda = t1_cpu_pinned.to(device, non_blocking=True) else: t2_cuda = t2_cpu_paged.to(device, non_blocking=True) t_star_cuda_h2d_event = s.record_event() # This operation can be executed during the CPU to GPU copy if and only if the tensor is pinned and the copy is # done in the other stream t3_cuda_mul = t3_cuda * t3_cuda * t3_cuda t3_cuda_h2d_event = torch.cuda.current_stream().record_event() t_star_cuda_h2d_event.synchronize() t3_cuda_h2d_event.synchronize() # Our profiler: profiles the `inner` function and stores the results in a .json file def benchmark_with_profiler( pinned, streamed, ) -\u003e None: torch._C._profiler._set_cuda_sync_enabled_val(True) wait, warmup, active = 1, 1, 2 num_steps = wait + warmup + active rank = 0 with torch.profiler.profile( activities=[ torch.profiler.ProfilerActivity.CPU, torch.profiler.ProfilerActivity.CUDA, ], schedule=torch.profiler.schedule( wait=wait, warmup=warmup, active=active, repeat=1, skip_first=1 ), ) as prof: for step_idx in range(1, num_steps + 1): inner(streamed=streamed, pinned=pinned) if rank is None or rank == 0: prof.step() prof.export_chrome_trace(f\"trace_streamed{int(streamed)}_pinned{int(pinned)}.json\") Loading these profile traces in chrome (chrome://tracing) shows the following results: first, let\u2019s see what happens if both the arithmetic operation on t3_cuda is executed after the pageable tensor is sent to GPU in the main stream: benchmark_with_profiler(streamed=False, pinned=False) /usr/local/lib/python3.10/dist-packages/torch/profiler/profiler.py:217: UserWarning: Warning: Profiler clears events at the end of each cycle.Only events from the current cycle will be reported.To keep events across cycles, set acc_events=True. Using a pinned tensor doesn\u2019t change the trace much, both operations are still executed consecutively: benchmark_with_profiler(streamed=False, pinned=True) Sending a pageable tensor to GPU on a separate stream is also a blocking operation: benchmark_with_profiler(streamed=True, pinned=False) Only pinned tensors copies to GPU on a separate stream overlap with another cuda kernel executed on the main stream: benchmark_with_profiler(streamed=True, pinned=True) A PyTorch perspective# pin_memory()# PyTorch offers the possibility to create and send tensors to page-locked memory through the pin_memory() method and constructor arguments. CPU tensors on a machine where CUDA is initialized can be cast to pinned memory through the pin_memory() method. Importantly, pin_memory is blocking on the main thread of the host: it will wait for the tensor to be copied to page-locked memory before executing the next operation. New tensors can be directly created in pinned memory with functions like zeros(), ones() and other constructors. Let us check the speed of pinning memory and sending tensors to CUDA: import torch import gc from torch.utils.benchmark import Timer import matplotlib.pyplot as plt def timer(cmd): median = ( Timer(cmd, globals=globals()) .adaptive_autorange(min_run_time=1.0, max_run_time=20.0) .median * 1000 ) print(f\"{cmd}: {median: 4.4f} ms\") return median # A tensor in pageable memory pageable_tensor = torch.randn(1_000_000) # A tensor in page-locked (pinned) memory pinned_tensor = torch.randn(1_000_000, pin_memory=True) # Runtimes: pageable_to_device = timer(\"pageable_tensor.to(\u0027cuda:0\u0027)\") pinned_to_device = timer(\"pinned_tensor.to(\u0027cuda:0\u0027)\") pin_mem = timer(\"pageable_tensor.pin_memory()\") pin_mem_to_device = timer(\"pageable_tensor.pin_memory().to(\u0027cuda:0\u0027)\") # Ratios: r1 = pinned_to_device / pageable_to_device r2 = pin_mem_to_device / pageable_to_device # Create a figure with the results fig, ax = plt.subplots() xlabels = [0, 1, 2] bar_labels = [ \"pageable_tensor.to(device) (1x)\", f\"pinned_tensor.to(device) ({r1:4.2f}x)\", f\"pageable_tensor.pin_memory().to(device) ({r2:4.2f}x)\" f\"\\npin_memory()={100*pin_mem/pin_mem_to_device:.2f}% of runtime.\", ] values = [pageable_to_device, pinned_to_device, pin_mem_to_device] colors = [\"tab:blue\", \"tab:red\", \"tab:orange\"] ax.bar(xlabels, values, label=bar_labels, color=colors) ax.set_ylabel(\"Runtime (ms)\") ax.set_title(\"Device casting runtime (pin-memory)\") ax.set_xticks([]) ax.legend() plt.show() # Clear tensors del pageable_tensor, pinned_tensor _ = gc.collect() pageable_tensor.to(\u0027cuda:0\u0027): 0.3678 ms pinned_tensor.to(\u0027cuda:0\u0027): 0.3141 ms pageable_tensor.pin_memory(): 0.1086 ms pageable_tensor.pin_memory().to(\u0027cuda:0\u0027): 0.4269 ms We can observe that casting a pinned-memory tensor to GPU is indeed much faster than a pageable tensor, because under the hood, a pageable tensor must be copied to pinned memory before being sent to GPU. However, contrary to a somewhat common belief, calling pin_memory() on a pageable tensor before casting it to GPU should not bring any significant speed-up, on the contrary this call is usually slower than just executing the transfer. This makes sense, since we\u2019re actually asking Python to execute an operation that CUDA will perform anyway before copying the data from host to device. Note The PyTorch implementation of pin_memory which relies on creating a brand new storage in pinned memory through cudaHostAlloc could be, in rare cases, faster than transitioning data in chunks as cudaMemcpy does. Here too, the observation may vary depending on the available hardware, the size of the tensors being sent or the amount of available RAM. non_blocking=True# As mentioned earlier, many PyTorch operations have the option of being executed asynchronously with respect to the host through the non_blocking argument. Here, to account accurately of the benefits of using non_blocking, we will design a slightly more complex experiment since we want to assess how fast it is to send multiple tensors to GPU with and without calling non_blocking. # A simple loop that copies all tensors to cuda def copy_to_device(*tensors): result = [] for tensor in tensors: result.append(tensor.to(\"cuda:0\")) return result # A loop that copies all tensors to cuda asynchronously def copy_to_device_nonblocking(*tensors): result = [] for tensor in tensors: result.append(tensor.to(\"cuda:0\", non_blocking=True)) # We need to synchronize torch.cuda.synchronize() return result # Create a list of tensors tensors = [torch.randn(1000) for _ in range(1000)] to_device = timer(\"copy_to_device(*tensors)\") to_device_nonblocking = timer(\"copy_to_device_nonblocking(*tensors)\") # Ratio r1 = to_device_nonblocking / to_device # Plot the results fig, ax = plt.subplots() xlabels = [0, 1] bar_labels = [f\"to(device) (1x)\", f\"to(device, non_blocking=True) ({r1:4.2f}x)\"] colors = [\"tab:blue\", \"tab:red\"] values = [to_device, to_device_nonblocking] ax.bar(xlabels, values, label=bar_labels, color=colors) ax.set_ylabel(\"Runtime (ms)\") ax.set_title(\"Device casting runtime (non-blocking)\") ax.set_xticks([]) ax.legend() plt.show() copy_to_device(*tensors): 16.6504 ms copy_to_device_nonblocking(*tensors): 11.4875 ms To get a better sense of what is happening here, let us profile these two functions: from torch.profiler import profile, ProfilerActivity def profile_mem(cmd): with profile(activities=[ProfilerActivity.CPU]) as prof: exec(cmd) print(cmd) print(prof.key_averages().table(row_limit=10)) Let\u2019s see the call stack with a regular to(device) first: print(\"Call to `to(device)`\", profile_mem(\"copy_to_device(*tensors)\")) copy_to_device(*tensors) ------------------------- ------------ ------------ ------------ ------------ ------------ ------------ Name Self CPU % Self CPU CPU total % CPU total CPU time avg # of Calls ------------------------- ------------ ------------ ------------ ------------ ------------ ------------ aten::to 3.67% 759.601us 100.00% 20.684ms 20.684us 1000 aten::_to_copy 12.09% 2.501ms 96.33% 19.924ms 19.924us 1000 aten::empty_strided 20.14% 4.166ms 20.14% 4.166ms 4.166us 1000 aten::copy_ 21.43% 4.432ms 64.09% 13.257ms 13.257us 1000 cudaMemcpyAsync 18.25% 3.774ms 18.25% 3.774ms 3.774us 1000 cudaStreamSynchronize 24.42% 5.051ms 24.42% 5.051ms 5.051us 1000 ------------------------- ------------ ------------ ------------ ------------ ------------ ------------ Self CPU time total: 20.684ms Call to `to(device)` None and now the non_blocking version: print( \"Call to `to(device, non_blocking=True)`\", profile_mem(\"copy_to_device_nonblocking(*tensors)\"), ) copy_to_device_nonblocking(*tensors) ------------------------- ------------ ------------ ------------ ------------ ------------ ------------ Name Self CPU % Self CPU CPU total % CPU total CPU time avg # of Calls ------------------------- ------------ ------------ ------------ ------------ ------------ ------------ aten::to 4.62% 699.256us 99.84% 15.105ms 15.105us 1000 aten::_to_copy 15.36% 2.325ms 95.22% 14.406ms 14.406us 1000 aten::empty_strided 25.47% 3.853ms 25.47% 3.853ms 3.853us 1000 aten::copy_ 30.47% 4.611ms 54.39% 8.228ms 8.228us 1000 cudaMemcpyAsync 23.91% 3.618ms 23.91% 3.618ms 3.618us 1000 cudaDeviceSynchronize 0.16% 24.311us 0.16% 24.311us 24.311us 1 ------------------------- ------------ ------------ ------------ ------------ ------------ ------------ Self CPU time total: 15.129ms Call to `to(device, non_blocking=True)` None The results are without any doubt better when using non_blocking=True, as all transfers are initiated simultaneously on the host side and only one synchronization is done. The benefit will vary depending on the number and the size of the tensors as well as depending on the hardware being used. Note Interestingly, the blocking to(\"cuda\") actually performs the same asynchronous device casting operation (cudaMemcpyAsync) as the one with non_blocking=True with a synchronization point after each copy. Synergies# Now that we have made the point that data transfer of tensors already in pinned memory to GPU is faster than from pageable memory, and that we know that doing these transfers asynchronously is also faster than synchronously, we can benchmark combinations of these approaches. First, let\u2019s write a couple of new functions that will call pin_memory and to(device) on each tensor: def pin_copy_to_device(*tensors): result = [] for tensor in tensors: result.append(tensor.pin_memory().to(\"cuda:0\")) return result def pin_copy_to_device_nonblocking(*tensors): result = [] for tensor in tensors: result.append(tensor.pin_memory().to(\"cuda:0\", non_blocking=True)) # We need to synchronize torch.cuda.synchronize() return result The benefits of using pin_memory() are more pronounced for somewhat large batches of large tensors: tensors = [torch.randn(1_000_000) for _ in range(1000)] page_copy = timer(\"copy_to_device(*tensors)\") page_copy_nb = timer(\"copy_to_device_nonblocking(*tensors)\") tensors_pinned = [torch.randn(1_000_000, pin_memory=True) for _ in range(1000)] pinned_copy = timer(\"copy_to_device(*tensors_pinned)\") pinned_copy_nb = timer(\"copy_to_device_nonblocking(*tensors_pinned)\") pin_and_copy = timer(\"pin_copy_to_device(*tensors)\") pin_and_copy_nb = timer(\"pin_copy_to_device_nonblocking(*tensors)\") # Plot strategies = (\"pageable copy\", \"pinned copy\", \"pin and copy\") blocking = { \"blocking\": [page_copy, pinned_copy, pin_and_copy], \"non-blocking\": [page_copy_nb, pinned_copy_nb, pin_and_copy_nb], } x = torch.arange(3) width = 0.25 multiplier = 0 fig, ax = plt.subplots(layout=\"constrained\") for attribute, runtimes in blocking.items(): offset = width * multiplier rects = ax.bar(x + offset, runtimes, width, label=attribute) ax.bar_label(rects, padding=3, fmt=\"%.2f\") multiplier += 1 # Add some text for labels, title and custom x-axis tick labels, etc. ax.set_ylabel(\"Runtime (ms)\") ax.set_title(\"Runtime (pin-mem and non-blocking)\") ax.set_xticks([0, 1, 2]) ax.set_xticklabels(strategies) plt.setp(ax.get_xticklabels(), rotation=45, ha=\"right\", rotation_mode=\"anchor\") ax.legend(loc=\"upper left\", ncols=3) plt.show() del tensors, tensors_pinned _ = gc.collect() copy_to_device(*tensors): 384.6747 ms copy_to_device_nonblocking(*tensors): 307.5825 ms copy_to_device(*tensors_pinned): 314.5431 ms copy_to_device_nonblocking(*tensors_pinned): 299.7393 ms pin_copy_to_device(*tensors): 551.8234 ms pin_copy_to_device_nonblocking(*tensors): 334.9971 ms Other copy directions (GPU -\u003e CPU, CPU -\u003e MPS)# Until now, we have operated under the assumption that asynchronous copies from the CPU to the GPU are safe. This is generally true because CUDA automatically handles synchronization to ensure that the data being accessed is valid at read time __whenever the tensor is in pageable memory__. However, in other cases we cannot make the same assumption: when a tensor is placed in pinned memory, mutating the original copy after calling the host-to-device transfer may corrupt the data received on GPU. Similarly, when a transfer is achieved in the opposite direction, from GPU to CPU, or from any device that is not CPU or GPU to any device that is not a CUDA-handled GPU (such as, MPS), there is no guarantee that the data read on GPU is valid without explicit synchronization. In these scenarios, these transfers offer no assurance that the copy will be complete at the time of data access. Consequently, the data on the host might be incomplete or incorrect, effectively rendering it garbage. Let\u2019s first demonstrate this with a pinned-memory tensor: DELAY = 100000000 try: i = -1 for i in range(100): # Create a tensor in pin-memory cpu_tensor = torch.ones(1024, 1024, pin_memory=True) torch.cuda.synchronize() # Send the tensor to CUDA cuda_tensor = cpu_tensor.to(\"cuda\", non_blocking=True) torch.cuda._sleep(DELAY) # Corrupt the original tensor cpu_tensor.zero_() assert (cuda_tensor == 1).all() print(\"No test failed with non_blocking and pinned tensor\") except AssertionError: print(f\"{i}th test failed with non_blocking and pinned tensor. Skipping remaining tests\") 1th test failed with non_blocking and pinned tensor. Skipping remaining tests Using a pageable tensor always works: i = -1 for i in range(100): # Create a tensor in pageable memory cpu_tensor = torch.ones(1024, 1024) torch.cuda.synchronize() # Send the tensor to CUDA cuda_tensor = cpu_tensor.to(\"cuda\", non_blocking=True) torch.cuda._sleep(DELAY) # Corrupt the original tensor cpu_tensor.zero_() assert (cuda_tensor == 1).all() print(\"No test failed with non_blocking and pageable tensor\") No test failed with non_blocking and pageable tensor Now let\u2019s demonstrate that CUDA to CPU also fails to produce reliable outputs without synchronization: tensor = ( torch.arange(1, 1_000_000, dtype=torch.double, device=\"cuda\") .expand(100, 999999) .clone() ) torch.testing.assert_close( tensor.mean(), torch.tensor(500_000, dtype=torch.double, device=\"cuda\") ), tensor.mean() try: i = -1 for i in range(100): cpu_tensor = tensor.to(\"cpu\", non_blocking=True) torch.testing.assert_close( cpu_tensor.mean(), torch.tensor(500_000, dtype=torch.double) ) print(\"No test failed with non_blocking\") except AssertionError: print(f\"{i}th test failed with non_blocking. Skipping remaining tests\") try: i = -1 for i in range(100): cpu_tensor = tensor.to(\"cpu\", non_blocking=True) torch.cuda.synchronize() torch.testing.assert_close( cpu_tensor.mean(), torch.tensor(500_000, dtype=torch.double) ) print(\"No test failed with synchronize\") except AssertionError: print(f\"One test failed with synchronize: {i}th assertion!\") 0th test failed with non_blocking. Skipping remaining tests No test failed with synchronize Generally, asynchronous copies to a device are safe without explicit synchronization only when the target is a CUDA-enabled device and the original tensor is in pageable memory. In summary, copying data from CPU to GPU is safe when using non_blocking=True, but for any other direction, non_blocking=True can still be used but the user must make sure that a device synchronization is executed before the data is accessed. Practical recommendations# We can now wrap up some early recommendations based on our observations: In general, non_blocking=True will provide good throughput, regardless of whether the original tensor is or isn\u2019t in pinned memory. If the tensor is already in pinned memory, the transfer can be accelerated, but sending it to pin memory manually from python main thread is a blocking operation on the host, and hence will annihilate much of the benefit of using non_blocking=True (as CUDA does the pin_memory transfer anyway). One might now legitimately ask what use there is for the pin_memory() method. In the following section, we will explore further how this can be used to accelerate the data transfer even more. Additional considerations# PyTorch notoriously provides a DataLoader class whose constructor accepts a pin_memory argument. Considering our previous discussion on pin_memory, you might wonder how the DataLoader manages to accelerate data transfers if memory pinning is inherently blocking. The key lies in the DataLoader\u2019s use of a separate thread to handle the transfer of data from pageable to pinned memory, thus preventing any blockage in the main thread. To illustrate this, we will use the TensorDict primitive from the homonymous library. When invoking to(), the default behavior is to send tensors to the device asynchronously, followed by a single call to torch.device.synchronize() afterwards. Additionally, TensorDict.to() includes a non_blocking_pin option which initiates multiple threads to execute pin_memory() before proceeding with to to(device). This approach can further accelerate data transfers, as demonstrated in the following example. from tensordict import TensorDict import torch from torch.utils.benchmark import Timer import matplotlib.pyplot as plt # Create the dataset td = TensorDict({str(i): torch.randn(1_000_000) for i in range(1000)}) # Runtimes copy_blocking = timer(\"td.to(\u0027cuda:0\u0027, non_blocking=False)\") copy_non_blocking = timer(\"td.to(\u0027cuda:0\u0027)\") copy_pin_nb = timer(\"td.to(\u0027cuda:0\u0027, non_blocking_pin=True, num_threads=0)\") copy_pin_multithread_nb = timer(\"td.to(\u0027cuda:0\u0027, non_blocking_pin=True, num_threads=4)\") # Rations r1 = copy_non_blocking / copy_blocking r2 = copy_pin_nb / copy_blocking r3 = copy_pin_multithread_nb / copy_blocking # Figure fig, ax = plt.subplots() xlabels = [0, 1, 2, 3] bar_labels = [ \"Blocking copy (1x)\", f\"Non-blocking copy ({r1:4.2f}x)\", f\"Blocking pin, non-blocking copy ({r2:4.2f}x)\", f\"Non-blocking pin, non-blocking copy ({r3:4.2f}x)\", ] values = [copy_blocking, copy_non_blocking, copy_pin_nb, copy_pin_multithread_nb] colors = [\"tab:blue\", \"tab:red\", \"tab:orange\", \"tab:green\"] ax.bar(xlabels, values, label=bar_labels, color=colors) ax.set_ylabel(\"Runtime (ms)\") ax.set_title(\"Device casting runtime\") ax.set_xticks([]) ax.legend() plt.show() td.to(\u0027cuda:0\u0027, non_blocking=False): 388.0533 ms td.to(\u0027cuda:0\u0027): 310.2830 ms td.to(\u0027cuda:0\u0027, non_blocking_pin=True, num_threads=0): 322.5969 ms td.to(\u0027cuda:0\u0027, non_blocking_pin=True, num_threads=4): 301.6174 ms In this example, we are transferring many large tensors from the CPU to the GPU. This scenario is ideal for utilizing multithreaded pin_memory(), which can significantly enhance performance. However, if the tensors are small, the overhead associated with multithreading may outweigh the benefits. Similarly, if there are only a few tensors, the advantages of pinning tensors on separate threads become limited. As an additional note, while it might seem advantageous to create permanent buffers in pinned memory to shuttle tensors from pageable memory before transferring them to the GPU, this strategy does not necessarily expedite computation. The inherent bottleneck caused by copying data into pinned memory remains a limiting factor. Moreover, transferring data that resides on disk (whether in shared memory or files) to the GPU typically requires an intermediate step of copying the data into pinned memory (located in RAM). Utilizing non_blocking for large data transfers in this context can significantly increase RAM consumption, potentially leading to adverse effects. In practice, there is no one-size-fits-all solution. The effectiveness of using multithreaded pin_memory combined with non_blocking transfers depends on a variety of factors, including the specific system, operating system, hardware, and the nature of the tasks being executed. Here is a list of factors to check when trying to speed-up data transfers between CPU and GPU, or comparing throughput\u2019s across scenarios: Number of available cores How many CPU cores are available? Is the system shared with other users or processes that might compete for resources? Core utilization Are the CPU cores heavily utilized by other processes? Does the application perform other CPU-intensive tasks concurrently with data transfers? Memory utilization How much pageable and page-locked memory is currently being used? Is there sufficient free memory to allocate additional pinned memory without affecting system performance? Remember that nothing comes for free, for instance pin_memory will consume RAM and may impact other tasks. CUDA Device Capabilities Does the GPU support multiple DMA engines for concurrent data transfers? What are the specific capabilities and limitations of the CUDA device being used? Number of tensors to be sent How many tensors are transferred in a typical operation? Size of the tensors to be sent What is the size of the tensors being transferred? A few large tensors or many small tensors may not benefit from the same transfer program. System Architecture How is the system\u2019s architecture influencing data transfer speeds (for example, bus speeds, network latency)? Additionally, allocating a large number of tensors or sizable tensors in pinned memory can monopolize a substantial portion of RAM. This reduces the available memory for other critical operations, such as paging, which can negatively impact the overall performance of an algorithm. Conclusion# Throughout this tutorial, we have explored several critical factors that influence transfer speeds and memory management when sending tensors from the host to the device. We\u2019ve learned that using non_blocking=True generally accelerates data transfers, and that pin_memory() can also enhance performance if implemented correctly. However, these techniques require careful design and calibration to be effective. Remember that profiling your code and keeping an eye on the memory consumption are essential to optimize resource usage and achieve the best possible performance. Additional resources# If you are dealing with issues with memory copies when using CUDA devices or want to learn more about what was discussed in this tutorial, check the following references: CUDA toolkit memory management doc; CUDA pin-memory note; How to Optimize Data Transfers in CUDA C/C++; tensordict doc and repo. Total running time of the script: (1 minutes 0.971 seconds) Download Jupyter notebook: pinmem_nonblock.ipynb Download Python source code: pinmem_nonblock.py Download zipped: pinmem_nonblock.zip",
+       "articleBody": "Note Go to the end to download the full example code. A guide on good usage of non_blocking and pin_memory() in PyTorch# Author: Vincent Moens Introduction# Transferring data from the CPU to the GPU is fundamental in many PyTorch applications. It\u2019s crucial for users to understand the most effective tools and options available for moving data between devices. This tutorial examines two key methods for device-to-device data transfer in PyTorch: pin_memory() and to() with the non_blocking=True option. What you will learn# Optimizing the transfer of tensors from the CPU to the GPU can be achieved through asynchronous transfers and memory pinning. However, there are important considerations: Using tensor.pin_memory().to(device, non_blocking=True) can be up to twice as slow as a straightforward tensor.to(device). Generally, tensor.to(device, non_blocking=True) is an effective choice for enhancing transfer speed. While cpu_tensor.to(\"cuda\", non_blocking=True).mean() executes correctly, attempting cuda_tensor.to(\"cpu\", non_blocking=True).mean() will result in erroneous outputs. Preamble# The performance reported in this tutorial are conditioned on the system used to build the tutorial. Although the conclusions are applicable across different systems, the specific observations may vary slightly depending on the hardware available, especially on older hardware. The primary objective of this tutorial is to offer a theoretical framework for understanding CPU to GPU data transfers. However, any design decisions should be tailored to individual cases and guided by benchmarked throughput measurements, as well as the specific requirements of the task at hand. import torch assert torch.cuda.is_available(), \"A cuda device is required to run this tutorial\" This tutorial requires tensordict to be installed. If you don\u2019t have tensordict in your environment yet, install it by running the following command in a separate cell: # Install tensordict with the following command !pip3 install tensordict We start by outlining the theory surrounding these concepts, and then move to concrete test examples of the features. Background# Memory management basics# When one creates a CPU tensor in PyTorch, the content of this tensor needs to be placed in memory. The memory we talk about here is a rather complex concept worth looking at carefully. We distinguish two types of memory that are handled by the Memory Management Unit: the RAM (for simplicity) and the swap space on disk (which may or may not be the hard drive). Together, the available space in disk and RAM (physical memory) make up the virtual memory, which is an abstraction of the total resources available. In short, the virtual memory makes it so that the available space is larger than what can be found on RAM in isolation and creates the illusion that the main memory is larger than it actually is. In normal circumstances, a regular CPU tensor is pageable which means that it is divided in blocks called pages that can live anywhere in the virtual memory (both in RAM or on disk). As mentioned earlier, this has the advantage that the memory seems larger than what the main memory actually is. Typically, when a program accesses a page that is not in RAM, a \u201cpage fault\u201d occurs and the operating system (OS) then brings back this page into RAM (\u201cswap in\u201d or \u201cpage in\u201d). In turn, the OS may have to swap out (or \u201cpage out\u201d) another page to make room for the new page. In contrast to pageable memory, a pinned (or page-locked or non-pageable) memory is a type of memory that cannot be swapped out to disk. It allows for faster and more predictable access times, but has the downside that it is more limited than the pageable memory (aka the main memory). CUDA and (non-)pageable memory# To understand how CUDA copies a tensor from CPU to CUDA, let\u2019s consider the two scenarios above: If the memory is page-locked, the device can access the memory directly in the main memory. The memory addresses are well defined and functions that need to read these data can be significantly accelerated. If the memory is pageable, all the pages will have to be brought to the main memory before being sent to the GPU. This operation may take time and is less predictable than when executed on page-locked tensors. More precisely, when CUDA sends pageable data from CPU to GPU, it must first create a page-locked copy of that data before making the transfer. Asynchronous vs. Synchronous Operations with non_blocking=True (CUDA cudaMemcpyAsync)# When executing a copy from a host (such as, CPU) to a device (such as, GPU), the CUDA toolkit offers modalities to do these operations synchronously or asynchronously with respect to the host. In practice, when calling to(), PyTorch always makes a call to cudaMemcpyAsync. If non_blocking=False (default), a cudaStreamSynchronize will be called after each and every cudaMemcpyAsync, making the call to to() blocking in the main thread. If non_blocking=True, no synchronization is triggered, and the main thread on the host is not blocked. Therefore, from the host perspective, multiple tensors can be sent to the device simultaneously, as the thread does not need to wait for one transfer to be completed to initiate the other. Note In general, the transfer is blocking on the device side (even if it isn\u2019t on the host side): the copy on the device cannot occur while another operation is being executed. However, in some advanced scenarios, a copy and a kernel execution can be done simultaneously on the GPU side. As the following example will show, three requirements must be met to enable this: The device must have at least one free DMA (Direct Memory Access) engine. Modern GPU architectures such as Volterra, Tesla, or H100 devices have more than one DMA engine. The transfer must be done on a separate, non-default cuda stream. In PyTorch, cuda streams can be handles using Stream. The source data must be in pinned memory. We demonstrate this by running profiles on the following script. import contextlib from torch.cuda import Stream s = Stream() torch.manual_seed(42) t1_cpu_pinned = torch.randn(1024**2 * 5, pin_memory=True) t2_cpu_paged = torch.randn(1024**2 * 5, pin_memory=False) t3_cuda = torch.randn(1024**2 * 5, device=\"cuda:0\") assert torch.cuda.is_available() device = torch.device(\"cuda\", torch.cuda.current_device()) # The function we want to profile def inner(pinned: bool, streamed: bool): with torch.cuda.stream(s) if streamed else contextlib.nullcontext(): if pinned: t1_cuda = t1_cpu_pinned.to(device, non_blocking=True) else: t2_cuda = t2_cpu_paged.to(device, non_blocking=True) t_star_cuda_h2d_event = s.record_event() # This operation can be executed during the CPU to GPU copy if and only if the tensor is pinned and the copy is # done in the other stream t3_cuda_mul = t3_cuda * t3_cuda * t3_cuda t3_cuda_h2d_event = torch.cuda.current_stream().record_event() t_star_cuda_h2d_event.synchronize() t3_cuda_h2d_event.synchronize() # Our profiler: profiles the `inner` function and stores the results in a .json file def benchmark_with_profiler( pinned, streamed, ) -\u003e None: torch._C._profiler._set_cuda_sync_enabled_val(True) wait, warmup, active = 1, 1, 2 num_steps = wait + warmup + active rank = 0 with torch.profiler.profile( activities=[ torch.profiler.ProfilerActivity.CPU, torch.profiler.ProfilerActivity.CUDA, ], schedule=torch.profiler.schedule( wait=wait, warmup=warmup, active=active, repeat=1, skip_first=1 ), ) as prof: for step_idx in range(1, num_steps + 1): inner(streamed=streamed, pinned=pinned) if rank is None or rank == 0: prof.step() prof.export_chrome_trace(f\"trace_streamed{int(streamed)}_pinned{int(pinned)}.json\") Loading these profile traces in chrome (chrome://tracing) shows the following results: first, let\u2019s see what happens if both the arithmetic operation on t3_cuda is executed after the pageable tensor is sent to GPU in the main stream: benchmark_with_profiler(streamed=False, pinned=False) /usr/local/lib/python3.10/dist-packages/torch/profiler/profiler.py:217: UserWarning: Warning: Profiler clears events at the end of each cycle.Only events from the current cycle will be reported.To keep events across cycles, set acc_events=True. Using a pinned tensor doesn\u2019t change the trace much, both operations are still executed consecutively: benchmark_with_profiler(streamed=False, pinned=True) Sending a pageable tensor to GPU on a separate stream is also a blocking operation: benchmark_with_profiler(streamed=True, pinned=False) Only pinned tensors copies to GPU on a separate stream overlap with another cuda kernel executed on the main stream: benchmark_with_profiler(streamed=True, pinned=True) A PyTorch perspective# pin_memory()# PyTorch offers the possibility to create and send tensors to page-locked memory through the pin_memory() method and constructor arguments. CPU tensors on a machine where CUDA is initialized can be cast to pinned memory through the pin_memory() method. Importantly, pin_memory is blocking on the main thread of the host: it will wait for the tensor to be copied to page-locked memory before executing the next operation. New tensors can be directly created in pinned memory with functions like zeros(), ones() and other constructors. Let us check the speed of pinning memory and sending tensors to CUDA: import torch import gc from torch.utils.benchmark import Timer import matplotlib.pyplot as plt def timer(cmd): median = ( Timer(cmd, globals=globals()) .adaptive_autorange(min_run_time=1.0, max_run_time=20.0) .median * 1000 ) print(f\"{cmd}: {median: 4.4f} ms\") return median # A tensor in pageable memory pageable_tensor = torch.randn(1_000_000) # A tensor in page-locked (pinned) memory pinned_tensor = torch.randn(1_000_000, pin_memory=True) # Runtimes: pageable_to_device = timer(\"pageable_tensor.to(\u0027cuda:0\u0027)\") pinned_to_device = timer(\"pinned_tensor.to(\u0027cuda:0\u0027)\") pin_mem = timer(\"pageable_tensor.pin_memory()\") pin_mem_to_device = timer(\"pageable_tensor.pin_memory().to(\u0027cuda:0\u0027)\") # Ratios: r1 = pinned_to_device / pageable_to_device r2 = pin_mem_to_device / pageable_to_device # Create a figure with the results fig, ax = plt.subplots() xlabels = [0, 1, 2] bar_labels = [ \"pageable_tensor.to(device) (1x)\", f\"pinned_tensor.to(device) ({r1:4.2f}x)\", f\"pageable_tensor.pin_memory().to(device) ({r2:4.2f}x)\" f\"\\npin_memory()={100*pin_mem/pin_mem_to_device:.2f}% of runtime.\", ] values = [pageable_to_device, pinned_to_device, pin_mem_to_device] colors = [\"tab:blue\", \"tab:red\", \"tab:orange\"] ax.bar(xlabels, values, label=bar_labels, color=colors) ax.set_ylabel(\"Runtime (ms)\") ax.set_title(\"Device casting runtime (pin-memory)\") ax.set_xticks([]) ax.legend() plt.show() # Clear tensors del pageable_tensor, pinned_tensor _ = gc.collect() pageable_tensor.to(\u0027cuda:0\u0027): 0.3681 ms pinned_tensor.to(\u0027cuda:0\u0027): 0.3145 ms pageable_tensor.pin_memory(): 0.1162 ms pageable_tensor.pin_memory().to(\u0027cuda:0\u0027): 0.4363 ms We can observe that casting a pinned-memory tensor to GPU is indeed much faster than a pageable tensor, because under the hood, a pageable tensor must be copied to pinned memory before being sent to GPU. However, contrary to a somewhat common belief, calling pin_memory() on a pageable tensor before casting it to GPU should not bring any significant speed-up, on the contrary this call is usually slower than just executing the transfer. This makes sense, since we\u2019re actually asking Python to execute an operation that CUDA will perform anyway before copying the data from host to device. Note The PyTorch implementation of pin_memory which relies on creating a brand new storage in pinned memory through cudaHostAlloc could be, in rare cases, faster than transitioning data in chunks as cudaMemcpy does. Here too, the observation may vary depending on the available hardware, the size of the tensors being sent or the amount of available RAM. non_blocking=True# As mentioned earlier, many PyTorch operations have the option of being executed asynchronously with respect to the host through the non_blocking argument. Here, to account accurately of the benefits of using non_blocking, we will design a slightly more complex experiment since we want to assess how fast it is to send multiple tensors to GPU with and without calling non_blocking. # A simple loop that copies all tensors to cuda def copy_to_device(*tensors): result = [] for tensor in tensors: result.append(tensor.to(\"cuda:0\")) return result # A loop that copies all tensors to cuda asynchronously def copy_to_device_nonblocking(*tensors): result = [] for tensor in tensors: result.append(tensor.to(\"cuda:0\", non_blocking=True)) # We need to synchronize torch.cuda.synchronize() return result # Create a list of tensors tensors = [torch.randn(1000) for _ in range(1000)] to_device = timer(\"copy_to_device(*tensors)\") to_device_nonblocking = timer(\"copy_to_device_nonblocking(*tensors)\") # Ratio r1 = to_device_nonblocking / to_device # Plot the results fig, ax = plt.subplots() xlabels = [0, 1] bar_labels = [f\"to(device) (1x)\", f\"to(device, non_blocking=True) ({r1:4.2f}x)\"] colors = [\"tab:blue\", \"tab:red\"] values = [to_device, to_device_nonblocking] ax.bar(xlabels, values, label=bar_labels, color=colors) ax.set_ylabel(\"Runtime (ms)\") ax.set_title(\"Device casting runtime (non-blocking)\") ax.set_xticks([]) ax.legend() plt.show() copy_to_device(*tensors): 16.7523 ms copy_to_device_nonblocking(*tensors): 12.0046 ms To get a better sense of what is happening here, let us profile these two functions: from torch.profiler import profile, ProfilerActivity def profile_mem(cmd): with profile(activities=[ProfilerActivity.CPU]) as prof: exec(cmd) print(cmd) print(prof.key_averages().table(row_limit=10)) Let\u2019s see the call stack with a regular to(device) first: print(\"Call to `to(device)`\", profile_mem(\"copy_to_device(*tensors)\")) copy_to_device(*tensors) ------------------------- ------------ ------------ ------------ ------------ ------------ ------------ Name Self CPU % Self CPU CPU total % CPU total CPU time avg # of Calls ------------------------- ------------ ------------ ------------ ------------ ------------ ------------ aten::to 3.48% 725.470us 100.00% 20.829ms 20.829us 1000 aten::_to_copy 12.07% 2.515ms 96.52% 20.103ms 20.103us 1000 aten::empty_strided 20.07% 4.180ms 20.07% 4.180ms 4.180us 1000 aten::copy_ 22.45% 4.676ms 64.37% 13.408ms 13.408us 1000 cudaMemcpyAsync 17.91% 3.731ms 17.91% 3.731ms 3.731us 1000 cudaStreamSynchronize 24.01% 5.001ms 24.01% 5.001ms 5.001us 1000 ------------------------- ------------ ------------ ------------ ------------ ------------ ------------ Self CPU time total: 20.829ms Call to `to(device)` None and now the non_blocking version: print( \"Call to `to(device, non_blocking=True)`\", profile_mem(\"copy_to_device_nonblocking(*tensors)\"), ) copy_to_device_nonblocking(*tensors) ------------------------- ------------ ------------ ------------ ------------ ------------ ------------ Name Self CPU % Self CPU CPU total % CPU total CPU time avg # of Calls ------------------------- ------------ ------------ ------------ ------------ ------------ ------------ aten::to 4.53% 721.822us 99.85% 15.898ms 15.898us 1000 aten::_to_copy 15.18% 2.417ms 95.32% 15.176ms 15.176us 1000 aten::empty_strided 25.53% 4.064ms 25.53% 4.064ms 4.064us 1000 aten::copy_ 31.20% 4.968ms 54.61% 8.695ms 8.695us 1000 cudaMemcpyAsync 23.41% 3.728ms 23.41% 3.728ms 3.728us 1000 cudaDeviceSynchronize 0.15% 23.220us 0.15% 23.220us 23.220us 1 ------------------------- ------------ ------------ ------------ ------------ ------------ ------------ Self CPU time total: 15.921ms Call to `to(device, non_blocking=True)` None The results are without any doubt better when using non_blocking=True, as all transfers are initiated simultaneously on the host side and only one synchronization is done. The benefit will vary depending on the number and the size of the tensors as well as depending on the hardware being used. Note Interestingly, the blocking to(\"cuda\") actually performs the same asynchronous device casting operation (cudaMemcpyAsync) as the one with non_blocking=True with a synchronization point after each copy. Synergies# Now that we have made the point that data transfer of tensors already in pinned memory to GPU is faster than from pageable memory, and that we know that doing these transfers asynchronously is also faster than synchronously, we can benchmark combinations of these approaches. First, let\u2019s write a couple of new functions that will call pin_memory and to(device) on each tensor: def pin_copy_to_device(*tensors): result = [] for tensor in tensors: result.append(tensor.pin_memory().to(\"cuda:0\")) return result def pin_copy_to_device_nonblocking(*tensors): result = [] for tensor in tensors: result.append(tensor.pin_memory().to(\"cuda:0\", non_blocking=True)) # We need to synchronize torch.cuda.synchronize() return result The benefits of using pin_memory() are more pronounced for somewhat large batches of large tensors: tensors = [torch.randn(1_000_000) for _ in range(1000)] page_copy = timer(\"copy_to_device(*tensors)\") page_copy_nb = timer(\"copy_to_device_nonblocking(*tensors)\") tensors_pinned = [torch.randn(1_000_000, pin_memory=True) for _ in range(1000)] pinned_copy = timer(\"copy_to_device(*tensors_pinned)\") pinned_copy_nb = timer(\"copy_to_device_nonblocking(*tensors_pinned)\") pin_and_copy = timer(\"pin_copy_to_device(*tensors)\") pin_and_copy_nb = timer(\"pin_copy_to_device_nonblocking(*tensors)\") # Plot strategies = (\"pageable copy\", \"pinned copy\", \"pin and copy\") blocking = { \"blocking\": [page_copy, pinned_copy, pin_and_copy], \"non-blocking\": [page_copy_nb, pinned_copy_nb, pin_and_copy_nb], } x = torch.arange(3) width = 0.25 multiplier = 0 fig, ax = plt.subplots(layout=\"constrained\") for attribute, runtimes in blocking.items(): offset = width * multiplier rects = ax.bar(x + offset, runtimes, width, label=attribute) ax.bar_label(rects, padding=3, fmt=\"%.2f\") multiplier += 1 # Add some text for labels, title and custom x-axis tick labels, etc. ax.set_ylabel(\"Runtime (ms)\") ax.set_title(\"Runtime (pin-mem and non-blocking)\") ax.set_xticks([0, 1, 2]) ax.set_xticklabels(strategies) plt.setp(ax.get_xticklabels(), rotation=45, ha=\"right\", rotation_mode=\"anchor\") ax.legend(loc=\"upper left\", ncols=3) plt.show() del tensors, tensors_pinned _ = gc.collect() copy_to_device(*tensors): 384.3999 ms copy_to_device_nonblocking(*tensors): 306.4849 ms copy_to_device(*tensors_pinned): 314.7969 ms copy_to_device_nonblocking(*tensors_pinned): 299.6911 ms pin_copy_to_device(*tensors): 552.5909 ms pin_copy_to_device_nonblocking(*tensors): 340.1701 ms Other copy directions (GPU -\u003e CPU, CPU -\u003e MPS)# Until now, we have operated under the assumption that asynchronous copies from the CPU to the GPU are safe. This is generally true because CUDA automatically handles synchronization to ensure that the data being accessed is valid at read time __whenever the tensor is in pageable memory__. However, in other cases we cannot make the same assumption: when a tensor is placed in pinned memory, mutating the original copy after calling the host-to-device transfer may corrupt the data received on GPU. Similarly, when a transfer is achieved in the opposite direction, from GPU to CPU, or from any device that is not CPU or GPU to any device that is not a CUDA-handled GPU (such as, MPS), there is no guarantee that the data read on GPU is valid without explicit synchronization. In these scenarios, these transfers offer no assurance that the copy will be complete at the time of data access. Consequently, the data on the host might be incomplete or incorrect, effectively rendering it garbage. Let\u2019s first demonstrate this with a pinned-memory tensor: DELAY = 100000000 try: i = -1 for i in range(100): # Create a tensor in pin-memory cpu_tensor = torch.ones(1024, 1024, pin_memory=True) torch.cuda.synchronize() # Send the tensor to CUDA cuda_tensor = cpu_tensor.to(\"cuda\", non_blocking=True) torch.cuda._sleep(DELAY) # Corrupt the original tensor cpu_tensor.zero_() assert (cuda_tensor == 1).all() print(\"No test failed with non_blocking and pinned tensor\") except AssertionError: print(f\"{i}th test failed with non_blocking and pinned tensor. Skipping remaining tests\") 1th test failed with non_blocking and pinned tensor. Skipping remaining tests Using a pageable tensor always works: i = -1 for i in range(100): # Create a tensor in pageable memory cpu_tensor = torch.ones(1024, 1024) torch.cuda.synchronize() # Send the tensor to CUDA cuda_tensor = cpu_tensor.to(\"cuda\", non_blocking=True) torch.cuda._sleep(DELAY) # Corrupt the original tensor cpu_tensor.zero_() assert (cuda_tensor == 1).all() print(\"No test failed with non_blocking and pageable tensor\") No test failed with non_blocking and pageable tensor Now let\u2019s demonstrate that CUDA to CPU also fails to produce reliable outputs without synchronization: tensor = ( torch.arange(1, 1_000_000, dtype=torch.double, device=\"cuda\") .expand(100, 999999) .clone() ) torch.testing.assert_close( tensor.mean(), torch.tensor(500_000, dtype=torch.double, device=\"cuda\") ), tensor.mean() try: i = -1 for i in range(100): cpu_tensor = tensor.to(\"cpu\", non_blocking=True) torch.testing.assert_close( cpu_tensor.mean(), torch.tensor(500_000, dtype=torch.double) ) print(\"No test failed with non_blocking\") except AssertionError: print(f\"{i}th test failed with non_blocking. Skipping remaining tests\") try: i = -1 for i in range(100): cpu_tensor = tensor.to(\"cpu\", non_blocking=True) torch.cuda.synchronize() torch.testing.assert_close( cpu_tensor.mean(), torch.tensor(500_000, dtype=torch.double) ) print(\"No test failed with synchronize\") except AssertionError: print(f\"One test failed with synchronize: {i}th assertion!\") 0th test failed with non_blocking. Skipping remaining tests No test failed with synchronize Generally, asynchronous copies to a device are safe without explicit synchronization only when the target is a CUDA-enabled device and the original tensor is in pageable memory. In summary, copying data from CPU to GPU is safe when using non_blocking=True, but for any other direction, non_blocking=True can still be used but the user must make sure that a device synchronization is executed before the data is accessed. Practical recommendations# We can now wrap up some early recommendations based on our observations: In general, non_blocking=True will provide good throughput, regardless of whether the original tensor is or isn\u2019t in pinned memory. If the tensor is already in pinned memory, the transfer can be accelerated, but sending it to pin memory manually from python main thread is a blocking operation on the host, and hence will annihilate much of the benefit of using non_blocking=True (as CUDA does the pin_memory transfer anyway). One might now legitimately ask what use there is for the pin_memory() method. In the following section, we will explore further how this can be used to accelerate the data transfer even more. Additional considerations# PyTorch notoriously provides a DataLoader class whose constructor accepts a pin_memory argument. Considering our previous discussion on pin_memory, you might wonder how the DataLoader manages to accelerate data transfers if memory pinning is inherently blocking. The key lies in the DataLoader\u2019s use of a separate thread to handle the transfer of data from pageable to pinned memory, thus preventing any blockage in the main thread. To illustrate this, we will use the TensorDict primitive from the homonymous library. When invoking to(), the default behavior is to send tensors to the device asynchronously, followed by a single call to torch.device.synchronize() afterwards. Additionally, TensorDict.to() includes a non_blocking_pin option which initiates multiple threads to execute pin_memory() before proceeding with to to(device). This approach can further accelerate data transfers, as demonstrated in the following example. from tensordict import TensorDict import torch from torch.utils.benchmark import Timer import matplotlib.pyplot as plt # Create the dataset td = TensorDict({str(i): torch.randn(1_000_000) for i in range(1000)}) # Runtimes copy_blocking = timer(\"td.to(\u0027cuda:0\u0027, non_blocking=False)\") copy_non_blocking = timer(\"td.to(\u0027cuda:0\u0027)\") copy_pin_nb = timer(\"td.to(\u0027cuda:0\u0027, non_blocking_pin=True, num_threads=0)\") copy_pin_multithread_nb = timer(\"td.to(\u0027cuda:0\u0027, non_blocking_pin=True, num_threads=4)\") # Rations r1 = copy_non_blocking / copy_blocking r2 = copy_pin_nb / copy_blocking r3 = copy_pin_multithread_nb / copy_blocking # Figure fig, ax = plt.subplots() xlabels = [0, 1, 2, 3] bar_labels = [ \"Blocking copy (1x)\", f\"Non-blocking copy ({r1:4.2f}x)\", f\"Blocking pin, non-blocking copy ({r2:4.2f}x)\", f\"Non-blocking pin, non-blocking copy ({r3:4.2f}x)\", ] values = [copy_blocking, copy_non_blocking, copy_pin_nb, copy_pin_multithread_nb] colors = [\"tab:blue\", \"tab:red\", \"tab:orange\", \"tab:green\"] ax.bar(xlabels, values, label=bar_labels, color=colors) ax.set_ylabel(\"Runtime (ms)\") ax.set_title(\"Device casting runtime\") ax.set_xticks([]) ax.legend() plt.show() td.to(\u0027cuda:0\u0027, non_blocking=False): 387.4433 ms td.to(\u0027cuda:0\u0027): 308.7121 ms td.to(\u0027cuda:0\u0027, non_blocking_pin=True, num_threads=0): 313.6654 ms td.to(\u0027cuda:0\u0027, non_blocking_pin=True, num_threads=4): 301.3148 ms In this example, we are transferring many large tensors from the CPU to the GPU. This scenario is ideal for utilizing multithreaded pin_memory(), which can significantly enhance performance. However, if the tensors are small, the overhead associated with multithreading may outweigh the benefits. Similarly, if there are only a few tensors, the advantages of pinning tensors on separate threads become limited. As an additional note, while it might seem advantageous to create permanent buffers in pinned memory to shuttle tensors from pageable memory before transferring them to the GPU, this strategy does not necessarily expedite computation. The inherent bottleneck caused by copying data into pinned memory remains a limiting factor. Moreover, transferring data that resides on disk (whether in shared memory or files) to the GPU typically requires an intermediate step of copying the data into pinned memory (located in RAM). Utilizing non_blocking for large data transfers in this context can significantly increase RAM consumption, potentially leading to adverse effects. In practice, there is no one-size-fits-all solution. The effectiveness of using multithreaded pin_memory combined with non_blocking transfers depends on a variety of factors, including the specific system, operating system, hardware, and the nature of the tasks being executed. Here is a list of factors to check when trying to speed-up data transfers between CPU and GPU, or comparing throughput\u2019s across scenarios: Number of available cores How many CPU cores are available? Is the system shared with other users or processes that might compete for resources? Core utilization Are the CPU cores heavily utilized by other processes? Does the application perform other CPU-intensive tasks concurrently with data transfers? Memory utilization How much pageable and page-locked memory is currently being used? Is there sufficient free memory to allocate additional pinned memory without affecting system performance? Remember that nothing comes for free, for instance pin_memory will consume RAM and may impact other tasks. CUDA Device Capabilities Does the GPU support multiple DMA engines for concurrent data transfers? What are the specific capabilities and limitations of the CUDA device being used? Number of tensors to be sent How many tensors are transferred in a typical operation? Size of the tensors to be sent What is the size of the tensors being transferred? A few large tensors or many small tensors may not benefit from the same transfer program. System Architecture How is the system\u2019s architecture influencing data transfer speeds (for example, bus speeds, network latency)? Additionally, allocating a large number of tensors or sizable tensors in pinned memory can monopolize a substantial portion of RAM. This reduces the available memory for other critical operations, such as paging, which can negatively impact the overall performance of an algorithm. Conclusion# Throughout this tutorial, we have explored several critical factors that influence transfer speeds and memory management when sending tensors from the host to the device. We\u2019ve learned that using non_blocking=True generally accelerates data transfers, and that pin_memory() can also enhance performance if implemented correctly. However, these techniques require careful design and calibration to be effective. Remember that profiling your code and keeping an eye on the memory consumption are essential to optimize resource usage and achieve the best possible performance. Additional resources# If you are dealing with issues with memory copies when using CUDA devices or want to learn more about what was discussed in this tutorial, check the following references: CUDA toolkit memory management doc; CUDA pin-memory note; How to Optimize Data Transfers in CUDA C/C++; tensordict doc and repo. Total running time of the script: (1 minutes 1.079 seconds) Download Jupyter notebook: pinmem_nonblock.ipynb Download Python source code: pinmem_nonblock.py Download zipped: pinmem_nonblock.zip",
        "author": {
          "@type": "Organization",
          "name": "PyTorch Contributors",

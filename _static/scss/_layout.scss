@@ -5,6 +5,8 @@
 .bd-header {
   top: var(--header-height-desktop) !important;
   position: sticky !important;
+  padding-left: 2rem;
+  padding-right: 2rem;
 
   @media (max-width: 1200px) {
     top: var(--header-height) !important;
@@ -12,17 +14,103 @@
 
   @media (max-width: 960px) {
     top: var(--header-height) !important;
+    padding-left: 0.1rem;
+    padding-right: 0.1rem;
+  }
+}
+
+// Main content width - make it use full available width
+// On wide screens (2400px+), limit width to center content together
+.bd-page-width {
+  max-width: 100% !important;
+
+  @media (min-width: 1800px) {
+    max-width: 1800px !important;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+// Make navbar items more compact on screens under 1700px to prevent wrapping
+// This applies to the horizontal navbar in .bd-header (Home, Install PyTorch, etc.)
+@media (max-width: 1699.98px) and (min-width: 1500px) {
+  .bd-header {
+    .navbar-header-items__center {
+      .navbar-item {
+        // Reduce spacing between navbar items
+        .nav-link {
+          padding-left: 0.4rem;
+          padding-right: 0.4rem;
+          font-size: 0.85rem;
+        }
+      }
+
+      // Also apply to the "More" toggle
+      .nav-item .more-toggle {
+        padding-left: 0.4rem;
+        padding-right: 0.4rem;
+        font-size: 0.85rem;
+      }
+    }
+  }
+}
+
+// Even more compact for smaller screens (1500px and below)
+@media (max-width: 1499.98px) and (min-width: 1410px) {
+  .bd-header {
+    .navbar-header-items__center {
+      .navbar-item {
+        .nav-link {
+          padding-left: 0.3rem;
+          padding-right: 0.3rem;
+          font-size: 0.8rem;
+        }
+      }
+
+      // Also apply to the "More" toggle
+      .nav-item .more-toggle {
+        padding-left: 0.3rem;
+        padding-right: 0.3rem;
+        font-size: 0.8rem;
+      }
+    }
+  }
+}
+
+// More compact for 1410px and below
+@media (max-width: 1409.98px) and (min-width: 960px) {
+  .bd-header {
+    .navbar-header-items__center {
+      .navbar-item {
+        .nav-link {
+          padding-left: 0.15rem;
+          padding-right: 0.15rem;
+          font-size: 0.72rem;
+          letter-spacing: -0.02em;
+        }
+      }
+
+      // Also apply to the "More" toggle
+      .nav-item .more-toggle {
+        padding-left: 0.15rem;
+        padding-right: 0.15rem;
+        font-size: 0.72rem;
+        letter-spacing: -0.02em;
+      }
+    }
   }
 }
 
 .bd-main .bd-content .bd-article-container {
-  padding-left: 1rem !important;
-  padding-right: 0.1rem !important;
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+  max-width: 100% !important;
 }
 
 .bd-main .bd-content .bd-article-container .bd-article {
   padding-left: 0 !important;
   padding-top: 1rem !important;
+  padding-right: 1rem !important;
 }
 
 // Hide Home button on mobile
@@ -126,17 +214,59 @@ body.search-page {
 }
 
 // Ensure search results don't have restricted height
+// Only apply fixed positioning on desktop - mobile uses Bootstrap offcanvas
 .bd-sidebar-primary, .bd-sidebar-secondary {
-  height: calc(100vh - var(--header-height-desktop) - 60px) !important;
-  top: calc(var(--header-height-desktop) + 60px) !important;
+  @media (min-width: 960px) {
+    height: calc(100vh - var(--header-height-desktop) - 60px) !important;
+    top: calc(var(--header-height-desktop) + 60px) !important;
+    overflow-y: auto;
+  }
 
-  @media (max-width: 1200px) {
+  @media (max-width: 1200px) and (min-width: 960px) {
     height: calc(100vh - var(--header-height) - 60px) !important;
     top: calc(var(--header-height) + 60px) !important;
   }
+}
 
-  @media (max-width: 767px) {
-    max-height: none !important;
+// Mobile sidebar - ensure Bootstrap offcanvas works correctly
+// pydata_sphinx_theme uses Bootstrap offcanvas which handles positioning via transforms
+@media (max-width: 959.98px) {
+  .bd-sidebar-primary,
+  .bd-sidebar-secondary {
+    // Let pydata_sphinx_theme/Bootstrap handle the offcanvas positioning
+    // Ensure sidebar is above the overlay (overlay is typically z-index 1040)
+    z-index: 1050 !important;
+    overflow-y: auto !important;
+    background-color: var(--pst-color-background) !important; // Ensure solid background
+  }
+
+  // Keep the backdrop/overlay but don't let it cover the sidebar
+  .offcanvas-backdrop,
+  label.overlay,
+  .overlay-primary {
+    z-index: 1040 !important; // Below the sidebar (1050)
+  }
+}
+
+// Right sidebar border - apply to the inner content wrapper instead of individual items
+// This creates a continuous border that spans all sidebar-secondary-items
+.bd-sidebar-secondary {
+  .sidebar-secondary-items {
+    border-left: 1px solid var(--pst-color-border);
+    padding-left: 1rem;
+    margin-top: 0.5rem; // Add spacing from the top (horizontal bar)
+
+    @media (max-width: 1199.98px) {
+      border-left: none;
+      padding-left: 0;
+      margin-top: 0;
+    }
+  }
+
+  // Remove border from individual sidebar-secondary-items to avoid gaps
+  .sidebar-secondary-item {
+    border-left: none !important;
+    padding-left: 0 !important;
   }
 }
 
@@ -191,4 +321,18 @@ div.cell > div.cell_input {
 
 .cell_output .output.stderr {
   border: none;
+}
+
+// PR #215/#224: Hide sidebar when empty (no navigation items)
+// CSS-only approach - hides sidebar when there are no list items in the navigation
+// Only apply on desktop - on mobile, sidebar is controlled by offcanvas
+@media (min-width: 960px) {
+  .bd-sidebar-primary:not(:has(.bd-docs-nav li)) {
+    display: none !important;
+  }
+
+  // Adjust main content padding when sidebar is hidden (desktop only)
+  .bd-sidebar-primary:not(:has(.bd-docs-nav li)) + .bd-main .bd-content .bd-article-container {
+    padding-left: 8rem !important;
+  }
 }
