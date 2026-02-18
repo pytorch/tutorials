@@ -159,7 +159,6 @@ html_meta = {
 }
 
 
-
 # -- Sphinx-gallery configuration --------------------------------------------
 
 sphinx_gallery_conf = {
@@ -232,10 +231,11 @@ html_theme_options = {
     ],
     "use_edit_page_button": True,
     "header_links_before_dropdown": 9,
-    "navbar_start": ["pytorch_version"],
+    "navbar_start": ["navbar-logo", "pytorch_version"],
     "navbar_center": "navbar-nav",
     "display_version": True,
     "pytorch_project": "tutorials",
+    "llm_disabled": False,
     "canonical_url": "https://docs.pytorch.org/tutorials/",
 }
 
@@ -251,7 +251,7 @@ html_context = {
     "github_version": "main",
     "doc_path": ".",
     "library_links": theme_variables.get("library_links", []),
-    #"pytorch_project": "tutorials",
+    # "pytorch_project": "tutorials",
 }
 
 
