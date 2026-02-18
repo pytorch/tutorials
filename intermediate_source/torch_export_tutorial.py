@@ -16,7 +16,7 @@ torch.export Tutorial
 # :func:`torch.export` is the PyTorch 2.X way to export PyTorch models into
 # standardized model representations, intended
 # to be run on different (i.e. Python-less) environments. The official
-# documentation can be found `here <https://pytorch.org/docs/main/export.html>`__.
+# documentation can be found `here <https://docs.pytorch.org/docs/main/export.html>`__.
 #
 # In this tutorial, you will learn how to use :func:`torch.export` to extract
 # ``ExportedProgram``'s (i.e. single-graph representations) from PyTorch programs.
@@ -79,7 +79,7 @@ print(exported_mod.module()(torch.randn(8, 100), torch.randn(8, 100)))
 ######################################################################
 # Let's review some attributes of ``ExportedProgram`` that are of interest.
 #
-# The ``graph`` attribute is an `FX graph <https://pytorch.org/docs/stable/fx.html#torch.fx.Graph>`__
+# The ``graph`` attribute is an `FX graph <https://docs.pytorch.org/docs/stable/fx.html#torch.fx.Graph>`__
 # traced from the function we exported, that is, the computation graph of all PyTorch operations.
 # The FX graph is in "ATen IR" meaning that it contains only "ATen-level" operations.
 #
@@ -92,7 +92,7 @@ print(exported_mod.module()(torch.randn(8, 100), torch.randn(8, 100)))
 print(exported_mod)
 
 ######################################################################
-# See the ``torch.export`` `documentation <https://pytorch.org/docs/main/export.html#torch.export.export>`__
+# See the ``torch.export`` `documentation <https://docs.pytorch.org/docs/main/export.html#torch.export.export>`__
 # for more details.
 
 ######################################################################
@@ -220,7 +220,7 @@ print(exported_bad1_fixed.module()(-torch.ones(3, 3)))
 # - Branch functions cannot access closure variables, except for ``self`` if the function is
 #   defined in the scope of a method.
 #
-# For more details about ``cond``, check out the `cond documentation <https://pytorch.org/docs/main/cond.html>`__.
+# For more details about ``cond``, check out the `cond documentation <https://docs.pytorch.org/docs/main/cond.html>`__.
 
 ######################################################################
 # We can also use ``map``, which applies a function across the first dimension
@@ -308,7 +308,7 @@ ep = export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
 ######################################################################
 # Before we look at the program that's produced, let's understand what specifying ``dynamic_shapes`` entails,
 # and how that interacts with export. For every input dimension where a ``Dim`` object is specified, a symbol is
-# `allocated <https://pytorch.org/docs/main/export.programming_model.html#basics-of-symbolic-shapes>`_,
+# `allocated <https://docs.pytorch.org/docs/main/user_guide/torch_compiler/export/programming_model.html#basics-of-symbolic-shapes>`_,
 # taking on a range of ``[2, inf]`` (why not ``[0, inf]`` or ``[1, inf]``? we'll explain later in the
 # 0/1 specialization section).
 #
@@ -605,7 +605,7 @@ dynamic_shapes = {
 # How are these values represented in the exported program? In the `Constraints/Dynamic Shapes <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html#constraints-dynamic-shapes>`_
 # section, we talked about allocating symbols to represent dynamic input dimensions.
 # The same happens here: we allocate symbols for every data-dependent value that appears in the program. The important distinction is that these are "unbacked" symbols,
-# in contrast to the "backed" symbols allocated for input dimensions. The `"backed/unbacked" <https://pytorch.org/docs/main/export.programming_model.html#basics-of-symbolic-shapes>`_
+# in contrast to the "backed" symbols allocated for input dimensions. The `"backed/unbacked" <https://docs.pytorch.org/docs/main/user_guide/torch_compiler/export/programming_model.html#basics-of-symbolic-shapes>`_
 # nomenclature refers to the presence/absence of a "hint" for the symbol: a concrete value backing the symbol, that can inform the compiler on how to proceed.
 #
 # In the input shape symbol case (backed symbols), these hints are simply the sample input shapes provided, which explains why control-flow branching is determined by the sample input properties.
@@ -637,7 +637,7 @@ print(ep)
 # ^^^^^^^^^^^^^^^^^^^^^^
 #
 # But the case above is easy to export, because the concrete values of these symbols aren't used in any compiler decision-making; all that's relevant is that the return values are unbacked symbols.
-# The data-dependent errors highlighted in this section are cases like the following, where `data-dependent guards <https://pytorch.org/docs/main/export.programming_model.html#control-flow-static-vs-dynamic>`_ are encountered:
+# The data-dependent errors highlighted in this section are cases like the following, where `data-dependent guards <https://docs.pytorch.org/docs/main/user_guide/torch_compiler/export/programming_model.html#control-flow-static-vs-dynamic>`_ are encountered:
 
 class Foo(torch.nn.Module):
     def forward(self, x, y):
@@ -779,7 +779,7 @@ print(ep)
 
 ######################################################################
 # Data-dependent errors can be much more involved, and there are many more options in your toolkit to deal with them: ``torch._check_is_size()``, ``guard_size_oblivious()``, or real-tensor tracing, as starters.
-# For more in-depth guides, please refer to the `Export Programming Model <https://pytorch.org/docs/main/export.programming_model.html>`_,
+# For more in-depth guides, please refer to the `Export Programming Model <https://docs.pytorch.org/docs/main/user_guide/torch_compiler/export/programming_model.html>`_,
 # or `Dealing with GuardOnDataDependentSymNode errors <https://docs.google.com/document/d/1HSuTTVvYH1pTew89Rtpeu84Ht3nQEFTYhAX3Ypa_xJs>`_.
 
 ######################################################################
@@ -787,7 +787,7 @@ print(ep)
 # ----------
 #
 # ``torch.export`` can export PyTorch programs with custom operators. Please
-# refer to `this page <https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html>`__
+# refer to `this page <https://docs.pytorch.org/tutorials/advanced/custom_ops_landing_page.html>`__
 # on how to author a custom operator in either C++ or Python.
 #
 # The following is an example of registering a custom operator in python to be
@@ -843,10 +843,7 @@ print(torch.ops.aten.add.Tensor._schema.is_mutable)
 print(torch.ops.aten.add_.Tensor._schema.is_mutable)
 
 ######################################################################
-# This generic IR can be used to train in eager PyTorch Autograd. This IR can be
-# more explicitly reached through the API ``torch.export.export_for_training``,
-# which was introduced in PyTorch 2.5, but calling ``torch.export.export``
-# should produce the same graph as of PyTorch 2.6.
+# This generic IR can be used to train in eager PyTorch Autograd.
 
 class DecompExample(torch.nn.Module):
     def __init__(self) -> None:
@@ -859,7 +856,7 @@ class DecompExample(torch.nn.Module):
         x = self.bn(x)
         return (x,)
 
-ep_for_training = torch.export.export_for_training(DecompExample(), (torch.randn(1, 1, 3, 3),))
+ep_for_training = torch.export.export(DecompExample(), (torch.randn(1, 1, 3, 3),))
 print(ep_for_training.graph)
 
 ######################################################################
@@ -882,7 +879,7 @@ print(ep_for_inference.graph)
 ######################################################################
 # We can also further lower this exported program to an operator set which only
 # contains the
-# `Core ATen Operator Set <https://pytorch.org/docs/main/torch.compiler_ir.html#core-aten-ir>`__,
+# `Core ATen Operator Set <https://docs.pytorch.org/docs/main/torch.compiler_ir.html#core-aten-ir>`__,
 # which is a collection of only ~180 operators. This IR is optimal for backends
 # who do not want to reimplement all ATen operators.
 
@@ -925,7 +922,7 @@ print(my_ep.graph)
 # rewrite parts of their model code. We have seen examples of this earlier in the tutorial -- for example, rewriting
 # if-statements using ``cond``.
 #
-# `ExportDB <https://pytorch.org/docs/main/generated/exportdb/index.html>`__ is the standard reference that documents
+# `ExportDB <https://docs.pytorch.org/docs/main/generated/exportdb/index.html>`__ is the standard reference that documents
 # supported and unsupported Python/PyTorch features for ``torch.export``. It is essentially a list a program samples, each
 # of which represents the usage of one particular Python/PyTorch feature and its interaction with ``torch.export``.
 # Examples are also tagged by category so that they can be more easily searched.
@@ -961,7 +958,7 @@ def cond_predicate(x):
 # produced by ``torch.export`` eagerly will be equivalent to running the eager
 # module. To optimize the execution of the Exported Program, we can pass this
 # exported artifact to backends such as Inductor through ``torch.compile``,
-# `AOTInductor <https://pytorch.org/docs/main/torch.compiler_aot_inductor.html>`__,
+# `AOTInductor <https://docs.pytorch.org/docs/main/torch.compiler_aot_inductor.html>`__,
 # or `TensorRT <https://pytorch.org/TensorRT/dynamo/dynamo_export.html>`__.
 
 class M(torch.nn.Module):
@@ -997,7 +994,7 @@ print(res)
 #
 #    # Load and run the .so file in Python.
 #    # To load and run it in a C++ environment, see:
-#    # https://pytorch.org/docs/main/torch.compiler_aot_inductor.html
+#    # https://docs.pytorch.org/docs/main/torch.compiler_aot_inductor.html
 #    aoti_compiled = torch._inductor.aoti_load_package(pt2_path)
 #    res = aoti_compiled(inp)
 
