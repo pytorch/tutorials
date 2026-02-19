@@ -223,7 +223,7 @@ def generate_rand_batch(
                 torch.randn(seq_len, embed_dimension,
                             dtype=dtype, device=device)
                 for seq_len in seq_len_list
-            ]
+            ], layout=torch.jagged
         ),
         seq_len_list,
     )
