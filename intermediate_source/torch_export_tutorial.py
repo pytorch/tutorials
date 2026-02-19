@@ -308,7 +308,7 @@ ep = export(model, (w, x, y, z), dynamic_shapes=dynamic_shapes)
 ######################################################################
 # Before we look at the program that's produced, let's understand what specifying ``dynamic_shapes`` entails,
 # and how that interacts with export. For every input dimension where a ``Dim`` object is specified, a symbol is
-# `allocated <https://pytorch.org/docs/main/export.programming_model.html#basics-of-symbolic-shapes>`_,
+# `allocated <https://pytorch.org/docs/main/user_guide/torch_compiler/export.programming_model.html#basics-of-symbolic-shapes>`_,
 # taking on a range of ``[2, inf]`` (why not ``[0, inf]`` or ``[1, inf]``? we'll explain later in the
 # 0/1 specialization section).
 #
@@ -605,7 +605,7 @@ dynamic_shapes = {
 # How are these values represented in the exported program? In the `Constraints/Dynamic Shapes <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html#constraints-dynamic-shapes>`_
 # section, we talked about allocating symbols to represent dynamic input dimensions.
 # The same happens here: we allocate symbols for every data-dependent value that appears in the program. The important distinction is that these are "unbacked" symbols,
-# in contrast to the "backed" symbols allocated for input dimensions. The `"backed/unbacked" <https://pytorch.org/docs/main/export.programming_model.html#basics-of-symbolic-shapes>`_
+# in contrast to the "backed" symbols allocated for input dimensions. The `"backed/unbacked" <https://pytorch.org/docs/main/user_guide/torch_compiler/export.programming_model.html#basics-of-symbolic-shapes>`_
 # nomenclature refers to the presence/absence of a "hint" for the symbol: a concrete value backing the symbol, that can inform the compiler on how to proceed.
 #
 # In the input shape symbol case (backed symbols), these hints are simply the sample input shapes provided, which explains why control-flow branching is determined by the sample input properties.
@@ -637,7 +637,7 @@ print(ep)
 # ^^^^^^^^^^^^^^^^^^^^^^
 #
 # But the case above is easy to export, because the concrete values of these symbols aren't used in any compiler decision-making; all that's relevant is that the return values are unbacked symbols.
-# The data-dependent errors highlighted in this section are cases like the following, where `data-dependent guards <https://pytorch.org/docs/main/export.programming_model.html#control-flow-static-vs-dynamic>`_ are encountered:
+# The data-dependent errors highlighted in this section are cases like the following, where `data-dependent guards <https://pytorch.org/docs/main/user_guide/torch_compiler/export.programming_model.html#control-flow-static-vs-dynamic>`_ are encountered:
 
 class Foo(torch.nn.Module):
     def forward(self, x, y):
@@ -779,7 +779,7 @@ print(ep)
 
 ######################################################################
 # Data-dependent errors can be much more involved, and there are many more options in your toolkit to deal with them: ``torch._check_is_size()``, ``guard_size_oblivious()``, or real-tensor tracing, as starters.
-# For more in-depth guides, please refer to the `Export Programming Model <https://pytorch.org/docs/main/export.programming_model.html>`_,
+# For more in-depth guides, please refer to the `Export Programming Model <https://pytorch.org/docs/main/user_guide/torch_compiler/export.programming_model.html>`_,
 # or `Dealing with GuardOnDataDependentSymNode errors <https://docs.google.com/document/d/1HSuTTVvYH1pTew89Rtpeu84Ht3nQEFTYhAX3Ypa_xJs>`_.
 
 ######################################################################
@@ -843,10 +843,7 @@ print(torch.ops.aten.add.Tensor._schema.is_mutable)
 print(torch.ops.aten.add_.Tensor._schema.is_mutable)
 
 ######################################################################
-# This generic IR can be used to train in eager PyTorch Autograd. This IR can be
-# more explicitly reached through the API ``torch.export.export_for_training``,
-# which was introduced in PyTorch 2.5, but calling ``torch.export.export``
-# should produce the same graph as of PyTorch 2.6.
+# This generic IR can be used to train in eager PyTorch Autograd.
 
 class DecompExample(torch.nn.Module):
     def __init__(self) -> None:
@@ -859,7 +856,7 @@ class DecompExample(torch.nn.Module):
         x = self.bn(x)
         return (x,)
 
-ep_for_training = torch.export.export_for_training(DecompExample(), (torch.randn(1, 1, 3, 3),))
+ep_for_training = torch.export.export(DecompExample(), (torch.randn(1, 1, 3, 3),))
 print(ep_for_training.graph)
 
 ######################################################################
