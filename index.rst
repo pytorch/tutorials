@@ -160,6 +160,13 @@ Welcome to PyTorch Tutorials
    :link: advanced/usb_semisup_learn.html
    :tags: Image/Video
 
+.. customcarditem::
+   :header: Offline Batch Inference
+   :card_description: Learn how to run production-ready batch inference using PyTorch and Ray Data.
+   :image: _static/img/ray-data.png
+   :link: beginner/batch_inference_tutorial.html
+   :tags: Image/Video,Model-Optimization,Best-Practice,Ray-Distributed,Parallel-and-Distributed-Training
+
 .. Audio
 
 .. customcarditem::

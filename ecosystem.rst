@@ -63,6 +63,13 @@ to production deployment.
    :link: beginner/mosaic_memory_profiling_tutorial.html
    :tags: Model-Optimization,Best-Practice,Profiling,Ecosystem
 
+.. customcarditem::
+   :header: Offline Batch Inference
+   :card_description: Learn how to run production-ready batch inference using PyTorch and Ray Data.
+   :image: _static/img/ray-data.png
+   :link: beginner/batch_inference_tutorial.html
+   :tags: Image/Video,Model-Optimization,Best-Practice,Ecosystem,Ray-Distributed,Parallel-and-Distributed-Training
+
 .. End of tutorial card section
 .. -----------------------------------------
 .. Page TOC
@@ -76,3 +83,4 @@ to production deployment.
    intermediate/tensorboard_profiler_tutorial
    intermediate/realtime_rpi
    beginner/mosaic_memory_profiling_tutorial
+   beginner/batch_inference_tutorial
