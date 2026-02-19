@@ -1,0 +1,231 @@
+name: Notify when docs preview is ready
+
+on:
+  # Trigger after the docs build workflow completes
+  workflow_run:
+    workflows: ["Build tutorials"]
+    types:
+      - completed
+
+  # Manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to test (e.g., 3664)'
+        required: true
+        type: string
+      skip_comment:
+        description: 'Skip posting comment (dry run)'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  # Main job - triggered by workflow_run
+  notify-preview-ready:
+    # Only run for pull requests and successful builds
+    if: >
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get PR number
+        id: get-pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Get the PR number from the workflow run
+          PR_NUMBER=$(gh api \
+            "/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}" \
+            --jq '.pull_requests[0].number')
+
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
+            echo "No PR found for this workflow run"
+            exit 0
+          fi
+
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "Found PR #$PR_NUMBER"
+
+      - name: Wait and check if docs preview is ready
+        id: check-preview
+        if: steps.get-pr.outputs.pr_number != ''
+        env:
+          PR_NUMBER: ${{ steps.get-pr.outputs.pr_number }}
+        run: |
+          # Construct the preview URL for tutorials
+          PREVIEW_URL="https://docs-preview.pytorch.org/pytorch/tutorials/${PR_NUMBER}/index.html"
+
+          echo "Checking preview URL: $PREVIEW_URL"
+
+          # Wait up to 40 minutes for the preview to be ready
+          MAX_ATTEMPTS=80
+          SLEEP_TIME=30
+          attempt=0
+
+          while [ $attempt -lt $MAX_ATTEMPTS ]; do
+            echo "Attempt $((attempt + 1))/$MAX_ATTEMPTS: Checking if preview is ready..."
+
+            # Check if the URL returns 200 OK
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$PREVIEW_URL" || echo "000")
+
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ Preview is ready! HTTP $HTTP_CODE"
+              echo "preview_ready=true" >> $GITHUB_OUTPUT
+              echo "preview_url=$PREVIEW_URL" >> $GITHUB_OUTPUT
+              exit 0
+            else
+              echo "⏳ Preview not ready yet (HTTP $HTTP_CODE). Waiting $SLEEP_TIME seconds..."
+              sleep $SLEEP_TIME
+              attempt=$((attempt + 1))
+            fi
+          done
+
+          echo "❌ Preview did not become ready within the timeout period"
+          echo "preview_ready=false" >> $GITHUB_OUTPUT
+
+      - name: Comment on PR with preview link
+        if: steps.check-preview.outputs.preview_ready == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = ${{ steps.get-pr.outputs.pr_number }};
+            const previewUrl = '${{ steps.check-preview.outputs.preview_url }}';
+
+            // Check if we already commented
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.login === 'github-actions[bot]' &&
+              comment.body.includes('📄 Documentation preview is ready')
+            );
+
+            // Build comment body
+            let commentBody = `## 📄 Documentation preview is ready! 🎉\n\n`;
+            commentBody += `Your tutorial changes have been built and are ready for review:\n\n`;
+            commentBody += `👉 **[View Preview](${previewUrl})**\n`;
+            commentBody += `\n---\n`;
+            commentBody += `<sub>This preview will be available for 14 days.</sub>`;
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              });
+              console.log('Updated existing comment');
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: commentBody
+              });
+              console.log('Created new comment');
+            }
+
+      - name: Comment if preview failed
+        if: steps.get-pr.outputs.pr_number != '' && steps.check-preview.outputs.preview_ready == 'false'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = ${{ steps.get-pr.outputs.pr_number }};
+
+            let commentBody = `## ⚠️ Documentation preview timeout\n\n`;
+            commentBody += `The documentation preview did not become available within the expected time.\n`;
+            commentBody += `This could be due to:\n`;
+            commentBody += `- Longer than usual build times\n`;
+            commentBody += `- Build failures\n`;
+            commentBody += `- Infrastructure issues\n\n`;
+            commentBody += `Please check the [workflow runs](https://github.com/${context.repo.owner}/${context.repo.repo}/actions) for more details.`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: commentBody
+            });
+            console.log('Posted timeout notification');
+
+  # Manual test job - triggered by workflow_dispatch
+  test-preview-notification:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Test preview URL
+        id: check-preview
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: |
+          echo "🧪 Running manual test for PR #$PR_NUMBER"
+
+          # Construct the preview URL for tutorials
+          PREVIEW_URL="https://docs-preview.pytorch.org/pytorch/tutorials/${PR_NUMBER}/index.html"
+
+          echo "Checking preview URL: $PREVIEW_URL"
+
+          # Check if the URL returns 200 OK
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$PREVIEW_URL" || echo "000")
+
+          echo "HTTP Status: $HTTP_CODE"
+
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Preview is ready!"
+            echo "preview_ready=true" >> $GITHUB_OUTPUT
+            echo "preview_url=$PREVIEW_URL" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Preview not available (HTTP $HTTP_CODE)"
+            echo "preview_ready=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Display results
+        run: |
+          echo "================================"
+          echo "Test Results for PR #${{ inputs.pr_number }}"
+          echo "================================"
+          echo "Preview Ready: ${{ steps.check-preview.outputs.preview_ready }}"
+          echo "Preview URL: ${{ steps.check-preview.outputs.preview_url }}"
+          echo ""
+          if [ "${{ inputs.skip_comment }}" = "true" ]; then
+            echo "ℹ️ Dry run mode - no comment will be posted"
+          fi
+
+      - name: Post test comment (if not dry run)
+        if: steps.check-preview.outputs.preview_ready == 'true' && inputs.skip_comment == false
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = ${{ inputs.pr_number }};
+            const previewUrl = '${{ steps.check-preview.outputs.preview_url }}';
+
+            // Build comment body
+            let commentBody = `## 📄 Documentation preview is ready! 🎉\n\n`;
+            commentBody += `Your tutorial changes have been built and are ready for review:\n\n`;
+            commentBody += `👉 **[View Preview](${previewUrl})**\n`;
+            commentBody += `\n---\n`;
+            commentBody += `<sub>This preview will be available for 14 days.</sub>`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: commentBody
+            });
+            console.log('Posted test comment');
