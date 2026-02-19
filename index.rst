@@ -160,6 +160,13 @@ Welcome to PyTorch Tutorials
    :link: advanced/usb_semisup_learn.html
    :tags: Image/Video
 
+.. customcarditem::
+   :header: Distributed Training with Ray Train
+   :card_description: Pre-train a transformer language model across multiple GPUs using PyTorch and Ray Train.
+   :image: _static/img/ray-data.png
+   :link: beginner/distributed_training_with_ray_tutorial.html
+   :tags: Text,Best-Practice,Ray-Distributed,Parallel-and-Distributed-Training
+
 .. Audio
 
 .. customcarditem::

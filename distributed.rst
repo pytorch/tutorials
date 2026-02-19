@@ -213,3 +213,4 @@ Custom Extensions
    intermediate/monarch_distributed_tutorial
    advanced/rpc_ddp_tutorial
    advanced/generic_join
+   beginner/distributed_training_with_ray_tutorial

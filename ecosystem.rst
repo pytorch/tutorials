@@ -63,6 +63,13 @@ to production deployment.
    :link: beginner/mosaic_memory_profiling_tutorial.html
    :tags: Model-Optimization,Best-Practice,Profiling,Ecosystem
 
+.. customcarditem::
+   :header: Distributed Training with Ray Train
+   :card_description: Pre-train a transformer language model across multiple GPUs using PyTorch and Ray Train.
+   :image: _static/img/ray-data.png
+   :link: beginner/distributed_training_with_ray_tutorial.html
+   :tags: Text,Best-Practice,Ecosystem,Ray-Distributed,Parallel-and-Distributed-Training
+
 .. End of tutorial card section
 .. -----------------------------------------
 .. Page TOC
@@ -76,3 +83,4 @@ to production deployment.
    intermediate/tensorboard_profiler_tutorial
    intermediate/realtime_rpi
    beginner/mosaic_memory_profiling_tutorial
+   beginner/distributed_training_with_ray_tutorial
