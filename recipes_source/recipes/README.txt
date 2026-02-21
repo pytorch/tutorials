@@ -12,35 +12,26 @@ PyTorch Recipes
 	 Saving and loading models for inference in PyTorch
          https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_models_for_inference.html
 
-4. custom_dataset_transforms_loader.py
-	 Developing Custom PyTorch Dataloaders
-         https://pytorch.org/tutorials/recipes/recipes/custom_dataset_transforms_loader.html
-
-
-5. Captum_Recipe.py
+4. Captum_Recipe.py
 	 Model Interpretability using Captum
          https://pytorch.org/tutorials/recipes/recipes/Captum_Recipe.html
 
-6. dynamic_quantization.py
-         Dynamic Quantization
-         https://pytorch.org/tutorials/recipes/recipes/dynamic_quantization.html
-
-7. warmstarting_model_using_parameters_from_a_different_model.py
+5. warmstarting_model_using_parameters_from_a_different_model.py
          Warmstarting models using parameters from different model
          https://pytorch.org/tutorials/recipes/recipes/warmstarting_model_using_parameters_from_a_different_model.html
 
-8. zeroing_out_gradients.py
+6. zeroing_out_gradients.py
          Zeroing out gradients
          https://pytorch.org/tutorials/recipes/recipes/zeroing_out_gradients.html
 
-9. mobile_perf.py
+7. mobile_perf.py
          PyTorch Mobile Performance Recipes
          https://pytorch.org/tutorials/recipes/mobile_perf.html
 
-10. amp_recipe.py
+8. amp_recipe.py
          Automatic Mixed Precision
-         https://pytorch.org/tutorials/recipes/amp_recipe.html
+         https://pytorch.org/tutorials/recipes/recipes/amp_recipe.html
 
-11. regional_compilation.py
+9. regional_compilation.py
 	Reducing torch.compile cold start compilation time with regional compilation
          https://pytorch.org/tutorials/recipes/regional_compilation.html
