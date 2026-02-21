@@ -79,6 +79,9 @@ contains a `gym of masks <https://github.com/meta-pytorch/attention-gym>`_.
 # sequence lengths. They eliminate the need for the bug-prone practices of explicit
 # padding and masking (think ``key_padding_mask`` in ``nn.MultiHeadAttention``).
 #
+# .. warning::
+#     Nested tensors are not currently under active development. Use at your own risk.
+#
 # * `scaled_dot_product_attention <https://pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html>`_
 #
 # ``scaled_dot_product_attention`` is a primitive for
