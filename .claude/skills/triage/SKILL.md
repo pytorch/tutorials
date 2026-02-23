@@ -28,13 +28,15 @@ This skill helps triage GitHub issues in the `pytorch/tutorials` repo by classif
 
 ## MCP Tools Available
 
-Use these GitHub MCP tools for triage:
+For the full list of available tools and CI environment constraints, see the [CI Environment Skill](../ci/SKILL.md).
+
+Key tools for triage:
 
 | Tool | Purpose |
 |------|---------|
 | `mcp__github__issue_read` | Get issue details, comments, and existing labels |
-| `mcp__github__issue_write` | Apply labels (do NOT close issues) |
-| `mcp__github__add_issue_comment` | Add comment (for redirecting questions or requesting info) |
+| `mcp__github__issue_write` | Add/remove labels (do NOT close issues) |
+| `mcp__github__add_issue_comment` | Post a comment on an issue |
 | `mcp__github__search_issues` | Find similar issues for context |
 
 ---

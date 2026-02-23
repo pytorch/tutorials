@@ -1,7 +1,3 @@
-# Environment
-
-If any tool you're trying to use (make, sphinx-build, lintrunner, python, etc.) is missing, always stop and ask the user if an environment is needed. Do NOT try to find alternatives or install these tools.
-
 # Project Structure
 
 This is the PyTorch Tutorials website (`pytorch.org/tutorials`), built with Sphinx and Sphinx Gallery.
@@ -14,15 +10,15 @@ This is the PyTorch Tutorials website (`pytorch.org/tutorials`), built with Sphi
 - `.jenkins/` — CI build scripts, data download logic, post-processing
 - `Makefile` — build entry points
 
-Tutorials authored as `.py` files use Sphinx Gallery format: top-level docstrings become RST prose, code blocks become executable cells. These are executed during CI builds and converted to Jupyter notebooks and HTML. Tutorials authored as `.rst` are static and their code is not executed.
+Tutorials authored as `.py` files use Sphinx Gallery format: top-level docstrings become RST prose, code blocks become executable cells. These are executed during builds and converted to Jupyter notebooks and HTML. Tutorials authored as `.rst` are static and their code is not executed.
 
 # Build
 
-- `make html-noplot` — builds HTML without executing tutorial code. Fast, no GPU needed. Use this for local validation of RST/Sphinx structure.
+- `make html-noplot` — builds HTML without executing tutorial code. Fast, no GPU needed. Use this for quick validation of RST/Sphinx structure.
 - `make docs` — full build that downloads data, executes all `.py` tutorials, and produces the final site. Requires a GPU-powered machine with CUDA.
 - `GALLERY_PATTERN="my_tutorial.py" make html` — build only a single tutorial by name (regex supported).
 
-The CI build runs inside Docker across 15 GPU-powered shards via `.jenkins/build.sh`. Do not attempt to replicate the full CI build locally unless you have a proper GPU setup.
+The CI build runs inside Docker across 15 GPU-powered shards via `.jenkins/build.sh`.
 
 # Linting
 
@@ -31,13 +27,15 @@ This repo uses `lintrunner`. Do not use `spin`, `flake8`, or other linters direc
 - `lintrunner -m main` — lint changes relative to the main branch
 - `lintrunner --all-files` — lint all files in the repo
 
+Lintrunner checks trailing whitespace, tabs, and newline issues only. It does not check Python formatting, RST syntax, or Sphinx directives.
+
 # Testing
 
 There is no unit test suite. Validation is done by building tutorials:
 
 - `make html-noplot` is the quick sanity check for RST and Sphinx errors.
-- Full execution of `.py` tutorials is handled by CI (GPU shards). Do not attempt to run all tutorials locally.
-- To test a single tutorial locally: `GALLERY_PATTERN="my_tutorial.py" make html`
+- Full execution of `.py` tutorials runs in CI on GPU shards.
+- To test a single tutorial: `GALLERY_PATTERN="my_tutorial.py" make html`
 
 # Tutorial File Format
 
@@ -52,11 +50,6 @@ There is no unit test suite. Validation is done by building tutorials:
 2. Add a `customcarditem` entry in `index.rst` (or `recipes_index.rst` for recipes).
 3. Add the tutorial to the corresponding `toctree` in `index.rst`.
 4. Add a square, high-resolution thumbnail image to `_static/img/thumbnails/cropped/`.
-
-# Commit Messages
-
-Don't commit.
-
 
 # Coding Style Guidelines
 

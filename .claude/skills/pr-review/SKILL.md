@@ -80,7 +80,7 @@ For local branch reviews:
 
 ### GitHub Actions Mode
 
-When invoked via workflow, PR data is passed as context. The PR number or diff will be available in the prompt.
+When invoked via workflow, PR data is passed as context. The PR number or diff will be available in the prompt. See the [CI Environment Skill](../ci/SKILL.md) for environment constraints, available tools, and permissions.
 
 ## Review Workflow
 
