@@ -38,12 +38,13 @@ source and part of the PyTorch Foundation.
 Setup
 -----
 
-To install the dependencies:
+To install the dependencies, run:
+
+.. code-block:: bash
+
+   pip install "ray[serve]" torch torchvision
 
 """
-
-# %%bash
-# pip install "ray[serve]" torch torchvision
 
 ######################################################################
 # Start by importing the required libraries:
