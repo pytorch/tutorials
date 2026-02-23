@@ -235,9 +235,9 @@ ds = ds.map_batches(
 prediction_batch = ds.take_batch(5)
 
 for img_array, label in zip(prediction_batch["original_image"], prediction_batch["predicted_label"]):
-    img = Image.fromarray(img_array)
-    img.show()
-    print(f"Prediction: {label}")
+    plt.imshow(img_array)
+    plt.title(f"Prediction: {label}")
+    plt.show()
 
 
 
