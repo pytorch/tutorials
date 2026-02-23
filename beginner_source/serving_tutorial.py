@@ -229,20 +229,20 @@ handle = serve.run(mnist_app, name="mnist_classifier")
 
 ######################################################################
 # You will see output similar to:
-
-# %%bash
-# Started Serve in namespace "serve".
-# Registering autoscaling state for deployment Deployment(name='MNISTClassifier', app='mnist_classifier')
-# Deploying new version of Deployment(name='MNISTClassifier', app='mnist_classifier') (initial target replicas: 1).
-# Proxy starting on node ... (HTTP port: 8000).
-# Got updated endpoints: {}.
-# Got updated endpoints: {Deployment(name='MNISTClassifier', app='mnist_classifier'): EndpointInfo(route='/', app_is_cross_language=False, route_patterns=None)}.
-# Started <ray.serve._private.router.SharedRouterLongPollClient object at 0x73a53c52c250>.
-# Adding 1 replica to Deployment(name='MNISTClassifier', app='mnist_classifier').
-# Got updated endpoints: {Deployment(name='MNISTClassifier', app='mnist_classifier'): EndpointInfo(route='/', app_is_cross_language=False, route_patterns=['/', '/docs', '/docs/oauth2-redirect', '/openapi.json', '/redoc'])}.
-# Application 'mnist_classifier' is ready at http://127.0.0.1:8000/.
-
-######################################################################
+#
+# .. code-block:: sh
+#
+#    Started Serve in namespace "serve".
+#    Registering autoscaling state for deployment Deployment(name='MNISTClassifier', app='mnist_classifier')
+#    Deploying new version of Deployment(name='MNISTClassifier', app='mnist_classifier') (initial target replicas: 1).
+#    Proxy starting on node ... (HTTP port: 8000).
+#    Got updated endpoints: {}.
+#    Got updated endpoints: {Deployment(name='MNISTClassifier', app='mnist_classifier'): EndpointInfo(route='/', app_is_cross_language=False, route_patterns=None)}.
+#    Started <ray.serve._private.router.SharedRouterLongPollClient object at 0x73a53c52c250>.
+#    Adding 1 replica to Deployment(name='MNISTClassifier', app='mnist_classifier').
+#    Got updated endpoints: {Deployment(name='MNISTClassifier', app='mnist_classifier'): EndpointInfo(route='/', app_is_cross_language=False, route_patterns=['/', '/docs', '/docs/oauth2-redirect', '/openapi.json', '/redoc'])}.
+#    Application 'mnist_classifier' is ready at http://127.0.0.1:8000/.
+#
 # The app is now listening for requests on port 8000.
 #
 # To test the deployment, you can send many requests concurrently using
