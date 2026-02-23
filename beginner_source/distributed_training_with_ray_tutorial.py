@@ -499,7 +499,7 @@ print("\nTraining finished!")
 # Ray Train offers several checkpointing optimizations. Asynchronous
 # uploading enables you to continue training while checkpoints stream to remote storage
 # in the background.
-# Distributed checkpointing uploads shards from each worker in parallel, avoiding 
+# Distributed checkpointing uploads shards from each worker in parallel, avoiding
 # a gather step into a single worker's memory that risks OOM errors for large models.
 #
 # For a full guide on checkpointing with Ray Train, see the
