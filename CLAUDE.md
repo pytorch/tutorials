@@ -28,11 +28,6 @@ The CI build runs inside Docker across 15 GPU-powered shards via `.jenkins/build
 
 This repo uses `lintrunner`. Do not use `spin`, `flake8`, or other linters directly.
 
-```
-pip install lintrunner==0.12.5
-lintrunner init
-```
-
 - `lintrunner -m main` — lint changes relative to the main branch
 - `lintrunner --all-files` — lint all files in the repo
 
@@ -60,16 +55,8 @@ There is no unit test suite. Validation is done by building tutorials:
 
 # Commit Messages
 
-Don't commit unless the user explicitly asks you to.
+Don't commit.
 
-When writing a commit message, don't make a bullet list of the individual
-changes. Instead, if the PR is large, explain the order to review changes
-(e.g., the logical progression), or if it's short just omit the bullet list
-entirely.
-
-Disclose that the PR was authored with Claude.
-
-Do not use ghstack. It is not supported in this repo.
 
 # Coding Style Guidelines
 
