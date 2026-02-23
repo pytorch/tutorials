@@ -289,7 +289,7 @@ print(f"Throughput: {len(responses)/elapsed:.2f} requests/second")
 # deploying on KubeRay.
 #
 # For more information about Ray Serve's fault tolerance, see the
-# `Ray Serve fault-tolerance guide <https://docs.ray.io/en/master/serve/production-guide/fault-tolerance.html>`__
+# `Ray Serve fault-tolerance guide <https://docs.ray.io/en/master/serve/production-guide/fault-tolerance.html>`__.
 #
 # Monitor the deployment
 # ----------------------
