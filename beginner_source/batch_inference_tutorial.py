@@ -285,23 +285,23 @@ del ds
 ###############################################################################
 # For a single stage, the report looks like this:
 #
-# ```markdown
-# Operator 3 Map(preprocess_image)->MapBatches(drop_columns): 58 tasks executed, 58 blocks produced in 9.65s
+# .. code-block:: sh
 #
-# * Remote wall time: 369.14ms min, 1.85s max, 634.59ms mean, 36.81s total
-# * Remote cpu time: 369.57ms min, 696.42ms max, 551.0ms mean, 31.96s total
-# * UDF time: 733.07ms min, 3.69s max, 1.26s mean, 73.33s total
-# * Peak heap memory usage (MiB): 720.84 min, 1478.72 max, 1129 mean
-# * Output num rows per block: 44 min, 54 max, 48 mean, 2794 total
-# * Output size bytes per block: 77857120 min, 95551920 max, 85240122 mean, 4943927120 total
-# * Output rows per task: 44 min, 54 max, 48 mean, 58 tasks used
-# * Tasks per node: 8 min, 40 max, 19 mean; 3 nodes used
-# * Operator throughput:
-#         * Total input num rows: 3358 rows
-#         * Total output num rows: 2794 rows
-#         * Ray Data throughput: 289.43 rows/s
-#         * Estimated single task throughput: 75.91 rows/s
-# ```
+#    Operator 3 Map(preprocess_image)->MapBatches(drop_columns): 58 tasks executed, 58 blocks produced in 9.65s
+#
+#    * Remote wall time: 369.14ms min, 1.85s max, 634.59ms mean, 36.81s total
+#    * Remote cpu time: 369.57ms min, 696.42ms max, 551.0ms mean, 31.96s total
+#    * UDF time: 733.07ms min, 3.69s max, 1.26s mean, 73.33s total
+#    * Peak heap memory usage (MiB): 720.84 min, 1478.72 max, 1129 mean
+#    * Output num rows per block: 44 min, 54 max, 48 mean, 2794 total
+#    * Output size bytes per block: 77857120 min, 95551920 max, 85240122 mean, 4943927120 total
+#    * Output rows per task: 44 min, 54 max, 48 mean, 58 tasks used
+#    * Tasks per node: 8 min, 40 max, 19 mean; 3 nodes used
+#    * Operator throughput:
+#            * Total input num rows: 3358 rows
+#            * Total output num rows: 2794 rows
+#            * Ray Data throughput: 289.43 rows/s
+#            * Estimated single task throughput: 75.91 rows/s
 #
 # This information helps identify bottlenecks and optimize your pipeline.
 
