@@ -7,6 +7,64 @@ description: Review PyTorch tutorials pull requests for content quality, code co
 
 Review PyTorch tutorials pull requests for content quality, code correctness, tutorial structure, and Sphinx/RST formatting. CI lintrunner only checks trailing whitespace, tabs, and newlines — it does not validate RST syntax, Python formatting, or Sphinx directives, so those must be reviewed manually.
 
+## CI Environment (GitHub Actions)
+
+This section applies when Claude is running inside the GitHub Actions workflow (`claude-code.yml`).
+
+### Pre-installed Tools
+
+| Detail | Value |
+|--------|-------|
+| Runner | `ubuntu-latest` |
+| Python | 3.12 (pre-installed via `actions/setup-python`) |
+| Lintrunner | 0.12.5 (pre-installed and initialized) |
+| Timeout | 60 minutes |
+| Model | `claude-opus-4-6-v1` via AWS Bedrock |
+
+**All tools you need are already installed.** Do not run `pip install`, `apt-get`, or any other installation commands. If a tool is missing, state that it is unavailable and move on.
+
+### Permissions
+
+| Permission | Level | What it allows |
+|------------|-------|----------------|
+| `contents` | `read` | Read repo files, checkout code |
+| `pull-requests` | `write` | Comment on PRs, post reviews |
+| `id-token` | `write` | OIDC authentication to AWS Bedrock |
+
+### What You MUST NOT Do
+
+- **Commit or push** — You have read-only access to repo contents. Never attempt `git commit`, `git push`, or create branches.
+- **Merge or close PRs** — You cannot and should not merge pull requests.
+- **Install packages** — Everything needed is pre-installed. Do not run `pip install`, `npm install`, `apt-get`, etc.
+- **Modify workflow files** — Do not suggest changes to `.github/workflows/` files in automated comments.
+- **Create issues** — Do not open new GitHub issues.
+- **Assign users** — Do not assign issues or PRs to specific people.
+
+### What You CAN Do
+
+- **Read all repo files** — Full checkout is available at the workspace root.
+- **Run lintrunner** — `lintrunner -m main` or `lintrunner --all-files` are available.
+- **Run make (dry/noplot)** — `make html-noplot` works for RST/Sphinx validation (no GPU).
+- **Comment on PRs** — Post review comments, inline suggestions, and general comments.
+
+### MCP Tools
+
+| Tool | Purpose |
+|------|---------|
+| `mcp__github__pr_read` | Read PR details, diff, and review comments |
+| `mcp__github__pr_comment` | Post a comment or review on a PR |
+
+### Trigger & Interaction
+
+Claude is invoked when a user mentions `@claude` in a PR comment or PR review comment. The triggering comment is passed as the prompt. Respond directly to what the user asked — do not perform unrequested actions.
+
+- You are responding asynchronously via GitHub comments. There is no interactive terminal session.
+- Be concise — GitHub comments should be scannable, not walls of text.
+- Use markdown formatting (headers, tables, code blocks) for readability.
+- If you cannot complete a request due to permission constraints, explain what you tried and what the user should do instead.
+
+---
+
 ## Usage Modes
 
 ### No Argument
@@ -80,7 +138,7 @@ For local branch reviews:
 
 ### GitHub Actions Mode
 
-When invoked via workflow, PR data is passed as context. The PR number or diff will be available in the prompt. See the [CI Environment Skill](../ci/SKILL.md) for environment constraints, available tools, and permissions.
+When invoked via workflow, PR data is passed as context. The PR number or diff will be available in the prompt. See the [CI Environment](#ci-environment-github-actions) section above for constraints and available tools.
 
 ## Review Workflow
 
