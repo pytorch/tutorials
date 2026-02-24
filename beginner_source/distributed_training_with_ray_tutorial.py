@@ -432,7 +432,8 @@ def train_func_per_worker(config: dict):
 # of 16, the **effective global batch size** is 4 × 16 = 64 sequences,
 # or 64 × 256 = 4,096 tokens per optimizer step.
 
-NUM_WORKERS = 4  # One worker per GPU on this machine
+USE_GPU = torch.cuda.is_available()
+NUM_WORKERS = max(torch.cuda.device_count(), 1)  # One worker per available GPU
 NUM_EPOCHS = 5
 BATCH_SIZE_PER_WORKER = 16
 LR = 3e-4
@@ -453,7 +454,7 @@ trainer = TorchTrainer(
     datasets={"train": train_ds, "validation": val_ds},
     scaling_config=ScalingConfig(
         num_workers=NUM_WORKERS,
-        use_gpu=True,
+        use_gpu=USE_GPU,
     ),
     run_config=RunConfig(
         name="gpt2-small-pretraining",
