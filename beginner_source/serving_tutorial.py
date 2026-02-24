@@ -308,8 +308,8 @@ print(f"Throughput: {len(responses)/elapsed:.2f} requests/second")
 # For more information, see the `Ray Serve monitoring
 # documentation <https://docs.ray.io/en/latest/serve/monitoring.html>`__.
 #
-# Summary
-# -------
+# Conclusion
+# ------------
 #
 # In this tutorial, you:
 #
