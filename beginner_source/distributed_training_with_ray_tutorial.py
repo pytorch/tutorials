@@ -120,7 +120,7 @@ for i, row in enumerate(sample):
     print(f"  Row {i}: {text_preview!r}")
 
 ###############################################################################
-# You'll see output like:
+# You'll see output like this:
 #
 # .. code-block:: text
 #
