@@ -166,6 +166,11 @@ Welcome to PyTorch Tutorials
    :image: _static/img/ray-data.png
    :link: beginner/batch_inference_tutorial.html
    :tags: Image/Video,Model-Optimization,Best-Practice,Ray-Distributed,Parallel-and-Distributed-Training
+   :header: Distributed Training with Ray Train
+   :card_description: Pre-train a transformer language model across multiple GPUs using PyTorch and Ray Train.
+   :image: _static/img/ray-data.png
+   :link: beginner/distributed_training_with_ray_tutorial.html
+   :tags: Text,Best-Practice,Ray-Distributed,Parallel-and-Distributed-Training
 
 .. Audio
 
@@ -330,6 +335,13 @@ Welcome to PyTorch Tutorials
    :tags: Reinforcement-Learning
 
 .. Deploying PyTorch Models in Production
+
+.. customcarditem::
+   :header: Serving PyTorch Tutorial
+   :card_description: Deploy and scale a PyTorch model with Ray Serve.
+   :image: _static/img/ray-serve.png
+   :link: beginner/serving_tutorial.html
+   :tags: Production,Best-Practice,Ray-Distributed,Ecosystem
 
 .. customcarditem::
    :header: Profiling PyTorch

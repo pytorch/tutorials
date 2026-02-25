@@ -36,6 +36,13 @@ to production deployment.
    :tags: Model-Optimization,Best-Practice,Ecosystem,Ray-Distributed,Parallel-and-Distributed-Training
 
 .. customcarditem::
+   :header: Serving PyTorch Tutorial
+   :card_description: Deploy and scale a PyTorch model with Ray Serve.
+   :image: _static/img/ray-serve.png
+   :link: beginner/serving_tutorial.html
+   :tags: Production,Best-Practice,Ray-Distributed,Ecosystem
+
+.. customcarditem::
    :header: Multi-Objective Neural Architecture Search with Ax
    :card_description: Learn how to use Ax to search over architectures find optimal tradeoffs between accuracy and latency.
    :image: _static/img/ax_logo.png
@@ -70,6 +77,13 @@ to production deployment.
    :link: beginner/batch_inference_tutorial.html
    :tags: Image/Video,Model-Optimization,Best-Practice,Ecosystem,Ray-Distributed,Parallel-and-Distributed-Training
 
+.. customcarditem::
+   :header: Distributed Training with Ray Train
+   :card_description: Pre-train a transformer language model across multiple GPUs using PyTorch and Ray Train.
+   :image: _static/img/ray-data.png
+   :link: beginner/distributed_training_with_ray_tutorial.html
+   :tags: Text,Best-Practice,Ecosystem,Ray-Distributed,Parallel-and-Distributed-Training
+
 .. End of tutorial card section
 .. -----------------------------------------
 .. Page TOC
@@ -79,8 +93,10 @@ to production deployment.
    :hidden:
 
    beginner/hyperparameter_tuning_tutorial
+   beginner/serving_tutorial
    intermediate/ax_multiobjective_nas_tutorial
    intermediate/tensorboard_profiler_tutorial
    intermediate/realtime_rpi
    beginner/mosaic_memory_profiling_tutorial
    beginner/batch_inference_tutorial
+   beginner/distributed_training_with_ray_tutorial
