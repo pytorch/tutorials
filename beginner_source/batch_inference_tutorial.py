@@ -263,9 +263,8 @@ os.makedirs(output_dir, exist_ok=True)
 # Drop original image data now that we've inspected it
 ds = ds.drop_columns(["original_image"])
 # Write predictions to parquet. This is a blocking operation that triggers the execution of the pipeline.
-# ds.write_parquet(f"local://{output_dir}")
-# print(f"Wrote {len(os.listdir(output_dir))} shards to {output_dir}")
-ds.materialize()  # FIXME
+ds.write_parquet(f"local://{output_dir}")
+print(f"Wrote {len(os.listdir(output_dir))} shards to {output_dir}")
 
 ###############################################################################
 # Performance benchmarking
@@ -370,8 +369,7 @@ print(f"First embedding vector: {embedding_batch['embedding'][0][:10]}...")
 
 embeddings_output_dir = os.path.join(os.getcwd(), "embeddings")
 os.makedirs(embeddings_output_dir, exist_ok=True)
-ds.materialize()  # FIXME
-# ds.write_parquet(f"local://{embeddings_output_dir}")
+ds.write_parquet(f"local://{embeddings_output_dir}")
 print(f"Embeddings saved to: {embeddings_output_dir}")
 
 # Collect execution stats after write
