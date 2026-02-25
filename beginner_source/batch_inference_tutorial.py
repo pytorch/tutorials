@@ -186,7 +186,7 @@ class Classifier:
 # Configure resource allocation and scaling
 # -----------------------------------------
 #
-# Ray Data lets you specify **resource allocation** per worker, such as the
+# Ray Data lets you specify **resources** per worker, such as the
 # number of CPUs or GPUs. Ray handles the orchestration of these resources across
 # your cluster, automatically placing workers on nodes with available capacity. This
 # means that scaling a batch inference job from a laptop to a large cluster doesn't require code changes, since Ray automatically detects the resources available in the cluster and scales the job accordingly.
