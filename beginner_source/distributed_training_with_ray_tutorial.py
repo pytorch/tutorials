@@ -107,7 +107,6 @@ print(f"Dataset schema:\n{train_ds.schema()}")
 # This means that the dataset has one column called ``text`` and it is a string.
 #
 # Inspect raw data
-#
 # ~~~~~~~~~~~~~~~~
 #
 # Use ``take(n)`` to fetch a small number of rows for inspection.
