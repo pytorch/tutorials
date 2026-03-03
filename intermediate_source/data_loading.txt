@@ -1,0 +1,33 @@
+This runbook aims to capture potential levers for optimizing your data loading configuration. For each section we give an overview of the
+Optimizing data loading configuration
+batch_size
+Increasing the batch size requires more memory to store the input data, model weights, and intermediate computations. Large batch sizes can lead to out-of-memory (OOM) errors. That said, moderate batch sizes (e.g., 32-128) often provide the best balance between memory usage and computational efficiency, leading to faster training times. If your workflow faces a CPU OOM, reducing batch size is a good idea.
+Worth noting, that batch_size changes need to be paired with optimizer tuning (for eg, learning rate schedule) - unless doing offline inference.
+num_workers
+In case of multiprocessing, each worker fills a queue of batches (equal to the prefetch_factor) and transfers to the main_process in order (if in_order is True, otherwise batches can be out of order).
+Increasing num_workers is recommended for the cases where the transforms are expensive as the time taking transformations can be worked on in parallel and added to the queue in the main process.
+If the batches are not too expensive to make, then num_workers = 0 can be faster than multiprocessing as it eliminates the IPC costs.
+pin_memory
+In PyTorch, pin_memory=True in a DataLoader enables faster data transfer to a CUDA-enabled GPU. It works by allocating page-locked, or "pinned," memory on the CPU, which cannot be swapped out to disk. This ensures that the data is always readily available for transfer to the GPU, avoiding the overhead of accessing data from slower, pageable memory.
+When pin_memory=True, the DataLoader automatically places fetched data Tensors in pinned memory. During each epoch, the data is transferred from the CPU to the GPU. By using pinned memory, the transfer can occur more quickly and efficiently.
+That said, do not assume pin_memory=True, is guaranteed to give speedups. It is worth checking with respect to your particular pipeline. Also, manually enabling pin_memory transfer on a tensor should be done with care. For eg, tensor.pin_memory().to(device, non_blocking=True) can be quite slow because pin_memory is a blocking operation.
+If you want to take the safest route. Use pin_memory=True in the PyTorch Dataloader, and then do data.to(device, non_blocking=True).
+Gold standard reference: https://docs.pytorch.org/tutorials/intermediate/pinmem_nonblock.html
+in_order
+in_order=True (which is the default) ensures the data is returned in the right order relative to the inputs. This is done by caching the final batches and returning them when we have them in the right order. This can sometimes lead to spikes in training data. If you do not care about the ordering AND do not want to checkpoint your dataloader state, try `in_order=False`. Note: disabling in-order might not increase net dataloading speed but can eliminate spikes.
+snapshot_every_n_steps
+This parameter (Default to 1) decides how often we snapshot dataloader state. Higher the number, lesser the costs in  snapshotting but higher the likelihood of data loss in case of job failure.
+
+
+Advanced optimization
+Overlapping H2D and GPU Compute
+You might be able to squeeze some extra QPS wins by overlapping host to device transfer with GPU computation. Mitra provides a handy option `enable_prefetch` to do that (powered through TorchTNT utilities).
+Python's Multiprocessing startup method
+Python's Multiprocessing has three startup modes: fork, forkserver, spawn. Read more about them here. fork is typically not recommended as it is can lead to issues with threads and locks. If the parent process has active threads or holds locks, the child process might inherit a corrupted state or deadlock, as the threads holding the locks are not replicated. forkserver is usually the goto option.
+
+In case, you are desperate for improving startup time and are low on CPU memory, switching to fork can help - if your pipeline can support it (i.e. it is compatible with fork and there is no weird shared state inherited by the child processes). Note 1: fork uses a copy-on-access mechanism so even though initial CPU memory is relatively low, it can climb up easily. So tread with caution. Note 2: fork is discouraged across Meta and you can find ample long term success stories of moving away from fork.
+
+
+start_method = "fork", sharing_strategy = "file_descriptor"
+
+threading
