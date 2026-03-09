@@ -47,7 +47,6 @@ import pandocfilters
 import plotly.io as pio
 import pypandoc
 import torch
-from get_sphinx_filenames import SPHINX_SHOULD_RUN
 
 pio.renderers.default = "sphinx_gallery"
 import multiprocessing
@@ -170,7 +169,7 @@ sphinx_gallery_conf = {
         "unstable_source",
     ],
     "gallery_dirs": ["beginner", "intermediate", "advanced", "recipes", "unstable"],
-    "filename_pattern": re.compile(SPHINX_SHOULD_RUN),
+    "filename_pattern": "/",
     "promote_jupyter_magic": True,
     "backreferences_dir": None,
     "write_computation_times": True,
@@ -267,6 +266,16 @@ if os.getenv("GALLERY_PATTERN"):
     sphinx_gallery_conf["ignore_pattern"] = (
         r"^(?!.*" + os.getenv("GALLERY_PATTERN") + r")"
     )
+
+if os.getenv("FILES_TO_RUN"):
+    # FILES_TO_RUN is set by CI workers to control which tutorials are
+    # executed during sharded builds. Only matching tutorials will have
+    # their code executed; all others will generate static pages without
+    # running any code. This replaces the old approach of mutating source
+    # files with remove_runnable_code.py.
+    files_to_run = os.getenv("FILES_TO_RUN").split()
+    pattern = "|".join(re.escape(f) for f in files_to_run)
+    sphinx_gallery_conf["filename_pattern"] = re.compile(pattern)
 
 for i in range(len(sphinx_gallery_conf["examples_dirs"])):
     gallery_dir = Path(sphinx_gallery_conf["gallery_dirs"][i])
