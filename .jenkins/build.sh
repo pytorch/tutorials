@@ -39,7 +39,8 @@ fi
 # sudo pip uninstall -y torch torchvision torchaudio torchtext torchdata
 # pip3 install torch==2.11.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu130
 # Install two language tokenizers for Translation with TorchText tutorial
-pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.4.0/en_core_web_sm-3.4.0-py3-none-any.whl
+# Note: keep this version consistent with the spacy version in requirements.txt
+pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
 
 awsv2 -i
 awsv2 configure set default.s3.multipart_threshold 5120MB
@@ -47,7 +48,7 @@ awsv2 configure set default.s3.multipart_threshold 5120MB
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 if [[ "${JOB_TYPE}" == "worker" ]]; then
   # Step 1: Remove runnable code from tutorials that are not supposed to be run
-  python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
+  # python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
   # Temp remove for mnist download issue. (Re-enabled for 1.8.1)
   # python $DIR/remove_runnable_code.py beginner_source/fgsm_tutorial.py beginner_source/fgsm_tutorial.py || true
   # python $DIR/remove_runnable_code.py intermediate_source/spatial_transformer_tutorial.py intermediate_source/spatial_transformer_tutorial.py || true
