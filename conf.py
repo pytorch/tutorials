@@ -240,7 +240,7 @@ html_theme_options = {
 
     # Announcement Banner Configuration
     "announcement_banner": {
-        "text": "Help us understand how you use PyTorch! Take our quick survey.",
+        "text": "Help us understand how you use PyTorch! Take our quick survey",
         "url": "https://docs.google.com/forms/d/e/1FAIpQLSfsGAWBcfutRcbO6kfrShBMOMmRuBezRjjOcXk0e9I9luBzvQ/viewform",
         "link_text": "Take Survey",
         "dismissible": True,
