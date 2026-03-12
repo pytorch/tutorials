@@ -79,7 +79,7 @@ def timed(fn):
 # batch size.
 def generate_data(b):
     return (
-        torch.randn(b, 3, 128, 128).to().cuda(),
+        torch.randn(b, 3, 128, 128).cuda(),
         torch.randint(1000, (b,)).cuda(),
     )
 
