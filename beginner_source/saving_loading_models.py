@@ -18,7 +18,7 @@ functions to be familiar with:
    objects can be saved using this function.
 
 2) `torch.load <https://pytorch.org/docs/stable/torch.html?highlight=torch%20load#torch.load>`__:
-   Uses `pickle <https://docs.python.org/3/library/pickle.html>`__\ ’s
+   Uses `pickle <https://docs.python.org/3/library/pickle.html>`__ 's
    unpickling facilities to deserialize pickled object files to memory.
    This function also facilitates the device to load the data into (see
    `Saving & Loading Model Across
