@@ -3,7 +3,10 @@ PyTorch: Tensors and autograd
 -------------------------------
 
 A third order polynomial, trained to predict :math:`y=\sin(x)` from :math:`-\pi`
-to :math:`\pi` by minimizing squared Euclidean distance.
+to :math:`\pi` by minimizing squared Euclidean distance. Feel free to try other
+functions such as `y=\exp(x)` with faster convergence and play with the learning
+rate.
+
 
 This implementation computes the forward pass using operations on PyTorch
 Tensors, and uses PyTorch autograd to compute gradients.
@@ -27,8 +30,8 @@ torch.set_default_device(device)
 # Create Tensors to hold input and outputs.
 # By default, requires_grad=False, which indicates that we do not need to
 # compute gradients with respect to these Tensors during the backward pass.
-x = torch.linspace(-1, 1, 2000, dtype=dtype)
-y = torch.exp(x) # A Taylor expansion would be 1 + x + (1/2) x**2 + (1/3!) x**3 + ...
+x = torch.linspace(-math.pi, math.pi, 2000, dtype=dtype)
+y = torch.sin(x) # Note that a Taylor expansion would be y = 0 + x + 0 + (-1/3!) x^3 + ...
 
 # Create random Tensors for weights. For a third order polynomial, we need
 # 4 weights: y = a + b x + c x^2 + d x^3
@@ -40,7 +43,7 @@ c = torch.randn((), dtype=dtype, requires_grad=True)
 d = torch.randn((), dtype=dtype, requires_grad=True)
 
 initial_loss = 1.
-learning_rate = 1e-5
+learning_rate = 1e-6
 for t in range(5000):
     # Forward pass: compute predicted y using operations on Tensors.
     y_pred = a + b * x + c * x ** 2 + d * x ** 3
@@ -50,7 +53,7 @@ for t in range(5000):
     # loss.item() gets the scalar value held in the loss.
     loss = (y_pred - y).pow(2).sum()
 
-    # Calculare initial loss, so we can report loss relative to it
+    # Calculate initial loss, so we can report loss relative to it
     if t==0:
         initial_loss=loss.item()
 
