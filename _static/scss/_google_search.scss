@@ -247,11 +247,11 @@ input:checked + .slider {
 // Google search input field
 #gsc-i-id1 {
   height: 1.5rem;
-  text-indent: 12px !important;
+  text-indent: 0 !important;
   font-size: 1rem !important;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-position: 5px 0px !important;
-  padding-left: 20px !important;
+  background-image: none !important;
+  padding-left: 8px !important;
   color: var(--pst-color-text-base) !important;
   position: relative;
   z-index: 10;
@@ -289,26 +289,20 @@ table.gsc-search-box td {
 }
 
 .gsc-search-button {
-  margin-left: 0 !important;
+  display: none !important;
+  width: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
 
   &-v2 {
-    padding: 9px 16px !important;
-    border-radius: 0 0.25rem 0.25rem 0 !important;
-    background-color: var(--pst-color-primary) !important;
-    border-color: var(--pst-color-primary) !important;
-    margin-left: -1px !important;
-    height: 38px !important;
-
-    svg {
-      fill: white !important;
-      width: 13px !important;
-      height: 13px !important;
-    }
+    display: none !important;
   }
 }
 
-.gsc-search-button-v2 {
+td.gsc-search-button {
   display: none !important;
+  width: 0 !important;
+  padding: 0 !important;
 }
 
 // Hide Google branding
@@ -397,6 +391,25 @@ table.gsc-search-box td {
 }
 
 
+// Hide broken images in search results (shows red X when image not found)
+.gs-image-box,
+.gs-image,
+.gsc-table-result .gs-image-box,
+.gsc-url-top .gs-image {
+  display: none !important;
+}
+
+.gs-image-box a img {
+  display: none !important;
+}
+
+// Hide the image column in result tables
+.gsc-table-result td.gsc-table-cell-thumbnail {
+  display: none !important;
+  width: 0 !important;
+  padding: 0 !important;
+}
+
 .gsc-table-result {
   font-family: var(--pst-font-family-base) !important;
 }
@@ -442,6 +455,55 @@ table.gsc-search-box td {
 
 .gcsc-find-more-on-google-magnifier {
   fill: var(--pst-color-primary) !important;
+}
+
+// Google search autocompletion styling - custom dropdown for searchresults-only mode
+.google-search-suggestions {
+  display: none;
+  position: absolute;
+  top: 38px;
+  left: 0;
+  right: 0;
+  background-color: var(--pst-color-background);
+  border: 1px solid var(--pst-color-border);
+  border-top: none;
+  border-radius: 0 0 0.5rem 0.5rem;
+  z-index: 10001;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 0.25rem 0;
+}
+
+.google-suggest-item {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--pst-color-text-base);
+  font-family: var(--pst-font-family-base);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  transition: background-color 0.1s ease;
+
+  &::before {
+    content: "\f002";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 0.75rem;
+    color: var(--pst-color-text-muted);
+    flex-shrink: 0;
+  }
+
+  &:hover,
+  &.active {
+    background-color: var(--pst-color-primary);
+    color: white;
+
+    &::before {
+      color: white;
+    }
+  }
 }
 
 // Google search autocompletion styling
@@ -491,13 +553,57 @@ body.gsc-overflow-hidden {
   }
 }
 
-body.gsc-overflow-hidden .gsc-results-wrapper-overlay {
+body.gsc-overflow-hidden .gsc-results-wrapper-overlay {
   position: fixed !important;
-  z-index: 10000 !important;
-  max-width: 1000px;
-  left: 50%;
+  z-index: 10000 !important;
+  max-width: 900px !important;
+  width: 90vw !important;
+  left: 50% !important;
   right: auto !important;
-  transform: translate(-50%);
+  top: 70px !important;
+  transform: translateX(-50%) !important;
+  background-color: var(--pst-color-background) !important;
+  border: 1px solid var(--pst-color-border) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2) !important;
+  max-height: calc(100vh - 100px) !important;
+  overflow-y: auto !important;
+  padding: 0.5rem 0.75rem !important;
+}
+
+.gsc-results-close-btn {
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  width: 30px !important;
+  height: 30px !important;
+  cursor: pointer !important;
+  border: 1px solid var(--pst-color-border) !important;
+  border-radius: 50% !important;
+  z-index: 10001 !important;
+  background: var(--pst-color-background) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z' fill='%23666'/%3E%3C/svg%3E") center/16px no-repeat !important;
+}
+
+.gsc-results-close-btn:hover {
+  background-color: var(--pst-color-on-surface) !important;
+}
+
+.gsc-webResult.gsc-result {
+  padding: 0.5rem 0 !important;
+  border-bottom: 1px solid var(--pst-color-border) !important;
+}
+
+.gsc-wrapper {
+  padding: 0 !important;
+}
+
+.gsc-expansionArea {
+  padding: 0 !important;
+}
+
+.gsc-positioningWrapper {
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 // Version switcher
@@ -676,12 +782,11 @@ body.gsc-overflow-hidden {
 // Fix for Google search input field
 #gsc-i-id1 {
   height: 1.5rem;
-  text-indent: 12px !important;
+  text-indent: 0 !important;
   font-size: 1rem !important;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-size: 18px 18px !important;
-  background-position: 5px 0px !important;
-  padding-left: 20px !important;
+  background-image: none !important;
+  padding-left: 8px !important;
   color: var(--pst-color-text-base) !important;
   position: relative;
   z-index: 10;
@@ -744,6 +849,25 @@ body.search-page.gsc-overflow-hidden .footer-article-item .feedback-send {
   .fa-magnifying-glass {
     font-size: 1.2rem !important;
     top: 0.5em !important;
+  }
+}
+
+
+// Hide Google search toggle on mobile - Google CSE results-only mode
+// doesn't work properly when cloned into the mobile sidebar
+@media (max-width: 991.98px) {
+  .sidebar-header-items__end .navbar-item .search-container-wrapper {
+    .search-toggle-container {
+      display: none !important;
+    }
+
+    #google-search {
+      display: none !important;
+    }
+
+    #sphinx-search {
+      display: block !important;
+    }
   }
 }
 

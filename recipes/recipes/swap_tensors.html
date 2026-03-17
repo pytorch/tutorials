@@ -6,7 +6,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta content="2022-07-20T23:02:43+00:00" property="article:modified_time"/>
-<title>Extension points in nn.Module for load_state_dict and tensor subclasses — PyTorch Tutorials 2.11.0+cu130 documentation</title>
+<title>Extension points in nn.Module for load_state_dict and tensor subclasses — PyTorch Tutorials 2.10.0+cu128 documentation</title>
 <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
@@ -20,7 +20,7 @@
 <link as="font" crossorigin="" href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" rel="preload" type="font/woff2"/>
 <link as="font" crossorigin="" href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" rel="preload" type="font/woff2"/>
 <link href="../../_static/pygments.css?v=536c50fe" rel="stylesheet" type="text/css"/>
-<link href="../../_static/css/theme.css?v=72e443bf" rel="stylesheet" type="text/css"/>
+<link href="../../_static/css/theme.css?v=6977116a" rel="stylesheet" type="text/css"/>
 <link href="../../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
 <link href="../../_static/sg_gallery.css?v=d2d258e8" rel="stylesheet" type="text/css"/>
 <link href="../../_static/sg_gallery-binder.css?v=f4aeca0c" rel="stylesheet" type="text/css"/>
@@ -34,7 +34,7 @@
 <link as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
 <link as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
 <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../../_static/documentation_options.js?v=92f158d6"></script>
+<script src="../../_static/documentation_options.js?v=a8d6e986"></script>
 <script src="../../_static/doctools.js?v=888ff710"></script>
 <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
 <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
 <meta content="Extension points in nn.Module for load_state_dict and tensor subclasses - Documentation for PyTorch Tutorials, part of the PyTorch ecosystem." name="llm:description"/>
 <meta content="https://docs.pytorch.org/tutorials/llms.txt" name="llm:navigation-file"/>
 <meta content="https://docs.pytorch.org/tutorials/sitemap.xml" name="llm:sitemap"/>
-<meta content="v2.11.0+cu130" name="llm:version"/>
+<meta content="v2.10.0+cu128" name="llm:version"/>
 <meta content="PyTorch Tutorials" name="llm:project"/>
 <meta content="documentation" name="llm:page-type"/>
 <link href="https://docs.pytorch.org/tutorials/llms.txt" rel="alternate" title="LLM Navigation Guide" type="text/plain"/>
@@ -159,7 +159,7 @@
   fbq('track', 'PageView');
 </script>
 <script>
-  document.documentElement.setAttribute('data-version', 'v2.11.0+cu130');
+  document.documentElement.setAttribute('data-version', 'v2.10.0+cu128');
 </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView&amp;noscript=1" width="1"/>
@@ -343,7 +343,7 @@
 </a>
 </div>
 <div class="navbar-item desktop-only-version">
-<a class="version" href="../../index.html">v2.11.0+cu130</a>
+<a class="version" href="../../index.html">v2.10.0+cu128</a>
 </div>
 </div>
 <div class="navbar-header-items">
@@ -877,11 +877,480 @@
 </span>
 </a></div>
 <div class="navbar-item">
+<div class="search-container-wrapper">
+<div class="search-container" id="sphinx-search">
 <form action="../../search.html" class="bd-search d-flex align-items-center" method="get">
 <i class="fa-solid fa-magnifying-glass"></i>
 <input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="search-input" name="q" placeholder="Search the docs ..." spellcheck="false" type="search"/>
 <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form>
+</div>
+<div class="search-container" id="google-search" style="display:none;">
+<form class="bd-search d-flex align-items-center" id="google-search-form">
+<i class="fa-solid fa-magnifying-glass"></i>
+<input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="google-search-input" placeholder="Search the docs ..." spellcheck="false" type="search"/>
+</form>
+<div class="google-search-suggestions" id="google-search-suggestions"></div>
+<div class="gcse-searchresults-only"></div>
+</div>
+<div class="search-toggle-container" data-bs-placement="bottom" data-bs-title="Google Search Off" data-bs-toggle="tooltip">
+<div class="search-toggle-inner">
+<label class="switch">
+<input id="search-toggle" type="checkbox"/>
+<span class="slider round"></span>
+</label>
+</div>
+</div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+  // Define the search callback
+  const myWebSearchStartingCallback = (gname, query) => {
+    if (typeof dataLayer !== 'undefined' && query) {
+      window.dataLayer = window.dataLayer || [];
+      dataLayer.push({
+        'event': 'google_search',
+        'search_term': query,
+        'event_category': 'Search',
+        'event_label': 'Google Search'
+      });
+    }
+    return '';
+  };
+
+  // Set up the GCSE search callbacks
+  window.__gcse || (window.__gcse = {});
+  window.__gcse.searchCallbacks = {
+    web: { starting: myWebSearchStartingCallback }
+  };
+
+  if (window.location.pathname.includes('/search.html')) {
+    document.body.classList.add('search-page');
+  }
+
+  // Function to reinitialize Google CSE
+  function reinitializeGoogleSearch() {
+    if (window.__gcse && window.__gcse.initializationCallback) {
+      window.__gcse.initializationCallback();
+    }
+  }
+
+  // Execute Google CSE search programmatically from our custom input
+  function executeGoogleSearch(query) {
+    if (!query) return;
+
+    // Close mobile sidebar if open, so results overlay is visible
+    var sidebar = document.querySelector('.bd-sidebar-primary');
+    if (sidebar && sidebar.classList.contains('show')) {
+      var closeBtn = sidebar.querySelector('[data-bs-dismiss="offcanvas"]');
+      if (closeBtn) closeBtn.click();
+      // Also try Bootstrap's offcanvas API
+      try {
+        var offcanvas = bootstrap.Offcanvas.getInstance(sidebar);
+        if (offcanvas) offcanvas.hide();
+      } catch(e) {}
+    }
+
+    var element = google.search.cse.element.getElement('searchresults-only0');
+    if (element) {
+      element.execute(query);
+    }
+  }
+
+  // Wire up our custom Google search input
+  var googleSearchForm = document.getElementById('google-search-form');
+  var googleSearchInput = document.getElementById('google-search-input');
+
+  if (googleSearchForm) {
+    googleSearchForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      var query = googleSearchInput ? googleSearchInput.value : '';
+      executeGoogleSearch(query);
+    });
+  }
+
+  var suggestDebounce;
+  var activeSuggestionIndex = -1;
+
+  if (googleSearchInput) {
+    // Trigger search on Enter key
+    googleSearchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        hideSuggestions();
+        executeGoogleSearch(this.value);
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        navigateSuggestions(e.key === 'ArrowDown' ? 1 : -1);
+      } else if (e.key === 'Escape') {
+        hideSuggestions();
+      }
+    });
+
+    googleSearchInput.addEventListener('input', function() {
+      clearTimeout(suggestDebounce);
+      var query = this.value.trim();
+      activeSuggestionIndex = -1;
+      if (query.length < 2) {
+        hideSuggestions();
+        return;
+      }
+      suggestDebounce = setTimeout(function() {
+        fetchGoogleSuggestions(query);
+      }, 200);
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#google-search')) {
+        hideSuggestions();
+      }
+    });
+  }
+
+  // Filter and clean suggestions: keep only PyTorch-related, strip prefix
+  function cleanSuggestions(rawList) {
+    return rawList.map(function(s) {
+      var text = typeof s === 'string' ? s : s[0];
+      return text;
+    }).filter(function(text) {
+      return /pytorch/i.test(text);
+    }).map(function(text) {
+      return text.replace(/^pytorch\s*/i, '');
+    }).filter(function(s) {
+      return s.length > 0;
+    });
+  }
+
+  // Fetch suggestions from Google suggest API, scoped to PyTorch
+  function fetchGoogleSuggestions(query) {
+    var scopedQuery = 'pytorch ' + query;
+    fetch('https://suggestqueries.google.com/complete/search?client=firefox&q=' + encodeURIComponent(scopedQuery))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data[1] && data[1].length) {
+          var cleaned = cleanSuggestions(data[1]);
+          cleaned.length ? showSuggestions(cleaned) : hideSuggestions();
+        } else {
+          hideSuggestions();
+        }
+      })
+      .catch(function() {
+        fetchGoogleSuggestionsJSONP(scopedQuery);
+      });
+  }
+
+  function fetchGoogleSuggestionsJSONP(scopedQuery) {
+    var script = document.getElementById('gcse-suggest-script');
+    if (script) script.remove();
+
+    window.__gcseSuggestCallback = function(data) {
+      if (data && data[1] && data[1].length) {
+        var cleaned = cleanSuggestions(data[1]);
+        cleaned.length ? showSuggestions(cleaned) : hideSuggestions();
+      } else {
+        hideSuggestions();
+      }
+    };
+
+    script = document.createElement('script');
+    script.id = 'gcse-suggest-script';
+    script.src = 'https://clients1.google.com/complete/search?client=hp&q=' + encodeURIComponent(scopedQuery) + '&callback=__gcseSuggestCallback';
+    script.onerror = function() { hideSuggestions(); };
+    document.head.appendChild(script);
+  }
+
+  function stripHtml(str) {
+    var tmp = document.createElement('div');
+    tmp.innerHTML = str;
+    return tmp.textContent || tmp.innerText || '';
+  }
+
+  function showSuggestions(suggestions) {
+    var container = document.getElementById('google-search-suggestions');
+    if (!container || !suggestions.length) { hideSuggestions(); return; }
+
+    container.innerHTML = '';
+    suggestions.forEach(function(rawText, index) {
+      var text = stripHtml(rawText);
+      var item = document.createElement('div');
+      item.className = 'google-suggest-item';
+      item.textContent = text;
+      item.setAttribute('data-index', index);
+      item.addEventListener('click', function() {
+        googleSearchInput.value = text;
+        hideSuggestions();
+        executeGoogleSearch(text);
+      });
+      item.addEventListener('mouseenter', function() {
+        activeSuggestionIndex = index;
+        highlightSuggestion();
+      });
+      container.appendChild(item);
+    });
+    container.style.display = 'block';
+    activeSuggestionIndex = -1;
+  }
+
+  function hideSuggestions() {
+    var container = document.getElementById('google-search-suggestions');
+    if (container) {
+      container.style.display = 'none';
+      container.innerHTML = '';
+    }
+    activeSuggestionIndex = -1;
+    // Clean up JSONP script
+    var script = document.getElementById('gcse-suggest-script');
+    if (script) script.remove();
+  }
+
+  function navigateSuggestions(direction) {
+    var items = document.querySelectorAll('#google-search-suggestions .google-suggest-item');
+    if (!items.length) return;
+
+    activeSuggestionIndex += direction;
+    if (activeSuggestionIndex >= items.length) activeSuggestionIndex = 0;
+    if (activeSuggestionIndex < 0) activeSuggestionIndex = items.length - 1;
+
+    highlightSuggestion();
+    googleSearchInput.value = items[activeSuggestionIndex].textContent;
+  }
+
+  function highlightSuggestion() {
+    var items = document.querySelectorAll('#google-search-suggestions .google-suggest-item');
+    items.forEach(function(item, i) {
+      item.classList.toggle('active', i === activeSuggestionIndex);
+    });
+  }
+
+  // Function to handle search toggle
+  function handleSearchToggle(toggle, sphinxSearch, googleSearch) {
+    if (!toggle || !sphinxSearch || !googleSearch) return;
+
+    // TODO: We've had reports that the google programmable search is returning stale documentation,
+    //       Simple reproduction is to turn google search on and search for multinomial which will
+    //       result in returning 1.8.1 documentation.
+    //       We should turn this back on when we resolve that bug.
+    const shouldDefaultToGoogle = false;
+    const savedPreference = localStorage.getItem('searchPreference');
+
+    // Set initial state
+    if (savedPreference === 'google' || (savedPreference === null && shouldDefaultToGoogle)) {
+      toggle.checked = true;
+      sphinxSearch.style.display = 'none';
+      googleSearch.style.display = 'block';
+      if (savedPreference === null) {
+        localStorage.setItem('searchPreference', 'google');
+      }
+      reinitializeGoogleSearch();
+    } else {
+      toggle.checked = false;
+      sphinxSearch.style.display = 'block';
+      googleSearch.style.display = 'none';
+    }
+
+    // Update tooltip
+    updateTooltip(toggle.checked);
+
+    // Skip if already initialized
+    if (toggle.hasAttribute('data-initialized')) return;
+    toggle.setAttribute('data-initialized', 'true');
+
+    toggle.addEventListener('change', function() {
+      if (this.checked) {
+        sphinxSearch.style.display = 'none';
+        googleSearch.style.display = 'block';
+        localStorage.setItem('searchPreference', 'google');
+        reinitializeGoogleSearch();
+        trackSearchEngineSwitch('Google');
+        // Focus our custom input when switching to Google
+        if (googleSearchInput) googleSearchInput.focus();
+      } else {
+        sphinxSearch.style.display = 'block';
+        googleSearch.style.display = 'none';
+        localStorage.setItem('searchPreference', 'sphinx');
+        trackSearchEngineSwitch('Sphinx');
+      }
+
+      updateTooltip(this.checked);
+      updateMobileSearch();
+    });
+  }
+
+  // Update tooltip based on toggle state
+  function updateTooltip(isChecked) {
+    const tooltipElement = document.querySelector('.search-toggle-container');
+    if (!tooltipElement) return;
+
+    tooltipElement.setAttribute('data-bs-title', isChecked ? 'Google Search On' : 'Google Search Off');
+
+    if (bootstrap && bootstrap.Tooltip) {
+      const tooltipInstance = bootstrap.Tooltip.getInstance(tooltipElement);
+      if (tooltipInstance) tooltipInstance.dispose();
+      new bootstrap.Tooltip(tooltipElement);
+    }
+  }
+
+  // Track search engine switch
+  function trackSearchEngineSwitch(engine) {
+    if (typeof dataLayer !== 'undefined') {
+      window.dataLayer = window.dataLayer || [];
+      dataLayer.push({
+        'event': 'search_engine_switch',
+        'event_category': 'Search',
+        'event_label': engine
+      });
+    }
+  }
+
+  // Function to update mobile search based on current toggle state
+  function updateMobileSearch() {
+    const toggle = document.getElementById('search-toggle');
+    if (!toggle) return;
+
+    const mobileSearchContainer = document.querySelector('.sidebar-header-items__end .navbar-item .search-container-wrapper');
+    if (!mobileSearchContainer) return;
+
+    const mobileSphinxSearch = mobileSearchContainer.querySelector('#sphinx-search');
+    const mobileGoogleSearch = mobileSearchContainer.querySelector('#google-search');
+
+    if (mobileSphinxSearch && mobileGoogleSearch) {
+      mobileSphinxSearch.style.display = toggle.checked ? 'none' : 'block';
+      mobileGoogleSearch.style.display = toggle.checked ? 'block' : 'none';
+
+      if (toggle.checked) {
+        reinitializeGoogleSearch();
+      }
+    }
+  }
+
+  // Initialize desktop search toggle
+  const toggle = document.getElementById('search-toggle');
+  const sphinxSearch = document.getElementById('sphinx-search');
+  const googleSearch = document.getElementById('google-search');
+  handleSearchToggle(toggle, sphinxSearch, googleSearch);
+
+  // Fix for scroll jump issue - improved approach
+  function setupSearchInputHandlers(input) {
+    if (input.hasAttribute('data-scroll-fixed')) return;
+    input.setAttribute('data-scroll-fixed', 'true');
+
+    let lastScrollPosition = 0;
+    let isTyping = false;
+    let scrollTimeout;
+
+    input.addEventListener('keydown', () => {
+      lastScrollPosition = window.scrollY;
+      isTyping = true;
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => { isTyping = false; }, 100);
+    });
+
+    function maintainScroll() {
+      if (document.activeElement === input && isTyping) {
+        window.scrollTo(0, lastScrollPosition);
+        requestAnimationFrame(maintainScroll);
+      }
+    }
+
+    input.addEventListener('focus', () => {
+      lastScrollPosition = window.scrollY;
+    });
+
+    input.addEventListener('input', () => {
+      isTyping = true;
+      window.scrollTo(0, lastScrollPosition);
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => { isTyping = false; }, 100);
+      requestAnimationFrame(maintainScroll);
+    });
+  }
+
+  function applyToSearchInputs() {
+    document.querySelectorAll('.search-container input').forEach(setupSearchInputHandlers);
+  }
+
+  applyToSearchInputs();
+
+  const searchObserver = new MutationObserver(applyToSearchInputs);
+  searchObserver.observe(document.body, { childList: true, subtree: true });
+
+  // Watch for mobile menu creation
+  const mobileMenuObserver = new MutationObserver(function(mutations) {
+    for (const mutation of mutations) {
+      if (!mutation.addedNodes.length) continue;
+
+      const mobileSearchContainer = document.querySelector('.sidebar-header-items__end .navbar-item .search-container-wrapper');
+      if (!mobileSearchContainer) continue;
+
+      const mobileToggle = mobileSearchContainer.querySelector('#search-toggle');
+      if (mobileToggle && toggle) {
+        mobileToggle.checked = toggle.checked;
+        updateMobileSearch();
+
+        if (!mobileToggle.hasAttribute('data-initialized')) {
+          mobileToggle.setAttribute('data-initialized', 'true');
+          mobileToggle.addEventListener('change', function() {
+            toggle.checked = this.checked;
+            toggle.dispatchEvent(new Event('change'));
+          });
+        }
+      }
+
+      // Wire up mobile Google search input
+      var mobileGoogleInput = mobileSearchContainer.querySelector('#google-search-input');
+      if (mobileGoogleInput && !mobileGoogleInput.hasAttribute('data-mobile-wired')) {
+        mobileGoogleInput.setAttribute('data-mobile-wired', 'true');
+
+        var mobileForm = mobileSearchContainer.querySelector('#google-search-form');
+        if (mobileForm) {
+          mobileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            executeGoogleSearch(mobileGoogleInput.value);
+          });
+        }
+
+        mobileGoogleInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            executeGoogleSearch(this.value);
+          }
+        });
+
+        mobileGoogleInput.addEventListener('input', function() {
+          clearTimeout(suggestDebounce);
+          var query = this.value.trim();
+          activeSuggestionIndex = -1;
+          if (query.length < 2) return;
+          suggestDebounce = setTimeout(function() {
+            // Mobile uses the same search execution but no suggestions dropdown
+            // (suggestions dropdown is complex on mobile; just support Enter to search)
+          }, 200);
+        });
+      }
+    }
+  });
+
+  mobileMenuObserver.observe(document.body, { childList: true, subtree: true });
+
+  // Ensure Google CSE is properly loaded
+  if (window.__gcse) {
+    window.__gcse.callback = function() {
+      if (toggle && toggle.checked) {
+        reinitializeGoogleSearch();
+      }
+    };
+  } else {
+    window.__gcse = {
+      callback: function() {
+        if (toggle && toggle.checked) {
+          reinitializeGoogleSearch();
+        }
+      }
+    };
+  }
+});
+</script>
 </div>
 <div class="navbar-item">
 <script>
@@ -924,7 +1393,7 @@ document.write(`
 <div class="sidebar-header-items sidebar-primary__section">
 <div class="sidebar-header-items__start">
 <div class="navbar-item">
-<a class="version" href="../../index.html">v2.11.0+cu130</a>
+<a class="version" href="../../index.html">v2.10.0+cu128</a>
 </div>
 </div>
 <div class="sidebar-header-items__center">
@@ -1686,11 +2155,480 @@ document.write(`
 </span>
 </a></div>
 <div class="navbar-item">
+<div class="search-container-wrapper">
+<div class="search-container" id="sphinx-search">
 <form action="../../search.html" class="bd-search d-flex align-items-center" method="get">
 <i class="fa-solid fa-magnifying-glass"></i>
-<input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="search-input" name="q" placeholder="Search the docs ..." spellcheck="false" type="search"/>
+<input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="search-input" name="q" placeholder="Search the docs ..." spellcheck="false" type="search">
 <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</input></form>
+</div>
+<div class="search-container" id="google-search" style="display:none;">
+<form class="bd-search d-flex align-items-center" id="google-search-form">
+<i class="fa-solid fa-magnifying-glass"></i>
+<input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="google-search-input" placeholder="Search the docs ..." spellcheck="false" type="search"/>
 </form>
+<div class="google-search-suggestions" id="google-search-suggestions"></div>
+<div class="gcse-searchresults-only"></div>
+</div>
+<div class="search-toggle-container" data-bs-placement="bottom" data-bs-title="Google Search Off" data-bs-toggle="tooltip">
+<div class="search-toggle-inner">
+<label class="switch">
+<input id="search-toggle" type="checkbox"/>
+<span class="slider round"></span>
+</label>
+</div>
+</div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+  // Define the search callback
+  const myWebSearchStartingCallback = (gname, query) => {
+    if (typeof dataLayer !== 'undefined' && query) {
+      window.dataLayer = window.dataLayer || [];
+      dataLayer.push({
+        'event': 'google_search',
+        'search_term': query,
+        'event_category': 'Search',
+        'event_label': 'Google Search'
+      });
+    }
+    return '';
+  };
+
+  // Set up the GCSE search callbacks
+  window.__gcse || (window.__gcse = {});
+  window.__gcse.searchCallbacks = {
+    web: { starting: myWebSearchStartingCallback }
+  };
+
+  if (window.location.pathname.includes('/search.html')) {
+    document.body.classList.add('search-page');
+  }
+
+  // Function to reinitialize Google CSE
+  function reinitializeGoogleSearch() {
+    if (window.__gcse && window.__gcse.initializationCallback) {
+      window.__gcse.initializationCallback();
+    }
+  }
+
+  // Execute Google CSE search programmatically from our custom input
+  function executeGoogleSearch(query) {
+    if (!query) return;
+
+    // Close mobile sidebar if open, so results overlay is visible
+    var sidebar = document.querySelector('.bd-sidebar-primary');
+    if (sidebar && sidebar.classList.contains('show')) {
+      var closeBtn = sidebar.querySelector('[data-bs-dismiss="offcanvas"]');
+      if (closeBtn) closeBtn.click();
+      // Also try Bootstrap's offcanvas API
+      try {
+        var offcanvas = bootstrap.Offcanvas.getInstance(sidebar);
+        if (offcanvas) offcanvas.hide();
+      } catch(e) {}
+    }
+
+    var element = google.search.cse.element.getElement('searchresults-only0');
+    if (element) {
+      element.execute(query);
+    }
+  }
+
+  // Wire up our custom Google search input
+  var googleSearchForm = document.getElementById('google-search-form');
+  var googleSearchInput = document.getElementById('google-search-input');
+
+  if (googleSearchForm) {
+    googleSearchForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      var query = googleSearchInput ? googleSearchInput.value : '';
+      executeGoogleSearch(query);
+    });
+  }
+
+  var suggestDebounce;
+  var activeSuggestionIndex = -1;
+
+  if (googleSearchInput) {
+    // Trigger search on Enter key
+    googleSearchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        hideSuggestions();
+        executeGoogleSearch(this.value);
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        navigateSuggestions(e.key === 'ArrowDown' ? 1 : -1);
+      } else if (e.key === 'Escape') {
+        hideSuggestions();
+      }
+    });
+
+    googleSearchInput.addEventListener('input', function() {
+      clearTimeout(suggestDebounce);
+      var query = this.value.trim();
+      activeSuggestionIndex = -1;
+      if (query.length < 2) {
+        hideSuggestions();
+        return;
+      }
+      suggestDebounce = setTimeout(function() {
+        fetchGoogleSuggestions(query);
+      }, 200);
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#google-search')) {
+        hideSuggestions();
+      }
+    });
+  }
+
+  // Filter and clean suggestions: keep only PyTorch-related, strip prefix
+  function cleanSuggestions(rawList) {
+    return rawList.map(function(s) {
+      var text = typeof s === 'string' ? s : s[0];
+      return text;
+    }).filter(function(text) {
+      return /pytorch/i.test(text);
+    }).map(function(text) {
+      return text.replace(/^pytorch\s*/i, '');
+    }).filter(function(s) {
+      return s.length > 0;
+    });
+  }
+
+  // Fetch suggestions from Google suggest API, scoped to PyTorch
+  function fetchGoogleSuggestions(query) {
+    var scopedQuery = 'pytorch ' + query;
+    fetch('https://suggestqueries.google.com/complete/search?client=firefox&q=' + encodeURIComponent(scopedQuery))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data[1] && data[1].length) {
+          var cleaned = cleanSuggestions(data[1]);
+          cleaned.length ? showSuggestions(cleaned) : hideSuggestions();
+        } else {
+          hideSuggestions();
+        }
+      })
+      .catch(function() {
+        fetchGoogleSuggestionsJSONP(scopedQuery);
+      });
+  }
+
+  function fetchGoogleSuggestionsJSONP(scopedQuery) {
+    var script = document.getElementById('gcse-suggest-script');
+    if (script) script.remove();
+
+    window.__gcseSuggestCallback = function(data) {
+      if (data && data[1] && data[1].length) {
+        var cleaned = cleanSuggestions(data[1]);
+        cleaned.length ? showSuggestions(cleaned) : hideSuggestions();
+      } else {
+        hideSuggestions();
+      }
+    };
+
+    script = document.createElement('script');
+    script.id = 'gcse-suggest-script';
+    script.src = 'https://clients1.google.com/complete/search?client=hp&q=' + encodeURIComponent(scopedQuery) + '&callback=__gcseSuggestCallback';
+    script.onerror = function() { hideSuggestions(); };
+    document.head.appendChild(script);
+  }
+
+  function stripHtml(str) {
+    var tmp = document.createElement('div');
+    tmp.innerHTML = str;
+    return tmp.textContent || tmp.innerText || '';
+  }
+
+  function showSuggestions(suggestions) {
+    var container = document.getElementById('google-search-suggestions');
+    if (!container || !suggestions.length) { hideSuggestions(); return; }
+
+    container.innerHTML = '';
+    suggestions.forEach(function(rawText, index) {
+      var text = stripHtml(rawText);
+      var item = document.createElement('div');
+      item.className = 'google-suggest-item';
+      item.textContent = text;
+      item.setAttribute('data-index', index);
+      item.addEventListener('click', function() {
+        googleSearchInput.value = text;
+        hideSuggestions();
+        executeGoogleSearch(text);
+      });
+      item.addEventListener('mouseenter', function() {
+        activeSuggestionIndex = index;
+        highlightSuggestion();
+      });
+      container.appendChild(item);
+    });
+    container.style.display = 'block';
+    activeSuggestionIndex = -1;
+  }
+
+  function hideSuggestions() {
+    var container = document.getElementById('google-search-suggestions');
+    if (container) {
+      container.style.display = 'none';
+      container.innerHTML = '';
+    }
+    activeSuggestionIndex = -1;
+    // Clean up JSONP script
+    var script = document.getElementById('gcse-suggest-script');
+    if (script) script.remove();
+  }
+
+  function navigateSuggestions(direction) {
+    var items = document.querySelectorAll('#google-search-suggestions .google-suggest-item');
+    if (!items.length) return;
+
+    activeSuggestionIndex += direction;
+    if (activeSuggestionIndex >= items.length) activeSuggestionIndex = 0;
+    if (activeSuggestionIndex < 0) activeSuggestionIndex = items.length - 1;
+
+    highlightSuggestion();
+    googleSearchInput.value = items[activeSuggestionIndex].textContent;
+  }
+
+  function highlightSuggestion() {
+    var items = document.querySelectorAll('#google-search-suggestions .google-suggest-item');
+    items.forEach(function(item, i) {
+      item.classList.toggle('active', i === activeSuggestionIndex);
+    });
+  }
+
+  // Function to handle search toggle
+  function handleSearchToggle(toggle, sphinxSearch, googleSearch) {
+    if (!toggle || !sphinxSearch || !googleSearch) return;
+
+    // TODO: We've had reports that the google programmable search is returning stale documentation,
+    //       Simple reproduction is to turn google search on and search for multinomial which will
+    //       result in returning 1.8.1 documentation.
+    //       We should turn this back on when we resolve that bug.
+    const shouldDefaultToGoogle = false;
+    const savedPreference = localStorage.getItem('searchPreference');
+
+    // Set initial state
+    if (savedPreference === 'google' || (savedPreference === null && shouldDefaultToGoogle)) {
+      toggle.checked = true;
+      sphinxSearch.style.display = 'none';
+      googleSearch.style.display = 'block';
+      if (savedPreference === null) {
+        localStorage.setItem('searchPreference', 'google');
+      }
+      reinitializeGoogleSearch();
+    } else {
+      toggle.checked = false;
+      sphinxSearch.style.display = 'block';
+      googleSearch.style.display = 'none';
+    }
+
+    // Update tooltip
+    updateTooltip(toggle.checked);
+
+    // Skip if already initialized
+    if (toggle.hasAttribute('data-initialized')) return;
+    toggle.setAttribute('data-initialized', 'true');
+
+    toggle.addEventListener('change', function() {
+      if (this.checked) {
+        sphinxSearch.style.display = 'none';
+        googleSearch.style.display = 'block';
+        localStorage.setItem('searchPreference', 'google');
+        reinitializeGoogleSearch();
+        trackSearchEngineSwitch('Google');
+        // Focus our custom input when switching to Google
+        if (googleSearchInput) googleSearchInput.focus();
+      } else {
+        sphinxSearch.style.display = 'block';
+        googleSearch.style.display = 'none';
+        localStorage.setItem('searchPreference', 'sphinx');
+        trackSearchEngineSwitch('Sphinx');
+      }
+
+      updateTooltip(this.checked);
+      updateMobileSearch();
+    });
+  }
+
+  // Update tooltip based on toggle state
+  function updateTooltip(isChecked) {
+    const tooltipElement = document.querySelector('.search-toggle-container');
+    if (!tooltipElement) return;
+
+    tooltipElement.setAttribute('data-bs-title', isChecked ? 'Google Search On' : 'Google Search Off');
+
+    if (bootstrap && bootstrap.Tooltip) {
+      const tooltipInstance = bootstrap.Tooltip.getInstance(tooltipElement);
+      if (tooltipInstance) tooltipInstance.dispose();
+      new bootstrap.Tooltip(tooltipElement);
+    }
+  }
+
+  // Track search engine switch
+  function trackSearchEngineSwitch(engine) {
+    if (typeof dataLayer !== 'undefined') {
+      window.dataLayer = window.dataLayer || [];
+      dataLayer.push({
+        'event': 'search_engine_switch',
+        'event_category': 'Search',
+        'event_label': engine
+      });
+    }
+  }
+
+  // Function to update mobile search based on current toggle state
+  function updateMobileSearch() {
+    const toggle = document.getElementById('search-toggle');
+    if (!toggle) return;
+
+    const mobileSearchContainer = document.querySelector('.sidebar-header-items__end .navbar-item .search-container-wrapper');
+    if (!mobileSearchContainer) return;
+
+    const mobileSphinxSearch = mobileSearchContainer.querySelector('#sphinx-search');
+    const mobileGoogleSearch = mobileSearchContainer.querySelector('#google-search');
+
+    if (mobileSphinxSearch && mobileGoogleSearch) {
+      mobileSphinxSearch.style.display = toggle.checked ? 'none' : 'block';
+      mobileGoogleSearch.style.display = toggle.checked ? 'block' : 'none';
+
+      if (toggle.checked) {
+        reinitializeGoogleSearch();
+      }
+    }
+  }
+
+  // Initialize desktop search toggle
+  const toggle = document.getElementById('search-toggle');
+  const sphinxSearch = document.getElementById('sphinx-search');
+  const googleSearch = document.getElementById('google-search');
+  handleSearchToggle(toggle, sphinxSearch, googleSearch);
+
+  // Fix for scroll jump issue - improved approach
+  function setupSearchInputHandlers(input) {
+    if (input.hasAttribute('data-scroll-fixed')) return;
+    input.setAttribute('data-scroll-fixed', 'true');
+
+    let lastScrollPosition = 0;
+    let isTyping = false;
+    let scrollTimeout;
+
+    input.addEventListener('keydown', () => {
+      lastScrollPosition = window.scrollY;
+      isTyping = true;
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => { isTyping = false; }, 100);
+    });
+
+    function maintainScroll() {
+      if (document.activeElement === input && isTyping) {
+        window.scrollTo(0, lastScrollPosition);
+        requestAnimationFrame(maintainScroll);
+      }
+    }
+
+    input.addEventListener('focus', () => {
+      lastScrollPosition = window.scrollY;
+    });
+
+    input.addEventListener('input', () => {
+      isTyping = true;
+      window.scrollTo(0, lastScrollPosition);
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => { isTyping = false; }, 100);
+      requestAnimationFrame(maintainScroll);
+    });
+  }
+
+  function applyToSearchInputs() {
+    document.querySelectorAll('.search-container input').forEach(setupSearchInputHandlers);
+  }
+
+  applyToSearchInputs();
+
+  const searchObserver = new MutationObserver(applyToSearchInputs);
+  searchObserver.observe(document.body, { childList: true, subtree: true });
+
+  // Watch for mobile menu creation
+  const mobileMenuObserver = new MutationObserver(function(mutations) {
+    for (const mutation of mutations) {
+      if (!mutation.addedNodes.length) continue;
+
+      const mobileSearchContainer = document.querySelector('.sidebar-header-items__end .navbar-item .search-container-wrapper');
+      if (!mobileSearchContainer) continue;
+
+      const mobileToggle = mobileSearchContainer.querySelector('#search-toggle');
+      if (mobileToggle && toggle) {
+        mobileToggle.checked = toggle.checked;
+        updateMobileSearch();
+
+        if (!mobileToggle.hasAttribute('data-initialized')) {
+          mobileToggle.setAttribute('data-initialized', 'true');
+          mobileToggle.addEventListener('change', function() {
+            toggle.checked = this.checked;
+            toggle.dispatchEvent(new Event('change'));
+          });
+        }
+      }
+
+      // Wire up mobile Google search input
+      var mobileGoogleInput = mobileSearchContainer.querySelector('#google-search-input');
+      if (mobileGoogleInput && !mobileGoogleInput.hasAttribute('data-mobile-wired')) {
+        mobileGoogleInput.setAttribute('data-mobile-wired', 'true');
+
+        var mobileForm = mobileSearchContainer.querySelector('#google-search-form');
+        if (mobileForm) {
+          mobileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            executeGoogleSearch(mobileGoogleInput.value);
+          });
+        }
+
+        mobileGoogleInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            executeGoogleSearch(this.value);
+          }
+        });
+
+        mobileGoogleInput.addEventListener('input', function() {
+          clearTimeout(suggestDebounce);
+          var query = this.value.trim();
+          activeSuggestionIndex = -1;
+          if (query.length < 2) return;
+          suggestDebounce = setTimeout(function() {
+            // Mobile uses the same search execution but no suggestions dropdown
+            // (suggestions dropdown is complex on mobile; just support Enter to search)
+          }, 200);
+        });
+      }
+    }
+  });
+
+  mobileMenuObserver.observe(document.body, { childList: true, subtree: true });
+
+  // Ensure Google CSE is properly loaded
+  if (window.__gcse) {
+    window.__gcse.callback = function() {
+      if (toggle && toggle.checked) {
+        reinitializeGoogleSearch();
+      }
+    };
+  } else {
+    window.__gcse = {
+      callback: function() {
+        if (toggle && toggle.checked) {
+          reinitializeGoogleSearch();
+        }
+      }
+    };
+  }
+});
+</script>
 </div>
 <div class="navbar-item">
 <script>
@@ -1911,17 +2849,17 @@ run without error but the weights of the <code class="docutils literal notransla
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>weight in mod: Parameter containing:
-tensor([[-0.1777],
-        [-0.9176]], requires_grad=True)
+tensor([[0.0840],
+        [0.8972]], requires_grad=True)
 weight in optimizer: [Parameter containing:
-tensor([[-0.1777],
-        [-0.9176]], requires_grad=True)]
+tensor([[0.0840],
+        [0.8972]], requires_grad=True)]
 weight in mod: Parameter containing:
-tensor([[-0.3553],
-        [-1.8353]], requires_grad=True)
+tensor([[0.1680],
+        [1.7943]], requires_grad=True)
 weight in optimizer: [Parameter containing:
-tensor([[-0.1777],
-        [-0.9176]], requires_grad=True)]
+tensor([[0.0840],
+        [0.8972]], requires_grad=True)]
 </pre></div>
 </div>
 </section>
@@ -1993,8 +2931,8 @@ of the subclass’ payload (<code class="docutils literal notranslate"><span cla
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"m.bias.dtype: </span><span class="si">{</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">m</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">dtype</span></a><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before: id(m.weight)=140112032843872, id(m.bias)=140112032845472
-After: id(m.weight)=140112032843872, id(m.bias)=140112032845472
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before: id(m.weight)=140054968899664, id(m.bias)=140054968900704
+After: id(m.weight)=140054968899664, id(m.bias)=140054968900704
 m.weight.dtype: torch.bfloat16
 m.weight.elem.dtype: torch.float32
 m.bias.dtype: torch.bfloat16
@@ -2018,8 +2956,8 @@ the <code class="docutils literal notranslate"><span class="pre">dtype</span></c
 <a class="sphx-glr-backref-module-torch-__future__ sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/future_mod.html#torch.__future__.set_swap_module_params_on_conversion" title="torch.__future__.set_swap_module_params_on_conversion"><span class="n">torch</span><span class="o">.</span><span class="n">__future__</span><span class="o">.</span><span class="n">set_swap_module_params_on_conversion</span></a><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before: id(m.weight)=140112032847232, id(m.bias)=140112105165088
-After: id(m.weight)=140112032847232, id(m.bias)=140112105165088
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before: id(m.weight)=140054968902544, id(m.bias)=140055202453184
+After: id(m.weight)=140054968902544, id(m.bias)=140055202453184
 m.weight.dtype: torch.bfloat16
 m.weight.elem.dtype: torch.bfloat16
 m.bias.dtype: torch.bfloat16
@@ -2102,22 +3040,22 @@ for biases, we want to preserve the properties of the tensor in the <code class=
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"m.state_dict() after load_state_dict():</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-method" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.state_dict" title="torch.nn.Module.state_dict"><span class="n">m</span><span class="o">.</span><span class="n">state_dict</span></a><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before: id(weight)=140112032844752, id(bias)=140112102315792
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before: id(weight)=140055235299184, id(bias)=140055202220848
 m.state_dict() before load_state_dict():
  OrderedDict([('weight', MyQuantizedLinearWeight(tensor(..., device='meta', size=(5, 3)), scale=0.5)), ('bias', tensor(..., device='meta', size=(5,)))])
 state_dict:
- OrderedDict([('weight', tensor([[ 0.1483,  0.3781,  0.3161],
-        [-0.0163,  0.4569, -0.4939],
-        [-0.4574, -0.5170,  0.2716],
-        [-0.1778,  0.4394, -0.1456],
-        [-0.4424, -0.5319,  0.4148]])), ('bias', tensor([-0.4745,  0.1576, -0.3555, -0.5451,  0.5660]))])
-After: id(weight)=140112032844752, id(bias)=140112102315792
+ OrderedDict([('weight', tensor([[ 0.2874,  0.2327,  0.5541],
+        [ 0.4538,  0.1124, -0.1124],
+        [ 0.3753, -0.1144,  0.2262],
+        [ 0.3730,  0.0758, -0.5130],
+        [-0.3123, -0.0926,  0.5510]])), ('bias', tensor([-0.0382,  0.5408, -0.3064, -0.1790, -0.3180]))])
+After: id(weight)=140055235299184, id(bias)=140055202220848
 m.state_dict() after load_state_dict():
- OrderedDict([('weight', MyQuantizedLinearWeight(tensor([[ 0.1483,  0.3781,  0.3161],
-        [-0.0163,  0.4569, -0.4939],
-        [-0.4574, -0.5170,  0.2716],
-        [-0.1778,  0.4394, -0.1456],
-        [-0.4424, -0.5319,  0.4148]]), scale=0.5)), ('bias', tensor([-0.4745,  0.1576, -0.3555, -0.5451,  0.5660]))])
+ OrderedDict([('weight', MyQuantizedLinearWeight(tensor([[ 0.2874,  0.2327,  0.5541],
+        [ 0.4538,  0.1124, -0.1124],
+        [ 0.3753, -0.1144,  0.2262],
+        [ 0.3730,  0.0758, -0.5130],
+        [-0.3123, -0.0926,  0.5510]]), scale=0.5)), ('bias', tensor([-0.0382,  0.5408, -0.3064, -0.1790, -0.3180]))])
 </pre></div>
 </div>
 <p>The above is a toy example of how we can use the new extension point in
@@ -2346,7 +3284,7 @@ use the two new extension points that are gated by
 </footer>
 <div class="cookie-banner-wrapper">
 <div class="container">
-<p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+<p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://opensource.fb.com/legal/cookie-policy">Cookies Policy</a>.</p>
 <img class="close-button" src="../../_static/img/pytorch-x.svg"/>
 </div>
 </div>
@@ -2383,7 +3321,7 @@ use the two new extension points that are gated by
        "headline": "Extension points in nn.Module for load_state_dict and tensor subclasses",
        "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment.",
        "url": "/recipes/recipes/swap_tensors.html",
-       "articleBody": "Note Go to the end to download the full example code. Extension points in nn.Module for load_state_dict and tensor subclasses# Author: Mikayla Gawarecki This recipe introduces a new utility function torch.utils.swap_tensors as well as two new extension points where it has been integrated in nn.Module: nn.Module.to() and related methods nn.Module.load_state_dict() Note This recipe requires PyTorch 2.3.0 or later. torch.utils.swap_tensors# torch.utils.swap_tensors (hereafter referred to as swap_tensors) is a utility function that takes in two Python tensors and swaps them. import torch import torch.nn as nn t1 = torch.arange(2) t2 = torch.arange(3) print(f\"Before swapping, t1: {t1}, t2: {t2}\") torch.utils.swap_tensors(t1, t2) print(f\"After swapping, t1: {t1}, t2: {t2}\") Before swapping, t1: tensor([0, 1]), t2: tensor([0, 1, 2]) After swapping, t1: tensor([0, 1, 2]), t2: tensor([0, 1]) More specifically, swap_tensors swaps the Python __class__, __dict__ and __slots__ of the two tensors, as well as their associated at::Tensor. Application to nn.Module# This utility is pertinent to nn.Module when a Python object outside of the module holds a reference to parameters of the module. If an nn.Module modifies any of its parameters out of place, the object holding references to the parameters will not see the change. A classic example of this is the optimizer, which holds a reference to the parameters of the nn.Module. This leads to a silent correctness issue where the optimizer.step() will run without error but the weights of the nn.Module will not be updated. mod = torch.nn.Linear(1, 2, bias=False) optimizer = torch.optim.SGD(mod.parameters()) print(f\"weight in mod: {mod.weight}\") print(f\"weight in optimizer: {optimizer.param_groups[0][\u0027params\u0027]}\") mod.weight = torch.nn.Parameter(2 * mod.weight) print(f\"weight in mod: {mod.weight}\") print(f\"weight in optimizer: {optimizer.param_groups[0][\u0027params\u0027]}\") weight in mod: Parameter containing: tensor([[-0.1777], [-0.9176]], requires_grad=True) weight in optimizer: [Parameter containing: tensor([[-0.1777], [-0.9176]], requires_grad=True)] weight in mod: Parameter containing: tensor([[-0.3553], [-1.8353]], requires_grad=True) weight in optimizer: [Parameter containing: tensor([[-0.1777], [-0.9176]], requires_grad=True)] nn.Module.to() and related methods# This includes methods that change the device of the module (such as nn.Module.cpu()), methods that change the dtype of the module (such as nn.Module.float()) as well as methods that allow the module to be materialized (such as nn.Module.to_empty()). At first glance, it might be non-intuitive that these methods are able to modify the parameters of the module in-place. The existing approach has been to use a nasty hack dating back from the first days of PyTorch. Notably, the existing approach does not work in these cases: when using __torch_dispatch__ subclasses when param and new_param do not have the same Python type() For tensors with special C++ representations (such as sparse tensors and XLA tensors) In the following part of this recipe, we will define a toy __torch_dispatch__ subclass MyQuantizedLinearWeight that represents quantized linear weights. This subclass will be used for illustration purposes throughout the rest of the tutorial. For brevity, we omit most of the __torch_dispatch__ implementation. aten = torch.ops.aten class MyQuantizedLinearWeight(torch.Tensor): @staticmethod def __new__(cls, elem, scale): return torch.Tensor._make_wrapper_subclass( cls, elem.shape, dtype=elem.dtype, layout=elem.layout, device=elem.device, strides=elem.stride(), storage_offset=elem.storage_offset()) def __init__(self, elem: torch.Tensor, scale: float): self.elem = elem self.scale = scale def __repr__(self): return f\"MyQuantizedLinearWeight({self.elem}, scale={self.scale})\" @classmethod def __torch_dispatch__(cls, func, types, args, kwargs): if func in (aten.detach.default, aten._to_copy.default): new_elem = func(args[0].elem, *args[1:], **kwargs) return cls(new_elem, args[0].scale) # Implementations for certain ops would be added to ``OP_TABLE``. # We omit this for brevity. OP_TABLE = dict() if func in OP_TABLE: return OP_TABLE[func](func, args, kwargs) raise NotImplementedError(f\"Unsupported function {func}\") Let us create an nn.Linear layer of dtype torch.float32 where the weight is a MyQuantizedLinearWeight and try to convert it to torch.bfloat16. Observe that the weight\u2019s dtype changes as expected. However, the dtype of the subclass\u2019 payload (elem) does not change. m = nn.Linear(3, 5, dtype=torch.float32) m.weight = torch.nn.Parameter(MyQuantizedLinearWeight(m.weight, 0.5)) print(f\"Before: id(m.weight)={id(m.weight)}, id(m.bias)={id(m.bias)}\") m.bfloat16() print(f\"After: id(m.weight)={id(m.weight)}, id(m.bias)={id(m.bias)}\") print(f\"m.weight.dtype: {m.weight.dtype}\") print(f\"m.weight.elem.dtype: {m.weight.elem.dtype}\") print(f\"m.bias.dtype: {m.bias.dtype}\") Before: id(m.weight)=140112032843872, id(m.bias)=140112032845472 After: id(m.weight)=140112032843872, id(m.bias)=140112032845472 m.weight.dtype: torch.bfloat16 m.weight.elem.dtype: torch.float32 m.bias.dtype: torch.bfloat16 To this end, we introduce a global config torch.__future__.set_swap_module_params_on_conversion that will use swap_tensors to swap the parameters of the module while preserving references in place of .data setting. When this config is set, swap_tensors will be used during the conversion, which ensures that the dtype of the payload is properly converted. torch.__future__.set_swap_module_params_on_conversion(True) m = nn.Linear(3, 5, dtype=torch.float32) m.weight = torch.nn.Parameter(MyQuantizedLinearWeight(m.weight, 0.5)) print(f\"Before: id(m.weight)={id(m.weight)}, id(m.bias)={id(m.bias)}\") m.bfloat16() print(f\"After: id(m.weight)={id(m.weight)}, id(m.bias)={id(m.bias)}\") print(f\"m.weight.dtype: {m.weight.dtype}\") print(f\"m.weight.elem.dtype: {m.weight.elem.dtype}\") print(f\"m.bias.dtype: {m.bias.dtype}\") torch.__future__.set_swap_module_params_on_conversion(False) Before: id(m.weight)=140112032847232, id(m.bias)=140112105165088 After: id(m.weight)=140112032847232, id(m.bias)=140112105165088 m.weight.dtype: torch.bfloat16 m.weight.elem.dtype: torch.bfloat16 m.bias.dtype: torch.bfloat16 nn.Module.load_state_dict()# Depending on the value of the assign keyword argument passed to load_state_dict(), there are two ways to load the state_dict: assign=False: preserves the properties of module.param and only takes the values from state_dict[\u0027param_name\u0027] assign=True: preserves the properties and values of state_dict[\u0027param_name\u0027]. Previously, these were implemented with in-place copy_ and __setattr__ respectively. With the existing implementation, each approach had its own limitations \u2013 assign=False imposes the constraint that the type of the parameter in the state_dict must be the same as the type of the parameter in the module while assign=True imposes the constraint that anything that holds references to the module\u2019s parameters must be initialized after nn.Module.load_state_dict(). Now, we address both constraints by adding a swap_tensors path to load_state_dict() and introducing a new extension point torch.Tensor.module_load(self, other, assign=False). When the swap_tensors path is enabled via the __future__ mentioned above, we can use a __torch_function__ handler for module_load to apply a custom transformation to the value in the state_dict. The result of this transformation will be swapped with the parameter in the module. In the following example, we will use the MyQuantizedLinearWeight subclass defined above to illustrate how we can use these features to apply a custom quantization scheme to the weights of a linear layer when loading the state_dict. Recall that the __torch_function__ handler for module_load will be invoked if either self or other (in this case param or state_dict[param_key]) are MyQuantizedLinearWeight subclasses. Assume that we expect the state_dict to contain plain tensors and the module to contain MyQuantizedLinearWeight parameters where we want the tensors in the state_dict to be transformed into the subclass. Then we can define a __torch_function__ handler for torch.Tensor.module_load as such: @classmethod def custom_torch_function(cls, func, types, args=(), kwargs=None): kwargs = {} if kwargs is None else kwargs if func is torch.Tensor.module_load: dest, src = args[0], args[1] assert type(dest) == cls and type(src) == torch.Tensor return MyQuantizedLinearWeight(src, dest.scale) else: with torch._C.DisableTorchFunctionSubclass(): return func(*args, **kwargs) MyQuantizedLinearWeight.__torch_function__ = custom_torch_function First, let us create a skeleton of a model on the meta device to avoid materializing storages. We convert all weights in the modules to MyQuantizedLinearWeight subclasses while leaving biases intact. def fn(m): if isinstance(m, nn.Linear): requires_grad = m.weight.requires_grad m.weight = torch.nn.Parameter( MyQuantizedLinearWeight(m.weight, 0.5), requires_grad=requires_grad ) with torch.device(\"meta\"): m = nn.Linear(3, 5) m.apply(fn) We can then load the state_dict. Observe that we use assign=True because for biases, we want to preserve the properties of the tensor in the state_dict (for example, we do not want the bias to be on the meta device after loading). torch.__future__.set_swap_module_params_on_conversion(True) print(f\"Before: id(weight)={id(m.weight)}, id(bias)={id(m.bias)}\") print(f\"m.state_dict() before load_state_dict():\\n {m.state_dict()}\") state_dict = nn.Linear(3, 5).state_dict() print(f\"state_dict:\\n {state_dict}\") m.load_state_dict(state_dict, assign=True) print(f\"After: id(weight)={id(m.weight)}, id(bias)={id(m.bias)}\") print(f\"m.state_dict() after load_state_dict():\\n {m.state_dict()}\") Before: id(weight)=140112032844752, id(bias)=140112102315792 m.state_dict() before load_state_dict(): OrderedDict([(\u0027weight\u0027, MyQuantizedLinearWeight(tensor(..., device=\u0027meta\u0027, size=(5, 3)), scale=0.5)), (\u0027bias\u0027, tensor(..., device=\u0027meta\u0027, size=(5,)))]) state_dict: OrderedDict([(\u0027weight\u0027, tensor([[ 0.1483, 0.3781, 0.3161], [-0.0163, 0.4569, -0.4939], [-0.4574, -0.5170, 0.2716], [-0.1778, 0.4394, -0.1456], [-0.4424, -0.5319, 0.4148]])), (\u0027bias\u0027, tensor([-0.4745, 0.1576, -0.3555, -0.5451, 0.5660]))]) After: id(weight)=140112032844752, id(bias)=140112102315792 m.state_dict() after load_state_dict(): OrderedDict([(\u0027weight\u0027, MyQuantizedLinearWeight(tensor([[ 0.1483, 0.3781, 0.3161], [-0.0163, 0.4569, -0.4939], [-0.4574, -0.5170, 0.2716], [-0.1778, 0.4394, -0.1456], [-0.4424, -0.5319, 0.4148]]), scale=0.5)), (\u0027bias\u0027, tensor([-0.4745, 0.1576, -0.3555, -0.5451, 0.5660]))]) The above is a toy example of how we can use the new extension point in nn.Module.load_state_dict(). One can also imagine alternate scenarios such as when we have tensor subclasses in the state_dict and plain nn.Parameters/ tensors in the module or when both are tensor subclasses. Based on the use case, we can define the __torch_function__ handler for module_load to apply the transforms as needed. Conclusion# In this recipe, we learned about swap_tensors, the importance of preserving references for parameters in nn.Module as well as how to use the two new extension points that are gated by torch.__future__.set_swap_module_params_on_conversion. Total running time of the script: (0 minutes 0.017 seconds) Download Jupyter notebook: swap_tensors.ipynb Download Python source code: swap_tensors.py Download zipped: swap_tensors.zip",
+       "articleBody": "Note Go to the end to download the full example code. Extension points in nn.Module for load_state_dict and tensor subclasses# Author: Mikayla Gawarecki This recipe introduces a new utility function torch.utils.swap_tensors as well as two new extension points where it has been integrated in nn.Module: nn.Module.to() and related methods nn.Module.load_state_dict() Note This recipe requires PyTorch 2.3.0 or later. torch.utils.swap_tensors# torch.utils.swap_tensors (hereafter referred to as swap_tensors) is a utility function that takes in two Python tensors and swaps them. import torch import torch.nn as nn t1 = torch.arange(2) t2 = torch.arange(3) print(f\"Before swapping, t1: {t1}, t2: {t2}\") torch.utils.swap_tensors(t1, t2) print(f\"After swapping, t1: {t1}, t2: {t2}\") Before swapping, t1: tensor([0, 1]), t2: tensor([0, 1, 2]) After swapping, t1: tensor([0, 1, 2]), t2: tensor([0, 1]) More specifically, swap_tensors swaps the Python __class__, __dict__ and __slots__ of the two tensors, as well as their associated at::Tensor. Application to nn.Module# This utility is pertinent to nn.Module when a Python object outside of the module holds a reference to parameters of the module. If an nn.Module modifies any of its parameters out of place, the object holding references to the parameters will not see the change. A classic example of this is the optimizer, which holds a reference to the parameters of the nn.Module. This leads to a silent correctness issue where the optimizer.step() will run without error but the weights of the nn.Module will not be updated. mod = torch.nn.Linear(1, 2, bias=False) optimizer = torch.optim.SGD(mod.parameters()) print(f\"weight in mod: {mod.weight}\") print(f\"weight in optimizer: {optimizer.param_groups[0][\u0027params\u0027]}\") mod.weight = torch.nn.Parameter(2 * mod.weight) print(f\"weight in mod: {mod.weight}\") print(f\"weight in optimizer: {optimizer.param_groups[0][\u0027params\u0027]}\") weight in mod: Parameter containing: tensor([[0.0840], [0.8972]], requires_grad=True) weight in optimizer: [Parameter containing: tensor([[0.0840], [0.8972]], requires_grad=True)] weight in mod: Parameter containing: tensor([[0.1680], [1.7943]], requires_grad=True) weight in optimizer: [Parameter containing: tensor([[0.0840], [0.8972]], requires_grad=True)] nn.Module.to() and related methods# This includes methods that change the device of the module (such as nn.Module.cpu()), methods that change the dtype of the module (such as nn.Module.float()) as well as methods that allow the module to be materialized (such as nn.Module.to_empty()). At first glance, it might be non-intuitive that these methods are able to modify the parameters of the module in-place. The existing approach has been to use a nasty hack dating back from the first days of PyTorch. Notably, the existing approach does not work in these cases: when using __torch_dispatch__ subclasses when param and new_param do not have the same Python type() For tensors with special C++ representations (such as sparse tensors and XLA tensors) In the following part of this recipe, we will define a toy __torch_dispatch__ subclass MyQuantizedLinearWeight that represents quantized linear weights. This subclass will be used for illustration purposes throughout the rest of the tutorial. For brevity, we omit most of the __torch_dispatch__ implementation. aten = torch.ops.aten class MyQuantizedLinearWeight(torch.Tensor): @staticmethod def __new__(cls, elem, scale): return torch.Tensor._make_wrapper_subclass( cls, elem.shape, dtype=elem.dtype, layout=elem.layout, device=elem.device, strides=elem.stride(), storage_offset=elem.storage_offset()) def __init__(self, elem: torch.Tensor, scale: float): self.elem = elem self.scale = scale def __repr__(self): return f\"MyQuantizedLinearWeight({self.elem}, scale={self.scale})\" @classmethod def __torch_dispatch__(cls, func, types, args, kwargs): if func in (aten.detach.default, aten._to_copy.default): new_elem = func(args[0].elem, *args[1:], **kwargs) return cls(new_elem, args[0].scale) # Implementations for certain ops would be added to ``OP_TABLE``. # We omit this for brevity. OP_TABLE = dict() if func in OP_TABLE: return OP_TABLE[func](func, args, kwargs) raise NotImplementedError(f\"Unsupported function {func}\") Let us create an nn.Linear layer of dtype torch.float32 where the weight is a MyQuantizedLinearWeight and try to convert it to torch.bfloat16. Observe that the weight\u2019s dtype changes as expected. However, the dtype of the subclass\u2019 payload (elem) does not change. m = nn.Linear(3, 5, dtype=torch.float32) m.weight = torch.nn.Parameter(MyQuantizedLinearWeight(m.weight, 0.5)) print(f\"Before: id(m.weight)={id(m.weight)}, id(m.bias)={id(m.bias)}\") m.bfloat16() print(f\"After: id(m.weight)={id(m.weight)}, id(m.bias)={id(m.bias)}\") print(f\"m.weight.dtype: {m.weight.dtype}\") print(f\"m.weight.elem.dtype: {m.weight.elem.dtype}\") print(f\"m.bias.dtype: {m.bias.dtype}\") Before: id(m.weight)=140054968899664, id(m.bias)=140054968900704 After: id(m.weight)=140054968899664, id(m.bias)=140054968900704 m.weight.dtype: torch.bfloat16 m.weight.elem.dtype: torch.float32 m.bias.dtype: torch.bfloat16 To this end, we introduce a global config torch.__future__.set_swap_module_params_on_conversion that will use swap_tensors to swap the parameters of the module while preserving references in place of .data setting. When this config is set, swap_tensors will be used during the conversion, which ensures that the dtype of the payload is properly converted. torch.__future__.set_swap_module_params_on_conversion(True) m = nn.Linear(3, 5, dtype=torch.float32) m.weight = torch.nn.Parameter(MyQuantizedLinearWeight(m.weight, 0.5)) print(f\"Before: id(m.weight)={id(m.weight)}, id(m.bias)={id(m.bias)}\") m.bfloat16() print(f\"After: id(m.weight)={id(m.weight)}, id(m.bias)={id(m.bias)}\") print(f\"m.weight.dtype: {m.weight.dtype}\") print(f\"m.weight.elem.dtype: {m.weight.elem.dtype}\") print(f\"m.bias.dtype: {m.bias.dtype}\") torch.__future__.set_swap_module_params_on_conversion(False) Before: id(m.weight)=140054968902544, id(m.bias)=140055202453184 After: id(m.weight)=140054968902544, id(m.bias)=140055202453184 m.weight.dtype: torch.bfloat16 m.weight.elem.dtype: torch.bfloat16 m.bias.dtype: torch.bfloat16 nn.Module.load_state_dict()# Depending on the value of the assign keyword argument passed to load_state_dict(), there are two ways to load the state_dict: assign=False: preserves the properties of module.param and only takes the values from state_dict[\u0027param_name\u0027] assign=True: preserves the properties and values of state_dict[\u0027param_name\u0027]. Previously, these were implemented with in-place copy_ and __setattr__ respectively. With the existing implementation, each approach had its own limitations \u2013 assign=False imposes the constraint that the type of the parameter in the state_dict must be the same as the type of the parameter in the module while assign=True imposes the constraint that anything that holds references to the module\u2019s parameters must be initialized after nn.Module.load_state_dict(). Now, we address both constraints by adding a swap_tensors path to load_state_dict() and introducing a new extension point torch.Tensor.module_load(self, other, assign=False). When the swap_tensors path is enabled via the __future__ mentioned above, we can use a __torch_function__ handler for module_load to apply a custom transformation to the value in the state_dict. The result of this transformation will be swapped with the parameter in the module. In the following example, we will use the MyQuantizedLinearWeight subclass defined above to illustrate how we can use these features to apply a custom quantization scheme to the weights of a linear layer when loading the state_dict. Recall that the __torch_function__ handler for module_load will be invoked if either self or other (in this case param or state_dict[param_key]) are MyQuantizedLinearWeight subclasses. Assume that we expect the state_dict to contain plain tensors and the module to contain MyQuantizedLinearWeight parameters where we want the tensors in the state_dict to be transformed into the subclass. Then we can define a __torch_function__ handler for torch.Tensor.module_load as such: @classmethod def custom_torch_function(cls, func, types, args=(), kwargs=None): kwargs = {} if kwargs is None else kwargs if func is torch.Tensor.module_load: dest, src = args[0], args[1] assert type(dest) == cls and type(src) == torch.Tensor return MyQuantizedLinearWeight(src, dest.scale) else: with torch._C.DisableTorchFunctionSubclass(): return func(*args, **kwargs) MyQuantizedLinearWeight.__torch_function__ = custom_torch_function First, let us create a skeleton of a model on the meta device to avoid materializing storages. We convert all weights in the modules to MyQuantizedLinearWeight subclasses while leaving biases intact. def fn(m): if isinstance(m, nn.Linear): requires_grad = m.weight.requires_grad m.weight = torch.nn.Parameter( MyQuantizedLinearWeight(m.weight, 0.5), requires_grad=requires_grad ) with torch.device(\"meta\"): m = nn.Linear(3, 5) m.apply(fn) We can then load the state_dict. Observe that we use assign=True because for biases, we want to preserve the properties of the tensor in the state_dict (for example, we do not want the bias to be on the meta device after loading). torch.__future__.set_swap_module_params_on_conversion(True) print(f\"Before: id(weight)={id(m.weight)}, id(bias)={id(m.bias)}\") print(f\"m.state_dict() before load_state_dict():\\n {m.state_dict()}\") state_dict = nn.Linear(3, 5).state_dict() print(f\"state_dict:\\n {state_dict}\") m.load_state_dict(state_dict, assign=True) print(f\"After: id(weight)={id(m.weight)}, id(bias)={id(m.bias)}\") print(f\"m.state_dict() after load_state_dict():\\n {m.state_dict()}\") Before: id(weight)=140055235299184, id(bias)=140055202220848 m.state_dict() before load_state_dict(): OrderedDict([(\u0027weight\u0027, MyQuantizedLinearWeight(tensor(..., device=\u0027meta\u0027, size=(5, 3)), scale=0.5)), (\u0027bias\u0027, tensor(..., device=\u0027meta\u0027, size=(5,)))]) state_dict: OrderedDict([(\u0027weight\u0027, tensor([[ 0.2874, 0.2327, 0.5541], [ 0.4538, 0.1124, -0.1124], [ 0.3753, -0.1144, 0.2262], [ 0.3730, 0.0758, -0.5130], [-0.3123, -0.0926, 0.5510]])), (\u0027bias\u0027, tensor([-0.0382, 0.5408, -0.3064, -0.1790, -0.3180]))]) After: id(weight)=140055235299184, id(bias)=140055202220848 m.state_dict() after load_state_dict(): OrderedDict([(\u0027weight\u0027, MyQuantizedLinearWeight(tensor([[ 0.2874, 0.2327, 0.5541], [ 0.4538, 0.1124, -0.1124], [ 0.3753, -0.1144, 0.2262], [ 0.3730, 0.0758, -0.5130], [-0.3123, -0.0926, 0.5510]]), scale=0.5)), (\u0027bias\u0027, tensor([-0.0382, 0.5408, -0.3064, -0.1790, -0.3180]))]) The above is a toy example of how we can use the new extension point in nn.Module.load_state_dict(). One can also imagine alternate scenarios such as when we have tensor subclasses in the state_dict and plain nn.Parameters/ tensors in the module or when both are tensor subclasses. Based on the use case, we can define the __torch_function__ handler for module_load to apply the transforms as needed. Conclusion# In this recipe, we learned about swap_tensors, the importance of preserving references for parameters in nn.Module as well as how to use the two new extension points that are gated by torch.__future__.set_swap_module_params_on_conversion. Total running time of the script: (0 minutes 0.017 seconds) Download Jupyter notebook: swap_tensors.ipynb Download Python source code: swap_tensors.py Download zipped: swap_tensors.zip",
        "author": {
          "@type": "Organization",
          "name": "PyTorch Contributors",

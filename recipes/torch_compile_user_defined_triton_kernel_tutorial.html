@@ -6,7 +6,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta content="2022-07-20T23:02:43+00:00" property="article:modified_time"/>
-<title>Using User-Defined Triton Kernels with torch.compile — PyTorch Tutorials 2.11.0+cu130 documentation</title>
+<title>Using User-Defined Triton Kernels with torch.compile — PyTorch Tutorials 2.10.0+cu128 documentation</title>
 <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
@@ -20,7 +20,7 @@
 <link as="font" crossorigin="" href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" rel="preload" type="font/woff2"/>
 <link as="font" crossorigin="" href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" rel="preload" type="font/woff2"/>
 <link href="../_static/pygments.css?v=536c50fe" rel="stylesheet" type="text/css"/>
-<link href="../_static/css/theme.css?v=72e443bf" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/theme.css?v=6977116a" rel="stylesheet" type="text/css"/>
 <link href="../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery.css?v=d2d258e8" rel="stylesheet" type="text/css"/>
 <link href="../_static/sg_gallery-binder.css?v=f4aeca0c" rel="stylesheet" type="text/css"/>
@@ -34,7 +34,7 @@
 <link as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
 <link as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
 <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../_static/documentation_options.js?v=92f158d6"></script>
+<script src="../_static/documentation_options.js?v=a8d6e986"></script>
 <script src="../_static/doctools.js?v=888ff710"></script>
 <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
 <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
 <meta content="Using User-Defined Triton Kernels with torch.compile - Documentation for PyTorch Tutorials, part of the PyTorch ecosystem." name="llm:description"/>
 <meta content="https://docs.pytorch.org/tutorials/llms.txt" name="llm:navigation-file"/>
 <meta content="https://docs.pytorch.org/tutorials/sitemap.xml" name="llm:sitemap"/>
-<meta content="v2.11.0+cu130" name="llm:version"/>
+<meta content="v2.10.0+cu128" name="llm:version"/>
 <meta content="PyTorch Tutorials" name="llm:project"/>
 <meta content="tutorial" name="llm:page-type"/>
 <link href="https://docs.pytorch.org/tutorials/llms.txt" rel="alternate" title="LLM Navigation Guide" type="text/plain"/>
@@ -159,7 +159,7 @@
   fbq('track', 'PageView');
 </script>
 <script>
-  document.documentElement.setAttribute('data-version', 'v2.11.0+cu130');
+  document.documentElement.setAttribute('data-version', 'v2.10.0+cu128');
 </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView&amp;noscript=1" width="1"/>
@@ -343,7 +343,7 @@
 </a>
 </div>
 <div class="navbar-item desktop-only-version">
-<a class="version" href="../index.html">v2.11.0+cu130</a>
+<a class="version" href="../index.html">v2.10.0+cu128</a>
 </div>
 </div>
 <div class="navbar-header-items">
@@ -877,11 +877,480 @@
 </span>
 </a></div>
 <div class="navbar-item">
+<div class="search-container-wrapper">
+<div class="search-container" id="sphinx-search">
 <form action="../search.html" class="bd-search d-flex align-items-center" method="get">
 <i class="fa-solid fa-magnifying-glass"></i>
 <input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="search-input" name="q" placeholder="Search the docs ..." spellcheck="false" type="search"/>
 <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form>
+</div>
+<div class="search-container" id="google-search" style="display:none;">
+<form class="bd-search d-flex align-items-center" id="google-search-form">
+<i class="fa-solid fa-magnifying-glass"></i>
+<input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="google-search-input" placeholder="Search the docs ..." spellcheck="false" type="search"/>
+</form>
+<div class="google-search-suggestions" id="google-search-suggestions"></div>
+<div class="gcse-searchresults-only"></div>
+</div>
+<div class="search-toggle-container" data-bs-placement="bottom" data-bs-title="Google Search Off" data-bs-toggle="tooltip">
+<div class="search-toggle-inner">
+<label class="switch">
+<input id="search-toggle" type="checkbox"/>
+<span class="slider round"></span>
+</label>
+</div>
+</div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+  // Define the search callback
+  const myWebSearchStartingCallback = (gname, query) => {
+    if (typeof dataLayer !== 'undefined' && query) {
+      window.dataLayer = window.dataLayer || [];
+      dataLayer.push({
+        'event': 'google_search',
+        'search_term': query,
+        'event_category': 'Search',
+        'event_label': 'Google Search'
+      });
+    }
+    return '';
+  };
+
+  // Set up the GCSE search callbacks
+  window.__gcse || (window.__gcse = {});
+  window.__gcse.searchCallbacks = {
+    web: { starting: myWebSearchStartingCallback }
+  };
+
+  if (window.location.pathname.includes('/search.html')) {
+    document.body.classList.add('search-page');
+  }
+
+  // Function to reinitialize Google CSE
+  function reinitializeGoogleSearch() {
+    if (window.__gcse && window.__gcse.initializationCallback) {
+      window.__gcse.initializationCallback();
+    }
+  }
+
+  // Execute Google CSE search programmatically from our custom input
+  function executeGoogleSearch(query) {
+    if (!query) return;
+
+    // Close mobile sidebar if open, so results overlay is visible
+    var sidebar = document.querySelector('.bd-sidebar-primary');
+    if (sidebar && sidebar.classList.contains('show')) {
+      var closeBtn = sidebar.querySelector('[data-bs-dismiss="offcanvas"]');
+      if (closeBtn) closeBtn.click();
+      // Also try Bootstrap's offcanvas API
+      try {
+        var offcanvas = bootstrap.Offcanvas.getInstance(sidebar);
+        if (offcanvas) offcanvas.hide();
+      } catch(e) {}
+    }
+
+    var element = google.search.cse.element.getElement('searchresults-only0');
+    if (element) {
+      element.execute(query);
+    }
+  }
+
+  // Wire up our custom Google search input
+  var googleSearchForm = document.getElementById('google-search-form');
+  var googleSearchInput = document.getElementById('google-search-input');
+
+  if (googleSearchForm) {
+    googleSearchForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      var query = googleSearchInput ? googleSearchInput.value : '';
+      executeGoogleSearch(query);
+    });
+  }
+
+  var suggestDebounce;
+  var activeSuggestionIndex = -1;
+
+  if (googleSearchInput) {
+    // Trigger search on Enter key
+    googleSearchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        hideSuggestions();
+        executeGoogleSearch(this.value);
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        navigateSuggestions(e.key === 'ArrowDown' ? 1 : -1);
+      } else if (e.key === 'Escape') {
+        hideSuggestions();
+      }
+    });
+
+    googleSearchInput.addEventListener('input', function() {
+      clearTimeout(suggestDebounce);
+      var query = this.value.trim();
+      activeSuggestionIndex = -1;
+      if (query.length < 2) {
+        hideSuggestions();
+        return;
+      }
+      suggestDebounce = setTimeout(function() {
+        fetchGoogleSuggestions(query);
+      }, 200);
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#google-search')) {
+        hideSuggestions();
+      }
+    });
+  }
+
+  // Filter and clean suggestions: keep only PyTorch-related, strip prefix
+  function cleanSuggestions(rawList) {
+    return rawList.map(function(s) {
+      var text = typeof s === 'string' ? s : s[0];
+      return text;
+    }).filter(function(text) {
+      return /pytorch/i.test(text);
+    }).map(function(text) {
+      return text.replace(/^pytorch\s*/i, '');
+    }).filter(function(s) {
+      return s.length > 0;
+    });
+  }
+
+  // Fetch suggestions from Google suggest API, scoped to PyTorch
+  function fetchGoogleSuggestions(query) {
+    var scopedQuery = 'pytorch ' + query;
+    fetch('https://suggestqueries.google.com/complete/search?client=firefox&q=' + encodeURIComponent(scopedQuery))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data[1] && data[1].length) {
+          var cleaned = cleanSuggestions(data[1]);
+          cleaned.length ? showSuggestions(cleaned) : hideSuggestions();
+        } else {
+          hideSuggestions();
+        }
+      })
+      .catch(function() {
+        fetchGoogleSuggestionsJSONP(scopedQuery);
+      });
+  }
+
+  function fetchGoogleSuggestionsJSONP(scopedQuery) {
+    var script = document.getElementById('gcse-suggest-script');
+    if (script) script.remove();
+
+    window.__gcseSuggestCallback = function(data) {
+      if (data && data[1] && data[1].length) {
+        var cleaned = cleanSuggestions(data[1]);
+        cleaned.length ? showSuggestions(cleaned) : hideSuggestions();
+      } else {
+        hideSuggestions();
+      }
+    };
+
+    script = document.createElement('script');
+    script.id = 'gcse-suggest-script';
+    script.src = 'https://clients1.google.com/complete/search?client=hp&q=' + encodeURIComponent(scopedQuery) + '&callback=__gcseSuggestCallback';
+    script.onerror = function() { hideSuggestions(); };
+    document.head.appendChild(script);
+  }
+
+  function stripHtml(str) {
+    var tmp = document.createElement('div');
+    tmp.innerHTML = str;
+    return tmp.textContent || tmp.innerText || '';
+  }
+
+  function showSuggestions(suggestions) {
+    var container = document.getElementById('google-search-suggestions');
+    if (!container || !suggestions.length) { hideSuggestions(); return; }
+
+    container.innerHTML = '';
+    suggestions.forEach(function(rawText, index) {
+      var text = stripHtml(rawText);
+      var item = document.createElement('div');
+      item.className = 'google-suggest-item';
+      item.textContent = text;
+      item.setAttribute('data-index', index);
+      item.addEventListener('click', function() {
+        googleSearchInput.value = text;
+        hideSuggestions();
+        executeGoogleSearch(text);
+      });
+      item.addEventListener('mouseenter', function() {
+        activeSuggestionIndex = index;
+        highlightSuggestion();
+      });
+      container.appendChild(item);
+    });
+    container.style.display = 'block';
+    activeSuggestionIndex = -1;
+  }
+
+  function hideSuggestions() {
+    var container = document.getElementById('google-search-suggestions');
+    if (container) {
+      container.style.display = 'none';
+      container.innerHTML = '';
+    }
+    activeSuggestionIndex = -1;
+    // Clean up JSONP script
+    var script = document.getElementById('gcse-suggest-script');
+    if (script) script.remove();
+  }
+
+  function navigateSuggestions(direction) {
+    var items = document.querySelectorAll('#google-search-suggestions .google-suggest-item');
+    if (!items.length) return;
+
+    activeSuggestionIndex += direction;
+    if (activeSuggestionIndex >= items.length) activeSuggestionIndex = 0;
+    if (activeSuggestionIndex < 0) activeSuggestionIndex = items.length - 1;
+
+    highlightSuggestion();
+    googleSearchInput.value = items[activeSuggestionIndex].textContent;
+  }
+
+  function highlightSuggestion() {
+    var items = document.querySelectorAll('#google-search-suggestions .google-suggest-item');
+    items.forEach(function(item, i) {
+      item.classList.toggle('active', i === activeSuggestionIndex);
+    });
+  }
+
+  // Function to handle search toggle
+  function handleSearchToggle(toggle, sphinxSearch, googleSearch) {
+    if (!toggle || !sphinxSearch || !googleSearch) return;
+
+    // TODO: We've had reports that the google programmable search is returning stale documentation,
+    //       Simple reproduction is to turn google search on and search for multinomial which will
+    //       result in returning 1.8.1 documentation.
+    //       We should turn this back on when we resolve that bug.
+    const shouldDefaultToGoogle = false;
+    const savedPreference = localStorage.getItem('searchPreference');
+
+    // Set initial state
+    if (savedPreference === 'google' || (savedPreference === null && shouldDefaultToGoogle)) {
+      toggle.checked = true;
+      sphinxSearch.style.display = 'none';
+      googleSearch.style.display = 'block';
+      if (savedPreference === null) {
+        localStorage.setItem('searchPreference', 'google');
+      }
+      reinitializeGoogleSearch();
+    } else {
+      toggle.checked = false;
+      sphinxSearch.style.display = 'block';
+      googleSearch.style.display = 'none';
+    }
+
+    // Update tooltip
+    updateTooltip(toggle.checked);
+
+    // Skip if already initialized
+    if (toggle.hasAttribute('data-initialized')) return;
+    toggle.setAttribute('data-initialized', 'true');
+
+    toggle.addEventListener('change', function() {
+      if (this.checked) {
+        sphinxSearch.style.display = 'none';
+        googleSearch.style.display = 'block';
+        localStorage.setItem('searchPreference', 'google');
+        reinitializeGoogleSearch();
+        trackSearchEngineSwitch('Google');
+        // Focus our custom input when switching to Google
+        if (googleSearchInput) googleSearchInput.focus();
+      } else {
+        sphinxSearch.style.display = 'block';
+        googleSearch.style.display = 'none';
+        localStorage.setItem('searchPreference', 'sphinx');
+        trackSearchEngineSwitch('Sphinx');
+      }
+
+      updateTooltip(this.checked);
+      updateMobileSearch();
+    });
+  }
+
+  // Update tooltip based on toggle state
+  function updateTooltip(isChecked) {
+    const tooltipElement = document.querySelector('.search-toggle-container');
+    if (!tooltipElement) return;
+
+    tooltipElement.setAttribute('data-bs-title', isChecked ? 'Google Search On' : 'Google Search Off');
+
+    if (bootstrap && bootstrap.Tooltip) {
+      const tooltipInstance = bootstrap.Tooltip.getInstance(tooltipElement);
+      if (tooltipInstance) tooltipInstance.dispose();
+      new bootstrap.Tooltip(tooltipElement);
+    }
+  }
+
+  // Track search engine switch
+  function trackSearchEngineSwitch(engine) {
+    if (typeof dataLayer !== 'undefined') {
+      window.dataLayer = window.dataLayer || [];
+      dataLayer.push({
+        'event': 'search_engine_switch',
+        'event_category': 'Search',
+        'event_label': engine
+      });
+    }
+  }
+
+  // Function to update mobile search based on current toggle state
+  function updateMobileSearch() {
+    const toggle = document.getElementById('search-toggle');
+    if (!toggle) return;
+
+    const mobileSearchContainer = document.querySelector('.sidebar-header-items__end .navbar-item .search-container-wrapper');
+    if (!mobileSearchContainer) return;
+
+    const mobileSphinxSearch = mobileSearchContainer.querySelector('#sphinx-search');
+    const mobileGoogleSearch = mobileSearchContainer.querySelector('#google-search');
+
+    if (mobileSphinxSearch && mobileGoogleSearch) {
+      mobileSphinxSearch.style.display = toggle.checked ? 'none' : 'block';
+      mobileGoogleSearch.style.display = toggle.checked ? 'block' : 'none';
+
+      if (toggle.checked) {
+        reinitializeGoogleSearch();
+      }
+    }
+  }
+
+  // Initialize desktop search toggle
+  const toggle = document.getElementById('search-toggle');
+  const sphinxSearch = document.getElementById('sphinx-search');
+  const googleSearch = document.getElementById('google-search');
+  handleSearchToggle(toggle, sphinxSearch, googleSearch);
+
+  // Fix for scroll jump issue - improved approach
+  function setupSearchInputHandlers(input) {
+    if (input.hasAttribute('data-scroll-fixed')) return;
+    input.setAttribute('data-scroll-fixed', 'true');
+
+    let lastScrollPosition = 0;
+    let isTyping = false;
+    let scrollTimeout;
+
+    input.addEventListener('keydown', () => {
+      lastScrollPosition = window.scrollY;
+      isTyping = true;
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => { isTyping = false; }, 100);
+    });
+
+    function maintainScroll() {
+      if (document.activeElement === input && isTyping) {
+        window.scrollTo(0, lastScrollPosition);
+        requestAnimationFrame(maintainScroll);
+      }
+    }
+
+    input.addEventListener('focus', () => {
+      lastScrollPosition = window.scrollY;
+    });
+
+    input.addEventListener('input', () => {
+      isTyping = true;
+      window.scrollTo(0, lastScrollPosition);
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => { isTyping = false; }, 100);
+      requestAnimationFrame(maintainScroll);
+    });
+  }
+
+  function applyToSearchInputs() {
+    document.querySelectorAll('.search-container input').forEach(setupSearchInputHandlers);
+  }
+
+  applyToSearchInputs();
+
+  const searchObserver = new MutationObserver(applyToSearchInputs);
+  searchObserver.observe(document.body, { childList: true, subtree: true });
+
+  // Watch for mobile menu creation
+  const mobileMenuObserver = new MutationObserver(function(mutations) {
+    for (const mutation of mutations) {
+      if (!mutation.addedNodes.length) continue;
+
+      const mobileSearchContainer = document.querySelector('.sidebar-header-items__end .navbar-item .search-container-wrapper');
+      if (!mobileSearchContainer) continue;
+
+      const mobileToggle = mobileSearchContainer.querySelector('#search-toggle');
+      if (mobileToggle && toggle) {
+        mobileToggle.checked = toggle.checked;
+        updateMobileSearch();
+
+        if (!mobileToggle.hasAttribute('data-initialized')) {
+          mobileToggle.setAttribute('data-initialized', 'true');
+          mobileToggle.addEventListener('change', function() {
+            toggle.checked = this.checked;
+            toggle.dispatchEvent(new Event('change'));
+          });
+        }
+      }
+
+      // Wire up mobile Google search input
+      var mobileGoogleInput = mobileSearchContainer.querySelector('#google-search-input');
+      if (mobileGoogleInput && !mobileGoogleInput.hasAttribute('data-mobile-wired')) {
+        mobileGoogleInput.setAttribute('data-mobile-wired', 'true');
+
+        var mobileForm = mobileSearchContainer.querySelector('#google-search-form');
+        if (mobileForm) {
+          mobileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            executeGoogleSearch(mobileGoogleInput.value);
+          });
+        }
+
+        mobileGoogleInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            executeGoogleSearch(this.value);
+          }
+        });
+
+        mobileGoogleInput.addEventListener('input', function() {
+          clearTimeout(suggestDebounce);
+          var query = this.value.trim();
+          activeSuggestionIndex = -1;
+          if (query.length < 2) return;
+          suggestDebounce = setTimeout(function() {
+            // Mobile uses the same search execution but no suggestions dropdown
+            // (suggestions dropdown is complex on mobile; just support Enter to search)
+          }, 200);
+        });
+      }
+    }
+  });
+
+  mobileMenuObserver.observe(document.body, { childList: true, subtree: true });
+
+  // Ensure Google CSE is properly loaded
+  if (window.__gcse) {
+    window.__gcse.callback = function() {
+      if (toggle && toggle.checked) {
+        reinitializeGoogleSearch();
+      }
+    };
+  } else {
+    window.__gcse = {
+      callback: function() {
+        if (toggle && toggle.checked) {
+          reinitializeGoogleSearch();
+        }
+      }
+    };
+  }
+});
+</script>
 </div>
 <div class="navbar-item">
 <script>
@@ -924,7 +1393,7 @@ document.write(`
 <div class="sidebar-header-items sidebar-primary__section">
 <div class="sidebar-header-items__start">
 <div class="navbar-item">
-<a class="version" href="../index.html">v2.11.0+cu130</a>
+<a class="version" href="../index.html">v2.10.0+cu128</a>
 </div>
 </div>
 <div class="sidebar-header-items__center">
@@ -1686,11 +2155,480 @@ document.write(`
 </span>
 </a></div>
 <div class="navbar-item">
+<div class="search-container-wrapper">
+<div class="search-container" id="sphinx-search">
 <form action="../search.html" class="bd-search d-flex align-items-center" method="get">
 <i class="fa-solid fa-magnifying-glass"></i>
-<input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="search-input" name="q" placeholder="Search the docs ..." spellcheck="false" type="search"/>
+<input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="search-input" name="q" placeholder="Search the docs ..." spellcheck="false" type="search">
 <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</input></form>
+</div>
+<div class="search-container" id="google-search" style="display:none;">
+<form class="bd-search d-flex align-items-center" id="google-search-form">
+<i class="fa-solid fa-magnifying-glass"></i>
+<input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="google-search-input" placeholder="Search the docs ..." spellcheck="false" type="search"/>
 </form>
+<div class="google-search-suggestions" id="google-search-suggestions"></div>
+<div class="gcse-searchresults-only"></div>
+</div>
+<div class="search-toggle-container" data-bs-placement="bottom" data-bs-title="Google Search Off" data-bs-toggle="tooltip">
+<div class="search-toggle-inner">
+<label class="switch">
+<input id="search-toggle" type="checkbox"/>
+<span class="slider round"></span>
+</label>
+</div>
+</div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+  // Define the search callback
+  const myWebSearchStartingCallback = (gname, query) => {
+    if (typeof dataLayer !== 'undefined' && query) {
+      window.dataLayer = window.dataLayer || [];
+      dataLayer.push({
+        'event': 'google_search',
+        'search_term': query,
+        'event_category': 'Search',
+        'event_label': 'Google Search'
+      });
+    }
+    return '';
+  };
+
+  // Set up the GCSE search callbacks
+  window.__gcse || (window.__gcse = {});
+  window.__gcse.searchCallbacks = {
+    web: { starting: myWebSearchStartingCallback }
+  };
+
+  if (window.location.pathname.includes('/search.html')) {
+    document.body.classList.add('search-page');
+  }
+
+  // Function to reinitialize Google CSE
+  function reinitializeGoogleSearch() {
+    if (window.__gcse && window.__gcse.initializationCallback) {
+      window.__gcse.initializationCallback();
+    }
+  }
+
+  // Execute Google CSE search programmatically from our custom input
+  function executeGoogleSearch(query) {
+    if (!query) return;
+
+    // Close mobile sidebar if open, so results overlay is visible
+    var sidebar = document.querySelector('.bd-sidebar-primary');
+    if (sidebar && sidebar.classList.contains('show')) {
+      var closeBtn = sidebar.querySelector('[data-bs-dismiss="offcanvas"]');
+      if (closeBtn) closeBtn.click();
+      // Also try Bootstrap's offcanvas API
+      try {
+        var offcanvas = bootstrap.Offcanvas.getInstance(sidebar);
+        if (offcanvas) offcanvas.hide();
+      } catch(e) {}
+    }
+
+    var element = google.search.cse.element.getElement('searchresults-only0');
+    if (element) {
+      element.execute(query);
+    }
+  }
+
+  // Wire up our custom Google search input
+  var googleSearchForm = document.getElementById('google-search-form');
+  var googleSearchInput = document.getElementById('google-search-input');
+
+  if (googleSearchForm) {
+    googleSearchForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      var query = googleSearchInput ? googleSearchInput.value : '';
+      executeGoogleSearch(query);
+    });
+  }
+
+  var suggestDebounce;
+  var activeSuggestionIndex = -1;
+
+  if (googleSearchInput) {
+    // Trigger search on Enter key
+    googleSearchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        hideSuggestions();
+        executeGoogleSearch(this.value);
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        navigateSuggestions(e.key === 'ArrowDown' ? 1 : -1);
+      } else if (e.key === 'Escape') {
+        hideSuggestions();
+      }
+    });
+
+    googleSearchInput.addEventListener('input', function() {
+      clearTimeout(suggestDebounce);
+      var query = this.value.trim();
+      activeSuggestionIndex = -1;
+      if (query.length < 2) {
+        hideSuggestions();
+        return;
+      }
+      suggestDebounce = setTimeout(function() {
+        fetchGoogleSuggestions(query);
+      }, 200);
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#google-search')) {
+        hideSuggestions();
+      }
+    });
+  }
+
+  // Filter and clean suggestions: keep only PyTorch-related, strip prefix
+  function cleanSuggestions(rawList) {
+    return rawList.map(function(s) {
+      var text = typeof s === 'string' ? s : s[0];
+      return text;
+    }).filter(function(text) {
+      return /pytorch/i.test(text);
+    }).map(function(text) {
+      return text.replace(/^pytorch\s*/i, '');
+    }).filter(function(s) {
+      return s.length > 0;
+    });
+  }
+
+  // Fetch suggestions from Google suggest API, scoped to PyTorch
+  function fetchGoogleSuggestions(query) {
+    var scopedQuery = 'pytorch ' + query;
+    fetch('https://suggestqueries.google.com/complete/search?client=firefox&q=' + encodeURIComponent(scopedQuery))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data[1] && data[1].length) {
+          var cleaned = cleanSuggestions(data[1]);
+          cleaned.length ? showSuggestions(cleaned) : hideSuggestions();
+        } else {
+          hideSuggestions();
+        }
+      })
+      .catch(function() {
+        fetchGoogleSuggestionsJSONP(scopedQuery);
+      });
+  }
+
+  function fetchGoogleSuggestionsJSONP(scopedQuery) {
+    var script = document.getElementById('gcse-suggest-script');
+    if (script) script.remove();
+
+    window.__gcseSuggestCallback = function(data) {
+      if (data && data[1] && data[1].length) {
+        var cleaned = cleanSuggestions(data[1]);
+        cleaned.length ? showSuggestions(cleaned) : hideSuggestions();
+      } else {
+        hideSuggestions();
+      }
+    };
+
+    script = document.createElement('script');
+    script.id = 'gcse-suggest-script';
+    script.src = 'https://clients1.google.com/complete/search?client=hp&q=' + encodeURIComponent(scopedQuery) + '&callback=__gcseSuggestCallback';
+    script.onerror = function() { hideSuggestions(); };
+    document.head.appendChild(script);
+  }
+
+  function stripHtml(str) {
+    var tmp = document.createElement('div');
+    tmp.innerHTML = str;
+    return tmp.textContent || tmp.innerText || '';
+  }
+
+  function showSuggestions(suggestions) {
+    var container = document.getElementById('google-search-suggestions');
+    if (!container || !suggestions.length) { hideSuggestions(); return; }
+
+    container.innerHTML = '';
+    suggestions.forEach(function(rawText, index) {
+      var text = stripHtml(rawText);
+      var item = document.createElement('div');
+      item.className = 'google-suggest-item';
+      item.textContent = text;
+      item.setAttribute('data-index', index);
+      item.addEventListener('click', function() {
+        googleSearchInput.value = text;
+        hideSuggestions();
+        executeGoogleSearch(text);
+      });
+      item.addEventListener('mouseenter', function() {
+        activeSuggestionIndex = index;
+        highlightSuggestion();
+      });
+      container.appendChild(item);
+    });
+    container.style.display = 'block';
+    activeSuggestionIndex = -1;
+  }
+
+  function hideSuggestions() {
+    var container = document.getElementById('google-search-suggestions');
+    if (container) {
+      container.style.display = 'none';
+      container.innerHTML = '';
+    }
+    activeSuggestionIndex = -1;
+    // Clean up JSONP script
+    var script = document.getElementById('gcse-suggest-script');
+    if (script) script.remove();
+  }
+
+  function navigateSuggestions(direction) {
+    var items = document.querySelectorAll('#google-search-suggestions .google-suggest-item');
+    if (!items.length) return;
+
+    activeSuggestionIndex += direction;
+    if (activeSuggestionIndex >= items.length) activeSuggestionIndex = 0;
+    if (activeSuggestionIndex < 0) activeSuggestionIndex = items.length - 1;
+
+    highlightSuggestion();
+    googleSearchInput.value = items[activeSuggestionIndex].textContent;
+  }
+
+  function highlightSuggestion() {
+    var items = document.querySelectorAll('#google-search-suggestions .google-suggest-item');
+    items.forEach(function(item, i) {
+      item.classList.toggle('active', i === activeSuggestionIndex);
+    });
+  }
+
+  // Function to handle search toggle
+  function handleSearchToggle(toggle, sphinxSearch, googleSearch) {
+    if (!toggle || !sphinxSearch || !googleSearch) return;
+
+    // TODO: We've had reports that the google programmable search is returning stale documentation,
+    //       Simple reproduction is to turn google search on and search for multinomial which will
+    //       result in returning 1.8.1 documentation.
+    //       We should turn this back on when we resolve that bug.
+    const shouldDefaultToGoogle = false;
+    const savedPreference = localStorage.getItem('searchPreference');
+
+    // Set initial state
+    if (savedPreference === 'google' || (savedPreference === null && shouldDefaultToGoogle)) {
+      toggle.checked = true;
+      sphinxSearch.style.display = 'none';
+      googleSearch.style.display = 'block';
+      if (savedPreference === null) {
+        localStorage.setItem('searchPreference', 'google');
+      }
+      reinitializeGoogleSearch();
+    } else {
+      toggle.checked = false;
+      sphinxSearch.style.display = 'block';
+      googleSearch.style.display = 'none';
+    }
+
+    // Update tooltip
+    updateTooltip(toggle.checked);
+
+    // Skip if already initialized
+    if (toggle.hasAttribute('data-initialized')) return;
+    toggle.setAttribute('data-initialized', 'true');
+
+    toggle.addEventListener('change', function() {
+      if (this.checked) {
+        sphinxSearch.style.display = 'none';
+        googleSearch.style.display = 'block';
+        localStorage.setItem('searchPreference', 'google');
+        reinitializeGoogleSearch();
+        trackSearchEngineSwitch('Google');
+        // Focus our custom input when switching to Google
+        if (googleSearchInput) googleSearchInput.focus();
+      } else {
+        sphinxSearch.style.display = 'block';
+        googleSearch.style.display = 'none';
+        localStorage.setItem('searchPreference', 'sphinx');
+        trackSearchEngineSwitch('Sphinx');
+      }
+
+      updateTooltip(this.checked);
+      updateMobileSearch();
+    });
+  }
+
+  // Update tooltip based on toggle state
+  function updateTooltip(isChecked) {
+    const tooltipElement = document.querySelector('.search-toggle-container');
+    if (!tooltipElement) return;
+
+    tooltipElement.setAttribute('data-bs-title', isChecked ? 'Google Search On' : 'Google Search Off');
+
+    if (bootstrap && bootstrap.Tooltip) {
+      const tooltipInstance = bootstrap.Tooltip.getInstance(tooltipElement);
+      if (tooltipInstance) tooltipInstance.dispose();
+      new bootstrap.Tooltip(tooltipElement);
+    }
+  }
+
+  // Track search engine switch
+  function trackSearchEngineSwitch(engine) {
+    if (typeof dataLayer !== 'undefined') {
+      window.dataLayer = window.dataLayer || [];
+      dataLayer.push({
+        'event': 'search_engine_switch',
+        'event_category': 'Search',
+        'event_label': engine
+      });
+    }
+  }
+
+  // Function to update mobile search based on current toggle state
+  function updateMobileSearch() {
+    const toggle = document.getElementById('search-toggle');
+    if (!toggle) return;
+
+    const mobileSearchContainer = document.querySelector('.sidebar-header-items__end .navbar-item .search-container-wrapper');
+    if (!mobileSearchContainer) return;
+
+    const mobileSphinxSearch = mobileSearchContainer.querySelector('#sphinx-search');
+    const mobileGoogleSearch = mobileSearchContainer.querySelector('#google-search');
+
+    if (mobileSphinxSearch && mobileGoogleSearch) {
+      mobileSphinxSearch.style.display = toggle.checked ? 'none' : 'block';
+      mobileGoogleSearch.style.display = toggle.checked ? 'block' : 'none';
+
+      if (toggle.checked) {
+        reinitializeGoogleSearch();
+      }
+    }
+  }
+
+  // Initialize desktop search toggle
+  const toggle = document.getElementById('search-toggle');
+  const sphinxSearch = document.getElementById('sphinx-search');
+  const googleSearch = document.getElementById('google-search');
+  handleSearchToggle(toggle, sphinxSearch, googleSearch);
+
+  // Fix for scroll jump issue - improved approach
+  function setupSearchInputHandlers(input) {
+    if (input.hasAttribute('data-scroll-fixed')) return;
+    input.setAttribute('data-scroll-fixed', 'true');
+
+    let lastScrollPosition = 0;
+    let isTyping = false;
+    let scrollTimeout;
+
+    input.addEventListener('keydown', () => {
+      lastScrollPosition = window.scrollY;
+      isTyping = true;
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => { isTyping = false; }, 100);
+    });
+
+    function maintainScroll() {
+      if (document.activeElement === input && isTyping) {
+        window.scrollTo(0, lastScrollPosition);
+        requestAnimationFrame(maintainScroll);
+      }
+    }
+
+    input.addEventListener('focus', () => {
+      lastScrollPosition = window.scrollY;
+    });
+
+    input.addEventListener('input', () => {
+      isTyping = true;
+      window.scrollTo(0, lastScrollPosition);
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => { isTyping = false; }, 100);
+      requestAnimationFrame(maintainScroll);
+    });
+  }
+
+  function applyToSearchInputs() {
+    document.querySelectorAll('.search-container input').forEach(setupSearchInputHandlers);
+  }
+
+  applyToSearchInputs();
+
+  const searchObserver = new MutationObserver(applyToSearchInputs);
+  searchObserver.observe(document.body, { childList: true, subtree: true });
+
+  // Watch for mobile menu creation
+  const mobileMenuObserver = new MutationObserver(function(mutations) {
+    for (const mutation of mutations) {
+      if (!mutation.addedNodes.length) continue;
+
+      const mobileSearchContainer = document.querySelector('.sidebar-header-items__end .navbar-item .search-container-wrapper');
+      if (!mobileSearchContainer) continue;
+
+      const mobileToggle = mobileSearchContainer.querySelector('#search-toggle');
+      if (mobileToggle && toggle) {
+        mobileToggle.checked = toggle.checked;
+        updateMobileSearch();
+
+        if (!mobileToggle.hasAttribute('data-initialized')) {
+          mobileToggle.setAttribute('data-initialized', 'true');
+          mobileToggle.addEventListener('change', function() {
+            toggle.checked = this.checked;
+            toggle.dispatchEvent(new Event('change'));
+          });
+        }
+      }
+
+      // Wire up mobile Google search input
+      var mobileGoogleInput = mobileSearchContainer.querySelector('#google-search-input');
+      if (mobileGoogleInput && !mobileGoogleInput.hasAttribute('data-mobile-wired')) {
+        mobileGoogleInput.setAttribute('data-mobile-wired', 'true');
+
+        var mobileForm = mobileSearchContainer.querySelector('#google-search-form');
+        if (mobileForm) {
+          mobileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            executeGoogleSearch(mobileGoogleInput.value);
+          });
+        }
+
+        mobileGoogleInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            executeGoogleSearch(this.value);
+          }
+        });
+
+        mobileGoogleInput.addEventListener('input', function() {
+          clearTimeout(suggestDebounce);
+          var query = this.value.trim();
+          activeSuggestionIndex = -1;
+          if (query.length < 2) return;
+          suggestDebounce = setTimeout(function() {
+            // Mobile uses the same search execution but no suggestions dropdown
+            // (suggestions dropdown is complex on mobile; just support Enter to search)
+          }, 200);
+        });
+      }
+    }
+  });
+
+  mobileMenuObserver.observe(document.body, { childList: true, subtree: true });
+
+  // Ensure Google CSE is properly loaded
+  if (window.__gcse) {
+    window.__gcse.callback = function() {
+      if (toggle && toggle.checked) {
+        reinitializeGoogleSearch();
+      }
+    };
+  } else {
+    window.__gcse = {
+      callback: function() {
+        if (toggle && toggle.checked) {
+          reinitializeGoogleSearch();
+        }
+      }
+    };
+  }
+});
+</script>
 </div>
 <div class="navbar-item">
 <script>
@@ -1929,10 +2867,10 @@ For reference, see <a class="reference external" href="https://triton-lang.org/m
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Vector addition of
-X:      tensor([-0.1874,  1.0737, -0.8873, -1.6858], device='cuda:0')
-Y:      tensor([-0.4416, -0.8861, -0.9591,  0.9126], device='cuda:0')
+X:      tensor([-0.7053, -0.5499,  0.1306, -0.0147], device='cuda:0')
+Y:      tensor([0.7584, 1.6622, 0.0259, 0.3065], device='cuda:0')
 is equal to
-tensor([-0.6290,  0.1877, -1.8465, -0.7731], device='cuda:0')
+tensor([0.0531, 1.1123, 0.1565, 0.2919], device='cuda:0')
 </pre></div>
 </div>
 </section>
@@ -1995,10 +2933,10 @@ and <code class="docutils literal notranslate"><span class="pre">triton.autotune
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Vector addition of
-X:      tensor([ 0.2913,  1.6964, -0.3042, -0.2099], device='cuda:0')
-Y:      tensor([ 0.2346,  0.8793,  2.7065, -1.8397], device='cuda:0')
+X:      tensor([-1.5978,  0.1961, -0.8414, -0.1652], device='cuda:0')
+Y:      tensor([ 1.5106,  0.9073, -0.3102,  0.2240], device='cuda:0')
 is equal to
-tensor([ 0.5259,  2.5757,  2.4024, -2.0495], device='cuda:0')
+tensor([-0.0873,  1.1034, -1.1516,  0.0588], device='cuda:0')
 </pre></div>
 </div>
 </section>
@@ -2229,7 +3167,7 @@ kernels with other PyTorch features and highlighted some current limitations.</p
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/recipes/compiling_optimizer.html">Compiling the Optimizers</a></p></li>
 <li><p><a class="reference external" href="https://pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html">Implementing High-Performance Transformers with Scaled Dot Product Attention</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 3.298 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 3.120 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-torch-compile-user-defined-triton-kernel-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/f827f181506a79226f4ffbcf7c9a5a50/torch_compile_user_defined_triton_kernel_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">torch_compile_user_defined_triton_kernel_tutorial.ipynb</span></code></a></p>
@@ -2450,7 +3388,7 @@ kernels with other PyTorch features and highlighted some current limitations.</p
 </footer>
 <div class="cookie-banner-wrapper">
 <div class="container">
-<p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+<p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://opensource.fb.com/legal/cookie-policy">Cookies Policy</a>.</p>
 <img class="close-button" src="../_static/img/pytorch-x.svg"/>
 </div>
 </div>
@@ -2487,7 +3425,7 @@ kernels with other PyTorch features and highlighted some current limitations.</p
        "headline": "Using User-Defined Triton Kernels with torch.compile",
        "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment.",
        "url": "/recipes/torch_compile_user_defined_triton_kernel_tutorial.html",
-       "articleBody": "Note Go to the end to download the full example code. Using User-Defined Triton Kernels with torch.compile# Author: Oguz Ulgen User-defined Triton kernels can be used to optimize specific parts of your model\u2019s computation. These kernels are written in Triton\u2019s language, which is designed to make it easier to achieve peak hardware performance. By using user-defined Triton kernels with torch.compile, you can integrate these optimized computations into your PyTorch model, potentially achieving significant performance improvements. This recipes demonstrates how you can use user-defined Triton kernels with torch.compile. Prerequisites# Before starting this recipe, make sure that you have the following: Basic understanding of torch.compile and Triton. See: torch.compiler API documentation Introduction to torch.compile Triton language documentation PyTorch 2.3 or later A GPU that supports Triton import torch from torch.utils._triton import has_triton Basic Usage# In this example, we will use a simple vector addition kernel from the Triton documentation with torch.compile. For reference, see Triton documentation. if not has_triton(): print(\"Skipping because triton is not supported on this device.\") else: import triton from triton import language as tl @triton.jit def add_kernel( in_ptr0, in_ptr1, out_ptr, n_elements, BLOCK_SIZE: \"tl.constexpr\", ): pid = tl.program_id(axis=0) block_start = pid * BLOCK_SIZE offsets = block_start + tl.arange(0, BLOCK_SIZE) mask = offsets \u003c n_elements x = tl.load(in_ptr0 + offsets, mask=mask) y = tl.load(in_ptr1 + offsets, mask=mask) output = x + y tl.store(out_ptr + offsets, output, mask=mask) @torch.compile(fullgraph=True) def add_fn(x, y): output = torch.zeros_like(x) n_elements = output.numel() grid = lambda meta: (triton.cdiv(n_elements, meta[\"BLOCK_SIZE\"]),) add_kernel[grid](x, y, output, n_elements, BLOCK_SIZE=4) return output x = torch.randn(4, device=\"cuda\") y = torch.randn(4, device=\"cuda\") out = add_fn(x, y) print(f\"Vector addition of\\nX:\\t{x}\\nY:\\t{y}\\nis equal to\\n{out}\") Vector addition of X: tensor([-0.1874, 1.0737, -0.8873, -1.6858], device=\u0027cuda:0\u0027) Y: tensor([-0.4416, -0.8861, -0.9591, 0.9126], device=\u0027cuda:0\u0027) is equal to tensor([-0.6290, 0.1877, -1.8465, -0.7731], device=\u0027cuda:0\u0027) Advanced Usage# Triton\u2019s autotune feature is a powerful tool that automatically optimizes the configuration parameters of your Triton kernels. It explores a range of possible configurations and selects the one that delivers the best performance for your specific use case. When used with torch.compile, triton.autotune can help ensure that your PyTorch model is running as efficiently as possible. Here is an example of using torch.compile and triton.autotune. Note torch.compile only supports configs and key arguments to triton.autotune. if not has_triton(): print(\"Skipping because triton is not supported on this device.\") else: import triton from triton import language as tl @triton.autotune( configs=[ triton.Config({\"BLOCK_SIZE\": 4}, num_stages=3, num_warps=8), triton.Config({\"BLOCK_SIZE\": 4}, num_stages=4, num_warps=4), triton.Config({\"BLOCK_SIZE\": 2}, num_stages=3, num_warps=8), triton.Config({\"BLOCK_SIZE\": 2}, num_stages=4, num_warps=4), ], key=[], ) @triton.jit def add_kernel_autotuned( in_ptr0, in_ptr1, out_ptr, n_elements, BLOCK_SIZE: \"tl.constexpr\", ): pid = tl.program_id(axis=0) block_start = pid * BLOCK_SIZE offsets = block_start + tl.arange(0, BLOCK_SIZE) mask = offsets \u003c n_elements x = tl.load(in_ptr0 + offsets, mask=mask) y = tl.load(in_ptr1 + offsets, mask=mask) output = x + y tl.store(out_ptr + offsets, output, mask=mask) @torch.compile(fullgraph=True) def add_fn(x, y): output = torch.zeros_like(x) n_elements = output.numel() grid = lambda meta: (triton.cdiv(n_elements, meta[\"BLOCK_SIZE\"]),) add_kernel_autotuned[grid](x, y, output, n_elements) return output x = torch.randn(4, device=\"cuda\") y = torch.randn(4, device=\"cuda\") out = add_fn(x, y) print(f\"Vector addition of\\nX:\\t{x}\\nY:\\t{y}\\nis equal to\\n{out}\") Vector addition of X: tensor([ 0.2913, 1.6964, -0.3042, -0.2099], device=\u0027cuda:0\u0027) Y: tensor([ 0.2346, 0.8793, 2.7065, -1.8397], device=\u0027cuda:0\u0027) is equal to tensor([ 0.5259, 2.5757, 2.4024, -2.0495], device=\u0027cuda:0\u0027) Composability# User-defined Triton kernels do not automatically support all PyTorch subsystems. This can be seen in the following use cases: Adding a CPU fallback Adding a FlopCounter formula Composing with Tensor Subclasses To compose with additional PyTorch subsystems, use torch.library.triton_op. triton_op is a structured way of defining a custom operator that is backed by one or more Triton kernels: like regular custom operators (torch.library.custom_op), you are able to specify the interactions with PyTorch subsystems via torch.library. However, unlike torch.library.custom_op, which creates opaque callables with respect to torch.compile, torch.compile traces into triton_op to apply optimizations. Here\u2019s a chart of which API to use when integrating Triton kernels with PyTorch. Triton kernel (no explicit torch.library wrapper) torch.library.triton_op torch.library.custom_op Supports inference Yes Yes Yes Supports training In the majority of cases Yes Yes Supports torch.compile Yes Yes Yes Supports torch.compile(fullgraph=True) In the majority of cases In the majority of cases In all cases Does torch.compile trace into the implementation? Yes Yes No Supports AOTInductor Yes Yes No Supports PyTorch Subsystems like FlopCounterMode, CPU Fallback, Tensor Subclasses No Yes Yes Wrapping Triton kernels with triton_op# Use torch.library.triton_op to wrap a function that may invoke one or more Triton kernels. Use torch.library.wrap_triton to wrap the calls to the Triton kernel. from torch.library import triton_op, wrap_triton @triton_op(\"mylib::mysin\", mutates_args={}) def mysin(x: torch.Tensor) -\u003e torch.Tensor: out = torch.empty_like(x) n_elements = x.numel() wrap_triton(sin_kernel)[(n_elements,)](x, out, n_elements, BLOCK_SIZE=4) return out @triton.jit def sin_kernel( in_ptr0, out_ptr, n_elements, BLOCK_SIZE: \"tl.constexpr\", ): pid = tl.program_id(axis=0) block_start = pid * BLOCK_SIZE offsets = block_start + tl.arange(0, BLOCK_SIZE) mask = offsets \u003c n_elements x = tl.load(in_ptr0 + offsets, mask=mask) output = tl.sin(x) tl.store(out_ptr + offsets, output, mask=mask) You can invoke the triton_op in one of the following two ways. x = torch.randn(3, device=\"cuda\") y = mysin(x) z = torch.ops.mylib.mysin.default(x) assert torch.allclose(y, x.sin()) assert torch.allclose(z, x.sin()) The resulting triton_op works with torch.compile and AOTInductor. y = torch.compile(mysin)(x) assert torch.allclose(y, x.sin()) Adding training support# Use register_autograd to add an autograd formula for the triton_op. Prefer this to using torch.autograd.Function (which has various composability footguns with torch.compile). def backward(ctx, grad): x, = ctx.saved_tensors return grad * x.cos() def setup_context(ctx, inputs, output): x, = inputs ctx.save_for_backward(x) mysin.register_autograd(backward, setup_context=setup_context) Note that the backward must be a composition of PyTorch-understood operators. If you want the backward to call Triton kernels, then those must be wrapped in triton_op as well: @triton.jit def cos_kernel( in_ptr0, out_ptr, n_elements, BLOCK_SIZE: \"tl.constexpr\", ): pid = tl.program_id(axis=0) block_start = pid * BLOCK_SIZE offsets = block_start + tl.arange(0, BLOCK_SIZE) mask = offsets \u003c n_elements x = tl.load(in_ptr0 + offsets, mask=mask) output = tl.cos(x) tl.store(out_ptr + offsets, output, mask=mask) @triton_op(\"mylib::mycos\", mutates_args={}) def mycos(x: torch.Tensor) -\u003e torch.Tensor: out = torch.empty_like(x) n_elements = x.numel() wrap_triton(cos_kernel)[(n_elements,)](x, out, n_elements, BLOCK_SIZE=4) return out def backward(ctx, grad): x, = ctx.saved_tensors return grad * mycos(x) def setup_context(ctx, inputs, output): x, = inputs ctx.save_for_backward(x) mysin.register_autograd(backward, setup_context=setup_context) Adding a CPU Fallback# Triton kernels don\u2019t run on CPU. Use register_kernel to add a CPU (or any other device) fallback for the triton_op: @mysin.register_kernel(\"cpu\") def _(x): return torch.sin(x) x = torch.randn(3) y = mysin(x) assert torch.allclose(y, x.sin()) The fallback must be composed of PyTorch operators. Adding a FlopCounter Formula# To specify how many flops the triton kernel reports under PyTorch\u2019s flop counter, use register_flop_formula. from torch.utils.flop_counter import FlopCounterMode, register_flop_formula @register_flop_formula(torch.ops.mylib.mysin) def _(x_shape): numel = 1 for s in x_shape: numel *= s return numel x = torch.randn(3, device=\"cuda\") FlopCounterMode requires tabulate. Before running the code below, make sure you have tabulate installed or install by running pip install tabulate. \u003e\u003e\u003e with FlopCounterMode() as flop_counter: \u003e\u003e\u003e y = mysin(x) Limitations# As of PyTorch 2.3, the support for user-defined Triton kernels in torch.compile includes dynamic shapes, torch.autograd.Function, JIT inductor, and AOT inductor. You can use these features together to build complex, high-performance models. PyTorch 2.6 added torch.library.triton_op, which adds support for user-defined Triton kernels in tensor subclasses and other advanced features. However, there are certain limitations to be aware of: Triton Features: While triton.heuristics can be used either standalone or before triton.autotune, it cannot be used after triton.autotune. This implies that if triton.heuristics and triton.autotune are to be used together, triton.heuristics must be used first. Conclusion# In this recipe, we explored how to utilize user-defined Triton kernels with torch.compile. We delved into the basic usage of a simple vector addition kernel and advanced usage involving Triton\u2019s autotune feature. We also discussed the composability of user-defined Triton kernels with other PyTorch features and highlighted some current limitations. See Also# Compiling the Optimizers Implementing High-Performance Transformers with Scaled Dot Product Attention Total running time of the script: (0 minutes 3.298 seconds) Download Jupyter notebook: torch_compile_user_defined_triton_kernel_tutorial.ipynb Download Python source code: torch_compile_user_defined_triton_kernel_tutorial.py Download zipped: torch_compile_user_defined_triton_kernel_tutorial.zip",
+       "articleBody": "Note Go to the end to download the full example code. Using User-Defined Triton Kernels with torch.compile# Author: Oguz Ulgen User-defined Triton kernels can be used to optimize specific parts of your model\u2019s computation. These kernels are written in Triton\u2019s language, which is designed to make it easier to achieve peak hardware performance. By using user-defined Triton kernels with torch.compile, you can integrate these optimized computations into your PyTorch model, potentially achieving significant performance improvements. This recipes demonstrates how you can use user-defined Triton kernels with torch.compile. Prerequisites# Before starting this recipe, make sure that you have the following: Basic understanding of torch.compile and Triton. See: torch.compiler API documentation Introduction to torch.compile Triton language documentation PyTorch 2.3 or later A GPU that supports Triton import torch from torch.utils._triton import has_triton Basic Usage# In this example, we will use a simple vector addition kernel from the Triton documentation with torch.compile. For reference, see Triton documentation. if not has_triton(): print(\"Skipping because triton is not supported on this device.\") else: import triton from triton import language as tl @triton.jit def add_kernel( in_ptr0, in_ptr1, out_ptr, n_elements, BLOCK_SIZE: \"tl.constexpr\", ): pid = tl.program_id(axis=0) block_start = pid * BLOCK_SIZE offsets = block_start + tl.arange(0, BLOCK_SIZE) mask = offsets \u003c n_elements x = tl.load(in_ptr0 + offsets, mask=mask) y = tl.load(in_ptr1 + offsets, mask=mask) output = x + y tl.store(out_ptr + offsets, output, mask=mask) @torch.compile(fullgraph=True) def add_fn(x, y): output = torch.zeros_like(x) n_elements = output.numel() grid = lambda meta: (triton.cdiv(n_elements, meta[\"BLOCK_SIZE\"]),) add_kernel[grid](x, y, output, n_elements, BLOCK_SIZE=4) return output x = torch.randn(4, device=\"cuda\") y = torch.randn(4, device=\"cuda\") out = add_fn(x, y) print(f\"Vector addition of\\nX:\\t{x}\\nY:\\t{y}\\nis equal to\\n{out}\") Vector addition of X: tensor([-0.7053, -0.5499, 0.1306, -0.0147], device=\u0027cuda:0\u0027) Y: tensor([0.7584, 1.6622, 0.0259, 0.3065], device=\u0027cuda:0\u0027) is equal to tensor([0.0531, 1.1123, 0.1565, 0.2919], device=\u0027cuda:0\u0027) Advanced Usage# Triton\u2019s autotune feature is a powerful tool that automatically optimizes the configuration parameters of your Triton kernels. It explores a range of possible configurations and selects the one that delivers the best performance for your specific use case. When used with torch.compile, triton.autotune can help ensure that your PyTorch model is running as efficiently as possible. Here is an example of using torch.compile and triton.autotune. Note torch.compile only supports configs and key arguments to triton.autotune. if not has_triton(): print(\"Skipping because triton is not supported on this device.\") else: import triton from triton import language as tl @triton.autotune( configs=[ triton.Config({\"BLOCK_SIZE\": 4}, num_stages=3, num_warps=8), triton.Config({\"BLOCK_SIZE\": 4}, num_stages=4, num_warps=4), triton.Config({\"BLOCK_SIZE\": 2}, num_stages=3, num_warps=8), triton.Config({\"BLOCK_SIZE\": 2}, num_stages=4, num_warps=4), ], key=[], ) @triton.jit def add_kernel_autotuned( in_ptr0, in_ptr1, out_ptr, n_elements, BLOCK_SIZE: \"tl.constexpr\", ): pid = tl.program_id(axis=0) block_start = pid * BLOCK_SIZE offsets = block_start + tl.arange(0, BLOCK_SIZE) mask = offsets \u003c n_elements x = tl.load(in_ptr0 + offsets, mask=mask) y = tl.load(in_ptr1 + offsets, mask=mask) output = x + y tl.store(out_ptr + offsets, output, mask=mask) @torch.compile(fullgraph=True) def add_fn(x, y): output = torch.zeros_like(x) n_elements = output.numel() grid = lambda meta: (triton.cdiv(n_elements, meta[\"BLOCK_SIZE\"]),) add_kernel_autotuned[grid](x, y, output, n_elements) return output x = torch.randn(4, device=\"cuda\") y = torch.randn(4, device=\"cuda\") out = add_fn(x, y) print(f\"Vector addition of\\nX:\\t{x}\\nY:\\t{y}\\nis equal to\\n{out}\") Vector addition of X: tensor([-1.5978, 0.1961, -0.8414, -0.1652], device=\u0027cuda:0\u0027) Y: tensor([ 1.5106, 0.9073, -0.3102, 0.2240], device=\u0027cuda:0\u0027) is equal to tensor([-0.0873, 1.1034, -1.1516, 0.0588], device=\u0027cuda:0\u0027) Composability# User-defined Triton kernels do not automatically support all PyTorch subsystems. This can be seen in the following use cases: Adding a CPU fallback Adding a FlopCounter formula Composing with Tensor Subclasses To compose with additional PyTorch subsystems, use torch.library.triton_op. triton_op is a structured way of defining a custom operator that is backed by one or more Triton kernels: like regular custom operators (torch.library.custom_op), you are able to specify the interactions with PyTorch subsystems via torch.library. However, unlike torch.library.custom_op, which creates opaque callables with respect to torch.compile, torch.compile traces into triton_op to apply optimizations. Here\u2019s a chart of which API to use when integrating Triton kernels with PyTorch. Triton kernel (no explicit torch.library wrapper) torch.library.triton_op torch.library.custom_op Supports inference Yes Yes Yes Supports training In the majority of cases Yes Yes Supports torch.compile Yes Yes Yes Supports torch.compile(fullgraph=True) In the majority of cases In the majority of cases In all cases Does torch.compile trace into the implementation? Yes Yes No Supports AOTInductor Yes Yes No Supports PyTorch Subsystems like FlopCounterMode, CPU Fallback, Tensor Subclasses No Yes Yes Wrapping Triton kernels with triton_op# Use torch.library.triton_op to wrap a function that may invoke one or more Triton kernels. Use torch.library.wrap_triton to wrap the calls to the Triton kernel. from torch.library import triton_op, wrap_triton @triton_op(\"mylib::mysin\", mutates_args={}) def mysin(x: torch.Tensor) -\u003e torch.Tensor: out = torch.empty_like(x) n_elements = x.numel() wrap_triton(sin_kernel)[(n_elements,)](x, out, n_elements, BLOCK_SIZE=4) return out @triton.jit def sin_kernel( in_ptr0, out_ptr, n_elements, BLOCK_SIZE: \"tl.constexpr\", ): pid = tl.program_id(axis=0) block_start = pid * BLOCK_SIZE offsets = block_start + tl.arange(0, BLOCK_SIZE) mask = offsets \u003c n_elements x = tl.load(in_ptr0 + offsets, mask=mask) output = tl.sin(x) tl.store(out_ptr + offsets, output, mask=mask) You can invoke the triton_op in one of the following two ways. x = torch.randn(3, device=\"cuda\") y = mysin(x) z = torch.ops.mylib.mysin.default(x) assert torch.allclose(y, x.sin()) assert torch.allclose(z, x.sin()) The resulting triton_op works with torch.compile and AOTInductor. y = torch.compile(mysin)(x) assert torch.allclose(y, x.sin()) Adding training support# Use register_autograd to add an autograd formula for the triton_op. Prefer this to using torch.autograd.Function (which has various composability footguns with torch.compile). def backward(ctx, grad): x, = ctx.saved_tensors return grad * x.cos() def setup_context(ctx, inputs, output): x, = inputs ctx.save_for_backward(x) mysin.register_autograd(backward, setup_context=setup_context) Note that the backward must be a composition of PyTorch-understood operators. If you want the backward to call Triton kernels, then those must be wrapped in triton_op as well: @triton.jit def cos_kernel( in_ptr0, out_ptr, n_elements, BLOCK_SIZE: \"tl.constexpr\", ): pid = tl.program_id(axis=0) block_start = pid * BLOCK_SIZE offsets = block_start + tl.arange(0, BLOCK_SIZE) mask = offsets \u003c n_elements x = tl.load(in_ptr0 + offsets, mask=mask) output = tl.cos(x) tl.store(out_ptr + offsets, output, mask=mask) @triton_op(\"mylib::mycos\", mutates_args={}) def mycos(x: torch.Tensor) -\u003e torch.Tensor: out = torch.empty_like(x) n_elements = x.numel() wrap_triton(cos_kernel)[(n_elements,)](x, out, n_elements, BLOCK_SIZE=4) return out def backward(ctx, grad): x, = ctx.saved_tensors return grad * mycos(x) def setup_context(ctx, inputs, output): x, = inputs ctx.save_for_backward(x) mysin.register_autograd(backward, setup_context=setup_context) Adding a CPU Fallback# Triton kernels don\u2019t run on CPU. Use register_kernel to add a CPU (or any other device) fallback for the triton_op: @mysin.register_kernel(\"cpu\") def _(x): return torch.sin(x) x = torch.randn(3) y = mysin(x) assert torch.allclose(y, x.sin()) The fallback must be composed of PyTorch operators. Adding a FlopCounter Formula# To specify how many flops the triton kernel reports under PyTorch\u2019s flop counter, use register_flop_formula. from torch.utils.flop_counter import FlopCounterMode, register_flop_formula @register_flop_formula(torch.ops.mylib.mysin) def _(x_shape): numel = 1 for s in x_shape: numel *= s return numel x = torch.randn(3, device=\"cuda\") FlopCounterMode requires tabulate. Before running the code below, make sure you have tabulate installed or install by running pip install tabulate. \u003e\u003e\u003e with FlopCounterMode() as flop_counter: \u003e\u003e\u003e y = mysin(x) Limitations# As of PyTorch 2.3, the support for user-defined Triton kernels in torch.compile includes dynamic shapes, torch.autograd.Function, JIT inductor, and AOT inductor. You can use these features together to build complex, high-performance models. PyTorch 2.6 added torch.library.triton_op, which adds support for user-defined Triton kernels in tensor subclasses and other advanced features. However, there are certain limitations to be aware of: Triton Features: While triton.heuristics can be used either standalone or before triton.autotune, it cannot be used after triton.autotune. This implies that if triton.heuristics and triton.autotune are to be used together, triton.heuristics must be used first. Conclusion# In this recipe, we explored how to utilize user-defined Triton kernels with torch.compile. We delved into the basic usage of a simple vector addition kernel and advanced usage involving Triton\u2019s autotune feature. We also discussed the composability of user-defined Triton kernels with other PyTorch features and highlighted some current limitations. See Also# Compiling the Optimizers Implementing High-Performance Transformers with Scaled Dot Product Attention Total running time of the script: (0 minutes 3.120 seconds) Download Jupyter notebook: torch_compile_user_defined_triton_kernel_tutorial.ipynb Download Python source code: torch_compile_user_defined_triton_kernel_tutorial.py Download zipped: torch_compile_user_defined_triton_kernel_tutorial.zip",
        "author": {
          "@type": "Organization",
          "name": "PyTorch Contributors",
