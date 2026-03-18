@@ -48,7 +48,7 @@ awsv2 configure set default.s3.multipart_threshold 5120MB
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 if [[ "${JOB_TYPE}" == "worker" ]]; then
   # Step 1: Remove runnable code from tutorials that are not supposed to be run
-  python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
+  # python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
   # Temp remove for mnist download issue. (Re-enabled for 1.8.1)
   # python $DIR/remove_runnable_code.py beginner_source/fgsm_tutorial.py beginner_source/fgsm_tutorial.py || true
   # python $DIR/remove_runnable_code.py intermediate_source/spatial_transformer_tutorial.py intermediate_source/spatial_transformer_tutorial.py || true
