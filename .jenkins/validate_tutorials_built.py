@@ -42,7 +42,6 @@ NOT_RUN = [
     "intermediate_source/torchrec_intro_tutorial.py", #failing with 2.8 reenable after 3498
     "intermediate_source/torch_export_tutorial.py",  # failing with 2.11 issue #3773
     "beginner_source/mosaic_memory_profiling_tutorial.py",  # failing with 2.11 issue #3774
-    "intermediate_source/variable_length_attention_tutorial.py",  # failing with 2.11 issue #3775
 ]
 
 def tutorial_source_dirs() -> List[Path]:
