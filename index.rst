@@ -161,6 +161,11 @@ Welcome to PyTorch Tutorials
    :tags: Image/Video
 
 .. customcarditem::
+   :header: Offline Batch Inference
+   :card_description: Learn how to run production-ready batch inference using PyTorch and Ray Data.
+   :image: _static/img/ray-data.png
+   :link: beginner/batch_inference_tutorial.html
+   :tags: Image/Video,Model-Optimization,Best-Practice,Ray-Distributed,Parallel-and-Distributed-Training
    :header: Distributed Training with Ray Train
    :card_description: Pre-train a transformer language model across multiple GPUs using PyTorch and Ray Train.
    :image: _static/img/ray-data.png
