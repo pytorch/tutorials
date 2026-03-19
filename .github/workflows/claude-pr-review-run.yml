@@ -23,7 +23,6 @@ jobs:
       actions: read
       contents: read
       pull-requests: write
-      issues: write
       id-token: write
 
     steps:
@@ -49,15 +48,6 @@ jobs:
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install lintrunner
-        run: |
-          pip install lintrunner==0.12.5
-          lintrunner init
-
       - name: Generate script-verified facts
         id: facts
         env:
@@ -78,16 +68,6 @@ jobs:
           # Get changed files
           CHANGED_FILES=$(gh pr diff "$PR_NUMBER" --name-only 2>&1)
           FILE_COUNT=$(echo "$CHANGED_FILES" | wc -l | tr -d ' ')
-
-          # Run lintrunner
-          LINT_OUTPUT=$(lintrunner -m main 2>&1)
-          LINT_EXIT=$?
-          if [ $LINT_EXIT -eq 0 ]; then
-            LINT_STATUS="Passed"
-          else
-            LINT_ERRORS=$(echo "$LINT_OUTPUT" | grep -c "error" || echo "0")
-            LINT_STATUS="Failed (${LINT_ERRORS} errors)"
-          fi
 
           # Check for new dependencies in requirements.txt
           NEW_DEPS="None"
@@ -139,7 +119,6 @@ jobs:
             "files_display": $(echo "$FILES_DISPLAY" | jq -Rs .),
             "additions": ${PR_ADDITIONS},
             "deletions": ${PR_DELETIONS},
-            "lint_status": $(echo "$LINT_STATUS" | jq -Rs .),
             "new_deps": $(echo "$NEW_DEPS" | jq -Rs .),
             "card_status": $(echo "$CARD_STATUS" | jq -Rs .),
             "thumbnail_status": $(echo "$THUMB_STATUS" | jq -Rs .)
@@ -151,7 +130,6 @@ jobs:
           |-------|--------|
           | Files changed | ${FILES_DISPLAY} |
           | Lines | +${PR_ADDITIONS} / -${PR_DELETIONS} |
-          | Lintrunner | ${LINT_STATUS} |
           | New dependencies | ${NEW_DEPS} |
           | Card entry (index.rst) | ${CARD_STATUS} |
           | Thumbnail | ${THUMB_STATUS} |"
