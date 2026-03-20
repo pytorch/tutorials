@@ -144,7 +144,7 @@ print(y)
 # We saw convolutional layers in action in LeNet5 in an earlier video:
 # 
 
-import torch.functional as F
+import torch.nn.functional as F
 
 
 class LeNet(torch.nn.Module):
