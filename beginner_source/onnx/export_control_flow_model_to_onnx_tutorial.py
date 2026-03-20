@@ -28,12 +28,11 @@ Export a model with control flow to ONNX
 #
 # - How to refactor the model to use :func:`torch.cond` for exporting.
 # - How to export a model with control flow logic to ONNX.
-# - How to optimize the exported model using the ONNX optimizer.
 #
 # Prerequisites
 # ~~~~~~~~~~~~~
 #
-# * ``torch >= 2.6``
+# * ``torch >= 2.8``
 
 
 import torch
@@ -137,13 +136,6 @@ print(torch.export.export(model, (x,), strict=False))
 
 onnx_program = torch.onnx.export(model, (x,), dynamo=True)  
 print(onnx_program.model) 
-
-
-###############################################################################
-# We can optimize the model and get rid of the model local functions created to capture the control flow branches.  
-
-onnx_program.optimize()  
-print(onnx_program.model)  
 
 ###############################################################################
 # Conclusion
