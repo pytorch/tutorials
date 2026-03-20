@@ -292,7 +292,7 @@ print(t1.timeit(100))
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # While ``timeit.Timer.autorange`` takes a single continuous measurement
-# of at least 0.2 seconds, `torch.utils.benchmark.blocked_autorange`
+# of at least 0.2 seconds, `torch.utils.benchmark.Timer.blocked_autorange`
 # takes many measurements whose times total at least 0.2 seconds (which
 # can be changed by the `min_run_time` parameter) subject to the constraint
 # that timing overhead is a small fraction of the overall measurement.
@@ -884,5 +884,5 @@ print(delta)
 #
 # Take a look at these other recipes to continue your learning:
 #
-# -  `PyTorch Profiler <https://pytorch.org/tutorials/recipes/recipes/profiler.html>`_
+# -  `PyTorch Profiler <https://docs.pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`_
 #

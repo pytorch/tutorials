@@ -41,6 +41,13 @@ control, as well as third-party backend solutions.
    :tags: Model-Optimization,torch.compile
 
 .. customcarditem::
+   :header: torch.compile End-to-End Tutorial
+   :card_description: An example of applying torch.compile to a real model, demonstrating speedups.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torch_compile_full_example.html
+   :tags: Model-Optimization,torch.compile
+
+.. customcarditem::
    :header: Compiled Autograd: Capturing a larger backward graph for torch.compile
    :card_description: Learn how to use compiled autograd to capture a larger backward graph.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
@@ -80,6 +87,13 @@ control, as well as third-party backend solutions.
    :card_description: Speed up training with LRScheduler and torch.compiled optimizer
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: recipes/compiling_optimizer_lr_scheduler.html
+   :tags: Model-Optimization,torch.compile
+
+.. customcarditem::
+   :header: Using Variable Length Attention with ``torch.compile``
+   :card_description: Speed up training with torch.compiled variable length attention
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/variable_length_attention_tutorial.html
    :tags: Model-Optimization,torch.compile
 
 .. customcarditem::
@@ -177,12 +191,14 @@ control, as well as third-party backend solutions.
    :caption: torch.compile
 
    intermediate/torch_compile_tutorial
+   intermediate/torch_compile_full_example
    intermediate/compiled_autograd_tutorial
    intermediate/inductor_debug_cpu
    recipes/torch_compiler_set_stance_tutorial
    recipes/torch_export_challenges_solutions
    recipes/compiling_optimizer
    recipes/compiling_optimizer_lr_scheduler
+   intermediate/variable_length_attention_tutorial
    recipes/torch_compile_user_defined_triton_kernel_tutorial
    recipes/torch_compile_caching_tutorial
    recipes/regional_compilation

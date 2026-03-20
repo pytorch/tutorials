@@ -59,6 +59,8 @@ understand PyTorch's core functionality through step-by-step guidance.
    beginner/deep_learning_60min_blitz
    beginner/pytorch_with_examples
    beginner/nn_tutorial
+   beginner/understanding_leaf_vs_nonleaf_tutorial
    intermediate/nlp_from_scratch_index
    intermediate/tensorboard_tutorial
    intermediate/pinmem_nonblock
+   intermediate/visualizing_gradients_tutorial

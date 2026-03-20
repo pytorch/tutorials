@@ -19,7 +19,7 @@ Source code of the two examples can be found in
 Previous tutorials,
 `Getting Started With Distributed Data Parallel <ddp_tutorial.html>`__
 and `Writing Distributed Applications With PyTorch <dist_tuto.html>`__,
-described `DistributedDataParallel <https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html>`__
+described `DistributedDataParallel <https://docs.pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`__
 which supports a specific training paradigm where the model is replicated across
 multiple processes and each process handles a split of the input data.
 Sometimes, you might run into scenarios that require different training

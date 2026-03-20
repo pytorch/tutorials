@@ -62,7 +62,7 @@ torch.save(model, 'model.pth')
 # below we use ``weights_only=False`` because this involves loading the
 # model, which is a legacy use case for ``torch.save``.
 
-model = torch.load('model.pth', weights_only=False),
+model = torch.load('model.pth', weights_only=False)
 
 ########################
 # .. note:: This approach uses Python `pickle <https://docs.python.org/3/library/pickle.html>`_ module when serializing the model, thus it relies on the actual class definition to be available when loading the model.

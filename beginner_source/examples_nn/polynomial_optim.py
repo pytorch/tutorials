@@ -4,7 +4,7 @@ PyTorch: optim
 --------------
 
 A third order polynomial, trained to predict :math:`y=\sin(x)` from :math:`-\pi`
-to :math:`pi` by minimizing squared Euclidean distance.
+to :math:`\pi` by minimizing squared Euclidean distance.
 
 This implementation uses the nn package from PyTorch to build the network.
 

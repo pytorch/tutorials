@@ -71,8 +71,7 @@ There are three types of tutorial content that we host on
   reStructuredText files. The build system only converts them into HTML;
   the code in them does not run on build. These tutorials are easier to
   create and maintain but they do not provide an interactive experience.
-  An example is the [Dynamic Quantization
-  tutorial](https://pytorch.org/tutorials/recipes/recipes/dynamic_quantization.html).
+
 
 * **Recipes** are tutorials that provide bite-sized, actionable
   examples of how to use specific features, which differentiates them
@@ -265,7 +264,7 @@ search, you need to include it in `index.rst`, or for recipes, in
 1. Open the relevant file
    [`index.rst`](https://github.com/pytorch/tutorials/blob/main/index.rst)
    or
-   [`recipes_index.rst`](https://github.com/pytorch/tutorials/blob/main/recipes_source/recipes_index.rst)
+   [`recipes_index.rst`](https://github.com/pytorch/tutorials/blob/main/recipes_index.rst)
 1. Add a _card_ in reStructuredText format similar to the following:
 
 ```
@@ -357,11 +356,11 @@ Submit the changes as a PR to the main branch of
 1. Address all feedback comments from your reviewers.
 1. Make sure all CI checks are passing.
 
-Once you submit your PR, you can see a generated Netlify preview of your
-build. You can see an example Netlify preview at the following URL:
-
->  <https://deploy-preview-954--pytorch-tutorials-preview.netlify.app/>
-
+Once you submit your PR, you can see a preview of your
+build, titled "Preview Python docs built from this PR", under Helpful Links.
+This preview will show you how your tutorial will appear on the website,
+but it is not the final version. The final version will be published
+after the PR is merged.
 
 ## Do not merge the PR yourself ##
 

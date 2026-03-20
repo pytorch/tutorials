@@ -43,6 +43,8 @@
 # -  A NVIDIA GPU with semi-structured sparsity support (Compute
 #    Capability 8.0+).
 #
+#  .. note:: This tutorial is tested on an NVIDIA A100 80GB GPU. You may not see similar speedups on newer GPU architectures, For the latest information on semi-structured sparsity support, please refer to the README `here <https://github.com/pytorch/ao/tree/main/torchao/sparsity#torchao-sparsity>
+#
 # This tutorial is designed for beginners to semi-structured sparsity and
 # sparsity in general. For users with existing 2:4 sparse models,
 # accelerating ``nn.Linear`` layers for inference with
@@ -52,7 +54,6 @@
 import torch
 from torch.sparse import to_sparse_semi_structured, SparseSemiStructuredTensor
 from torch.utils.benchmark import Timer
-SparseSemiStructuredTensor._FORCE_CUTLASS = True
 
 # mask Linear weight to be 2:4 sparse
 mask = torch.Tensor([0, 0, 1, 1]).tile((3072, 2560)).cuda().bool()
@@ -207,7 +208,6 @@ from torch.ao.pruning import WeightNormSparsifier
 import transformers
 
 # force CUTLASS use if ``cuSPARSELt`` is not available
-SparseSemiStructuredTensor._FORCE_CUTLASS = True
 torch.manual_seed(100)
 
 # Set default device to "cuda:0"

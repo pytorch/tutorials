@@ -3,7 +3,7 @@ Introduction to Context Parallel
 **Authors**: `Xilun Wu <https://github.com/XilunWu>`_, `Chien-Chin Huang <https://github.com/fegin>`__
 
 .. note::
-    |edit| View and edit this tutorial in `GitHub <https://github.com/pytorch/tutorials/blob/main/prototype_source/context_parallel.rst>`__.
+    |edit| View and edit this tutorial in `GitHub <https://github.com/pytorch/tutorials/blob/main/unstable_source/context_parallel.rst>`__.
 
 .. grid:: 2
 

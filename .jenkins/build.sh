@@ -4,6 +4,14 @@ set -ex
 
 export BUCKET_NAME=pytorch-tutorial-build-pull-request
 
+# Set build prefix based on whether this is a nightly build or not
+# This prevents conflicts when both builds run simultaneously
+if [ "${USE_NIGHTLY:-0}" -eq 1 ]; then
+  export BUILD_PREFIX="nightly"
+else
+  export BUILD_PREFIX="stable"
+fi
+
 # set locale for click dependency in spacy
 export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
@@ -19,16 +27,20 @@ sudo apt-get install -y pandoc
 # NS: Path to python runtime should already be part of docker container
 # export PATH=/opt/conda/bin:$PATH
 
-#Install PyTorch Nightly for test.
+# Install PyTorch Nightly for test.
+if [ "${USE_NIGHTLY:-0}" -eq 1 ]; then
+  sudo pip uninstall -y torch torchvision torchaudio
+  pip3 install torch==2.11.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/test/cu130
+  pip show torch
+fi
+
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
-# Install 2.5 to merge all 2.4 PRs - uncomment to install nightly binaries (update the version as needed).
-# sudo pip uninstall -y fbgemm-gpu torchrec
-# sudo pip uninstall -y torch torchvision torchaudio torchtext torchdata torchrl tensordict
-# sudo pip3 install fbgemm-gpu==1.1.0 torchrec==1.0.0 --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu124
-# pip3 install torch==2.7.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu126
+# Install 2.11 to merge all 2.11 PRs - uncomment to install nightly binaries (update the version as needed).
+# sudo pip uninstall -y torch torchvision torchaudio torchtext torchdata
+# pip3 install torch==2.11.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu130
 # Install two language tokenizers for Translation with TorchText tutorial
-python -m spacy download en_core_web_sm
-python -m spacy download de_core_news_sm
+# Note: keep this version consistent with the spacy version in requirements.txt
+pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
 
 awsv2 -i
 awsv2 configure set default.s3.multipart_threshold 5120MB
@@ -36,7 +48,7 @@ awsv2 configure set default.s3.multipart_threshold 5120MB
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 if [[ "${JOB_TYPE}" == "worker" ]]; then
   # Step 1: Remove runnable code from tutorials that are not supposed to be run
-  python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
+  # python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
   # Temp remove for mnist download issue. (Re-enabled for 1.8.1)
   # python $DIR/remove_runnable_code.py beginner_source/fgsm_tutorial.py beginner_source/fgsm_tutorial.py || true
   # python $DIR/remove_runnable_code.py intermediate_source/spatial_transformer_tutorial.py intermediate_source/spatial_transformer_tutorial.py || true
@@ -57,7 +69,6 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   export FILES_TO_RUN
 
   # Step 3: Run `make docs` to generate HTML files and static files for these tutorialis
-  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
   make docs
 
   # Step 3.1: Run the post-processing script:
@@ -115,11 +126,12 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
   python .jenkins/validate_tutorials_built.py
 
   # Step 6: Copy generated files to S3, tag with commit ID
-  7z a worker_${WORKER_ID}.7z docs
-  awsv2 s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z
+  if [ "${UPLOAD:-0}" -eq 1 ]; then
+    7z a worker_${WORKER_ID}.7z docs
+    awsv2 s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${BUILD_PREFIX}/${COMMIT_ID}/worker_${WORKER_ID}.7z
+  fi
 elif [[ "${JOB_TYPE}" == "manager" ]]; then
   # Step 1: Generate no-plot HTML pages for all tutorials
-  pip3 install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
   make html-noplot
   cp -r _build/html docs
 
@@ -129,7 +141,7 @@ elif [[ "${JOB_TYPE}" == "manager" ]]; then
   # Step 3: Download generated with-plot HTML files and static files from S3, merge into one folder
   mkdir -p docs_with_plot/docs
   for ((worker_id=1;worker_id<NUM_WORKERS+1;worker_id++)); do
-    awsv2 s3 cp s3://${BUCKET_NAME}/${COMMIT_ID}/worker_$worker_id.7z worker_$worker_id.7z
+    awsv2 s3 cp s3://${BUCKET_NAME}/${BUILD_PREFIX}/${COMMIT_ID}/worker_$worker_id.7z worker_$worker_id.7z
     7z x worker_$worker_id.7z -oworker_$worker_id
     yes | cp -R worker_$worker_id/docs/* docs_with_plot/docs
   done
@@ -146,7 +158,7 @@ elif [[ "${JOB_TYPE}" == "manager" ]]; then
 
   # Step 6: Copy generated HTML files and static files to S3
   7z a manager.7z docs
-  awsv2 s3 cp manager.7z s3://${BUCKET_NAME}/${COMMIT_ID}/manager.7z
+  awsv2 s3 cp manager.7z s3://${BUCKET_NAME}/${BUILD_PREFIX}/${COMMIT_ID}/manager.7z
 
   # Step 7: push new HTML files and static files to gh-pages
   if [[ "$COMMIT_SOURCE" == "refs/heads/master" || "$COMMIT_SOURCE" == "refs/heads/main" ]]; then

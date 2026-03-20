@@ -27,7 +27,7 @@ NOTE: Before submitting a new tutorial, read [PyTorch Tutorial Submission Policy
 1. Create a Python file. If you want it executed while inserted into documentation, save the file with the suffix `tutorial` so that the file name is `your_tutorial.py`.
 2. Put it in one of the `beginner_source`, `intermediate_source`, `advanced_source` directory based on the level of difficulty. If it is a recipe, add it to `recipes_source`. For tutorials demonstrating unstable prototype features, add to the `prototype_source`.
 3. For Tutorials (except if it is a prototype feature), include it in the `toctree` directive and create a `customcarditem` in [index.rst](./index.rst).
-4. For Tutorials (except if it is a prototype feature), create a thumbnail in the [index.rst file](https://github.com/pytorch/tutorials/blob/main/index.rst) using a command like `.. customcarditem:: beginner/your_tutorial.html`. For Recipes, create a thumbnail in the [recipes_index.rst](https://github.com/pytorch/tutorials/blob/main/recipes_source/recipes_index.rst)
+4. For Tutorials (except if it is a prototype feature), create a thumbnail in the [index.rst file](https://github.com/pytorch/tutorials/blob/main/index.rst) using a command like `.. customcarditem:: beginner/your_tutorial.html`. For Recipes, create a thumbnail in the [recipes_index.rst](https://github.com/pytorch/tutorials/blob/main/recipes_index.rst)
 
 If you are starting off with a Jupyter notebook, you can use [this script](https://gist.github.com/chsasank/7218ca16f8d022e02a9c0deb94a310fe) to convert the notebook to Python file. After conversion and addition to the project, please make sure that section headings and other things are in logical order.
 

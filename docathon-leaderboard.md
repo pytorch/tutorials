@@ -60,7 +60,7 @@ were not merged or issues that have been closed without a merged PR.
 | kiszk | 20 | https://github.com/pytorch/pytorch/pull/128337, https://github.com/pytorch/pytorch/pull/128123, https://github.com/pytorch/pytorch/pull/128022, https://github.com/pytorch/pytorch/pull/128312 |
 | loganthomas | 19 | https://github.com/pytorch/pytorch/pull/128676, https://github.com/pytorch/pytorch/pull/128192, https://github.com/pytorch/pytorch/pull/128189, https://github.com/pytorch/tutorials/pull/2922, https://github.com/pytorch/tutorials/pull/2910, https://github.com/pytorch/xla/pull/7195 |
 | ignaciobartol | 17 | https://github.com/pytorch/pytorch/pull/128741, https://github.com/pytorch/pytorch/pull/128135, https://github.com/pytorch/pytorch/pull/127938, https://github.com/pytorch/tutorials/pull/2936 |
-| arunppsg | 17 | https://github.com/pytorch/pytorch/pull/128391, https://github.com/pytorch/pytorch/pull/128021, https://github.com/pytorch/pytorch/pull/128018, https://github.com/pytorch-labs/torchfix/pull/59 |
+| arunppsg | 17 | https://github.com/pytorch/pytorch/pull/128391, https://github.com/pytorch/pytorch/pull/128021, https://github.com/pytorch/pytorch/pull/128018, https://github.com/meta-pytorch/torchfix/pull/59 |
 | alperenunlu | 17 | https://github.com/pytorch/tutorials/pull/2934, https://github.com/pytorch/tutorials/pull/2909, https://github.com/pytorch/pytorch/pull/104043 |
 | anandptl84 | 10 | https://github.com/pytorch/pytorch/pull/128196, https://github.com/pytorch/pytorch/pull/128098 |
 | GdoongMathew | 10 | https://github.com/pytorch/pytorch/pull/128136, https://github.com/pytorch/pytorch/pull/128051 |

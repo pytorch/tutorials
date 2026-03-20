@@ -406,14 +406,14 @@ print(predictions[0])
 
 
 ######################################################################
-# Let’s now write the main function which performs the training and the
-# validation:
+# We want to be able to train our model on an `accelerator <https://pytorch.org/docs/stable/torch.html#accelerators>`_
+# such as CUDA, MPS, MTIA, or XPU. Let’s now write the main function which performs the training and the validation:
 
 
 from engine import train_one_epoch, evaluate
 
-# train on the GPU or on the CPU, if a GPU is not available
-device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+# train on the accelerator or on the CPU, if an accelerator is not available
+device = torch.accelerator.current_accelerator() if torch.accelerator.is_available() else torch.device('cpu')
 
 # our dataset has two classes only - background and person
 num_classes = 2

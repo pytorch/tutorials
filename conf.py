@@ -144,12 +144,12 @@ extensions = [
 ]
 
 intersphinx_mapping = {
-    "torch": ("https://pytorch.org/docs/stable/", None),
-    "tensordict": ("https://pytorch.github.io/tensordict/stable", None),
-    "torchrl": ("https://pytorch.org/rl/stable", None),
-    "torchaudio": ("https://pytorch.org/audio/stable/", None),
-    "torchtext": ("https://pytorch.org/text/stable/", None),
-    "torchvision": ("https://pytorch.org/vision/stable/", None),
+    "torch": ("https://docs.pytorch.org/docs/stable/", None),
+    "tensordict": ("https://docs.pytorch.org/tensordict/stable", None),
+    "torchrl": ("https://docs.pytorch.org/rl/stable", None),
+    "torchaudio": ("https://docs.pytorch.org/audio/stable/", None),
+    "torchtext": ("https://docs.pytorch.org/text/stable/", None),
+    "torchvision": ("https://docs.pytorch.org/vision/stable/", None),
 }
 
 html_meta = {
@@ -158,9 +158,6 @@ html_meta = {
     "author": "PyTorch Contributors",
 }
 
-html_additional_pages = {
-    "404": "404.html",
-}
 
 # -- Sphinx-gallery configuration --------------------------------------------
 
@@ -181,7 +178,7 @@ sphinx_gallery_conf = {
     "show_signature": False,
     "first_notebook_cell": (
         "# For tips on running notebooks in Google Colab, see\n"
-        "# https://pytorch.org/tutorials/beginner/colab\n"
+        "# https://docs.pytorch.org/tutorials/beginner/colab\n"
         "%matplotlib inline"
     ),
     "ignore_pattern": r"_torch_export_nightly_tutorial.py",
@@ -191,7 +188,12 @@ sphinx_gallery_conf = {
     },
 }
 
-html_baseurl = "https://pytorch.org/tutorials/"  # needed for sphinx-sitemap
+html_additional_pages = {
+    "404": "404.html",
+}
+
+
+html_baseurl = "https://docs.pytorch.org/tutorials/"  # needed for sphinx-sitemap
 sitemap_locales = [None]
 sitemap_excludes = [
     "search.html",
@@ -228,11 +230,20 @@ html_theme_options = {
         },
     ],
     "use_edit_page_button": True,
-    "header_links_before_dropdown": 9,
-    "navbar_start": ["pytorch_version"],
+    "header_links_before_dropdown": 7,
+    "navbar_start": ["navbar-logo", "pytorch_version"],
     "navbar_center": "navbar-nav",
     "display_version": True,
     "pytorch_project": "tutorials",
+    "llm_disabled": False,
+    "canonical_url": "https://docs.pytorch.org/tutorials/",
+    # Announcement Banner Configuration
+    "announcement_banner": {
+        "text": "Help us understand how you use PyTorch! Take our quick survey.",
+        "url": "https://docs.google.com/forms/d/e/1FAIpQLSfsGAWBcfutRcbO6kfrShBMOMmRuBezRjjOcXk0e9I9luBzvQ/viewform",
+        "link_text": "Take Survey",
+        "dismissible": True,
+    },
 }
 
 theme_variables = pytorch_sphinx_theme2.get_theme_variables()
@@ -247,7 +258,7 @@ html_context = {
     "github_version": "main",
     "doc_path": ".",
     "library_links": theme_variables.get("library_links", []),
-    #"pytorch_project": "tutorials",
+    # "pytorch_project": "tutorials",
 }
 
 
@@ -259,8 +270,9 @@ if os.getenv("GALLERY_PATTERN"):
     # ignore_pattern also skips parsing.
     # See https://github.com/sphinx-gallery/sphinx-gallery/issues/721
     # for a more detailed description of the issue.
+    # GALLERY_PATTERN should be a regular expression.
     sphinx_gallery_conf["ignore_pattern"] = (
-        r"/(?!" + re.escape(os.getenv("GALLERY_PATTERN")) + r")[^/]+$"
+        r"^(?!.*" + os.getenv("GALLERY_PATTERN") + r")"
     )
 
 for i in range(len(sphinx_gallery_conf["examples_dirs"])):
