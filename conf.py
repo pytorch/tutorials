@@ -159,7 +159,6 @@ html_meta = {
 }
 
 
-
 # -- Sphinx-gallery configuration --------------------------------------------
 
 sphinx_gallery_conf = {
@@ -231,12 +230,20 @@ html_theme_options = {
         },
     ],
     "use_edit_page_button": True,
-    "header_links_before_dropdown": 9,
-    "navbar_start": ["pytorch_version"],
+    "header_links_before_dropdown": 7,
+    "navbar_start": ["navbar-logo", "pytorch_version"],
     "navbar_center": "navbar-nav",
     "display_version": True,
     "pytorch_project": "tutorials",
+    "llm_disabled": False,
     "canonical_url": "https://docs.pytorch.org/tutorials/",
+    # Announcement Banner Configuration
+    "announcement_banner": {
+        "text": "Help us understand how you use PyTorch! Take our quick survey.",
+        "url": "https://docs.google.com/forms/d/e/1FAIpQLSfsGAWBcfutRcbO6kfrShBMOMmRuBezRjjOcXk0e9I9luBzvQ/viewform",
+        "link_text": "Take Survey",
+        "dismissible": True,
+    },
 }
 
 theme_variables = pytorch_sphinx_theme2.get_theme_variables()
@@ -251,7 +258,7 @@ html_context = {
     "github_version": "main",
     "doc_path": ".",
     "library_links": theme_variables.get("library_links", []),
-    #"pytorch_project": "tutorials",
+    # "pytorch_project": "tutorials",
 }
 
 
@@ -263,8 +270,9 @@ if os.getenv("GALLERY_PATTERN"):
     # ignore_pattern also skips parsing.
     # See https://github.com/sphinx-gallery/sphinx-gallery/issues/721
     # for a more detailed description of the issue.
+    # GALLERY_PATTERN should be a regular expression.
     sphinx_gallery_conf["ignore_pattern"] = (
-        r"/(?!" + re.escape(os.getenv("GALLERY_PATTERN")) + r")[^/]+$"
+        r"^(?!.*" + os.getenv("GALLERY_PATTERN") + r")"
     )
 
 for i in range(len(sphinx_gallery_conf["examples_dirs"])):

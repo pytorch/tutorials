@@ -5,15 +5,19 @@ MaskedTensor Advanced Semantics
 ===========================================
 """
 
+import warnings
+
+import numpy as np
+
 ######################################################################
-# 
+#
 # Before working on this tutorial, please make sure to review our
 # `MaskedTensor Overview tutorial <https://pytorch.org/tutorials/prototype/maskedtensor_overview.html>`.
 #
 # The purpose of this tutorial is to help users understand how some of the advanced semantics work
 # and how they came to be. We will focus on two particular ones:
 #
-# *. Differences between MaskedTensor and `NumPy's MaskedArray <https://numpy.org/doc/stable/reference/maskedarray.html>`__  
+# *. Differences between MaskedTensor and `NumPy's MaskedArray <https://numpy.org/doc/stable/reference/maskedarray.html>`__
 # *. Reduction semantics
 #
 # Preparation
@@ -22,11 +26,9 @@ MaskedTensor Advanced Semantics
 
 import torch
 from torch.masked import masked_tensor
-import numpy as np
-import warnings
 
 # Disable prototype warnings and such
-warnings.filterwarnings(action='ignore', category=UserWarning)
+warnings.filterwarnings(action="ignore", category=UserWarning)
 
 ######################################################################
 # MaskedTensor vs NumPy's MaskedArray
@@ -43,7 +45,7 @@ warnings.filterwarnings(action='ignore', category=UserWarning)
 #    `apply the logical_or operator <https://github.com/numpy/numpy/blob/68299575d8595d904aff6f28e12d21bf6428a4ba/numpy/ma/core.py#L1016-L1024>`__.
 #
 
-data = torch.arange(5.)
+data = torch.arange(5.0)
 mask = torch.tensor([True, True, False, True, False])
 npm0 = np.ma.masked_array(data.numpy(), (~mask).numpy())
 npm1 = np.ma.masked_array(data.numpy(), (mask).numpy())
@@ -65,7 +67,7 @@ print("mt1:\n", mt1)
 try:
     mt0 + mt1
 except ValueError as e:
-    print ("mt0 + mt1 failed. Error: ", e)
+    print("mt0 + mt1 failed. Error: ", e)
 
 ######################################################################
 # However, if this behavior is desired, MaskedTensor does support these semantics by giving access to the data and masks
@@ -125,10 +127,14 @@ print("torch.amax:\n", torch.amax(mt, 1))
 # In other words, why don't we use the same semantics as ``np.ma.masked_array``? Consider the following example:
 #
 
-data0 = torch.arange(10.).reshape(2, 5)
-data1 = torch.arange(10.).reshape(2, 5) + 10
-mask0 = torch.tensor([[True, True, False, False, False], [False, False, False, True, True]])
-mask1 = torch.tensor([[False, False, False, True, True], [True, True, False, False, False]])
+data0 = torch.arange(10.0).reshape(2, 5)
+data1 = torch.arange(10.0).reshape(2, 5) + 10
+mask0 = torch.tensor(
+    [[True, True, False, False, False], [False, False, False, True, True]]
+)
+mask1 = torch.tensor(
+    [[False, False, False, True, True], [True, True, False, False, False]]
+)
 npm0 = np.ma.masked_array(data0.numpy(), (mask0).numpy())
 npm1 = np.ma.masked_array(data1.numpy(), (mask1).numpy())
 
@@ -155,7 +161,7 @@ print("npm0.sum(0) + npm1.sum(0):\n", npm0.sum(0) + npm1.sum(0))
 mt0 = masked_tensor(data0, ~mask0)
 mt1 = masked_tensor(data1, ~mask1)
 
-(mt0.to_tensor(0) + mt1.to_tensor(0)).sum(0)
+print((mt0.to_tensor(0) + mt1.to_tensor(0)).sum(0))
 
 ######################################################################
 # Conclusion
@@ -167,4 +173,3 @@ mt1 = masked_tensor(data1, ~mask1)
 # the associative property amongst binary operations), which in turn can necessitate the user
 # to be more intentional with their code at times, but we believe this to be the better move.
 # If you have any thoughts on this, please `let us know <https://github.com/pytorch/pytorch/issues>`__!
-# 
