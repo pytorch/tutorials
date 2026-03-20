@@ -37,6 +37,7 @@ redirects = {
     "prototype/pt2e_quantizer.html": "https://docs.pytorch.org/ao/main/tutorials_source/pt2e_quantizer.html",
     "prototype/quantization_in_pytorch_2_0_export_tutorial.html": "../index.html",
     "prototype/torchscript_freezing.html": "../index.html",
+    "prototype/nestedtensor.html": "../unstable/nestedtensor.html",
     "recipes_source/cuda_rpc.rst": "../index.html",
     "receipes/fuse.html": "../index.html",
     "receipes/quantization.html": "../index.html",
