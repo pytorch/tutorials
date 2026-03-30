@@ -23,7 +23,6 @@ NOT_RUN = [
     "intermediate_source/dqn_with_rnn_tutorial", #not working on 2.8 release reenable after 3514
     "intermediate_source/mnist_train_nas",  # used by ax_multiobjective_nas_tutorial.py
     "intermediate_source/torch_compile_conv_bn_fuser",
-    "intermediate_source/_torch_export_nightly_tutorial",  # does not work on release
     "advanced_source/usb_semisup_learn", # fails with CUDA OOM error, should try on a different worker
     "unstable_source/gpu_direct_storage", # requires specific filesystem + GPUDirect Storage to be set up
     "recipes_source/recipes/tensorboard_with_pytorch",
@@ -40,9 +39,7 @@ NOT_RUN = [
     "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
     "advanced_source/semi_structured_sparse", # reenable after 3303 is fixed.
     "intermediate_source/torchrec_intro_tutorial.py", #failing with 2.8 reenable after 3498
-    "intermediate_source/torch_export_tutorial.py",  # failing with 2.11 issue #3773
     "beginner_source/mosaic_memory_profiling_tutorial.py",  # failing with 2.11 issue #3774
-    "intermediate_source/variable_length_attention_tutorial.py",  # failing with 2.11 issue #3775
 ]
 
 def tutorial_source_dirs() -> List[Path]:
