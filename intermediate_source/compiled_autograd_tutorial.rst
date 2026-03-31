@@ -16,7 +16,7 @@ Compiled Autograd: Capturing a larger backward graph for ``torch.compile``
 
        * PyTorch 2.4
        * Complete the `Introduction to torch.compile <https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html>`_
-       * Read through the TorchDynamo and AOTAutograd sections of `Get Started with PyTorch 2.x <https://pytorch.org/get-started/pytorch-2.0/>`_
+       * Read through the TorchDynamo and AOTAutograd sections of `Get Started with PyTorch 2.x <https://pytorch.org/get-started/pytorch-2-x/>`_
 
 Overview
 --------

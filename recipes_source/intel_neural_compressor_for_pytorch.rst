@@ -17,7 +17,7 @@ Features
 
 - **Accuracy-driven Tuning:** Intel® Neural Compressor supports accuracy-driven automatic tuning process, provides ``autotune`` API for user usage.
 
-- **Kinds of Quantization:** Intel® Neural Compressor supports a variety of quantization methods, including classic INT8 quantization, weight-only quantization and the popular FP8 quantization. Neural compressor also provides the latest research in simulation work, such as MX data type emulation quantization. For more details, please refer to `Supported Matrix <https://github.com/intel/neural-compressor/blob/master/docs/source/3x/PyTorch.md#supported-matrix>`_.
+- **Kinds of Quantization:** Intel® Neural Compressor supports a variety of quantization methods, including classic INT8 quantization, weight-only quantization and the popular FP8 quantization. Neural compressor also provides the latest research in simulation work, such as MX data type emulation quantization. For more details, please refer to `Supported Matrix <https://github.com/intel/neural-compressor/blob/master/docs/source/PyTorch.md#supported-matrix>`_.
 
 Getting Started
 ---------------
@@ -158,4 +158,4 @@ To leverage accuracy-driven automatic tuning, a specified tuning space is necess
 Tutorials
 ---------
 
-More detailed tutorials are available in the official Intel® Neural Compressor `doc <https://intel.github.io/neural-compressor/latest/docs/source/Welcome.html>`_.
+More detailed tutorials are available in the official Intel® Neural Compressor `doc <https://www.intel.com/content/www/us/en/developer/tools/oneapi/neural-compressor.html>`_.
