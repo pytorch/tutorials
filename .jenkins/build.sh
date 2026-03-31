@@ -170,7 +170,7 @@ elif [[ "${JOB_TYPE}" == "manager" ]]; then
     awsv2 s3 cp s3://${BUCKET_NAME}/${BUILD_PREFIX}/${COMMIT_ID}/build_log_${worker_id}.txt _build/build_log_${worker_id}.txt || true
   done
   cat _build/build_log_*.txt > _build/build.log 2>/dev/null || true
-  python -m tools.deprecation_checker.api_report --build-log _build/build.log --create-issue || true
+  python -m tools.deprecation_checker.api_report --build-log _build/build.log -o _build/api_report.md --create-issue || true
 
   # Step 6: Copy generated HTML files and static files to S3
   7z a manager.7z docs
