@@ -1,0 +1,103 @@
+"""Parse Python build logs for DeprecationWarning and FutureWarning messages.
+
+Reads a Sphinx Gallery build log and extracts structured warning information
+so downstream tools can report on deprecated API usage in tutorials.
+"""
+
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass
+from pathlib import Path
+from typing import List
+
+# Matches standard Python warning output:
+#   /path/to/file.py:42: DeprecationWarning: some message
+# The message may span continuation lines (indented), but we grab the first line.
+_WARNING_RE = re.compile(
+    r"^(?P<path>.+?\.py):(?P<lineno>\d+):\s+"
+    r"(?P<category>DeprecationWarning|FutureWarning):\s+"
+    r"(?P<message>.+)$"
+)
+
+# Docker workdir used by the CI build container
+_DOCKER_PREFIX = "/var/lib/workspace/"
+
+# Tutorial source directories (relative to repo root)
+_SOURCE_DIRS = (
+    "beginner_source/",
+    "intermediate_source/",
+    "advanced_source/",
+    "recipes_source/",
+    "prototype_source/",
+)
+
+
+@dataclass
+class BuildWarning:
+    """A single deprecation/future warning extracted from a build log."""
+
+    file: str
+    lineno: int
+    category: str  # "DeprecationWarning" or "FutureWarning"
+    message: str
+
+
+def _normalize_path(raw_path: str) -> str:
+    """Map an absolute Docker path back to a repo-relative tutorial source path.
+
+    If the path doesn't belong to a known source directory the raw path is
+    returned as-is (it may come from a dependency — still useful to log).
+    """
+    path = raw_path
+    if path.startswith(_DOCKER_PREFIX):
+        path = path[len(_DOCKER_PREFIX) :]
+
+    # Strip leading "./" if present
+    if path.startswith("./"):
+        path = path[2:]
+
+    return path
+
+
+def parse_log(log_path: str | Path) -> List[BuildWarning]:
+    """Parse *log_path* and return deduplicated :class:`BuildWarning` objects.
+
+    Deduplication key: ``(file, message)`` — only the first occurrence (by
+    line number) is kept so the report highlights unique issues rather than
+    repeating the same warning 50 times.
+    """
+    log_path = Path(log_path)
+    if not log_path.exists():
+        return []
+
+    seen: dict[tuple[str, str], BuildWarning] = {}
+    warnings: list[BuildWarning] = []
+
+    for line in log_path.read_text(errors="replace").splitlines():
+        m = _WARNING_RE.match(line)
+        if m is None:
+            continue
+
+        rel_path = _normalize_path(m.group("path"))
+        message = m.group("message").strip()
+        key = (rel_path, message)
+
+        if key in seen:
+            continue
+
+        warning = BuildWarning(
+            file=rel_path,
+            lineno=int(m.group("lineno")),
+            category=m.group("category"),
+            message=message,
+        )
+        seen[key] = warning
+        warnings.append(warning)
+
+    return warnings
+
+
+def is_tutorial_source(path: str) -> bool:
+    """Return True if *path* belongs to a known tutorial source directory."""
+    return any(path.startswith(d) for d in _SOURCE_DIRS)
