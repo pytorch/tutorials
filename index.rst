@@ -3,11 +3,13 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
+* `Distributed Training with Ray Train <https://docs.pytorch.org/tutorials/beginner/distributed_training_with_ray_tutorial.html>`__
+* `Serve PyTorch models at scale with Ray Serve <https://docs.pytorch.org/tutorials/beginner/serving_tutorial.html>`__
+* `Hyperparameter tuning using Ray Tune <https://docs.pytorch.org/tutorials/beginner/hyperparameter_tuning_tutorial.html>`__
 * `Memory Profiling with Mosaic <https://docs.pytorch.org/tutorials/beginner/mosaic_memory_profiling_tutorial.html>`__
 * `Using Variable Length Attention in PyTorch <https://docs.pytorch.org/tutorials/intermediate/variable_length_attention_tutorial.html>`__
 * `DebugMode: Recording Dispatched Operations and Numerical Debugging <https://docs.pytorch.org/tutorials/recipes/debug_mode_tutorial.html>`__
-* `[Updated] Custom SYCL Operators <https://docs.pytorch.org/tutorials/advanced/cpp_custom_ops_sycl.html>`__
-* `[Updated] Custom C++ and CUDA Operators <https://docs.pytorch.org/tutorials/advanced/cpp_custom_ops.html>`__
+
 
 
 .. raw:: html
