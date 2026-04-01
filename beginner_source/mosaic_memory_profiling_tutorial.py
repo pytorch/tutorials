@@ -309,9 +309,7 @@ def run_training_ac(
     model = GPT2LMHeadModel.from_pretrained("gpt2")
 
     if activation_checkpointing:
-        model.gradient_checkpointing_enable(
-            gradient_checkpointing_kwargs={"use_reentrant": False}
-        )
+        model.gradient_checkpointing_enable()
         print("Activation checkpointing is ENABLED")
     else:
         print("Activation checkpointing is DISABLED")
