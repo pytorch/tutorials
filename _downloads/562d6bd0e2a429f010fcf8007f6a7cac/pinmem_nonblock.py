@@ -127,7 +127,7 @@ assert torch.cuda.is_available(), "A cuda device is required to run this tutoria
 #   1. The device must have at least one free DMA (Direct Memory Access) engine. Modern GPU architectures such as Volterra,
 #      Tesla, or H100 devices have more than one DMA engine.
 #
-#   2. The transfer must be done on a separate, non-default cuda stream. In PyTorch, cuda streams can be handles using
+#   2. The transfer must be done on a separate, non-default cuda stream. In PyTorch, cuda streams can be handled using
 #      :class:`~torch.cuda.Stream`.
 #
 #   3. The source data must be in pinned memory.
