@@ -110,6 +110,14 @@ jobs:
 
           docker exec -u ci-user -t "${container_name}" sh -c ".jenkins/build.sh"
 
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log-${{ matrix.shard }}
+          path: _build/build.log
+          if-no-files-found: ignore
+
       - name: Teardown Linux
         uses: pytorch/test-infra/.github/actions/teardown-linux@main
         if: always()
@@ -147,6 +155,18 @@ jobs:
         uses: pytorch/test-infra/.github/actions/pull-docker-image@main
         with:
           docker-image: ${{ steps.calculate-docker-image.outputs.docker-image }}
+
+      - name: Download worker build logs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: build-log-*
+          path: _build/worker-logs
+
+      - name: Merge build logs
+        shell: bash
+        run: |
+          mkdir -p _build
+          cat _build/worker-logs/build-log-*/build.log > _build/build.log 2>/dev/null || true
 
       - name: Build
         shell: bash
@@ -186,12 +206,23 @@ jobs:
 
           docker exec -u ci-user -t "${container_name}" sh -c ".jenkins/build.sh"
 
+      - name: Generate API deprecation report
+        if: always()
+        shell: bash
+        run: |
+          python -m tools.deprecation_checker.api_report \
+            --build-log _build/build.log \
+            -o _build/api_report.md \
+            --create-issue || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Upload API deprecation report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: api-deprecation-report
-          path: tutorials/_build/api_report.md
+          path: _build/api_report.md
           if-no-files-found: ignore
 
       - name: Upload docs preview
