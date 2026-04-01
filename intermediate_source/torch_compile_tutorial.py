@@ -330,7 +330,7 @@ opt_bar(inp1, -inp2)
 #
 # The second time we run ``bar``, we take the other branch of the if statement
 # and we get 1 traced graph corresponding to the code ``b = b * -1; return x * b``.
-# We do not see a graph of ``x = a / (torch.abs(a) + 1)`` outputted the second time
+# We do not see a graph of ``x = a / (torch.abs(a) + 1); b.sum()`` outputted the second time
 # since ``torch.compile`` cached this graph from the first run and re-used it.
 #
 # Let's investigate by example how TorchDynamo would step through ``bar``.
