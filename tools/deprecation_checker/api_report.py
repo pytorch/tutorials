@@ -30,7 +30,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import List
 
-from .build_warning_parser import BuildWarning, is_tutorial_source, parse_log
+from .build_warning_parser import BuildWarning, classify_dependency, is_tutorial_source, parse_log
 
 # --------------------------------------------------------------------------- #
 # Constants
@@ -117,11 +117,32 @@ def generate_report(warnings: List[BuildWarning]) -> str:
             "",
         ]
 
-    if other_warnings:
+    # Classify dependency warnings
+    pytorch_warnings = [w for w in other_warnings if classify_dependency(w.file) == "pytorch"]
+    pytorch_lib_warnings = [w for w in other_warnings if classify_dependency(w.file) == "pytorch_libs"]
+    third_party_warnings = [w for w in other_warnings if classify_dependency(w.file) == "third_party"]
+
+    if pytorch_warnings:
         parts += [
-            "## Warnings from dependencies / non-tutorial code",
+            "## PyTorch warnings",
             "",
-            _findings_section(other_warnings),
+            _findings_section(pytorch_warnings),
+            "",
+        ]
+
+    if pytorch_lib_warnings:
+        parts += [
+            "## PyTorch libraries warnings",
+            "",
+            _findings_section(pytorch_lib_warnings),
+            "",
+        ]
+
+    if third_party_warnings:
+        parts += [
+            "## Third-party dependency warnings",
+            "",
+            _findings_section(third_party_warnings),
             "",
         ]
 

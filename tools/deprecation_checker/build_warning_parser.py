@@ -11,11 +11,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
+# Strip ANSI escape sequences and carriage-return progress lines
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+
 # Matches standard Python warning output:
 #   /path/to/file.py:42: DeprecationWarning: some message
+#   <unknown>:2: DeprecationWarning: invalid escape sequence '\s'
 # The message may span continuation lines (indented), but we grab the first line.
 _WARNING_RE = re.compile(
-    r"^(?P<path>.+?\.py):(?P<lineno>\d+):\s+"
+    r"(?P<path>/?[^\s:]+\.py|<unknown>):(?P<lineno>\d+):\s+"
     r"(?P<category>DeprecationWarning|FutureWarning):\s+"
     r"(?P<message>.+)$"
 )
@@ -68,14 +72,20 @@ def parse_log(log_path: str | Path) -> List[BuildWarning]:
     repeating the same warning 50 times.
     """
     log_path = Path(log_path)
-    if not log_path.exists():
+    try:
+        text = log_path.read_text(errors="replace")
+    except FileNotFoundError:
         return []
 
     seen: dict[tuple[str, str], BuildWarning] = {}
     warnings: list[BuildWarning] = []
 
-    for line in log_path.read_text(errors="replace").splitlines():
-        m = _WARNING_RE.match(line)
+    for line in text.splitlines():
+        # Strip ANSI escapes and split on \r to handle progress-line overwriting
+        line = _ANSI_RE.sub("", line)
+        if "\r" in line:
+            line = line.rsplit("\r", 1)[-1]
+        m = _WARNING_RE.search(line)
         if m is None:
             continue
 
@@ -101,3 +111,39 @@ def parse_log(log_path: str | Path) -> List[BuildWarning]:
 def is_tutorial_source(path: str) -> bool:
     """Return True if *path* belongs to a known tutorial source directory."""
     return any(path.startswith(d) for d in _SOURCE_DIRS)
+
+
+# Package prefixes that belong to PyTorch core
+_PYTORCH_CORE_PACKAGES = (
+    "/torch/",
+    "torch/",
+)
+
+# Package prefixes for PyTorch ecosystem libraries
+_PYTORCH_LIB_PACKAGES = (
+    "/torchvision/",
+    "/torchaudio/",
+    "/torchtext/",
+    "/torchrl/",
+    "/tensordict/",
+    "/torchdata/",
+    "/torchtune/",
+    "/torchtitan/",
+    "/functorch/",
+    "/torch_xla/",
+    "/executorch/",
+)
+
+
+def classify_dependency(path: str) -> str:
+    """Classify a non-tutorial warning path into a dependency category.
+
+    Returns one of: ``"pytorch"``, ``"pytorch_libs"``, ``"third_party"``.
+    """
+    for prefix in _PYTORCH_CORE_PACKAGES:
+        if prefix in path:
+            return "pytorch"
+    for prefix in _PYTORCH_LIB_PACKAGES:
+        if prefix in path:
+            return "pytorch_libs"
+    return "third_party"
