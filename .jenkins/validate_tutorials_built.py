@@ -36,7 +36,6 @@ NOT_RUN = [
     "recipes_source/recipes/timer_quick_start",
     "recipes_source/recipes/amp_recipe",
     "recipes_source/recipes/Captum_Recipe",
-    "intermediate_source/tensorboard_profiler_tutorial", # reenable after 2.0 release.
     "advanced_source/semi_structured_sparse", # reenable after 3303 is fixed.
     "intermediate_source/torchrec_intro_tutorial.py", #failing with 2.8 reenable after 3498
     "beginner_source/mosaic_memory_profiling_tutorial.py",  # failing with 2.11 issue #3774
