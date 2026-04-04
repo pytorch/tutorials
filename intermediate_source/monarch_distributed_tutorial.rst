@@ -22,7 +22,7 @@ Monarch is an actor framework designed to streamline the development of distribu
 - **Flexible resource management**: Support for multiple cluster schedulers including SLURM, Kubernetes, custom host management, and local processes
 - **Integrated monitoring**: Stream logs from remote processes back to your client for easy debugging and aggregation
 
-For more details, see the `Monarch documentation <https://meta-pytorch.org/monarch/generated/examples/getting_started.html>`_.
+For more details, see the `Monarch documentation <https://meta-pytorch.org/monarch/v0.4.0/generated/examples/getting_started.html>`_.
 
 Why Use Monarch?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -224,7 +224,7 @@ but here is some pseudocode with common usages:
         pass
 
 Remote actor endpoints can also utilize Python native breakpoints, enabling interactive debugging sessions.
-For a complete deep-dive into Monarch debuggers, please `refer to the documentation <https://meta-pytorch.org/monarch/generated/examples/debugging.html>`_.
+For a complete deep-dive into Monarch debuggers, please `refer to the documentation <https://meta-pytorch.org/monarch/v0.4.0/generated/examples/debugging.html>`_.
 
 .. code-block:: python
 
