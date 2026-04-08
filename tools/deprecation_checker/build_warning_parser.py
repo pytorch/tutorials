@@ -33,7 +33,7 @@ _SOURCE_DIRS = (
     "intermediate_source/",
     "advanced_source/",
     "recipes_source/",
-    "prototype_source/",
+    "unstable_source/",
 )
 
 
