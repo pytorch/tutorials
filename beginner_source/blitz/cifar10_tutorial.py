@@ -77,13 +77,15 @@ batch_size = 4
 
 trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
                                         download=True, transform=transform)
+# num_workers=0 avoids multiprocessing spawn issues when running this file as
+# ``python cifar10_tutorial.py`` on macOS/Windows (see note above).
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
-                                          shuffle=True, num_workers=2)
+                                          shuffle=True, num_workers=0)
 
 testset = torchvision.datasets.CIFAR10(root='./data', train=False,
                                        download=True, transform=transform)
 testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
-                                         shuffle=False, num_workers=2)
+                                         shuffle=False, num_workers=0)
 
 classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
@@ -292,28 +294,27 @@ for classname, correct_count in correct_pred.items():
 ########################################################################
 # Okay, so what next?
 #
-# How do we run these neural networks on the GPU?
+# How do we run these neural networks on a GPU or other accelerator?
 #
 # Training on GPU
 # ----------------
-# Just like how you transfer a Tensor onto the GPU, you transfer the neural
-# net onto the GPU.
+# Just like how you transfer a Tensor onto a device, you transfer the neural
+# net onto that device.
 #
-# Let's first select a device. Prefer CUDA when available, otherwise use MPS
-# (Apple Silicon), and fall back to CPU.
-if torch.cuda.is_available():
-    device = torch.device("cuda:0")
-elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
-    device = torch.device("mps")
-else:
-    device = torch.device("cpu")
+# Let's first select a device. This picks the fastest available accelerator,
+# or falls back to CPU (same pattern as ``quickstart_tutorial.py``).
+device = (
+    torch.accelerator.current_accelerator().type
+    if torch.accelerator.is_available()
+    else "cpu"
+)
 
-# This prints the selected device, e.g. "cuda:0", "mps", or "cpu".
-
+# ``device`` is a string such as ``"cuda"``, ``"mps"``, or ``"cpu"``, which you
+# can pass to ``Tensor.to(...)`` and ``nn.Module.to(...)``.
 print(device)
 
 ########################################################################
-# The rest of this section assumes that ``device`` is an accelerator device.
+# The snippets below show how to move the model and batch data to ``device``.
 #
 # Then these methods will recursively go over all modules and convert their
 # parameters and buffers to tensors on ``device``:
