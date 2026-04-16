@@ -37,10 +37,11 @@ We'll explore the key parameters of PyTorch's DataLoader and provide practical
 guidance on tuning them for your specific workload.
 """
 
+import os
+import time
+
 import torch
 from torch.utils.data import DataLoader, Dataset
-import time
-import os
 
 # Check if CUDA is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -62,17 +63,17 @@ class SyntheticDataset(Dataset):
         self.size = size
         self.feature_dim = feature_dim
         self.transform_delay = transform_delay
-        self.data = torch.randn(size, 3, feature_dim, feature_dim)
-        self.labels = torch.randint(0, 10, (size,))
 
     def __len__(self):
         return self.size
 
     def __getitem__(self, idx):
-        # Simulate expensive transformation
+        # Generate data lazily to avoid pre-allocating large tensors
+        data = torch.randn(3, self.feature_dim, self.feature_dim)
+        label = torch.randint(0, 10, (1,)).item()
         if self.transform_delay > 0:
             time.sleep(self.transform_delay)
-        return self.data[idx], self.labels[idx]
+        return data, label
 
 
 ######################################################################
@@ -113,8 +114,10 @@ def benchmark_batch_size(batch_size, num_batches=10):
     for i, (data, labels) in enumerate(loader):
         if i >= num_batches:
             break
-        # Simulate some processing
+        data = data.to(device)
         _ = data.sum()
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
     elapsed = time.perf_counter() - start
     return elapsed
 
@@ -269,6 +272,37 @@ else:
 #    ``in_order=False`` might not increase average throughput, but it
 #    can reduce variance and eliminate occasional slow batches.
 
+# Example: Comparing in_order=True vs in_order=False
+in_order_dataset = SyntheticDataset(size=500, transform_delay=0.002)
+
+
+def benchmark_in_order(in_order, num_batches=15):
+    """Benchmark the effect of in_order on batch delivery timing."""
+    loader = DataLoader(
+        in_order_dataset,
+        batch_size=16,
+        num_workers=4,
+        prefetch_factor=2,
+        in_order=in_order,
+    )
+    batch_times = []
+    prev = time.perf_counter()
+    for i, (data, labels) in enumerate(loader):
+        if i >= num_batches:
+            break
+        now = time.perf_counter()
+        batch_times.append(now - prev)
+        prev = now
+    return batch_times
+
+
+print("\nBenchmarking in_order effect on batch timing variance:")
+for order in [True, False]:
+    times = benchmark_in_order(order)
+    avg = sum(times) / len(times)
+    variance = sum((t - avg) ** 2 for t in times) / len(times)
+    print(f"  in_order={order}: avg={avg:.4f}s, variance={variance:.6f}")
+
 ######################################################################
 # Snapshot Frequency (``snapshot_every_n_steps``)
 # -----------------------------------------------
@@ -286,6 +320,22 @@ else:
 #
 # Choose based on your fault tolerance requirements and the cost of
 # reprocessing data.
+
+# Example: Configuring snapshot frequency
+# (Note: snapshot_every_n_steps requires a stateful DataLoader)
+#
+# .. code-block:: python
+#
+#     from torch.utils.data.dataloader_experimental import DataLoader2
+#
+#     loader = DataLoader2(
+#         dataset,
+#         snapshot_every_n_steps=100,  # Snapshot every 100 steps
+#     )
+#     # Save state for checkpointing
+#     state = loader.state_dict()
+#     # Restore on resumption
+#     loader.load_state_dict(state)
 
 ######################################################################
 # Advanced: Overlapping H2D Transfer with GPU Compute
@@ -353,12 +403,16 @@ if torch.cuda.is_available():
     loader = DataLoader(dataset, batch_size=32, pin_memory=True, num_workers=2)
     prefetcher = DataPrefetcher(loader, device)
 
+    torch.cuda.synchronize()
+    start = time.perf_counter()
     for i, (data, labels) in enumerate(prefetcher):
         # Your model training here
         _ = data.sum()
         if i >= 5:
             break
-    print("Prefetching demonstration complete!")
+    torch.cuda.synchronize()
+    elapsed = time.perf_counter() - start
+    print(f"Prefetching demonstration complete! ({elapsed:.4f}s for 6 batches)")
 
 ######################################################################
 # Python Multiprocessing Startup Methods
@@ -410,7 +464,7 @@ if torch.cuda.is_available():
 
 
 def create_optimized_dataloader(
-    dataset,
+    ds,
     batch_size=64,
     num_workers=None,
     pin_memory=None,
@@ -419,7 +473,7 @@ def create_optimized_dataloader(
     """Create an optimized DataLoader with sensible defaults.
 
     Args:
-        dataset: The dataset to load from
+        ds: The dataset to load from
         batch_size: Batch size (default: 64)
         num_workers: Number of worker processes. If None, uses a heuristic
                      based on CPU count
@@ -439,7 +493,7 @@ def create_optimized_dataloader(
         pin_memory = torch.cuda.is_available()
 
     loader = DataLoader(
-        dataset,
+        ds,
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
@@ -508,31 +562,16 @@ print(f"  pin_memory: {optimized_loader.pin_memory}")
 # - Image decoding or other I/O operations
 #
 # **Example: Identifying a Slow Transform**
-
-import subprocess
-import sys
-
-
-def demonstrate_pyspy_usage():
-    """Show how to programmatically check if py-spy is available."""
-    try:
-        result = subprocess.run(
-            [sys.executable, "-m", "pip", "show", "py-spy"],
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode == 0:
-            print("py-spy is installed and ready to use!")
-            print("Example commands:")
-            print("  py-spy record -o profile.svg --subprocesses -- python train.py")
-            print("  py-spy top --pid <YOUR_PID>")
-        else:
-            print("py-spy not found. Install with: pip install py-spy")
-    except Exception as e:
-        print(f"Could not check py-spy installation: {e}")
-
-
-demonstrate_pyspy_usage()
+#
+# .. note::
+#    To check if py-spy is installed, run ``pip show py-spy`` in your
+#    terminal. If not installed, use ``pip install py-spy``.
+#    Then profile your training script with:
+#
+#    .. code-block:: bash
+#
+#        py-spy record -o profile.svg --subprocesses -- python train.py
+#        py-spy top --pid <YOUR_PID>
 
 ######################################################################
 # .. tip::
@@ -778,6 +817,71 @@ print(f"  Estimated usage: {estimated_usage:.2f} GB")
 # 9. **Use ``file_system`` sharing strategy** in Docker containers or
 #    when hitting file descriptor limits.
 #
+######################################################################
+# End-to-End: Optimized Training Loop
+# ------------------------------------
+#
+# Here's a complete example combining all the optimizations into a
+# realistic training loop.
+
+import torch.nn as nn
+
+
+def optimized_training_loop(epochs=2, batch_size=32):
+    """Demonstrate a training loop with all data loading optimizations."""
+    # Create dataset and optimized DataLoader
+    train_dataset = SyntheticDataset(size=500, feature_dim=32, transform_delay=0)
+    train_loader = create_optimized_dataloader(train_dataset, batch_size=batch_size)
+
+    # Simple model
+    model = nn.Sequential(
+        nn.Flatten(),
+        nn.Linear(3 * 32 * 32, 128),
+        nn.ReLU(),
+        nn.Linear(128, 10),
+    ).to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+    criterion = nn.CrossEntropyLoss()
+
+    # Optional: wrap with prefetcher on GPU
+    use_prefetcher = torch.cuda.is_available()
+
+    for epoch in range(epochs):
+        model.train()
+        if use_prefetcher:
+            data_iter = DataPrefetcher(train_loader, device)
+        else:
+            data_iter = train_loader
+
+        total_loss = 0.0
+        num_batches = 0
+        for data, labels in data_iter:
+            if not use_prefetcher:
+                data = data.to(device, non_blocking=True)
+                labels = labels.to(device, non_blocking=True)
+
+            output = model(data)
+            loss = criterion(output, labels)
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            total_loss += loss.item()
+            num_batches += 1
+
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
+        avg_loss = total_loss / max(num_batches, 1)
+        print(
+            f"  Epoch {epoch + 1}/{epochs}: avg_loss={avg_loss:.4f}, batches={num_batches}"
+        )
+
+
+print("\nRunning optimized training loop:")
+optimized_training_loop()
+
+######################################################################
 # Additional Resources
 # --------------------
 #
