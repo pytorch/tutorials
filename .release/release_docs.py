@@ -276,6 +276,7 @@ def phase_pre_release(version, prev_version, cuda_version):
     # 3. Create tutorials repo PR
     print("[3/5] Creating tutorials repo PR...")
     branch_name = f"release-{version}"
+    original_branch = run("git rev-parse --abbrev-ref HEAD")
     # Stash any prior uncommitted changes, create branch from main
     run("git stash", check=False)
     run(f"git checkout main")
@@ -307,6 +308,10 @@ def phase_pre_release(version, prev_version, cuda_version):
         print(f"  Create PR: https://github.com/pytorch/tutorials/compare/main...{branch_name}")
     else:
         print("  No changes to commit — files already match target versions.")
+
+    # Return to original branch
+    run(f"git checkout {original_branch}")
+    run("git stash pop", check=False)
 
     # 4-5: Cross-repo PRs in pytorch/docs
     phase_update_versions(version)
