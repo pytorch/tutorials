@@ -22,7 +22,7 @@ Monarch is an actor framework designed to streamline the development of distribu
 - **Flexible resource management**: Support for multiple cluster schedulers including SLURM, Kubernetes, custom host management, and local processes
 - **Integrated monitoring**: Stream logs from remote processes back to your client for easy debugging and aggregation
 
-For more details, see the `Monarch documentation <https://meta-pytorch.org/monarch/generated/examples/getting_started.html>`_.
+For more details, see the `Monarch documentation <https://meta-pytorch.org/monarch/stable/generated/examples/getting_started.html>`_.
 
 Why Use Monarch?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -43,7 +43,7 @@ We rely on a nightly build of Titan for this tutorial, so please ensure that oth
    `Install script <https://github.com/meta-pytorch/monarch/blob/main/scripts/install_nightly.py>`_
 2. **TorchTitan nightly installed:**
    `TorchTitan install instructions <https://github.com/pytorch/torchtitan?tab=readme-ov-file#nightly-builds>`_
-3. **A valid Titan model config** and **tokenizer** in your working directory (e.g., ``debug_model.toml`` from `TorchTitan configs <https://github.com/pytorch/torchtitan/blob/main/torchtitan/models/llama3/train_configs/debug_model.toml>`_).
+3. **A valid Titan model config** and **tokenizer** in your working directory
 4. **SLURM cluster access:**
 
    - Sufficient permissions to reserve nodes and launch jobs.
@@ -224,7 +224,7 @@ but here is some pseudocode with common usages:
         pass
 
 Remote actor endpoints can also utilize Python native breakpoints, enabling interactive debugging sessions.
-For a complete deep-dive into Monarch debuggers, please `refer to the documentation <https://meta-pytorch.org/monarch/generated/examples/debugging.html>`_.
+For a complete deep-dive into Monarch debuggers, please `refer to the documentation <https://meta-pytorch.org/monarch/stable/generated/examples/debugging.html>`_.
 
 .. code-block:: python
 
