@@ -32,7 +32,7 @@ PyTorch 2.5.0 or newer is required.
 The ONNX exporter depends on extra Python packages:
 
   - `ONNX <https://onnx.ai>`_ standard library
-  - `ONNX Script <https://onnxscript.ai>`_ library that enables developers to author ONNX operators,
+  - `ONNX Script <https://microsoft.github.io/onnxscript/>`_ library that enables developers to author ONNX operators,
     functions and models using a subset of Python in an expressive, and yet simple fashion
   - `ONNX Runtime <https://onnxruntime.ai>`_ accelerated machine learning library.
 
