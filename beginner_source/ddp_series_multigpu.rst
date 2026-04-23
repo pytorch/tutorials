@@ -202,7 +202,6 @@ Running the distributed training job
 Here's what the code looks like:
 
 .. code-block:: python
-
    
    def main(rank, world_size, total_epochs, save_every):
       ddp_setup(rank, world_size)
@@ -218,7 +217,6 @@ Here's what the code looks like:
       save_every = int(sys.argv[2])
       world_size = torch.cuda.device_count()
       mp.spawn(main, args=(world_size, total_epochs, save_every,), nprocs=world_size)
-
 
 
 Further Reading
