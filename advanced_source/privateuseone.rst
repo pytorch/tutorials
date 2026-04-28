@@ -655,7 +655,7 @@ See Also
 .. seealso::
 
    * `torch_openreg <https://github.com/pytorch/pytorch/tree/main/test/cpp_extensions/open_registration_extension>`_ -- C++ backend reference implementation (in-tree)
-   * `pytorch_open_registration_example <https://github.com/ptrblck/pytorch_open_registration_example>`_ -- Original C++ example by @ptrblck
+   * `pytorch_open_registration_example <https://github.com/bdhirsh/pytorch_open_registration_example>`_ -- Original C++ example by @bdhirsh
    * `test_privateuseone_python_backend.py <https://github.com/pytorch/pytorch/blob/main/test/test_privateuseone_python_backend.py>`_ -- Working test for the Python approach
    * `PR #157859 <https://github.com/pytorch/pytorch/pull/157859>`_ -- Original PR that added ``_setup_privateuseone_for_python_backend()``
 
