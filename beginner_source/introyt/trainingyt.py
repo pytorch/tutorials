@@ -277,18 +277,17 @@ def train_one_epoch(epoch_index, tb_writer):
 # Initializing in a separate cell so we can easily add more epochs to the same run
 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 writer = SummaryWriter('runs/fashion_trainer_{}'.format(timestamp))
-epoch_number = 0
 
 EPOCHS = 5
 
 best_vloss = 1_000_000.
 
 for epoch in range(EPOCHS):
-    print('EPOCH {}:'.format(epoch_number + 1))
+    print('EPOCH {}:'.format(epoch + 1))
     
     # Make sure gradient tracking is on, and do a pass over the data
     model.train(True)
-    avg_loss = train_one_epoch(epoch_number, writer)
+    avg_loss = train_one_epoch(epoch, writer)
     
 
     running_vloss = 0.0
@@ -311,16 +310,14 @@ for epoch in range(EPOCHS):
     # for both training and validation
     writer.add_scalars('Training vs. Validation Loss',
                     { 'Training' : avg_loss, 'Validation' : avg_vloss },
-                    epoch_number + 1)
+                    epoch + 1)
     writer.flush()
     
     # Track best performance, and save the model's state
     if avg_vloss < best_vloss:
         best_vloss = avg_vloss
-        model_path = 'model_{}_{}'.format(timestamp, epoch_number)
+        model_path = 'model_{}_{}'.format(timestamp, epoch)
         torch.save(model.state_dict(), model_path)
-    
-    epoch_number += 1
 
 
 #########################################################################
