@@ -224,11 +224,24 @@
         link.parentElement.classList.remove('active');
       });
 
-      // Add active class to the matching link
+      // Add active class to the matching link and all its ancestor TOC items
       const matchingLink = tocNav.querySelector(`a[href="#${CSS.escape(targetId)}"]`);
       if (matchingLink) {
         matchingLink.classList.add('active');
         matchingLink.parentElement.classList.add('active');
+
+        // Walk up the DOM to activate parent TOC entries (e.g. h2 parent of h3)
+        let ancestor = matchingLink.parentElement.parentElement;
+        while (ancestor && ancestor !== tocNav) {
+          if (ancestor.classList.contains('toc-entry')) {
+            ancestor.classList.add('active');
+            const parentLink = ancestor.querySelector(':scope > a.nav-link');
+            if (parentLink) {
+              parentLink.classList.add('active');
+            }
+          }
+          ancestor = ancestor.parentElement;
+        }
       }
 
       // Use setTimeout to reset the guard after the current call stack
@@ -2805,7 +2818,7 @@ cuda:0
 call to the torch API (not just factory functions). If this
 is causing problems for you, please comment on
 <a class="reference external" href="https://github.com/pytorch/pytorch/issues/92701">this issue</a></p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.312 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.296 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-recipes-changing-default-device-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/f942955edbd28653c694b70c32b24ff2/changing_default_device.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">changing_default_device.ipynb</span></code></a></p>
@@ -2955,10 +2968,10 @@ is causing problems for you, please comment on
 </div>
 </div>
 </footer>
-<div class="cookie-banner-wrapper">
+<div class="cookie-banner-wrapper" data-nosnippet="">
 <div class="container">
 <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://opensource.fb.com/legal/cookie-policy">Cookies Policy</a>.</p>
-<img class="close-button" src="../../_static/img/pytorch-x.svg"/>
+<button aria-label="Close cookie banner" class="close-button"></button>
 </div>
 </div>
 <footer class="bd-footer">
@@ -2994,7 +3007,7 @@ is causing problems for you, please comment on
        "headline": "Changing default device",
        "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment.",
        "url": "/recipes/recipes/changing_default_device.html",
-       "articleBody": "Note Go to the end to download the full example code. Changing default device# It is common practice to write PyTorch code in a device-agnostic way, and then switch between CPU and CUDA depending on what hardware is available. Typically, to do this you might have used if-statements and cuda() calls to do this: Note This recipe requires PyTorch 2.0.0 or later. import torch USE_CUDA = False mod = torch.nn.Linear(20, 30) if USE_CUDA: mod.cuda() device = \u0027cpu\u0027 if USE_CUDA: device = \u0027cuda\u0027 inp = torch.randn(128, 20, device=device) print(mod(inp).device) cpu PyTorch now also has a context manager which can take care of the device transfer automatically. Here is an example: with torch.device(\u0027cuda\u0027): mod = torch.nn.Linear(20, 30) print(mod.weight.device) print(mod(torch.randn(128, 20)).device) cuda:0 cuda:0 You can also set it globally like this: torch.set_default_device(\u0027cuda\u0027) mod = torch.nn.Linear(20, 30) print(mod.weight.device) print(mod(torch.randn(128, 20)).device) cuda:0 cuda:0 This function imposes a slight performance cost on every Python call to the torch API (not just factory functions). If this is causing problems for you, please comment on this issue Total running time of the script: (0 minutes 0.312 seconds) Download Jupyter notebook: changing_default_device.ipynb Download Python source code: changing_default_device.py Download zipped: changing_default_device.zip",
+       "articleBody": "Note Go to the end to download the full example code. Changing default device# It is common practice to write PyTorch code in a device-agnostic way, and then switch between CPU and CUDA depending on what hardware is available. Typically, to do this you might have used if-statements and cuda() calls to do this: Note This recipe requires PyTorch 2.0.0 or later. import torch USE_CUDA = False mod = torch.nn.Linear(20, 30) if USE_CUDA: mod.cuda() device = \u0027cpu\u0027 if USE_CUDA: device = \u0027cuda\u0027 inp = torch.randn(128, 20, device=device) print(mod(inp).device) cpu PyTorch now also has a context manager which can take care of the device transfer automatically. Here is an example: with torch.device(\u0027cuda\u0027): mod = torch.nn.Linear(20, 30) print(mod.weight.device) print(mod(torch.randn(128, 20)).device) cuda:0 cuda:0 You can also set it globally like this: torch.set_default_device(\u0027cuda\u0027) mod = torch.nn.Linear(20, 30) print(mod.weight.device) print(mod(torch.randn(128, 20)).device) cuda:0 cuda:0 This function imposes a slight performance cost on every Python call to the torch API (not just factory functions). If this is causing problems for you, please comment on this issue Total running time of the script: (0 minutes 0.296 seconds) Download Jupyter notebook: changing_default_device.ipynb Download Python source code: changing_default_device.py Download zipped: changing_default_device.zip",
        "author": {
          "@type": "Organization",
          "name": "PyTorch Contributors",

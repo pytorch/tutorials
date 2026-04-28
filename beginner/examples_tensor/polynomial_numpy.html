@@ -226,11 +226,24 @@
         link.parentElement.classList.remove('active');
       });
 
-      // Add active class to the matching link
+      // Add active class to the matching link and all its ancestor TOC items
       const matchingLink = tocNav.querySelector(`a[href="#${CSS.escape(targetId)}"]`);
       if (matchingLink) {
         matchingLink.classList.add('active');
         matchingLink.parentElement.classList.add('active');
+
+        // Walk up the DOM to activate parent TOC entries (e.g. h2 parent of h3)
+        let ancestor = matchingLink.parentElement.parentElement;
+        while (ancestor && ancestor !== tocNav) {
+          if (ancestor.classList.contains('toc-entry')) {
+            ancestor.classList.add('active');
+            const parentLink = ancestor.querySelector(':scope > a.nav-link');
+            if (parentLink) {
+              parentLink.classList.add('active');
+            }
+          }
+          ancestor = ancestor.parentElement;
+        }
       }
 
       // Use setTimeout to reset the guard after the current call stack
@@ -2823,27 +2836,27 @@ backward pass.</p>
 <p>A numpy array is a generic n-dimensional array; it does not know anything about
 deep learning or gradients or computational graphs, and is just a way to perform
 generic numeric computations.</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>99 275.8471930654305
-199 185.43060309971776
-299 125.63264783094016
-399 86.08251980197082
-499 59.92382128285886
-599 42.62201217638011
-699 31.17809933247431
-799 23.608624644529044
-899 18.601761934628662
-999 15.289879015631609
-1099 13.099121716318
-1199 11.649935303717108
-1299 10.691272944908771
-1399 10.057083038138753
-1499 9.637530790893807
-1599 9.359964477389891
-1699 9.176326538665144
-1799 9.05482716491585
-1899 8.97443703145251
-1999 8.921244615438566
-Result: y = 0.001192701207199384 + 0.8468843735296815 x + -0.00020576080487564861 x^2 + -0.09192839207884214 x^3
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>99 872.8363748981576
+199 588.5606566606199
+299 398.1256086897102
+399 270.4600730058246
+499 184.80966726433348
+599 127.30181249285576
+699 88.65800714681156
+799 62.668355558329196
+899 45.17385367241756
+999 33.38705932003652
+1099 25.438380408328555
+1199 20.072869996978135
+1299 16.447476056452935
+1399 13.995376417944929
+1499 12.335140525990123
+1599 11.209863189288278
+1699 10.446351034989881
+1799 9.927734205337924
+1899 9.575072535963386
+1999 9.334992158910577
+Result: y = 0.01687171171508444 + 0.8409534495200122 x + -0.0029106510173468273 x^2 + -0.09108476978540736 x^3
 </pre></div>
 </div>
 <div class="line-block">
@@ -2889,7 +2902,7 @@ Result: y = 0.001192701207199384 + 0.8468843735296815 x + -0.0002057608048756486
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Result: y = </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s1"> x + </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1"> x^2 + </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s1"> x^3'</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.245 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.236 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-examples-tensor-polynomial-numpy-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/7d5b037ce7ce8abdf9014fb37d50f3f1/polynomial_numpy.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">polynomial_numpy.ipynb</span></code></a></p>
@@ -3067,10 +3080,10 @@ Result: y = 0.001192701207199384 + 0.8468843735296815 x + -0.0002057608048756486
 </div>
 </div>
 </footer>
-<div class="cookie-banner-wrapper">
+<div class="cookie-banner-wrapper" data-nosnippet="">
 <div class="container">
 <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://opensource.fb.com/legal/cookie-policy">Cookies Policy</a>.</p>
-<img class="close-button" src="../../_static/img/pytorch-x.svg"/>
+<button aria-label="Close cookie banner" class="close-button"></button>
 </div>
 </div>
 <footer class="bd-footer">
@@ -3106,7 +3119,7 @@ Result: y = 0.001192701207199384 + 0.8468843735296815 x + -0.0002057608048756486
        "headline": "Warm-up: numpy",
        "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment.",
        "url": "/beginner/examples_tensor/polynomial_numpy.html",
-       "articleBody": "Note Go to the end to download the full example code. Warm-up: numpy# A third order polynomial, trained to predict \\(y=\\sin(x)\\) from \\(-\\pi\\) to \\(\\pi\\) by minimizing squared Euclidean distance. This implementation uses numpy to manually compute the forward pass, loss, and backward pass. A numpy array is a generic n-dimensional array; it does not know anything about deep learning or gradients or computational graphs, and is just a way to perform generic numeric computations. 99 275.8471930654305 199 185.43060309971776 299 125.63264783094016 399 86.08251980197082 499 59.92382128285886 599 42.62201217638011 699 31.17809933247431 799 23.608624644529044 899 18.601761934628662 999 15.289879015631609 1099 13.099121716318 1199 11.649935303717108 1299 10.691272944908771 1399 10.057083038138753 1499 9.637530790893807 1599 9.359964477389891 1699 9.176326538665144 1799 9.05482716491585 1899 8.97443703145251 1999 8.921244615438566 Result: y = 0.001192701207199384 + 0.8468843735296815 x + -0.00020576080487564861 x^2 + -0.09192839207884214 x^3 import numpy as np import math # Create random input and output data x = np.linspace(-math.pi, math.pi, 2000) y = np.sin(x) # Randomly initialize weights a = np.random.randn() b = np.random.randn() c = np.random.randn() d = np.random.randn() learning_rate = 1e-6 for t in range(2000): # Forward pass: compute predicted y # y = a + b x + c x^2 + d x^3 y_pred = a + b * x + c * x ** 2 + d * x ** 3 # Compute and print loss loss = np.square(y_pred - y).sum() if t % 100 == 99: print(t, loss) # Backprop to compute gradients of a, b, c, d with respect to loss grad_y_pred = 2.0 * (y_pred - y) grad_a = grad_y_pred.sum() grad_b = (grad_y_pred * x).sum() grad_c = (grad_y_pred * x ** 2).sum() grad_d = (grad_y_pred * x ** 3).sum() # Update weights a -= learning_rate * grad_a b -= learning_rate * grad_b c -= learning_rate * grad_c d -= learning_rate * grad_d print(f\u0027Result: y = {a} + {b} x + {c} x^2 + {d} x^3\u0027) Total running time of the script: (0 minutes 0.245 seconds) Download Jupyter notebook: polynomial_numpy.ipynb Download Python source code: polynomial_numpy.py Download zipped: polynomial_numpy.zip",
+       "articleBody": "Note Go to the end to download the full example code. Warm-up: numpy# A third order polynomial, trained to predict \\(y=\\sin(x)\\) from \\(-\\pi\\) to \\(\\pi\\) by minimizing squared Euclidean distance. This implementation uses numpy to manually compute the forward pass, loss, and backward pass. A numpy array is a generic n-dimensional array; it does not know anything about deep learning or gradients or computational graphs, and is just a way to perform generic numeric computations. 99 872.8363748981576 199 588.5606566606199 299 398.1256086897102 399 270.4600730058246 499 184.80966726433348 599 127.30181249285576 699 88.65800714681156 799 62.668355558329196 899 45.17385367241756 999 33.38705932003652 1099 25.438380408328555 1199 20.072869996978135 1299 16.447476056452935 1399 13.995376417944929 1499 12.335140525990123 1599 11.209863189288278 1699 10.446351034989881 1799 9.927734205337924 1899 9.575072535963386 1999 9.334992158910577 Result: y = 0.01687171171508444 + 0.8409534495200122 x + -0.0029106510173468273 x^2 + -0.09108476978540736 x^3 import numpy as np import math # Create random input and output data x = np.linspace(-math.pi, math.pi, 2000) y = np.sin(x) # Randomly initialize weights a = np.random.randn() b = np.random.randn() c = np.random.randn() d = np.random.randn() learning_rate = 1e-6 for t in range(2000): # Forward pass: compute predicted y # y = a + b x + c x^2 + d x^3 y_pred = a + b * x + c * x ** 2 + d * x ** 3 # Compute and print loss loss = np.square(y_pred - y).sum() if t % 100 == 99: print(t, loss) # Backprop to compute gradients of a, b, c, d with respect to loss grad_y_pred = 2.0 * (y_pred - y) grad_a = grad_y_pred.sum() grad_b = (grad_y_pred * x).sum() grad_c = (grad_y_pred * x ** 2).sum() grad_d = (grad_y_pred * x ** 3).sum() # Update weights a -= learning_rate * grad_a b -= learning_rate * grad_b c -= learning_rate * grad_c d -= learning_rate * grad_d print(f\u0027Result: y = {a} + {b} x + {c} x^2 + {d} x^3\u0027) Total running time of the script: (0 minutes 0.236 seconds) Download Jupyter notebook: polynomial_numpy.ipynb Download Python source code: polynomial_numpy.py Download zipped: polynomial_numpy.zip",
        "author": {
          "@type": "Organization",
          "name": "PyTorch Contributors",

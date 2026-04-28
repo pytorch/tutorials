@@ -226,11 +226,24 @@
         link.parentElement.classList.remove('active');
       });
 
-      // Add active class to the matching link
+      // Add active class to the matching link and all its ancestor TOC items
       const matchingLink = tocNav.querySelector(`a[href="#${CSS.escape(targetId)}"]`);
       if (matchingLink) {
         matchingLink.classList.add('active');
         matchingLink.parentElement.classList.add('active');
+
+        // Walk up the DOM to activate parent TOC entries (e.g. h2 parent of h3)
+        let ancestor = matchingLink.parentElement.parentElement;
+        while (ancestor && ancestor !== tocNav) {
+          if (ancestor.classList.contains('toc-entry')) {
+            ancestor.classList.add('active');
+            const parentLink = ancestor.querySelector(':scope > a.nav-link');
+            if (parentLink) {
+              parentLink.classList.add('active');
+            }
+          }
+          ancestor = ancestor.parentElement;
+        }
       }
 
       // Use setTimeout to reset the guard after the current call stack
@@ -2906,7 +2919,7 @@ We get the prediction probabilities by passing it through an instance of the <co
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Predicted class: </span><span class="si">{</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">y_pred</span></a><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Predicted class: tensor([4], device='cuda:0')
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Predicted class: tensor([0], device='cuda:0')
 </pre></div>
 </div>
 <hr class="docutils"/>
@@ -2962,26 +2975,26 @@ linear layers, but there’s other activations to introduce non-linearity in you
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"After ReLU: </span><span class="si">{</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">hidden1</span></a><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before ReLU: tensor([[ 0.3113,  0.3284,  0.6357, -0.0387,  0.2101, -0.7127, -0.4187, -0.5744,
-         -0.2816,  0.3190,  0.2310,  0.4824,  0.5934,  0.0587,  0.2147,  0.3495,
-          0.0682, -0.4514,  0.3705, -0.2552],
-        [ 0.0414,  0.4180,  0.2464,  0.2190,  0.0056, -0.6114, -0.4688, -0.5036,
-         -0.2415,  0.2213,  0.3127,  0.2131,  0.0829, -0.1079,  0.3688,  0.1761,
-          0.0085, -0.4448,  0.1250, -0.2418],
-        [-0.2675,  0.6067,  0.1841, -0.1369,  0.3425, -0.4647, -0.1400, -0.7896,
-         -0.4613,  0.3985,  0.1044,  0.2559, -0.0397, -0.1802,  0.2979,  0.0309,
-          0.0480, -0.0247,  0.4715, -0.2433]], grad_fn=&lt;AddmmBackward0&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before ReLU: tensor([[-0.0230,  0.2847, -0.3008,  0.6529,  0.3198, -0.2715,  0.3146, -0.2888,
+          0.4379, -0.6780,  0.2286,  0.1844,  0.4702, -0.1960,  0.1064, -0.0895,
+          0.2106,  0.1943, -0.4779, -0.1745],
+        [-0.3569,  0.2194,  0.0976,  0.8582,  0.4246,  0.0768,  0.7990, -0.0540,
+          0.4805, -0.5952,  0.3373, -0.1502,  0.4351,  0.1859,  0.5041, -0.1272,
+          0.3546,  0.2708,  0.2247,  0.0449],
+        [-0.1716,  0.3265,  0.1544,  0.6016,  0.7165, -0.0359,  0.8663, -0.1037,
+          0.5623, -0.3204,  0.1042, -0.3170,  0.6194, -0.0357,  0.3539, -0.0261,
+         -0.1663,  0.3532,  0.2181, -0.0521]], grad_fn=&lt;AddmmBackward0&gt;)
 
 
-After ReLU: tensor([[0.3113, 0.3284, 0.6357, 0.0000, 0.2101, 0.0000, 0.0000, 0.0000, 0.0000,
-         0.3190, 0.2310, 0.4824, 0.5934, 0.0587, 0.2147, 0.3495, 0.0682, 0.0000,
-         0.3705, 0.0000],
-        [0.0414, 0.4180, 0.2464, 0.2190, 0.0056, 0.0000, 0.0000, 0.0000, 0.0000,
-         0.2213, 0.3127, 0.2131, 0.0829, 0.0000, 0.3688, 0.1761, 0.0085, 0.0000,
-         0.1250, 0.0000],
-        [0.0000, 0.6067, 0.1841, 0.0000, 0.3425, 0.0000, 0.0000, 0.0000, 0.0000,
-         0.3985, 0.1044, 0.2559, 0.0000, 0.0000, 0.2979, 0.0309, 0.0480, 0.0000,
-         0.4715, 0.0000]], grad_fn=&lt;ReluBackward0&gt;)
+After ReLU: tensor([[0.0000, 0.2847, 0.0000, 0.6529, 0.3198, 0.0000, 0.3146, 0.0000, 0.4379,
+         0.0000, 0.2286, 0.1844, 0.4702, 0.0000, 0.1064, 0.0000, 0.2106, 0.1943,
+         0.0000, 0.0000],
+        [0.0000, 0.2194, 0.0976, 0.8582, 0.4246, 0.0768, 0.7990, 0.0000, 0.4805,
+         0.0000, 0.3373, 0.0000, 0.4351, 0.1859, 0.5041, 0.0000, 0.3546, 0.2708,
+         0.2247, 0.0449],
+        [0.0000, 0.3265, 0.1544, 0.6016, 0.7165, 0.0000, 0.8663, 0.0000, 0.5623,
+         0.0000, 0.1042, 0.0000, 0.6194, 0.0000, 0.3539, 0.0000, 0.0000, 0.3532,
+         0.2181, 0.0000]], grad_fn=&lt;ReluBackward0&gt;)
 </pre></div>
 </div>
 </section>
@@ -3038,23 +3051,24 @@ accessible using your model’s <code class="docutils literal notranslate"><span
 )
 
 
-Layer: linear_relu_stack.0.weight | Size: torch.Size([512, 784]) | Values : tensor([[ 0.0238,  0.0010, -0.0064,  ...,  0.0350, -0.0278,  0.0098],
-        [-0.0356, -0.0181,  0.0322,  ..., -0.0094, -0.0309, -0.0237]],
+Layer: linear_relu_stack.0.weight | Size: torch.Size([512, 784]) | Values : tensor([[ 2.3399e-03, -2.8559e-02,  5.0323e-06,  ...,  2.0037e-03,
+          1.4513e-02,  6.6105e-03],
+        [-2.9357e-02, -2.2777e-03, -2.7722e-02,  ...,  2.9329e-02,
+         -8.8635e-03,  5.7995e-03]], device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
+
+Layer: linear_relu_stack.0.bias | Size: torch.Size([512]) | Values : tensor([0.0308, 0.0027], device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
+
+Layer: linear_relu_stack.2.weight | Size: torch.Size([512, 512]) | Values : tensor([[-0.0179, -0.0237, -0.0191,  ...,  0.0366, -0.0101,  0.0218],
+        [-0.0334,  0.0188, -0.0039,  ...,  0.0334, -0.0350, -0.0115]],
        device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
 
-Layer: linear_relu_stack.0.bias | Size: torch.Size([512]) | Values : tensor([ 0.0127, -0.0254], device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
+Layer: linear_relu_stack.2.bias | Size: torch.Size([512]) | Values : tensor([ 0.0298, -0.0068], device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
 
-Layer: linear_relu_stack.2.weight | Size: torch.Size([512, 512]) | Values : tensor([[-0.0384,  0.0161, -0.0251,  ...,  0.0108, -0.0018,  0.0186],
-        [-0.0389,  0.0424, -0.0023,  ..., -0.0091,  0.0027, -0.0416]],
+Layer: linear_relu_stack.4.weight | Size: torch.Size([10, 512]) | Values : tensor([[ 0.0086, -0.0274,  0.0128,  ...,  0.0325, -0.0142, -0.0173],
+        [ 0.0372,  0.0404,  0.0391,  ...,  0.0264,  0.0328,  0.0312]],
        device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
 
-Layer: linear_relu_stack.2.bias | Size: torch.Size([512]) | Values : tensor([ 0.0267, -0.0305], device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
-
-Layer: linear_relu_stack.4.weight | Size: torch.Size([10, 512]) | Values : tensor([[ 0.0066,  0.0034, -0.0175,  ..., -0.0275,  0.0144, -0.0036],
-        [ 0.0316,  0.0123,  0.0141,  ...,  0.0332,  0.0044,  0.0089]],
-       device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
-
-Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([-0.0319, -0.0172], device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
+Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([ 3.6924e-02, -4.3496e-05], device='cuda:0', grad_fn=&lt;SliceBackward0&gt;)
 </pre></div>
 </div>
 <hr class="docutils"/>
@@ -3064,7 +3078,7 @@ Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([-0.0
 <ul class="simple">
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/nn.html">torch.nn API</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.483 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.475 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-basics-buildmodel-tutorial-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/76d764ad694d0795e494a1edbfb068a6/buildmodel_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">buildmodel_tutorial.ipynb</span></code></a></p>
@@ -3282,10 +3296,10 @@ Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([-0.0
 </div>
 </div>
 </footer>
-<div class="cookie-banner-wrapper">
+<div class="cookie-banner-wrapper" data-nosnippet="">
 <div class="container">
 <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://opensource.fb.com/legal/cookie-policy">Cookies Policy</a>.</p>
-<img class="close-button" src="../../_static/img/pytorch-x.svg"/>
+<button aria-label="Close cookie banner" class="close-button"></button>
 </div>
 </div>
 <footer class="bd-footer">
@@ -3321,7 +3335,7 @@ Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([-0.0
        "headline": "Build the Neural Network",
        "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment.",
        "url": "/beginner/basics/buildmodel_tutorial.html",
-       "articleBody": "Note Go to the end to download the full example code. Learn the Basics || Quickstart || Tensors || Datasets \u0026 DataLoaders || Transforms || Build Model || Autograd || Optimization || Save \u0026 Load Model Build the Neural Network# Neural networks comprise of layers/modules that perform operations on data. The torch.nn namespace provides all the building blocks you need to build your own neural network. Every module in PyTorch subclasses the nn.Module. A neural network is a module itself that consists of other modules (layers). This nested structure allows for building and managing complex architectures easily. In the following sections, we\u2019ll build a neural network to classify images in the FashionMNIST dataset. import os import torch from torch import nn from torch.utils.data import DataLoader from torchvision import datasets, transforms Get Device for Training# We want to be able to train our model on an accelerator such as CUDA, MPS, MTIA, or XPU. If the current accelerator is available, we will use it. Otherwise, we use the CPU. device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else \"cpu\" print(f\"Using {device} device\") Using cuda device Define the Class# We define our neural network by subclassing nn.Module, and initialize the neural network layers in __init__. Every nn.Module subclass implements the operations on input data in the forward method. class NeuralNetwork(nn.Module): def __init__(self): super().__init__() self.flatten = nn.Flatten() self.linear_relu_stack = nn.Sequential( nn.Linear(28*28, 512), nn.ReLU(), nn.Linear(512, 512), nn.ReLU(), nn.Linear(512, 10), ) def forward(self, x): x = self.flatten(x) logits = self.linear_relu_stack(x) return logits We create an instance of NeuralNetwork, and move it to the device, and print its structure. model = NeuralNetwork().to(device) print(model) NeuralNetwork( (flatten): Flatten(start_dim=1, end_dim=-1) (linear_relu_stack): Sequential( (0): Linear(in_features=784, out_features=512, bias=True) (1): ReLU() (2): Linear(in_features=512, out_features=512, bias=True) (3): ReLU() (4): Linear(in_features=512, out_features=10, bias=True) ) ) To use the model, we pass it the input data. This executes the model\u2019s forward, along with some background operations. Do not call model.forward() directly! Calling the model on the input returns a 2-dimensional tensor with dim=0 corresponding to each output of 10 raw predicted values for each class, and dim=1 corresponding to the individual values of each output. We get the prediction probabilities by passing it through an instance of the nn.Softmax module. X = torch.rand(1, 28, 28, device=device) logits = model(X) pred_probab = nn.Softmax(dim=1)(logits) y_pred = pred_probab.argmax(1) print(f\"Predicted class: {y_pred}\") Predicted class: tensor([4], device=\u0027cuda:0\u0027) Model Layers# Let\u2019s break down the layers in the FashionMNIST model. To illustrate it, we will take a sample minibatch of 3 images of size 28x28 and see what happens to it as we pass it through the network. input_image = torch.rand(3,28,28) print(input_image.size()) torch.Size([3, 28, 28]) nn.Flatten# We initialize the nn.Flatten layer to convert each 2D 28x28 image into a contiguous array of 784 pixel values ( the minibatch dimension (at dim=0) is maintained). flatten = nn.Flatten() flat_image = flatten(input_image) print(flat_image.size()) torch.Size([3, 784]) nn.Linear# The linear layer is a module that applies a linear transformation on the input using its stored weights and biases. layer1 = nn.Linear(in_features=28*28, out_features=20) hidden1 = layer1(flat_image) print(hidden1.size()) torch.Size([3, 20]) nn.ReLU# Non-linear activations are what create the complex mappings between the model\u2019s inputs and outputs. They are applied after linear transformations to introduce nonlinearity, helping neural networks learn a wide variety of phenomena. In this model, we use nn.ReLU between our linear layers, but there\u2019s other activations to introduce non-linearity in your model. print(f\"Before ReLU: {hidden1}\\n\\n\") hidden1 = nn.ReLU()(hidden1) print(f\"After ReLU: {hidden1}\") Before ReLU: tensor([[ 0.3113, 0.3284, 0.6357, -0.0387, 0.2101, -0.7127, -0.4187, -0.5744, -0.2816, 0.3190, 0.2310, 0.4824, 0.5934, 0.0587, 0.2147, 0.3495, 0.0682, -0.4514, 0.3705, -0.2552], [ 0.0414, 0.4180, 0.2464, 0.2190, 0.0056, -0.6114, -0.4688, -0.5036, -0.2415, 0.2213, 0.3127, 0.2131, 0.0829, -0.1079, 0.3688, 0.1761, 0.0085, -0.4448, 0.1250, -0.2418], [-0.2675, 0.6067, 0.1841, -0.1369, 0.3425, -0.4647, -0.1400, -0.7896, -0.4613, 0.3985, 0.1044, 0.2559, -0.0397, -0.1802, 0.2979, 0.0309, 0.0480, -0.0247, 0.4715, -0.2433]], grad_fn=\u003cAddmmBackward0\u003e) After ReLU: tensor([[0.3113, 0.3284, 0.6357, 0.0000, 0.2101, 0.0000, 0.0000, 0.0000, 0.0000, 0.3190, 0.2310, 0.4824, 0.5934, 0.0587, 0.2147, 0.3495, 0.0682, 0.0000, 0.3705, 0.0000], [0.0414, 0.4180, 0.2464, 0.2190, 0.0056, 0.0000, 0.0000, 0.0000, 0.0000, 0.2213, 0.3127, 0.2131, 0.0829, 0.0000, 0.3688, 0.1761, 0.0085, 0.0000, 0.1250, 0.0000], [0.0000, 0.6067, 0.1841, 0.0000, 0.3425, 0.0000, 0.0000, 0.0000, 0.0000, 0.3985, 0.1044, 0.2559, 0.0000, 0.0000, 0.2979, 0.0309, 0.0480, 0.0000, 0.4715, 0.0000]], grad_fn=\u003cReluBackward0\u003e) nn.Sequential# nn.Sequential is an ordered container of modules. The data is passed through all the modules in the same order as defined. You can use sequential containers to put together a quick network like seq_modules. seq_modules = nn.Sequential( flatten, layer1, nn.ReLU(), nn.Linear(20, 10) ) input_image = torch.rand(3,28,28) logits = seq_modules(input_image) nn.Softmax# The last linear layer of the neural network returns logits - raw values in [-infty, infty] - which are passed to the nn.Softmax module. The logits are scaled to values [0, 1] representing the model\u2019s predicted probabilities for each class. dim parameter indicates the dimension along which the values must sum to 1. softmax = nn.Softmax(dim=1) pred_probab = softmax(logits) Model Parameters# Many layers inside a neural network are parameterized, i.e. have associated weights and biases that are optimized during training. Subclassing nn.Module automatically tracks all fields defined inside your model object, and makes all parameters accessible using your model\u2019s parameters() or named_parameters() methods. In this example, we iterate over each parameter, and print its size and a preview of its values. print(f\"Model structure: {model}\\n\\n\") for name, param in model.named_parameters(): print(f\"Layer: {name} | Size: {param.size()} | Values : {param[:2]} \\n\") Model structure: NeuralNetwork( (flatten): Flatten(start_dim=1, end_dim=-1) (linear_relu_stack): Sequential( (0): Linear(in_features=784, out_features=512, bias=True) (1): ReLU() (2): Linear(in_features=512, out_features=512, bias=True) (3): ReLU() (4): Linear(in_features=512, out_features=10, bias=True) ) ) Layer: linear_relu_stack.0.weight | Size: torch.Size([512, 784]) | Values : tensor([[ 0.0238, 0.0010, -0.0064, ..., 0.0350, -0.0278, 0.0098], [-0.0356, -0.0181, 0.0322, ..., -0.0094, -0.0309, -0.0237]], device=\u0027cuda:0\u0027, grad_fn=\u003cSliceBackward0\u003e) Layer: linear_relu_stack.0.bias | Size: torch.Size([512]) | Values : tensor([ 0.0127, -0.0254], device=\u0027cuda:0\u0027, grad_fn=\u003cSliceBackward0\u003e) Layer: linear_relu_stack.2.weight | Size: torch.Size([512, 512]) | Values : tensor([[-0.0384, 0.0161, -0.0251, ..., 0.0108, -0.0018, 0.0186], [-0.0389, 0.0424, -0.0023, ..., -0.0091, 0.0027, -0.0416]], device=\u0027cuda:0\u0027, grad_fn=\u003cSliceBackward0\u003e) Layer: linear_relu_stack.2.bias | Size: torch.Size([512]) | Values : tensor([ 0.0267, -0.0305], device=\u0027cuda:0\u0027, grad_fn=\u003cSliceBackward0\u003e) Layer: linear_relu_stack.4.weight | Size: torch.Size([10, 512]) | Values : tensor([[ 0.0066, 0.0034, -0.0175, ..., -0.0275, 0.0144, -0.0036], [ 0.0316, 0.0123, 0.0141, ..., 0.0332, 0.0044, 0.0089]], device=\u0027cuda:0\u0027, grad_fn=\u003cSliceBackward0\u003e) Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([-0.0319, -0.0172], device=\u0027cuda:0\u0027, grad_fn=\u003cSliceBackward0\u003e) Further Reading# torch.nn API Total running time of the script: (0 minutes 0.483 seconds) Download Jupyter notebook: buildmodel_tutorial.ipynb Download Python source code: buildmodel_tutorial.py Download zipped: buildmodel_tutorial.zip",
+       "articleBody": "Note Go to the end to download the full example code. Learn the Basics || Quickstart || Tensors || Datasets \u0026 DataLoaders || Transforms || Build Model || Autograd || Optimization || Save \u0026 Load Model Build the Neural Network# Neural networks comprise of layers/modules that perform operations on data. The torch.nn namespace provides all the building blocks you need to build your own neural network. Every module in PyTorch subclasses the nn.Module. A neural network is a module itself that consists of other modules (layers). This nested structure allows for building and managing complex architectures easily. In the following sections, we\u2019ll build a neural network to classify images in the FashionMNIST dataset. import os import torch from torch import nn from torch.utils.data import DataLoader from torchvision import datasets, transforms Get Device for Training# We want to be able to train our model on an accelerator such as CUDA, MPS, MTIA, or XPU. If the current accelerator is available, we will use it. Otherwise, we use the CPU. device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else \"cpu\" print(f\"Using {device} device\") Using cuda device Define the Class# We define our neural network by subclassing nn.Module, and initialize the neural network layers in __init__. Every nn.Module subclass implements the operations on input data in the forward method. class NeuralNetwork(nn.Module): def __init__(self): super().__init__() self.flatten = nn.Flatten() self.linear_relu_stack = nn.Sequential( nn.Linear(28*28, 512), nn.ReLU(), nn.Linear(512, 512), nn.ReLU(), nn.Linear(512, 10), ) def forward(self, x): x = self.flatten(x) logits = self.linear_relu_stack(x) return logits We create an instance of NeuralNetwork, and move it to the device, and print its structure. model = NeuralNetwork().to(device) print(model) NeuralNetwork( (flatten): Flatten(start_dim=1, end_dim=-1) (linear_relu_stack): Sequential( (0): Linear(in_features=784, out_features=512, bias=True) (1): ReLU() (2): Linear(in_features=512, out_features=512, bias=True) (3): ReLU() (4): Linear(in_features=512, out_features=10, bias=True) ) ) To use the model, we pass it the input data. This executes the model\u2019s forward, along with some background operations. Do not call model.forward() directly! Calling the model on the input returns a 2-dimensional tensor with dim=0 corresponding to each output of 10 raw predicted values for each class, and dim=1 corresponding to the individual values of each output. We get the prediction probabilities by passing it through an instance of the nn.Softmax module. X = torch.rand(1, 28, 28, device=device) logits = model(X) pred_probab = nn.Softmax(dim=1)(logits) y_pred = pred_probab.argmax(1) print(f\"Predicted class: {y_pred}\") Predicted class: tensor([0], device=\u0027cuda:0\u0027) Model Layers# Let\u2019s break down the layers in the FashionMNIST model. To illustrate it, we will take a sample minibatch of 3 images of size 28x28 and see what happens to it as we pass it through the network. input_image = torch.rand(3,28,28) print(input_image.size()) torch.Size([3, 28, 28]) nn.Flatten# We initialize the nn.Flatten layer to convert each 2D 28x28 image into a contiguous array of 784 pixel values ( the minibatch dimension (at dim=0) is maintained). flatten = nn.Flatten() flat_image = flatten(input_image) print(flat_image.size()) torch.Size([3, 784]) nn.Linear# The linear layer is a module that applies a linear transformation on the input using its stored weights and biases. layer1 = nn.Linear(in_features=28*28, out_features=20) hidden1 = layer1(flat_image) print(hidden1.size()) torch.Size([3, 20]) nn.ReLU# Non-linear activations are what create the complex mappings between the model\u2019s inputs and outputs. They are applied after linear transformations to introduce nonlinearity, helping neural networks learn a wide variety of phenomena. In this model, we use nn.ReLU between our linear layers, but there\u2019s other activations to introduce non-linearity in your model. print(f\"Before ReLU: {hidden1}\\n\\n\") hidden1 = nn.ReLU()(hidden1) print(f\"After ReLU: {hidden1}\") Before ReLU: tensor([[-0.0230, 0.2847, -0.3008, 0.6529, 0.3198, -0.2715, 0.3146, -0.2888, 0.4379, -0.6780, 0.2286, 0.1844, 0.4702, -0.1960, 0.1064, -0.0895, 0.2106, 0.1943, -0.4779, -0.1745], [-0.3569, 0.2194, 0.0976, 0.8582, 0.4246, 0.0768, 0.7990, -0.0540, 0.4805, -0.5952, 0.3373, -0.1502, 0.4351, 0.1859, 0.5041, -0.1272, 0.3546, 0.2708, 0.2247, 0.0449], [-0.1716, 0.3265, 0.1544, 0.6016, 0.7165, -0.0359, 0.8663, -0.1037, 0.5623, -0.3204, 0.1042, -0.3170, 0.6194, -0.0357, 0.3539, -0.0261, -0.1663, 0.3532, 0.2181, -0.0521]], grad_fn=\u003cAddmmBackward0\u003e) After ReLU: tensor([[0.0000, 0.2847, 0.0000, 0.6529, 0.3198, 0.0000, 0.3146, 0.0000, 0.4379, 0.0000, 0.2286, 0.1844, 0.4702, 0.0000, 0.1064, 0.0000, 0.2106, 0.1943, 0.0000, 0.0000], [0.0000, 0.2194, 0.0976, 0.8582, 0.4246, 0.0768, 0.7990, 0.0000, 0.4805, 0.0000, 0.3373, 0.0000, 0.4351, 0.1859, 0.5041, 0.0000, 0.3546, 0.2708, 0.2247, 0.0449], [0.0000, 0.3265, 0.1544, 0.6016, 0.7165, 0.0000, 0.8663, 0.0000, 0.5623, 0.0000, 0.1042, 0.0000, 0.6194, 0.0000, 0.3539, 0.0000, 0.0000, 0.3532, 0.2181, 0.0000]], grad_fn=\u003cReluBackward0\u003e) nn.Sequential# nn.Sequential is an ordered container of modules. The data is passed through all the modules in the same order as defined. You can use sequential containers to put together a quick network like seq_modules. seq_modules = nn.Sequential( flatten, layer1, nn.ReLU(), nn.Linear(20, 10) ) input_image = torch.rand(3,28,28) logits = seq_modules(input_image) nn.Softmax# The last linear layer of the neural network returns logits - raw values in [-infty, infty] - which are passed to the nn.Softmax module. The logits are scaled to values [0, 1] representing the model\u2019s predicted probabilities for each class. dim parameter indicates the dimension along which the values must sum to 1. softmax = nn.Softmax(dim=1) pred_probab = softmax(logits) Model Parameters# Many layers inside a neural network are parameterized, i.e. have associated weights and biases that are optimized during training. Subclassing nn.Module automatically tracks all fields defined inside your model object, and makes all parameters accessible using your model\u2019s parameters() or named_parameters() methods. In this example, we iterate over each parameter, and print its size and a preview of its values. print(f\"Model structure: {model}\\n\\n\") for name, param in model.named_parameters(): print(f\"Layer: {name} | Size: {param.size()} | Values : {param[:2]} \\n\") Model structure: NeuralNetwork( (flatten): Flatten(start_dim=1, end_dim=-1) (linear_relu_stack): Sequential( (0): Linear(in_features=784, out_features=512, bias=True) (1): ReLU() (2): Linear(in_features=512, out_features=512, bias=True) (3): ReLU() (4): Linear(in_features=512, out_features=10, bias=True) ) ) Layer: linear_relu_stack.0.weight | Size: torch.Size([512, 784]) | Values : tensor([[ 2.3399e-03, -2.8559e-02, 5.0323e-06, ..., 2.0037e-03, 1.4513e-02, 6.6105e-03], [-2.9357e-02, -2.2777e-03, -2.7722e-02, ..., 2.9329e-02, -8.8635e-03, 5.7995e-03]], device=\u0027cuda:0\u0027, grad_fn=\u003cSliceBackward0\u003e) Layer: linear_relu_stack.0.bias | Size: torch.Size([512]) | Values : tensor([0.0308, 0.0027], device=\u0027cuda:0\u0027, grad_fn=\u003cSliceBackward0\u003e) Layer: linear_relu_stack.2.weight | Size: torch.Size([512, 512]) | Values : tensor([[-0.0179, -0.0237, -0.0191, ..., 0.0366, -0.0101, 0.0218], [-0.0334, 0.0188, -0.0039, ..., 0.0334, -0.0350, -0.0115]], device=\u0027cuda:0\u0027, grad_fn=\u003cSliceBackward0\u003e) Layer: linear_relu_stack.2.bias | Size: torch.Size([512]) | Values : tensor([ 0.0298, -0.0068], device=\u0027cuda:0\u0027, grad_fn=\u003cSliceBackward0\u003e) Layer: linear_relu_stack.4.weight | Size: torch.Size([10, 512]) | Values : tensor([[ 0.0086, -0.0274, 0.0128, ..., 0.0325, -0.0142, -0.0173], [ 0.0372, 0.0404, 0.0391, ..., 0.0264, 0.0328, 0.0312]], device=\u0027cuda:0\u0027, grad_fn=\u003cSliceBackward0\u003e) Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([ 3.6924e-02, -4.3496e-05], device=\u0027cuda:0\u0027, grad_fn=\u003cSliceBackward0\u003e) Further Reading# torch.nn API Total running time of the script: (0 minutes 0.475 seconds) Download Jupyter notebook: buildmodel_tutorial.ipynb Download Python source code: buildmodel_tutorial.py Download zipped: buildmodel_tutorial.zip",
        "author": {
          "@type": "Organization",
          "name": "PyTorch Contributors",

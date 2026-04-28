@@ -224,11 +224,24 @@
         link.parentElement.classList.remove('active');
       });
 
-      // Add active class to the matching link
+      // Add active class to the matching link and all its ancestor TOC items
       const matchingLink = tocNav.querySelector(`a[href="#${CSS.escape(targetId)}"]`);
       if (matchingLink) {
         matchingLink.classList.add('active');
         matchingLink.parentElement.classList.add('active');
+
+        // Walk up the DOM to activate parent TOC entries (e.g. h2 parent of h3)
+        let ancestor = matchingLink.parentElement.parentElement;
+        while (ancestor && ancestor !== tocNav) {
+          if (ancestor.classList.contains('toc-entry')) {
+            ancestor.classList.add('active');
+            const parentLink = ancestor.querySelector(':scope > a.nav-link');
+            if (parentLink) {
+              parentLink.classList.add('active');
+            }
+          }
+          ancestor = ancestor.parentElement;
+        }
       }
 
       // Use setTimeout to reset the guard after the current call stack
@@ -2814,11 +2827,11 @@ Then run <code class="docutils literal notranslate"><span class="pre">make</span
 <span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[0.7638, 0.7370, 0.6103],
-        [0.0146, 0.6528, 0.5157],
-        [0.6699, 0.3889, 0.0123],
-        [0.2352, 0.6367, 0.8650],
-        [0.5239, 0.4485, 0.0028]])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[0.2887, 0.9027, 0.4218],
+        [0.4430, 0.0037, 0.7018],
+        [0.7917, 0.7376, 0.4731],
+        [0.4024, 0.4448, 0.7330],
+        [0.8377, 0.2925, 0.1660]])
 </pre></div>
 </div>
 </section>
@@ -3020,10 +3033,10 @@ Example: <a class="reference external" href="https://pytorch.org/tutorials/inter
 </div>
 </div>
 </footer>
-<div class="cookie-banner-wrapper">
+<div class="cookie-banner-wrapper" data-nosnippet="">
 <div class="container">
 <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://opensource.fb.com/legal/cookie-policy">Cookies Policy</a>.</p>
-<img class="close-button" src="../_static/img/pytorch-x.svg"/>
+<button aria-label="Close cookie banner" class="close-button"></button>
 </div>
 </div>
 <footer class="bd-footer">
@@ -3059,7 +3072,7 @@ Example: <a class="reference external" href="https://pytorch.org/tutorials/inter
        "headline": "Template Tutorial",
        "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment.",
        "url": "/beginner/template_tutorial.html",
-       "articleBody": "Note Go to the end to download the full example code. Template Tutorial# Author: FirstName LastName What you will learn Item 1 Item 2 Item 3 Prerequisites PyTorch v2.0.0 GPU ??? Other items 3 If you have a video, add it here like this: To test your tutorial locally, you can do one of the following: You can control specific files that generate the results by using GALLERY_PATTERN environment variable. The GALLERY_PATTERN variable respects regular expressions. For example to run only neural_style_transfer_tutorial.py, use the following command: GALLERY_PATTERN=\"neural_style_transfer_tutorial.py\" make html or GALLERY_PATTERN=\"neural_style_transfer_tutorial.py\" sphinx-build . _build Make a copy of this repository and add only your tutorial to the beginner_source directory removing all other tutorials. Then run make html. Verify that all outputs were generated correctly in the created HTML. Overview# Describe Why is this topic important? Add Links to relevant research papers. This tutorial walks you through the process of\u2026. Steps# Example code (the output below is generated automatically): import torch x = torch.rand(5, 3) print(x) tensor([[0.7638, 0.7370, 0.6103], [0.0146, 0.6528, 0.5157], [0.6699, 0.3889, 0.0123], [0.2352, 0.6367, 0.8650], [0.5239, 0.4485, 0.0028]]) (Optional) Additional Exercises# Add additional practice exercises for users to test their knowledge. Example: NLP from Scratch. Conclusion# Summarize the steps and concepts covered. Highlight key takeaways. Further Reading# Link1 Link2 Total running time of the script: (0 minutes 0.006 seconds) Download Jupyter notebook: template_tutorial.ipynb Download Python source code: template_tutorial.py Download zipped: template_tutorial.zip",
+       "articleBody": "Note Go to the end to download the full example code. Template Tutorial# Author: FirstName LastName What you will learn Item 1 Item 2 Item 3 Prerequisites PyTorch v2.0.0 GPU ??? Other items 3 If you have a video, add it here like this: To test your tutorial locally, you can do one of the following: You can control specific files that generate the results by using GALLERY_PATTERN environment variable. The GALLERY_PATTERN variable respects regular expressions. For example to run only neural_style_transfer_tutorial.py, use the following command: GALLERY_PATTERN=\"neural_style_transfer_tutorial.py\" make html or GALLERY_PATTERN=\"neural_style_transfer_tutorial.py\" sphinx-build . _build Make a copy of this repository and add only your tutorial to the beginner_source directory removing all other tutorials. Then run make html. Verify that all outputs were generated correctly in the created HTML. Overview# Describe Why is this topic important? Add Links to relevant research papers. This tutorial walks you through the process of\u2026. Steps# Example code (the output below is generated automatically): import torch x = torch.rand(5, 3) print(x) tensor([[0.2887, 0.9027, 0.4218], [0.4430, 0.0037, 0.7018], [0.7917, 0.7376, 0.4731], [0.4024, 0.4448, 0.7330], [0.8377, 0.2925, 0.1660]]) (Optional) Additional Exercises# Add additional practice exercises for users to test their knowledge. Example: NLP from Scratch. Conclusion# Summarize the steps and concepts covered. Highlight key takeaways. Further Reading# Link1 Link2 Total running time of the script: (0 minutes 0.006 seconds) Download Jupyter notebook: template_tutorial.ipynb Download Python source code: template_tutorial.py Download zipped: template_tutorial.zip",
        "author": {
          "@type": "Organization",
          "name": "PyTorch Contributors",

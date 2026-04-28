@@ -1,0 +1,75 @@
+# Introduction to PyTorch on YouTube
+
+1. introyt.py
+
+Introduction to PyTorch - Youtube Series
+[https://pytorch.org/tutorials/beginner/introyt/introyt.html](https://pytorch.org/tutorials/beginner/introyt/introyt.html)
+2. introyt1_tutorial.py
+
+Introduction to PyTorch
+[https://pytorch.org/tutorials/beginner/introyt/introyt1_tutorial.html](https://pytorch.org/tutorials/beginner/introyt/introyt1_tutorial.html)
+3. tensors_deeper_tutorial.py
+
+PyTorch Tensors
+[https://pytorch.org/tutorials/beginner/introyt/tensors_deeper_tutorial.html](https://pytorch.org/tutorials/beginner/introyt/tensors_deeper_tutorial.html)
+4. autogradyt_tutorial.py
+
+The Fundamentals of Autograd
+[https://pytorch.org/tutorials/beginner/introyt/autogradyt_tutorial.html](https://pytorch.org/tutorials/beginner/introyt/autogradyt_tutorial.html)
+5. modelsyt_tutorial.py
+
+Building Models with PyTorch
+[https://pytorch.org/tutorials/beginner/introyt/modelsyt_tutorial.html](https://pytorch.org/tutorials/beginner/introyt/modelsyt_tutorial.html)
+6. tensorboardyt_tutorial.py
+
+PyTorch TensorBoard Support
+[https://pytorch.org/tutorials/beginner/introyt/tensorboardyt_tutorial.html](https://pytorch.org/tutorials/beginner/introyt/tensorboardyt_tutorial.html)
+7. trainingyt_tutorial.py
+
+Training with PyTorch
+[https://pytorch.org/tutorials/beginner/introyt/trainingyt_tutorial.html](https://pytorch.org/tutorials/beginner/introyt/trainingyt_tutorial.html)
+8. captumyt_tutorial.py
+
+Model Understanding with Captum
+[https://pytorch.org/tutorials/beginner/introyt/captumyt_tutorial.html](https://pytorch.org/tutorials/beginner/introyt/captumyt_tutorial.html)
+
+![](../../_images/sphx_glr_introyt_index_thumb.png)
+
+sphx_glr_beginner_introyt_introyt_index.py
+
+Introduction ||
+![](../../_images/sphx_glr_modelsyt_tutorial_thumb.png)
+
+sphx_glr_beginner_introyt_modelsyt_tutorial.py
+
+Introduction ||
+![](../../_images/sphx_glr_autogradyt_tutorial_thumb.png)
+
+sphx_glr_beginner_introyt_autogradyt_tutorial.py
+
+Introduction ||
+![](../../_images/sphx_glr_tensors_deeper_tutorial_thumb.png)
+
+sphx_glr_beginner_introyt_tensors_deeper_tutorial.py
+
+Introduction ||
+![](../../_images/sphx_glr_captumyt_thumb.png)
+
+sphx_glr_beginner_introyt_captumyt.py
+
+Introduction ||
+![](../../_images/sphx_glr_introyt1_tutorial_thumb.png)
+
+sphx_glr_beginner_introyt_introyt1_tutorial.py
+
+Introduction ||
+![](../../_images/sphx_glr_trainingyt_thumb.png)
+
+sphx_glr_beginner_introyt_trainingyt.py
+
+Introduction ||
+![](../../_images/sphx_glr_tensorboardyt_tutorial_thumb.png)
+
+sphx_glr_beginner_introyt_tensorboardyt_tutorial.py
+
+Introduction ||
