@@ -82,7 +82,7 @@ See also:
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: compiling_optimizer_lr_scheduler.ipynb`](../_downloads/a96dbf475cc2f41befeebc6b79a1dbbe/compiling_optimizer_lr_scheduler.ipynb)
 
