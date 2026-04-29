@@ -63,9 +63,9 @@ print(A) # Quick visual check
 ```
 
 ```
-tensor([[0.0828, 0.7735, 0.0383],
- [0.7735, 0.1784, 0.1741],
- [0.0383, 0.1741, 0.8541]])
+tensor([[0.4023, 0.2455, 0.5216],
+ [0.2455, 0.1073, 0.5195],
+ [0.5216, 0.5195, 0.1444]])
 ```
 
 We can then use this idea to implement a linear layer with symmetric weights
@@ -141,9 +141,9 @@ print(A) # Quick visual check
 ```
 
 ```
-tensor([[-0.1222, -0.0611, 0.4047],
- [-0.0611, 0.1576, -0.1941],
- [ 0.4047, -0.1941, 0.4498]], grad_fn=<AddBackward0>)
+tensor([[ 0.4969, -0.1123, -0.4236],
+ [-0.1123, 0.0858, 0.4259],
+ [-0.4236, 0.4259, 0.1200]], grad_fn=<AddBackward0>)
 ```
 
 We can do the same thing with any other layer. For example, we can create a CNN with
@@ -165,12 +165,12 @@ print(cnn.weight[2, 2])
 ```
 
 ```
-tensor([[ 0.0000, 0.1141, 0.1000],
- [-0.1141, 0.0000, 0.1196],
- [-0.1000, -0.1196, 0.0000]], grad_fn=<SelectBackward0>)
-tensor([[ 0.0000, -0.0820, -0.0876],
- [ 0.0820, 0.0000, -0.0425],
- [ 0.0876, 0.0425, 0.0000]], grad_fn=<SelectBackward0>)
+tensor([[ 0.0000, -0.0646, 0.1308],
+ [ 0.0646, 0.0000, 0.1104],
+ [-0.1308, -0.1104, 0.0000]], grad_fn=<SelectBackward0>)
+tensor([[ 0.0000, -0.0170, -0.0255],
+ [ 0.0170, 0.0000, -0.0337],
+ [ 0.0255, 0.0337, 0.0000]], grad_fn=<SelectBackward0>)
 ```
 
 ## Inspecting a parametrized module
@@ -250,10 +250,10 @@ print(dict(layer.named_parameters()))
 
 ```
 {'bias': Parameter containing:
-tensor([ 0.2017, -0.0187, -0.5270], requires_grad=True), 'parametrizations.weight.original': Parameter containing:
-tensor([[ 0.4087, -0.3416, -0.2436],
- [ 0.4098, -0.5228, 0.4086],
- [-0.0296, 0.0051, -0.0359]], requires_grad=True)}
+tensor([0.0495, 0.1319, 0.1809], requires_grad=True), 'parametrizations.weight.original': Parameter containing:
+tensor([[ 0.2207, 0.1175, -0.2306],
+ [-0.0771, 0.3428, -0.5051],
+ [-0.5446, 0.2967, 0.3102]], requires_grad=True)}
 ```
 
 It now sits under `layer.parametrizations.weight.original`
@@ -264,9 +264,9 @@ print(layer.parametrizations.weight.original)
 
 ```
 Parameter containing:
-tensor([[ 0.4087, -0.3416, -0.2436],
- [ 0.4098, -0.5228, 0.4086],
- [-0.0296, 0.0051, -0.0359]], requires_grad=True)
+tensor([[ 0.2207, 0.1175, -0.2306],
+ [-0.0771, 0.3428, -0.5051],
+ [-0.5446, 0.2967, 0.3102]], requires_grad=True)
 ```
 
 Besides these three small differences, the parametrization is doing exactly the same
@@ -349,7 +349,7 @@ print(torch.dist(X.T @ X, torch.eye(3))) # X is orthogonal
 ```
 
 ```
-tensor(2.1594e-07, grad_fn=<DistBackward0>)
+tensor(1.5805e-08, grad_fn=<DistBackward0>)
 ```
 
 This may also be used to prune a parametrized module, or to reuse parametrizations. For example,
@@ -377,8 +377,8 @@ print((torch.linalg.eigvalsh(X) > 0.).all()) # X is positive definite
 ```
 
 ```
-tensor(4.7122e-08, grad_fn=<DistBackward0>)
-tensor(4.7122e-08, grad_fn=<DistBackward0>)
+tensor(3.3973e-07, grad_fn=<DistBackward0>)
+tensor(2.1073e-08, grad_fn=<DistBackward0>)
 tensor(True)
 ```
 
@@ -455,7 +455,7 @@ print(torch.dist(layer_orthogonal.weight, X)) # layer_orthogonal.weight == X
 ```
 
 ```
-tensor(2.8075, grad_fn=<DistBackward0>)
+tensor(2.3827, grad_fn=<DistBackward0>)
 ```
 
 This initialization step can be written more succinctly as
@@ -502,16 +502,16 @@ print(f"\nInitialized weight:\n{layer.weight}")
 
 ```
 Initialization matrix:
-tensor([[0.4491, 0.0542, 0.9521],
- [0.1183, 0.9878, 0.9048],
- [0.8474, 0.0969, 0.8131],
- [0.1205, 0.7132, 0.7592]])
+tensor([[0.1835, 0.2733, 0.4245],
+ [0.9654, 0.2294, 0.4153],
+ [0.1400, 0.2600, 0.4485],
+ [0.6830, 0.3815, 0.2455]])
 
 Initialized weight:
-tensor([[0.4491, 0.0542, 0.9521],
- [0.1183, 0.9878, 0.9048],
- [0.8474, 0.0969, 0.8131],
- [0.1205, 0.7132, 0.7592]], grad_fn=<MulBackward0>)
+tensor([[0.1835, 0.2733, 0.4245],
+ [0.9654, 0.2294, 0.4153],
+ [0.1400, 0.2600, 0.0000],
+ [0.6830, 0.0000, 0.2455]], grad_fn=<MulBackward0>)
 ```
 
 ## Removing parametrizations
@@ -538,9 +538,9 @@ print(layer.weight)
 Before:
 Linear(in_features=3, out_features=3, bias=True)
 Parameter containing:
-tensor([[ 0.2764, 0.1406, 0.1511],
- [-0.4322, 0.4424, 0.4889],
- [-0.0537, -0.0558, 0.2435]], requires_grad=True)
+tensor([[-0.5132, 0.5274, -0.3900],
+ [ 0.4243, 0.2125, 0.3381],
+ [ 0.2814, -0.0512, 0.3424]], requires_grad=True)
 
 Parametrized:
 ParametrizedLinear(
@@ -551,16 +551,16 @@ ParametrizedLinear(
  )
  )
 )
-tensor([[ 0.0000, 0.1406, 0.1511],
- [-0.1406, 0.0000, 0.4889],
- [-0.1511, -0.4889, 0.0000]], grad_fn=<SubBackward0>)
+tensor([[ 0.0000, 0.5274, -0.3900],
+ [-0.5274, 0.0000, 0.3381],
+ [ 0.3900, -0.3381, 0.0000]], grad_fn=<SubBackward0>)
 
 After. Weight has skew-symmetric values but it is unconstrained:
 Linear(in_features=3, out_features=3, bias=True)
 Parameter containing:
-tensor([[ 0.0000, 0.1406, 0.1511],
- [-0.1406, 0.0000, 0.4889],
- [-0.1511, -0.4889, 0.0000]], requires_grad=True)
+tensor([[ 0.0000, 0.5274, -0.3900],
+ [-0.5274, 0.0000, 0.3381],
+ [ 0.3900, -0.3381, 0.0000]], requires_grad=True)
 ```
 
 When removing a parametrization, we may choose to leave the original parameter (i.e. that in
@@ -586,9 +586,9 @@ print(layer.weight)
 Before:
 Linear(in_features=3, out_features=3, bias=True)
 Parameter containing:
-tensor([[-0.0107, -0.4076, 0.4828],
- [ 0.3209, -0.1805, -0.3902],
- [-0.1252, -0.2749, 0.4841]], requires_grad=True)
+tensor([[ 0.4950, 0.4264, 0.5571],
+ [ 0.2720, -0.3659, -0.0190],
+ [ 0.5115, -0.4821, 0.0845]], requires_grad=True)
 
 Parametrized:
 ParametrizedLinear(
@@ -599,19 +599,19 @@ ParametrizedLinear(
  )
  )
 )
-tensor([[ 0.0000, -0.4076, 0.4828],
- [ 0.4076, 0.0000, -0.3902],
- [-0.4828, 0.3902, 0.0000]], grad_fn=<SubBackward0>)
+tensor([[ 0.0000, 0.4264, 0.5571],
+ [-0.4264, 0.0000, -0.0190],
+ [-0.5571, 0.0190, 0.0000]], grad_fn=<SubBackward0>)
 
 After. Same as Before:
 Linear(in_features=3, out_features=3, bias=True)
 Parameter containing:
-tensor([[ 0.0000, -0.4076, 0.4828],
- [ 0.0000, 0.0000, -0.3902],
+tensor([[ 0.0000, 0.4264, 0.5571],
+ [ 0.0000, 0.0000, -0.0190],
  [ 0.0000, 0.0000, 0.0000]], requires_grad=True)
 ```
 
-**Total running time of the script:** (0 minutes 0.061 seconds)
+**Total running time of the script:** (0 minutes 0.054 seconds)
 
 [`Download Jupyter notebook: parametrizations.ipynb`](../_downloads/c9153ca254003481aecc7a760a7b046f/parametrizations.ipynb)
 
