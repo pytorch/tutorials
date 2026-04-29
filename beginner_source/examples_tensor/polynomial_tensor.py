@@ -18,8 +18,8 @@ a PyTorch Tensor can run on either CPU or GPU. To run operations on the GPU,
 just cast the Tensor to a cuda datatype.
 """
 
-import torch
 import math
+import torch
 
 
 dtype = torch.float
@@ -39,7 +39,7 @@ d = torch.randn((), device=device, dtype=dtype)
 learning_rate = 1e-6
 for t in range(2000):
     # Forward pass: compute predicted y
-    y_pred = a + b * x + c * x ** 2 + d * x ** 3
+    y_pred = a + (b * x) + (c * x.pow(2)) + (d * x.pow(3))
 
     # Compute and print loss
     loss = (y_pred - y).pow(2).sum().item()
@@ -47,11 +47,11 @@ for t in range(2000):
         print(t, loss)
 
     # Backprop to compute gradients of a, b, c, d with respect to loss
-    grad_y_pred = 2.0 * (y_pred - y)
+    grad_y_pred = -2.0 * (y - y_pred)
     grad_a = grad_y_pred.sum()
-    grad_b = (grad_y_pred * x).sum()
-    grad_c = (grad_y_pred * x ** 2).sum()
-    grad_d = (grad_y_pred * x ** 3).sum()
+    grad_b = torch.matmul(input=grad_y_pred, other=x).sum()
+    grad_c = torch.matmul(input=grad_y_pred, other=x.pow(2)).sum()
+    grad_d = torch.matmul(input=grad_y_pred, other=x.pow(3)).sum()
 
     # Update weights using gradient descent
     a -= learning_rate * grad_a
