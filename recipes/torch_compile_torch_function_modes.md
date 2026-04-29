@@ -78,7 +78,7 @@ of calling torch function on every op invocation.
 
 - See [Extending Torch API with Modes](https://pytorch.org/docs/stable/notes/extending.html#extending-all-torch-api-with-modes) for other examples and background on Torch Function modes.
 
-**Total running time of the script:** (0 minutes 9.933 seconds)
+**Total running time of the script:** (0 minutes 11.175 seconds)
 
 [`Download Jupyter notebook: torch_compile_torch_function_modes.ipynb`](../_downloads/d036a4d61563d6157e333f7e5b20b091/torch_compile_torch_function_modes.ipynb)
 
