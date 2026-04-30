@@ -101,9 +101,9 @@ works with TorchRec.
 
 In PyTorch, we have the following types of embeddings:
 
-- [`torch.nn.Embedding`](https://docs.pytorch.org/docs/stable/generated/torch.nn.Embedding.html#torch.nn.Embedding): An embedding table where forward pass returns the
+- `torch.nn.Embedding`: An embedding table where forward pass returns the
 embeddings themselves as is.
-- [`torch.nn.EmbeddingBag`](https://docs.pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html#torch.nn.EmbeddingBag): Embedding table where forward pass returns
+- `torch.nn.EmbeddingBag`: Embedding table where forward pass returns
 embeddings that are then pooled, for example, sum or mean, otherwise known
 as **Pooled Embeddings**.
 
@@ -172,7 +172,7 @@ entities as `EmbeddingCollection` and `EmbeddingBagCollection`,
 
 ### From `EmbeddingBag` to `EmbeddingBagCollection`
 
-We have already explored [`torch.nn.Embedding`](https://docs.pytorch.org/docs/stable/generated/torch.nn.Embedding.html#torch.nn.Embedding) and [`torch.nn.EmbeddingBag`](https://docs.pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html#torch.nn.EmbeddingBag).
+We have already explored `torch.nn.Embedding` and `torch.nn.EmbeddingBag`.
 TorchRec extends these modules by creating collections of embeddings, in
 other words modules that can have multiple embedding tables, with
 `EmbeddingCollection` and `EmbeddingBagCollection`

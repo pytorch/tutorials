@@ -112,7 +112,7 @@ action values.
 
 ### Convolutional network
 
-We build a convolutional network flanked with a [`torch.nn.AdaptiveAvgPool2d`](https://docs.pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool2d.html#torch.nn.AdaptiveAvgPool2d)
+We build a convolutional network flanked with a `torch.nn.AdaptiveAvgPool2d`
 that will squash the output in a vector of size 64. The [`ConvNet`](https://docs.pytorch.org/rl/stable/reference/generated/torchrl.modules.ConvNet.html#torchrl.modules.ConvNet)
 can assist us with this:
 
@@ -195,7 +195,7 @@ This decay is achieved via a call to [`step()`](https://docs.pytorch.org/rl/stab
 ### Using the model for the loss
 
 The model as we've built it is well equipped to be used in sequential settings.
-However, the class [`torch.nn.LSTM`](https://docs.pytorch.org/docs/stable/generated/torch.nn.LSTM.html#torch.nn.LSTM) can use a cuDNN-optimized backend
+However, the class `torch.nn.LSTM` can use a cuDNN-optimized backend
 to run the RNN sequence faster on GPU device. We would not want to miss
 such an opportunity to speed up our training loop!
 To use it, we just need to tell the LSTM module to run on "recurrent-mode"

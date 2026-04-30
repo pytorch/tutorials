@@ -85,7 +85,7 @@ The translation is using our custom implementation: In node `node_Add_0`, `input
 comes first, and `input_x` comes second.
 
 We can use ONNX Runtime to run the model and verify the results by calling
-the [`torch.onnx.ONNXProgram`](https://docs.pytorch.org/docs/stable/onnx_export.html#torch.onnx.ONNXProgram) directly on the input tensors.
+the `torch.onnx.ONNXProgram` directly on the input tensors.
 
 ## Using custom ONNX operators
 

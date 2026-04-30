@@ -15,7 +15,7 @@ Authors:
 
 [Open Neural Network eXchange (ONNX)](https://onnx.ai/) is an open standard
 format for representing machine learning models. The `torch.onnx` module provides APIs to
-capture the computation graph from a native PyTorch [`torch.nn.Module`](https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module) model and convert
+capture the computation graph from a native PyTorch `torch.nn.Module` model and convert
 it into an [ONNX graph](https://github.com/onnx/onnx/blob/main/docs/IR.md).
 
 The exported model can be consumed by any of the many
