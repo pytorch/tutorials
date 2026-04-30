@@ -63,7 +63,7 @@ print(f"Random Tensor: \n {x_rand} \n")
 #
 # ``shape`` is a tuple of tensor dimensions. In the functions below, it determines the dimensionality of the output tensor.
 
-shape = (2,3,)
+shape = (2,3)
 rand_tensor = torch.rand(shape)
 ones_tensor = torch.ones(shape)
 zeros_tensor = torch.zeros(shape)
