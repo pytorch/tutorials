@@ -34,13 +34,16 @@ covers advanced techniques for optimizing your data loading configuration to
 maximize training throughput.
 
 We'll explore the key parameters of PyTorch's DataLoader and provide practical
-guidance on tuning them for your specific workload.
+guidance on tuning them for your specific workload. Rather than showing each
+optimization in isolation, we'll build up from a baseline training loop and
+progressively apply optimizations, measuring the cumulative speedup at each
+step.
 """
 
-import os
 import time
 
 import torch
+import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
 
 # Check if CUDA is available
@@ -76,6 +79,173 @@ class SyntheticDataset(Dataset):
         return data, label
 
 
+class SyntheticDatasetBatched(Dataset):
+    """Same as SyntheticDataset but with __getitems__ for batched fetching."""
+
+    def __init__(self, size=10000, feature_dim=224, transform_delay=0.001):
+        self.size = size
+        self.feature_dim = feature_dim
+        self.transform_delay = transform_delay
+
+    def __len__(self):
+        return self.size
+
+    def __getitem__(self, idx):
+        data = torch.randn(3, self.feature_dim, self.feature_dim)
+        label = torch.randint(0, 10, (1,)).item()
+        if self.transform_delay > 0:
+            time.sleep(self.transform_delay)
+        return data, label
+
+    def __getitems__(self, indices):
+        """Fetch multiple items at once — enables vectorized generation.
+
+        Instead of N individual __getitem__ calls (each with its own
+        overhead), this generates the entire batch in one shot using
+        vectorized tensor operations.
+        """
+        n = len(indices)
+        # Vectorized generation: one call instead of N individual ones
+        data = torch.randn(n, 3, self.feature_dim, self.feature_dim)
+        labels = torch.randint(0, 10, (n,))
+        # Simulate batch-level I/O: one sleep for the whole batch,
+        # not one per sample (e.g., one DB query for N rows)
+        if self.transform_delay > 0:
+            time.sleep(self.transform_delay)
+        return [(data[i], labels[i].item()) for i in range(n)]
+
+
+######################################################################
+# Shared Training Infrastructure
+# ------------------------------
+#
+# To measure the real-world impact of each optimization, we define a
+# reusable training loop that accepts a DataLoader and returns timing
+# and loss. This avoids duplicating the training loop for every
+# benchmark.
+#
+# We use a **small dataset (500 samples)** with a **high transform
+# delay (5ms)** to ensure the pipeline remains data-bound throughout.
+# The small dataset means short epochs (15 batches each), so we run
+# many epochs — making persistent_workers' benefit visible across
+# epoch boundaries.
+
+# Dataset for progressive optimization benchmarks.
+benchmark_dataset = SyntheticDataset(size=500, feature_dim=224, transform_delay=0.005)
+
+
+class SmallTransformerModel(nn.Module):
+    """A model with conv + transformer layers for realistic GPU compute."""
+
+    def __init__(self):
+        super().__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=7, stride=4, padding=3),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+            nn.AdaptiveAvgPool2d((7, 7)),
+        )
+        # Transformer encoder on flattened spatial tokens
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=64, nhead=4, dim_feedforward=128, batch_first=True
+        )
+        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=2)
+        self.classifier = nn.Linear(64, 10)
+
+    def forward(self, x):
+        x = self.features(x)  # (B, 64, 7, 7)
+        B, C, H, W = x.shape
+        x = x.view(B, C, H * W).permute(0, 2, 1)  # (B, 49, 64)
+        x = self.transformer(x)  # (B, 49, 64)
+        x = x.mean(dim=1)  # (B, 64)
+        return self.classifier(x)
+
+
+def create_model():
+    """Create a conv+transformer model for benchmarking."""
+    return SmallTransformerModel().to(device)
+
+
+def train_and_benchmark(loader, max_batches=150, epochs=10, prefetch_device=None):
+    """Train a model over multiple epochs and return elapsed time and average loss.
+
+    Running multiple epochs (10) with a small dataset ensures many epoch
+    boundaries, making persistent_workers' startup savings visible.
+
+    Args:
+        loader: A DataLoader to iterate over.
+        max_batches: Maximum total number of batches to process across all epochs.
+        epochs: Number of epochs to iterate (re-iterates the loader each epoch).
+        prefetch_device: If set, wraps the loader in a DataPrefetcher each epoch
+            for overlapping H2D transfers. Data arrives already on device.
+
+    Returns:
+        Tuple of (elapsed_seconds, average_loss).
+    """
+    model = create_model()
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+    criterion = nn.CrossEntropyLoss()
+
+    start_time = time.perf_counter()
+    total_loss = 0.0
+    num_batches = 0
+
+    for epoch in range(epochs):
+        if prefetch_device is not None:
+            data_iter = DataPrefetcher(loader, prefetch_device)
+        else:
+            data_iter = loader
+
+        for data, labels in data_iter:
+            if prefetch_device is None:
+                data = data.to(device, non_blocking=True)
+                labels = labels.to(device, non_blocking=True)
+
+            output = model(data)
+            loss = criterion(output, labels)
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            total_loss += loss.item()
+            num_batches += 1
+
+            if num_batches >= max_batches:
+                break
+        if num_batches >= max_batches:
+            break
+
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+    elapsed = time.perf_counter() - start_time
+
+    return elapsed, total_loss / num_batches
+
+
+######################################################################
+# Baseline Training Loop
+# ----------------------
+#
+# Our starting point: a simple DataLoader with no multiprocessing,
+# no pinned memory, and default settings. This establishes the
+# performance floor we'll improve upon.
+
+baseline_loader = DataLoader(
+    benchmark_dataset,
+    batch_size=32,
+    shuffle=True,
+    num_workers=0,
+    pin_memory=False,
+)
+
+print("\n=== Progressive Optimization Results ===")
+print("\nBaseline (num_workers=0, pin_memory=False):")
+baseline_time, baseline_loss = train_and_benchmark(baseline_loader)
+print(f"  Time: {baseline_time:.4f}s | Loss: {baseline_loss:.4f}")
+prev_time = baseline_time
+
 ######################################################################
 # Batch Size Optimization
 # -----------------------
@@ -102,14 +272,18 @@ class SyntheticDataset(Dataset):
 #    When changing batch size, remember to tune your optimizer parameters,
 #    especially the learning rate schedule, unless you're doing offline
 #    inference.
+#
+# Since batch size is model-dependent (not a "just add it" optimization),
+# we benchmark it in isolation rather than folding it into the progressive
+# optimization chain.
 
 # Example: Testing different batch sizes
-dataset = SyntheticDataset(size=1000, transform_delay=0)
+batch_dataset = SyntheticDataset(size=1000, transform_delay=0)
 
 
 def benchmark_batch_size(batch_size, num_batches=10):
     """Benchmark data loading with a specific batch size."""
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    loader = DataLoader(batch_dataset, batch_size=batch_size, shuffle=True)
     start = time.perf_counter()
     for i, (data, labels) in enumerate(loader):
         if i >= num_batches:
@@ -123,9 +297,10 @@ def benchmark_batch_size(batch_size, num_batches=10):
 
 
 # Benchmark different batch sizes
+print("\nBatch size comparison (isolated benchmark):")
 for bs in [16, 32, 64, 128]:
     elapsed = benchmark_batch_size(bs)
-    print(f"Batch size {bs:3d}: {elapsed:.4f}s for 10 batches")
+    print(f"  Batch size {bs:3d}: {elapsed:.4f}s for 10 batches")
 
 ######################################################################
 # Number of Workers (``num_workers``)
@@ -153,31 +328,34 @@ for bs in [16, 32, 64, 128]:
 # - When data is already in memory
 # - The overhead of inter-process communication (IPC) exceeds the
 #   parallelization benefits
+#
+# .. note::
+#    Finding the optimal ``num_workers`` requires tuning: increase workers
+#    until throughput plateaus, then back off. Too many workers waste CPU
+#    memory (each worker holds its own copy of the dataset object and
+#    prefetched batches) and can cause ``/dev/shm`` exhaustion. A good
+#    starting point is 2-4 workers per GPU; profile with different values
+#    to find the sweet spot for your workload.
+#
+# Let's add ``num_workers=4`` and ``prefetch_factor=2`` to our training
+# loop and measure the improvement:
 
+workers_loader = DataLoader(
+    benchmark_dataset,
+    batch_size=32,
+    shuffle=True,
+    num_workers=4,
+    prefetch_factor=2,
+    pin_memory=False,
+)
 
-def benchmark_num_workers(num_workers, batch_size=32, num_batches=20):
-    """Benchmark data loading with different number of workers."""
-    # Use a dataset with simulated expensive transforms
-    expensive_dataset = SyntheticDataset(size=1000, transform_delay=0.005)
-    loader = DataLoader(
-        expensive_dataset,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        prefetch_factor=2 if num_workers > 0 else None,
-    )
-    start = time.perf_counter()
-    for i, (data, labels) in enumerate(loader):
-        if i >= num_batches:
-            break
-    elapsed = time.perf_counter() - start
-    return elapsed
-
-
-# Benchmark different worker counts (keeping it small for tutorial)
-print("\nBenchmarking num_workers with expensive transforms:")
-for nw in [0, 2, 4]:
-    elapsed = benchmark_num_workers(nw)
-    print(f"num_workers={nw}: {elapsed:.4f}s for 20 batches")
+print("\n+ num_workers=4, prefetch_factor=2:")
+workers_time, workers_loss = train_and_benchmark(workers_loader)
+print(f"  Time: {workers_time:.4f}s | Loss: {workers_loss:.4f}")
+print(
+    f"  Speedup vs baseline: {baseline_time / workers_time:.2f}x | vs previous: {prev_time / workers_time:.2f}x"
+)
+prev_time = workers_time
 
 ######################################################################
 # Understanding ``pin_memory``
@@ -213,129 +391,142 @@ for nw in [0, 2, 4]:
 # .. seealso::
 #    For more details, see the
 #    `pin_memory tutorial <https://docs.pytorch.org/tutorials/intermediate/pinmem_nonblock.html>`_
+#
+# Let's add ``pin_memory=True`` to our configuration:
 
-
-def benchmark_pin_memory(pin_memory, batch_size=64, num_batches=50):
-    """Benchmark the effect of pin_memory on data transfer speed."""
-    if not torch.cuda.is_available():
-        print("CUDA not available, skipping pin_memory benchmark")
-        return None
-
-    loader = DataLoader(
-        dataset,
-        batch_size=batch_size,
-        pin_memory=pin_memory,
-        num_workers=2,
-    )
-
-    # Warm up
-    for i, (data, labels) in enumerate(loader):
-        data = data.to(device, non_blocking=True)
-        if i >= 5:
-            break
-
-    torch.cuda.synchronize()
-    start = time.perf_counter()
-    for i, (data, labels) in enumerate(loader):
-        data = data.to(device, non_blocking=True)
-        labels = labels.to(device, non_blocking=True)
-        if i >= num_batches:
-            break
-    torch.cuda.synchronize()
-    elapsed = time.perf_counter() - start
-    return elapsed
-
+pinmem_loader = DataLoader(
+    benchmark_dataset,
+    batch_size=32,
+    shuffle=True,
+    num_workers=4,
+    prefetch_factor=2,
+    pin_memory=torch.cuda.is_available(),
+)
 
 if torch.cuda.is_available():
-    print("\nBenchmarking pin_memory:")
-    for pm in [False, True]:
-        elapsed = benchmark_pin_memory(pm)
-        print(f"pin_memory={pm}: {elapsed:.4f}s for 50 batches")
-else:
-    print("\nSkipping pin_memory benchmark (CUDA not available)")
-
-######################################################################
-# The ``in_order`` Parameter
-# --------------------------
-#
-# By default (``in_order=True``), the DataLoader returns batches in
-# the same order as the dataset indices. This requires caching batches
-# that arrive out of order from workers.
-#
-# **When to consider ``in_order=False``:**
-#
-# - When you don't need deterministic ordering (e.g., not checkpointing)
-# - When you observe training spikes due to batch caching
-# - When maximizing throughput is more important than reproducibility
-#
-# .. note::
-#    ``in_order=False`` might not increase average throughput, but it
-#    can reduce variance and eliminate occasional slow batches.
-
-# Example: Comparing in_order=True vs in_order=False
-in_order_dataset = SyntheticDataset(size=500, transform_delay=0.002)
-
-
-def benchmark_in_order(in_order, num_batches=15):
-    """Benchmark the effect of in_order on batch delivery timing."""
-    loader = DataLoader(
-        in_order_dataset,
-        batch_size=16,
-        num_workers=4,
-        prefetch_factor=2,
-        in_order=in_order,
+    print("\n+ pin_memory=True:")
+    pinmem_time, pinmem_loss = train_and_benchmark(pinmem_loader)
+    print(f"  Time: {pinmem_time:.4f}s | Loss: {pinmem_loss:.4f}")
+    print(
+        f"  Speedup vs baseline: {baseline_time / pinmem_time:.2f}x | vs previous: {prev_time / pinmem_time:.2f}x"
     )
-    batch_times = []
-    prev = time.perf_counter()
-    for i, (data, labels) in enumerate(loader):
-        if i >= num_batches:
-            break
-        now = time.perf_counter()
-        batch_times.append(now - prev)
-        prev = now
-    return batch_times
-
-
-print("\nBenchmarking in_order effect on batch timing variance:")
-for order in [True, False]:
-    times = benchmark_in_order(order)
-    avg = sum(times) / len(times)
-    variance = sum((t - avg) ** 2 for t in times) / len(times)
-    print(f"  in_order={order}: avg={avg:.4f}s, variance={variance:.6f}")
+    print(
+        "  (pin_memory benefit is modest here because CPU transform time dominates H2D transfer)"
+    )
+    prev_time = pinmem_time
+else:
+    print("\n+ pin_memory: skipped (CUDA not available)")
+    pinmem_time = workers_time
 
 ######################################################################
-# Snapshot Frequency (``snapshot_every_n_steps``)
-# -----------------------------------------------
+# Persistent Workers
+# ------------------
 #
-# When using stateful DataLoaders (for checkpointing), the
-# ``snapshot_every_n_steps`` parameter controls how often the
-# DataLoader state is saved.
+# By default, worker processes are shut down and restarted between
+# epochs. This incurs startup overhead (importing modules, forking
+# processes, re-initializing datasets) on every epoch boundary.
 #
-# **Trade-offs:**
+# Setting ``persistent_workers=True`` keeps the workers alive across
+# epochs, eliminating this repeated startup cost. Our benchmark runs
+# for 5 epochs, so workers would normally be restarted 4 times without
+# this flag.
 #
-# - **Higher frequency (smaller n):** More overhead, but less data loss
-#   on job failure
-# - **Lower frequency (larger n):** Less overhead, but more replayed
-#   samples on recovery
+# **When it helps most:**
 #
-# Choose based on your fault tolerance requirements and the cost of
-# reprocessing data.
+# - Training for many epochs on smaller datasets
+# - When dataset ``__init__`` is expensive (e.g., loading metadata)
+# - When combined with high ``num_workers``
+#
+# Let's compare with and without persistent workers over multiple epochs:
 
-# Example: Configuring snapshot frequency
-# (Note: snapshot_every_n_steps requires a stateful DataLoader)
+non_persistent_loader = DataLoader(
+    benchmark_dataset,
+    batch_size=32,
+    shuffle=True,
+    num_workers=4,
+    prefetch_factor=2,
+    pin_memory=torch.cuda.is_available(),
+    persistent_workers=False,
+)
+
+persistent_loader = DataLoader(
+    benchmark_dataset,
+    batch_size=32,
+    shuffle=True,
+    num_workers=4,
+    prefetch_factor=2,
+    pin_memory=torch.cuda.is_available(),
+    persistent_workers=True,
+)
+
+print("\n+ persistent_workers=True (5 epochs):")
+non_persistent_time, _ = train_and_benchmark(non_persistent_loader)
+persistent_time, persistent_loss = train_and_benchmark(persistent_loader)
+print(f"  Without persistent_workers: {non_persistent_time:.4f}s")
+print(f"  With persistent_workers:    {persistent_time:.4f}s")
+print(
+    f"  Speedup vs baseline: {baseline_time / persistent_time:.2f}x | vs previous: {prev_time / persistent_time:.2f}x"
+)
+prev_time = persistent_time
+
+######################################################################
+# Dataset-Level Optimization: ``__getitems__``
+# --------------------------------------------
+#
+# Beyond tuning DataLoader parameters, you can optimize the dataset
+# itself. PyTorch's DataLoader supports a batched fetching protocol via
+# ``__getitems__``: if your dataset defines this method, the fetcher
+# calls it once with a list of indices instead of calling ``__getitem__``
+# repeatedly for each sample.
+#
+# **How it works:**
+#
+# - The default fetcher does: ``[dataset[idx] for idx in batch_indices]``
+# - With ``__getitems__``: ``dataset.__getitems__(batch_indices)``
+#
+# **When this helps:**
+#
+# - When per-sample overhead is significant (e.g., opening connections,
+#   parsing headers, acquiring locks)
+# - When data can be fetched in bulk more efficiently (e.g., one SQL query
+#   for N rows instead of N queries, or vectorized tensor generation)
+# - When the transform has a fixed setup cost that can be amortized
+#   across the batch
+#
+# **Expected signature:**
 #
 # .. code-block:: python
 #
-#     from torch.utils.data.dataloader_experimental import DataLoader2
+#     def __getitems__(self, indices: list[int]) -> list:
+#         # Fetch all items at once and return as a list
+#         ...
 #
-#     loader = DataLoader2(
-#         dataset,
-#         snapshot_every_n_steps=100,  # Snapshot every 100 steps
-#     )
-#     # Save state for checkpointing
-#     state = loader.state_dict()
-#     # Restore on resumption
-#     loader.load_state_dict(state)
+# Our ``SyntheticDatasetBatched`` implements ``__getitems__`` to generate
+# the entire batch in one vectorized call (with a single amortized delay)
+# rather than N individual calls each with their own delay.
+# Let's add this to our cumulative configuration:
+
+benchmark_dataset_batched = SyntheticDatasetBatched(
+    size=500, feature_dim=224, transform_delay=0.005
+)
+
+batched_loader = DataLoader(
+    benchmark_dataset_batched,
+    batch_size=32,
+    shuffle=True,
+    num_workers=4,
+    prefetch_factor=2,
+    pin_memory=torch.cuda.is_available(),
+    persistent_workers=True,
+)
+
+print("\n+ __getitems__ (batched dataset fetching):")
+batched_time, batched_loss = train_and_benchmark(batched_loader)
+print(f"  Time: {batched_time:.4f}s | Loss: {batched_loss:.4f}")
+print(
+    f"  Speedup vs baseline: {baseline_time / batched_time:.2f}x | vs previous: {prev_time / batched_time:.2f}x"
+)
+prev_time = batched_time
 
 ######################################################################
 # Advanced: Overlapping H2D Transfer with GPU Compute
@@ -349,6 +540,14 @@ for order in [True, False]:
 #
 # The idea is to prefetch the next batch to GPU while the current batch
 # is being processed.
+#
+# .. note::
+#    The DataPrefetcher shows its greatest benefit when H2D transfer
+#    time overlaps meaningfully with GPU compute. If data loading is
+#    already extremely fast (e.g., with ``__getitems__`` amortization),
+#    the stream synchronization overhead may exceed the benefit. We
+#    benchmark it on the non-batched loader where per-batch data loading
+#    is slower and the GPU may actually be idle between batches.
 
 
 class DataPrefetcher:
@@ -397,26 +596,61 @@ class DataPrefetcher:
         return data, labels
 
 
-# Example usage
+# Integrate prefetcher into the training loop.
 if torch.cuda.is_available():
-    print("\nDemonstrating data prefetching:")
-    loader = DataLoader(dataset, batch_size=32, pin_memory=True, num_workers=2)
-    prefetcher = DataPrefetcher(loader, device)
+    print("\n+ DataPrefetcher (overlapping H2D transfer):")
+    prefetch_time, prefetch_loss = train_and_benchmark(
+        batched_loader, prefetch_device=device
+    )
+    print(f"  Time: {prefetch_time:.4f}s | Loss: {prefetch_loss:.4f}")
+    print(
+        f"  Speedup vs baseline: {baseline_time / prefetch_time:.2f}x | vs previous: {prev_time / prefetch_time:.2f}x"
+    )
+    prev_time = prefetch_time
+else:
+    print("\n+ DataPrefetcher: skipped (CUDA not available)")
+    prefetch_time = batched_time
 
-    torch.cuda.synchronize()
-    start = time.perf_counter()
-    for i, (data, labels) in enumerate(prefetcher):
-        # Your model training here
-        _ = data.sum()
-        if i >= 5:
-            break
-    torch.cuda.synchronize()
-    elapsed = time.perf_counter() - start
-    print(f"Prefetching demonstration complete! ({elapsed:.4f}s for 6 batches)")
+######################################################################
+# The ``in_order`` Parameter
+# --------------------------
+#
+# By default (``in_order=True``), the DataLoader returns batches in
+# the same order as the dataset indices. This requires caching batches
+# that arrive out of order from workers.
+#
+# **When to consider ``in_order=False``:**
+#
+# - When you don't need deterministic ordering (e.g., not checkpointing)
+# - When you observe training spikes due to batch caching
+# - When maximizing throughput is more important than reproducibility
+#
+# .. note::
+#    ``in_order=False`` might not increase average throughput, but it
+#    can reduce variance and eliminate occasional slow batches caused
+#    by head-of-line blocking when one worker is slower than others.
+
+######################################################################
+# Snapshot Frequency (``snapshot_every_n_steps``)
+# -----------------------------------------------
+#
+# When using stateful DataLoaders (for checkpointing), the
+# ``snapshot_every_n_steps`` parameter controls how often the
+# DataLoader state is saved.
+#
+# **Trade-offs:**
+#
+# - **Higher frequency (smaller n):** More overhead, but less data loss
+#   on job failure
+# - **Lower frequency (larger n):** Less overhead, but more replayed
+#   samples on recovery
+#
+# Choose based on your fault tolerance requirements and the cost of
+# reprocessing data.
 
 ######################################################################
 # Python Multiprocessing Startup Methods
-# --------------------------------------
+# ======================================
 #
 # Python's multiprocessing module supports three startup methods:
 #
@@ -513,8 +747,6 @@ if torch.cuda.is_available():
 # +-------------------+---------------------------+---------------------------+
 # | High num_workers  | file_system               | Avoids fd exhaustion      |
 # +-------------------+---------------------------+---------------------------+
-# | Docker/containers | file_system               | fd limits often stricter  |
-# +-------------------+---------------------------+---------------------------+
 #
 # .. warning::
 #    ``set_sharing_strategy()`` must be called **before** creating any
@@ -537,29 +769,7 @@ if torch.cuda.is_available():
 #
 # This typically means you've exhausted the shared memory allocation.
 #
-# **Diagnosing the Problem:**
-
-import shutil
-
-
-def check_shm_status():
-    """Check the current shared memory usage."""
-    shm_path = "/dev/shm"
-    try:
-        total, used, free = shutil.disk_usage(shm_path)
-        print(f"\n/dev/shm status:")
-        print(f"  Total: {total / (1024**3):.2f} GB")
-        print(f"  Used:  {used / (1024**3):.2f} GB")
-        print(f"  Free:  {free / (1024**3):.2f} GB")
-        print(f"  Usage: {used / total * 100:.1f}%")
-    except Exception as e:
-        print(f"Could not check /dev/shm: {e}")
-
-
-check_shm_status()
-
-######################################################################
-# **Solutions for Insufficient Shared Memory:**
+# **Solutions:**
 #
 # **1. Increase /dev/shm size (if you have root access):**
 #
@@ -571,19 +781,7 @@ check_shm_status()
 #     # Or permanently in /etc/fstab:
 #     # tmpfs /dev/shm tmpfs defaults,size=16G 0 0
 #
-# **2. For Docker containers, use --shm-size:**
-#
-# .. code-block:: bash
-#
-#     # Run with 16GB shared memory
-#     docker run --shm-size=16g your_image
-#
-#     # Or in docker-compose.yml:
-#     # services:
-#     #   training:
-#     #     shm_size: '16gb'
-#
-# **3. Reduce memory pressure from DataLoader:**
+# **2. Reduce memory pressure from DataLoader:**
 #
 # .. code-block:: python
 #
@@ -596,20 +794,20 @@ check_shm_status()
 #     # Use smaller batch sizes
 #     DataLoader(dataset, batch_size=16)  # Smaller batches = less shm
 #
-# **4. Switch sharing strategy:**
+# **3. Switch sharing strategy:**
 #
 # .. code-block:: python
 #
 #     import torch.multiprocessing as mp
 #     mp.set_sharing_strategy('file_system')
 #
-# **5. Use memory-efficient data formats:**
+# **4. Use memory-efficient data formats:**
 #
 # - Store data in formats that don't require large intermediate tensors
 # - Use ``torch.utils.data.IterableDataset`` for streaming data
 # - Consider memory-mapped files with ``numpy.memmap`` or ``torch.Storage``
 #
-# **6. Clean up leaked shared memory:**
+# **5. Clean up leaked shared memory:**
 #
 # .. code-block:: bash
 #
@@ -623,37 +821,66 @@ check_shm_status()
 #    Shared memory leaks can occur if worker processes crash without
 #    proper cleanup. Using ``persistent_workers=True`` can help reduce
 #    this by keeping workers alive longer.
+#
+# **Estimating shared memory needs:**
+#
+# A rough formula: ``num_workers * prefetch_factor * batch_size * sample_size``.
+# For example, with 8 workers, prefetch_factor=2, batch_size=32, and
+# 3x224x224 float32 samples (~0.57 MB each): 8 * 2 * 32 * 0.57 MB ≈ 0.29 GB.
 
-
-def estimate_shm_usage(batch_size, num_workers, prefetch_factor, tensor_size_mb):
-    """Estimate shared memory usage for a DataLoader configuration.
-
-    Args:
-        batch_size: Number of samples per batch
-        num_workers: Number of worker processes
-        prefetch_factor: Batches prefetched per worker
-        tensor_size_mb: Size of one sample in MB
-
-    Returns:
-        Estimated shared memory usage in GB
-    """
-    # Each worker prefetches prefetch_factor batches
-    batches_in_flight = num_workers * prefetch_factor
-    samples_in_flight = batches_in_flight * batch_size
-    total_mb = samples_in_flight * tensor_size_mb
-    total_gb = total_mb / 1024
-    return total_gb
-
-
-# Example calculation
-sample_size_mb = 3 * 224 * 224 * 4 / (1024 * 1024)  # 3x224x224 float32
-estimated_usage = estimate_shm_usage(
-    batch_size=32, num_workers=8, prefetch_factor=2, tensor_size_mb=sample_size_mb
-)
-print(f"\nEstimated shm usage for typical ImageNet config:")
-print(f"  Sample size: {sample_size_mb:.2f} MB")
-print(f"  Config: batch_size=32, num_workers=8, prefetch_factor=2")
-print(f"  Estimated usage: {estimated_usage:.2f} GB")
+######################################################################
+# Final Summary
+# -------------
+#
+# Here's the cumulative effect of each optimization we applied to
+# our training loop. Each row includes all optimizations from previous
+# rows:
+#
+# .. rst-class:: summary-table
+#
+# .. list-table::
+#    :header-rows: 1
+#    :widths: 50 20 15 15
+#
+#    * - Configuration
+#      - Time
+#      - vs Baseline
+#      - vs Previous
+#    * - Baseline (num_workers=0, no pinning)
+#      - ~32s
+#      - 1.00x
+#      - —
+#    * - \+ num_workers=4, prefetch_factor=2
+#      - ~11s
+#      - ~2.9x
+#      - ~2.9x
+#    * - \+ pin_memory=True
+#      - ~11s
+#      - ~3.0x
+#      - ~1.0x
+#    * - \+ persistent_workers=True
+#      - ~9s
+#      - ~3.6x
+#      - ~1.2x
+#    * - \+ __getitems__ (batched fetching)
+#      - ~3.5s
+#      - ~9.2x
+#      - ~2.5x
+#    * - \+ DataPrefetcher (H2D overlap)
+#      - ~3.3s
+#      - ~9.9x
+#      - ~1.1x
+#
+# **Key takeaways:**
+#
+# - **Multiprocessing** (``num_workers``) often provides the biggest single speedup
+# - **pin_memory + non_blocking** enables faster CPU-to-GPU transfers
+# - **persistent_workers** eliminates epoch-boundary restart overhead
+# - **__getitems__** amortizes per-sample overhead with batched fetching
+# - **DataPrefetcher** overlaps H2D transfer with compute (best when data
+#   loading is slow relative to GPU compute)
+# - **in_order=False** can reduce batch timing variance
+# - Always benchmark your specific workload and hardware
 
 ######################################################################
 # Summary and Best Practices
@@ -685,388 +912,6 @@ print(f"  Estimated usage: {estimated_usage:.2f} GB")
 #
 # 9. **Use ``file_system`` sharing strategy** when hitting file descriptor limits.
 #
-
-
-######################################################################
-# Optimizing a Training Loop: A Step-by-Step Story
-# -------------------------------------------------
-#
-# To demonstrate the real-world impact of data loading optimizations,
-# let's start with a decent baseline training loop and progressively
-# apply optimizations, measuring the speedup at each step.
-#
-# We'll use our synthetic dataset with simulated expensive transforms
-# to make the bottlenecks more apparent.
-
-import torch.nn as nn
-
-# Create a larger dataset for meaningful benchmarks
-benchmark_dataset = SyntheticDataset(size=2000, transform_delay=0.002)
-
-######################################################################
-# Step 1: Baseline - Simple DataLoader Configuration
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-# Our starting point: a reasonable but unoptimized configuration.
-
-
-def create_baseline_dataloader(dataset):
-    """Create a baseline DataLoader with reasonable defaults."""
-    return DataLoader(
-        dataset,
-        batch_size=32,
-        shuffle=True,
-        num_workers=0,  # No multiprocessing
-        pin_memory=False,  # No pinned memory
-    )
-
-
-def baseline_training_loop(dataset, epochs=5, max_batches=250):
-    """Baseline training loop with simple DataLoader."""
-    loader = create_baseline_dataloader(dataset)
-    model = nn.Sequential(
-        nn.Flatten(),
-        nn.Linear(3 * 224 * 224, 128),
-        nn.ReLU(),
-        nn.Linear(128, 10),
-    ).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
-    criterion = nn.CrossEntropyLoss()
-
-    start_time = time.perf_counter()
-    total_loss = 0.0
-    num_batches = 0
-
-    for epoch in range(epochs):
-        for data, labels in loader:
-            data = data.to(device)
-            labels = labels.to(device)
-
-            output = model(data)
-            loss = criterion(output, labels)
-
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-            total_loss += loss.item()
-            num_batches += 1
-
-            if num_batches >= max_batches:
-                break
-        if num_batches >= max_batches:
-            break
-
-    if torch.cuda.is_available():
-        torch.cuda.synchronize()
-    elapsed = time.perf_counter() - start_time
-
-    return elapsed, total_loss / num_batches
-
-
-print("\n=== Data Loading Optimization Story ===")
-print("\nStep 1: Baseline configuration")
-baseline_time, baseline_loss = baseline_training_loop(benchmark_dataset)
-print(f"  Time: {baseline_time:.4f}s for {250} batches (5 epochs)")
-print(f"  Avg loss: {baseline_loss:.4f}")
-
-######################################################################
-# Step 2: Add Multiprocessing (num_workers > 0)
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-# The biggest single improvement often comes from enabling multiprocessing.
-
-
-def create_multiprocess_dataloader(dataset):
-    """DataLoader with multiprocessing enabled."""
-    return DataLoader(
-        dataset,
-        batch_size=32,
-        shuffle=True,
-        num_workers=4,  # Enable multiprocessing
-        pin_memory=False,
-        prefetch_factor=2,
-    )
-
-
-def multiprocess_training_loop(dataset, epochs=5, max_batches=250):
-    """Training loop with multiprocessing DataLoader."""
-    loader = create_multiprocess_dataloader(dataset)
-    model = nn.Sequential(
-        nn.Flatten(),
-        nn.Linear(3 * 224 * 224, 128),
-        nn.ReLU(),
-        nn.Linear(128, 10),
-    ).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
-    criterion = nn.CrossEntropyLoss()
-
-    start_time = time.perf_counter()
-    total_loss = 0.0
-    num_batches = 0
-
-    for epoch in range(epochs):
-        for data, labels in loader:
-            data = data.to(device)
-            labels = labels.to(device)
-
-            output = model(data)
-            loss = criterion(output, labels)
-
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-            total_loss += loss.item()
-            num_batches += 1
-
-            if num_batches >= max_batches:
-                break
-        if num_batches >= max_batches:
-            break
-
-    if torch.cuda.is_available():
-        torch.cuda.synchronize()
-    elapsed = time.perf_counter() - start_time
-
-    return elapsed, total_loss / num_batches
-
-
-print("\nStep 2: Add multiprocessing (num_workers=4)")
-mp_time, mp_loss = multiprocess_training_loop(benchmark_dataset)
-speedup_mp = baseline_time / mp_time
-print(f"  Time: {mp_time:.4f}s for {250} batches (5 epochs)")
-print(f"  Avg loss: {mp_loss:.4f}")
-print(f"  Speedup: {speedup_mp:.2f}x")
-
-######################################################################
-# Step 3: Enable Pinned Memory
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-# For GPU training, pinned memory enables faster data transfers.
-
-
-def create_pinned_dataloader(dataset):
-    """DataLoader with multiprocessing and pinned memory."""
-    return DataLoader(
-        dataset,
-        batch_size=32,
-        shuffle=True,
-        num_workers=4,
-        pin_memory=torch.cuda.is_available(),  # Enable pinned memory
-        prefetch_factor=2,
-    )
-
-
-def pinned_training_loop(dataset, epochs=5, max_batches=250):
-    """Training loop with pinned memory."""
-    loader = create_pinned_dataloader(dataset)
-    model = nn.Sequential(
-        nn.Flatten(),
-        nn.Linear(3 * 224 * 224, 128),
-        nn.ReLU(),
-        nn.Linear(128, 10),
-    ).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
-    criterion = nn.CrossEntropyLoss()
-
-    start_time = time.perf_counter()
-    total_loss = 0.0
-    num_batches = 0
-
-    for epoch in range(epochs):
-        for data, labels in loader:
-            data = data.to(device, non_blocking=True)  # Use non_blocking
-            labels = labels.to(device, non_blocking=True)
-
-            output = model(data)
-            loss = criterion(output, labels)
-
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-            total_loss += loss.item()
-            num_batches += 1
-
-            if num_batches >= max_batches:
-                break
-        if num_batches >= max_batches:
-            break
-
-    if torch.cuda.is_available():
-        torch.cuda.synchronize()
-    elapsed = time.perf_counter() - start_time
-
-    return elapsed, total_loss / num_batches
-
-
-if torch.cuda.is_available():
-    print("\nStep 3: Enable pinned memory")
-    pinned_time, pinned_loss = pinned_training_loop(benchmark_dataset)
-    speedup_pinned = baseline_time / pinned_time
-    print(f"  Time: {pinned_time:.4f}s for {250} batches (5 epochs)")
-    print(f"  Avg loss: {pinned_loss:.4f}")
-    print(f"  Speedup vs baseline: {speedup_pinned:.2f}x")
-else:
-    print("\nStep 3: Skipping pinned memory (CUDA not available)")
-    pinned_time = mp_time  # Use previous time for comparison
-
-######################################################################
-# Step 4: Add Persistent Workers
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-# Persistent workers avoid the overhead of restarting processes between epochs.
-
-
-def create_persistent_dataloader(dataset):
-    """DataLoader with persistent workers."""
-    return DataLoader(
-        dataset,
-        batch_size=32,
-        shuffle=True,
-        num_workers=4,
-        pin_memory=torch.cuda.is_available(),
-        prefetch_factor=2,
-        persistent_workers=True,  # Keep workers alive
-    )
-
-
-def persistent_training_loop(dataset, epochs=5, max_batches=250):
-    """Training loop with persistent workers."""
-    loader = create_persistent_dataloader(dataset)
-    model = nn.Sequential(
-        nn.Flatten(),
-        nn.Linear(3 * 224 * 224, 128),
-        nn.ReLU(),
-        nn.Linear(128, 10),
-    ).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
-    criterion = nn.CrossEntropyLoss()
-
-    start_time = time.perf_counter()
-    total_loss = 0.0
-    num_batches = 0
-
-    for epoch in range(epochs):
-        for data, labels in loader:
-            data = data.to(device, non_blocking=torch.cuda.is_available())
-            labels = labels.to(device, non_blocking=torch.cuda.is_available())
-
-            output = model(data)
-            loss = criterion(output, labels)
-
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-            total_loss += loss.item()
-            num_batches += 1
-
-            if num_batches >= max_batches:
-                break
-        if num_batches >= max_batches:
-            break
-
-    if torch.cuda.is_available():
-        torch.cuda.synchronize()
-    elapsed = time.perf_counter() - start_time
-
-    return elapsed, total_loss / num_batches
-
-
-print("\nStep 4: Add persistent workers")
-persistent_time, persistent_loss = persistent_training_loop(benchmark_dataset)
-speedup_persistent = baseline_time / persistent_time
-print(f"  Time: {persistent_time:.4f}s for {250} batches (5 epochs)")
-print(f"  Avg loss: {persistent_loss:.4f}")
-print(f"  Speedup vs baseline: {speedup_persistent:.2f}x")
-
-######################################################################
-# Step 5: Fully Optimized with Data Prefetching
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-# Finally, add data prefetching to overlap data transfer with computation.
-
-
-def optimized_training_loop(dataset, epochs=5, max_batches=250):
-    """Fully optimized training loop with prefetching."""
-    loader = create_persistent_dataloader(dataset)
-    model = nn.Sequential(
-        nn.Flatten(),
-        nn.Linear(3 * 224 * 224, 128),
-        nn.ReLU(),
-        nn.Linear(128, 10),
-    ).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
-    criterion = nn.CrossEntropyLoss()
-
-    start_time = time.perf_counter()
-    total_loss = 0.0
-    num_batches = 0
-
-    for epoch in range(epochs):
-        # Use prefetcher for overlapping
-        if torch.cuda.is_available():
-            data_iter = DataPrefetcher(loader, device)
-        else:
-            data_iter = loader
-
-        for data, labels in data_iter:
-            if not torch.cuda.is_available():
-                data = data.to(device)
-                labels = labels.to(device)
-
-            output = model(data)
-            loss = criterion(output, labels)
-
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-            total_loss += loss.item()
-            num_batches += 1
-
-            if num_batches >= max_batches:
-                break
-        if num_batches >= max_batches:
-            break
-
-    if torch.cuda.is_available():
-        torch.cuda.synchronize()
-    elapsed = time.perf_counter() - start_time
-
-    return elapsed, total_loss / num_batches
-
-
-print("\nStep 5: Fully optimized with data prefetching")
-optimized_time, optimized_loss = optimized_training_loop(benchmark_dataset)
-speedup_optimized = baseline_time / optimized_time
-print(f"  Time: {optimized_time:.4f}s for {250} batches (5 epochs)")
-print(f"  Avg loss: {optimized_loss:.4f}")
-print(f"  Speedup vs baseline: {speedup_optimized:.2f}x")
-
-######################################################################
-# Summary of Optimizations
-# ~~~~~~~~~~~~~~~~~~~~~~~~
-#
-# Let's summarize the cumulative speedups achieved:
-
-print("\n=== Optimization Summary ===")
-print(f"Baseline:                    {baseline_time:.4f}s")
-print(f"+ Multiprocessing:           {mp_time:.4f}s ({speedup_mp:.2f}x)")
-if torch.cuda.is_available():
-    print(f"+ Pinned memory:             {pinned_time:.4f}s ({speedup_pinned:.2f}x)")
-print(f"+ Persistent workers:        {persistent_time:.4f}s ({speedup_persistent:.2f}x)")
-print(f"+ Data prefetching:          {optimized_time:.4f}s ({speedup_optimized:.2f}x)")
-
-print("Key takeaways:")
-print("- Multiprocessing often provides the biggest single speedup")
-print("- Persistent workers reduce overhead when training multiple epochs")
-print("- Each optimization builds on the previous ones")
-print("- The final configuration can be 2-5x faster than the baseline")
-print("- Always benchmark your specific workload and hardware")
-
 
 ######################################################################
 # Additional Resources
