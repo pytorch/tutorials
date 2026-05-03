@@ -298,7 +298,7 @@ Then, you can use the following methods and properties:
   ...
 
 Register PrivateUse1HooksInterface for the new backend
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If your backend uses autograd (i.e., calls ``.backward()``), you **must** register
 ``PrivateUse1HooksInterface``. Without it, backward passes will fail.
@@ -581,7 +581,7 @@ Here is a complete, self-contained example using NumPy as the backend:
 
    @torch.library.impl("aten::view", "privateuseone")
    def view(a, size):
-       return wrap(unwrap(a), a.shape, a.dtype)
+       return wrap(unwrap(a).reshape(size), size, a.dtype)
 
    @torch.library.impl("aten::as_strided", "privateuseone")
    def as_strided(self, size, stride, storage_offset=None):
