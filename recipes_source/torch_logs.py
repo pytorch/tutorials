@@ -32,17 +32,13 @@ import logging
 
 import torch
 
-# Select device:
-# - Use CUDA if available and supported
-# - Otherwise fall back to CPU
-
+# Select CUDA if supported, else CPU
 if torch.cuda.is_available():
     if torch.cuda.get_device_capability() < (7, 0):
         print("CUDA device not supported for torch.compile, falling back to CPU.")
         device = "cpu"
     else:
         device = "cuda"
-        
 else:
     device = "cpu"
 
@@ -52,7 +48,7 @@ def fn(x, y):
     return z + 2
 
 
-inputs = (torch.ones(2, 2, device = device), torch.zeros(2, 2, device = device))
+inputs = (torch.ones(2, 2, device=device), torch.zeros(2, 2, device=device))
 
 
 # print separator and reset dynamo
