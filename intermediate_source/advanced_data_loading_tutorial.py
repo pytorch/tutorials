@@ -13,8 +13,6 @@ Advanced Data Loading Optimization in PyTorch
        * How to optimize DataLoader configuration for maximum throughput
        * Best practices for ``batch_size``, ``num_workers``, and ``pin_memory``
        * Advanced techniques for overlapping data transfers with GPU compute
-       * Understanding Python multiprocessing startup methods
-       * Using py-spy to profile and isolate CPU-side bottlenecks
        * Configuring shared memory strategies and handling ``/dev/shm`` issues
 
     .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
@@ -49,6 +47,9 @@ from torch.utils.data import DataLoader, Dataset
 # Check if CUDA is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
+
+# Set a fixed seed for reproducibility
+torch.manual_seed(42)
 
 ######################################################################
 # Creating a Sample Dataset
@@ -262,9 +263,7 @@ prev_time = baseline_time
 #
 # **Training Dynamics:**
 #
-# - Batch size changes affect the effective learning rate
-# - When increasing batch size, you typically need to adjust the learning
-#   rate accordingly (linear scaling rule)
+# - Batch size changes affect the effective learning rate, typically requiring adjustments
 # - Larger batches provide more stable gradient estimates but may
 #   generalize differently
 #
@@ -331,7 +330,7 @@ for bs in [16, 32, 64, 128]:
 #
 # .. note::
 #    Finding the optimal ``num_workers`` requires tuning: increase workers
-#    until throughput plateaus, then back off. Too many workers waste CPU
+#    until throughput plateaus. Too many workers waste CPU
 #    memory (each worker holds its own copy of the dataset object and
 #    prefetched batches) and can cause ``/dev/shm`` exhaustion. A good
 #    starting point is 2-4 workers per GPU; profile with different values
@@ -470,6 +469,85 @@ print(
 prev_time = persistent_time
 
 ######################################################################
+# Overlapping H2D Transfer with GPU Compute
+# ---------------------------------------------------
+#
+# For maximum throughput, you can overlap Host-to-Device (H2D) data
+# transfers with GPU computation. This ensures the GPU is never idle
+# waiting for data.
+#
+# The idea is to prefetch the next batch to GPU while the current batch
+# is being processed.
+#
+# .. note::
+#    The DataPrefetcher shows its greatest benefit when H2D transfer
+#    time overlaps meaningfully with GPU compute. If data loading is
+#    already extremely fast (e.g., with ``__getitems__`` amortization),
+#    the stream synchronization overhead may exceed the benefit.
+
+
+class DataPrefetcher:
+    """Prefetches data to GPU while previous batch is being processed."""
+
+    def __init__(self, loader, device):
+        self.loader = iter(loader)
+        self.device = device
+        self.stream = torch.cuda.Stream() if torch.cuda.is_available() else None
+        self.next_data = None
+        self.next_labels = None
+        self.preload()
+
+    def preload(self):
+        try:
+            self.next_data, self.next_labels = next(self.loader)
+        except StopIteration:
+            self.next_data = None
+            self.next_labels = None
+            return
+
+        if self.stream is not None:
+            with torch.cuda.stream(self.stream):
+                self.next_data = self.next_data.to(self.device, non_blocking=True)
+                self.next_labels = self.next_labels.to(self.device, non_blocking=True)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.stream is not None:
+            torch.cuda.current_stream().wait_stream(self.stream)
+
+        data = self.next_data
+        labels = self.next_labels
+
+        if data is None:
+            raise StopIteration
+
+        # Ensure tensors are ready
+        if self.stream is not None:
+            data.record_stream(torch.cuda.current_stream())
+            labels.record_stream(torch.cuda.current_stream())
+
+        self.preload()
+        return data, labels
+
+
+# Integrate prefetcher into the training loop.
+if torch.cuda.is_available():
+    print("\n+ DataPrefetcher (overlapping H2D transfer):")
+    prefetch_time, prefetch_loss = train_and_benchmark(
+        persistent_loader, prefetch_device=device
+    )
+    print(f"  Time: {prefetch_time:.4f}s | Loss: {prefetch_loss:.4f}")
+    print(
+        f"  Speedup vs baseline: {baseline_time / prefetch_time:.2f}x | vs previous: {prev_time / prefetch_time:.2f}x"
+    )
+    prev_time = prefetch_time
+else:
+    print("\n+ DataPrefetcher: skipped (CUDA not available)")
+    prefetch_time = persistent_time
+
+######################################################################
 # Dataset-Level Optimization: ``__getitems__``
 # --------------------------------------------
 #
@@ -529,89 +607,6 @@ print(
 prev_time = batched_time
 
 ######################################################################
-# Advanced: Overlapping H2D Transfer with GPU Compute
-# ---------------------------------------------------
-#
-# For maximum throughput, you can overlap Host-to-Device (H2D) data
-# transfers with GPU computation. This ensures the GPU is never idle
-# waiting for data.
-#
-# **Technique: Double Buffering**
-#
-# The idea is to prefetch the next batch to GPU while the current batch
-# is being processed.
-#
-# .. note::
-#    The DataPrefetcher shows its greatest benefit when H2D transfer
-#    time overlaps meaningfully with GPU compute. If data loading is
-#    already extremely fast (e.g., with ``__getitems__`` amortization),
-#    the stream synchronization overhead may exceed the benefit. We
-#    benchmark it on the non-batched loader where per-batch data loading
-#    is slower and the GPU may actually be idle between batches.
-
-
-class DataPrefetcher:
-    """Prefetches data to GPU while previous batch is being processed."""
-
-    def __init__(self, loader, device):
-        self.loader = iter(loader)
-        self.device = device
-        self.stream = torch.cuda.Stream() if torch.cuda.is_available() else None
-        self.next_data = None
-        self.next_labels = None
-        self.preload()
-
-    def preload(self):
-        try:
-            self.next_data, self.next_labels = next(self.loader)
-        except StopIteration:
-            self.next_data = None
-            self.next_labels = None
-            return
-
-        if self.stream is not None:
-            with torch.cuda.stream(self.stream):
-                self.next_data = self.next_data.to(self.device, non_blocking=True)
-                self.next_labels = self.next_labels.to(self.device, non_blocking=True)
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self.stream is not None:
-            torch.cuda.current_stream().wait_stream(self.stream)
-
-        data = self.next_data
-        labels = self.next_labels
-
-        if data is None:
-            raise StopIteration
-
-        # Ensure tensors are ready
-        if self.stream is not None:
-            data.record_stream(torch.cuda.current_stream())
-            labels.record_stream(torch.cuda.current_stream())
-
-        self.preload()
-        return data, labels
-
-
-# Integrate prefetcher into the training loop.
-if torch.cuda.is_available():
-    print("\n+ DataPrefetcher (overlapping H2D transfer):")
-    prefetch_time, prefetch_loss = train_and_benchmark(
-        batched_loader, prefetch_device=device
-    )
-    print(f"  Time: {prefetch_time:.4f}s | Loss: {prefetch_loss:.4f}")
-    print(
-        f"  Speedup vs baseline: {baseline_time / prefetch_time:.2f}x | vs previous: {prev_time / prefetch_time:.2f}x"
-    )
-    prev_time = prefetch_time
-else:
-    print("\n+ DataPrefetcher: skipped (CUDA not available)")
-    prefetch_time = batched_time
-
-######################################################################
 # The ``in_order`` Parameter
 # --------------------------
 #
@@ -634,7 +629,7 @@ else:
 # Snapshot Frequency (``snapshot_every_n_steps``)
 # -----------------------------------------------
 #
-# When using stateful DataLoaders (for checkpointing), the
+# When using torchdata's StatefulDataLoader (for checkpointing), the
 # ``snapshot_every_n_steps`` parameter controls how often the
 # DataLoader state is saved.
 #
@@ -647,57 +642,6 @@ else:
 #
 # Choose based on your fault tolerance requirements and the cost of
 # reprocessing data.
-
-######################################################################
-# Python Multiprocessing Startup Methods
-# ======================================
-#
-# Python's multiprocessing module supports three startup methods:
-#
-# **1. spawn (Recommended for most cases)**
-#
-# - Creates a fresh Python interpreter for each worker
-# - Safest option, avoids issues with threads and locks
-# - Slightly higher startup time
-#
-# **2. forkserver**
-#
-# - Uses a server process to fork workers
-# - Good balance of safety and performance
-# - Usually the recommended option for production
-#
-# **3. fork**
-#
-# - Directly forks the parent process
-# - Fastest startup, lowest initial memory
-# - **Not recommended:** Can cause issues with threads, locks, and
-#   CUDA contexts
-#
-# .. warning::
-#    ``fork`` can lead to deadlocks if the parent process has active
-#    threads or holds locks. The child process inherits a potentially
-#    corrupted state.
-#
-# **Setting the startup method:**
-#
-# .. code-block:: python
-#
-#     import torch.multiprocessing as mp
-#     mp.set_start_method('forkserver')  # Call once at the beginning
-#
-# .. note::
-#    While ``fork`` uses copy-on-write for low initial memory, memory
-#    usage can spike during training. Use with caution and only if
-#    your pipeline is fork-compatible.
-######################################################################
-# Profiling CPU Bottlenecks
-# -------------------------
-#
-# When optimizing data loading, it's crucial to identify where CPU time
-# is being spent. `py-spy <https://github.com/benfred/py-spy>`_ is a
-# sampling profiler for Python that can help isolate bottlenecks,
-# especially sections holding the GIL. Use the ``--gil`` flag to track
-# GIL contention.
 
 ######################################################################
 # Shared Memory and ``set_sharing_strategy``
@@ -723,7 +667,7 @@ else:
 #    - Uses shared memory files in ``/dev/shm``
 #    - Not limited by file descriptor count
 #    - Better for large numbers of tensors
-#    - Can hit shared memory size limits
+#    - Low transform costs
 
 ######################################################################
 # **When to Change the Strategy:**
@@ -764,22 +708,13 @@ else:
 # .. code-block:: text
 #
 #     RuntimeError: unable to open shared memory object </torch_xxx>
-#     OSError: [Errno 28] No space left on device
 #     ERROR: Unexpected bus error encountered in worker
 #
 # This typically means you've exhausted the shared memory allocation.
 #
 # **Solutions:**
 #
-# **1. Increase /dev/shm size (if you have root access):**
-#
-# .. code-block:: bash
-#
-#     # Temporarily increase to 16GB
-#     sudo mount -o remount,size=16G /dev/shm
-#
-#     # Or permanently in /etc/fstab:
-#     # tmpfs /dev/shm tmpfs defaults,size=16G 0 0
+# **1. Increase /dev/shm size (if you can)**
 #
 # **2. Reduce memory pressure from DataLoader:**
 #
@@ -801,12 +736,6 @@ else:
 #     import torch.multiprocessing as mp
 #     mp.set_sharing_strategy('file_system')
 #
-# **4. Use memory-efficient data formats:**
-#
-# - Store data in formats that don't require large intermediate tensors
-# - Use ``torch.utils.data.IterableDataset`` for streaming data
-# - Consider memory-mapped files with ``numpy.memmap`` or ``torch.Storage``
-#
 # **5. Clean up leaked shared memory:**
 #
 # .. code-block:: bash
@@ -819,14 +748,8 @@ else:
 #
 # .. note::
 #    Shared memory leaks can occur if worker processes crash without
-#    proper cleanup. Using ``persistent_workers=True`` can help reduce
-#    this by keeping workers alive longer.
+#    proper cleanup.
 #
-# **Estimating shared memory needs:**
-#
-# A rough formula: ``num_workers * prefetch_factor * batch_size * sample_size``.
-# For example, with 8 workers, prefetch_factor=2, batch_size=32, and
-# 3x224x224 float32 samples (~0.57 MB each): 8 * 2 * 32 * 0.57 MB ≈ 0.29 GB.
 
 ######################################################################
 # Final Summary
@@ -851,35 +774,34 @@ else:
 #      - 1.00x
 #      - —
 #    * - \+ num_workers=4, prefetch_factor=2
-#      - ~11s
-#      - ~2.9x
-#      - ~2.9x
+#      - ~12s
+#      - ~2.7x
+#      - ~2.7x
 #    * - \+ pin_memory=True
-#      - ~11s
-#      - ~3.0x
+#      - ~11.5s
+#      - ~2.8x
 #      - ~1.0x
 #    * - \+ persistent_workers=True
 #      - ~9s
-#      - ~3.6x
-#      - ~1.2x
-#    * - \+ __getitems__ (batched fetching)
-#      - ~3.5s
-#      - ~9.2x
-#      - ~2.5x
+#      - ~3.7x
+#      - ~1.3x
 #    * - \+ DataPrefetcher (H2D overlap)
-#      - ~3.3s
-#      - ~9.9x
-#      - ~1.1x
+#      - ~9s
+#      - ~3.6x
+#      - ~1.0x
+#    * - \+ __getitems__ (batched fetching)
+#      - ~3s
+#      - ~10x
+#      - ~2.9x
 #
 # **Key takeaways:**
 #
-# - **Multiprocessing** (``num_workers``) often provides the biggest single speedup
+# - **Multiprocessing** (``num_workers > 0``) often provides the biggest single speedup
 # - **pin_memory + non_blocking** enables faster CPU-to-GPU transfers
 # - **persistent_workers** eliminates epoch-boundary restart overhead
 # - **__getitems__** amortizes per-sample overhead with batched fetching
-# - **DataPrefetcher** overlaps H2D transfer with compute (best when data
+# - **Prefetcing data** overlaps H2D transfer with compute (best when data
 #   loading is slow relative to GPU compute)
-# - **in_order=False** can reduce batch timing variance
 # - Always benchmark your specific workload and hardware
 
 ######################################################################
@@ -887,30 +809,23 @@ else:
 # --------------------------
 #
 # 1. **Start with moderate batch sizes** (32-128) and scale up if memory
-#    allows. Remember to adjust learning rate when changing batch size.
+#    allows.
 #
 # 2. **Use ``num_workers > 0``** when transforms are expensive. Start with
-#    2-4 workers and increase if data loading is still a bottleneck.
+#    2-4 workers and increase based on memory capacity. Higher is not always better.
 #
-# 3. **Enable ``pin_memory=True``** when using CUDA, and always use
-#    ``non_blocking=True`` for GPU transfers.
+# 3. **Enable ``pin_memory=True``** when using an accelerator.
 #
 # 4. **Use ``persistent_workers=True``** to avoid worker restart overhead
 #    between epochs.
 #
-# 5. **Consider ``forkserver``** as your multiprocessing start method
-#    for production workloads.
+# 5. **Profile your pipeline** with to identify CPU bottlenecks during
+#    dataset access, transformations, etc.
 #
-# 6. **Profile your pipeline** with py-spy using ``--subprocesses`` to
-#    capture worker activity and identify CPU bottlenecks.
-#
-# 7. **Implement data prefetching** for GPU workloads to overlap data
+# 6. **Implement data prefetching** for GPU workloads to overlap data
 #    transfer with computation.
 #
-# 8. **Monitor ``/dev/shm`` usage** and adjust ``num_workers``,
-#    ``prefetch_factor``, or sharing strategy if you hit limits.
-#
-# 9. **Use ``file_system`` sharing strategy** when hitting file descriptor limits.
+# 7. **Use ``file_system`` sharing strategy** when hitting file descriptor limits.
 #
 
 ######################################################################
@@ -919,5 +834,4 @@ else:
 #
 # - `PyTorch DataLoader documentation <https://pytorch.org/docs/stable/data.html>`_
 # - `Pin Memory and Non-blocking Transfer Tutorial <https://docs.pytorch.org/tutorials/intermediate/pinmem_nonblock.html>`_
-# - `NVIDIA Data Loading Best Practices <https://developer.nvidia.com/blog/how-optimize-data-transfers-cuda-cc/>`_
 # - `PyTorch Performance Tuning Guide <https://pytorch.org/tutorials/recipes/recipes/tuning_guide.html>`_
