@@ -9,16 +9,12 @@ basic usage with PyTorch, and how to visualize data you logged in TensorBoard UI
 
 Installation
 ----------------------
-PyTorch should be installed to log models and metrics into TensorBoard log 
-directory. The following command will install PyTorch 1.4+ via 
-Anaconda (recommended):
+PyTorch should be installed to log models and metrics into TensorBoard log
+directory. Install PyTorch following the instructions at
+`pytorch.org/get-started/locally <https://pytorch.org/get-started/locally/>`__,
+which provides up-to-date conda, pip, and wheel install options for every platform.
 
-.. code-block:: sh
-
-   $ conda install pytorch torchvision -c pytorch 
-   
-
-or pip
+A typical pip install:
 
 .. code-block:: sh
 

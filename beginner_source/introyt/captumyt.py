@@ -106,20 +106,14 @@ Before you get started, you need to have a Python environment with:
 -  Matplotlib version 3.3.4, since Captum currently uses a Matplotlib
    function whose arguments have been renamed in later versions
 
-To install Captum in an Anaconda or pip virtual environment, use the
-appropriate command for your environment below:
-
-With ``conda``:
-
-.. code-block:: sh
-
-    conda install pytorch torchvision captum flask-compress matplotlib=3.3.4 -c pytorch
-
-With ``pip``:
+To set up the environment for this tutorial, install PyTorch and
+TorchVision following the instructions at
+`pytorch.org/get-started/locally <https://pytorch.org/get-started/locally/>`__,
+then install the remaining dependencies with ``pip``:
 
 .. code-block:: sh
 
-    pip install torch torchvision captum matplotlib==3.3.4 Flask-Compress
+    pip install captum matplotlib==3.3.4 Flask-Compress
 
 Restart this notebook in the environment you set up, and you’re ready to
 go!
