@@ -3,7 +3,7 @@
 Advanced Data Loading Optimization in PyTorch
 ==============================================
 
-**Author**: `PyTorch Team <https://pytorch.org>`_
+**Authors**: `Divyansh Khanna <https://github.com/divyanshk>`_, `Ramanish Singh <https://github.com/ramanishsingh>`_
 
 .. grid:: 2
 
