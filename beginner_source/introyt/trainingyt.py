@@ -70,11 +70,13 @@ import torchvision.transforms as transforms
 # PyTorch TensorBoard support
 from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
-
-
-transform = transforms.Compose(
-    [transforms.ToTensor(),
-    transforms.Normalize((0.5,), (0.5,))])
+# v2 transforms API (torchvision >= 0.18)
+from torchvision.transforms import v2
+transform = v2.Compose([
+   v2.ToImage(),
+   v2.ToDtype(torch.float32, scale=True),
+   v2.Normalize((0.5,), (0.5,))
+])
 
 # Create datasets for training & validation, download if necessary
 training_set = torchvision.datasets.FashionMNIST('./data', train=True, transform=transform, download=True)
