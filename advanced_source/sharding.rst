@@ -16,16 +16,10 @@ We highly recommend CUDA when using torchRec. If using CUDA: - cuda >=
 
 .. code:: python
 
-    # install conda to make installying pytorch with cudatoolkit 11.3 easier. 
-    !sudo rm Miniconda3-py37_4.9.2-Linux-x86_64.sh Miniconda3-py37_4.9.2-Linux-x86_64.sh.*
-    !sudo wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.9.2-Linux-x86_64.sh
-    !sudo chmod +x Miniconda3-py37_4.9.2-Linux-x86_64.sh
-    !sudo bash ./Miniconda3-py37_4.9.2-Linux-x86_64.sh -b -f -p /usr/local
-
-.. code:: python
-
-    # install pytorch with cudatoolkit 11.3
-    !sudo conda install pytorch cudatoolkit=11.3 -c pytorch-nightly -y
+    # Install nightly PyTorch (TorchRec nightly requires PyTorch nightly).
+    # See https://pytorch.org/get-started/locally/ and select "Preview (Nightly)"
+    # for the right command for your platform / CUDA version. For Colab with CUDA 12.1:
+    !pip3 install --pre torch --index-url https://download.pytorch.org/whl/nightly/cu121
 
 Installing torchRec will also install
 `FBGEMM <https://github.com/pytorch/fbgemm>`__, a collection of CUDA
