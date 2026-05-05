@@ -515,7 +515,7 @@ print(b)
 # tensor is the one that gets changed in place.* Similarly, the in-place
 # trigonometric functions like ``sin_()`` are also tensor methods rather than
 # module-level functions.
-
+#
 #
 # There is another option for placing the result of a computation in an
 # existing, allocated tensor. Many of the methods and functions we’ve seen
