@@ -48,7 +48,7 @@ Captum:
    the review is an example of feature attribution.
 -  **Layer Attribution** examines the activity of a model’s hidden layer
    subsequent to a particular input. Examining the spatially-mapped
-   output of a convolutional layer in response to an input image in an
+   output of a convolutional layer in response to an input image is an
    example of layer attribution.
 -  **Neuron Attribution** is analagous to layer attribution, but focuses
    on the activity of a single neuron.
@@ -97,14 +97,13 @@ Installation
 
 Before you get started, you need to have a Python environment with:
 
--  Python version 3.6 or higher
+-  Python version 3.9.0 or higher
 -  For the Captum Insights example, Flask 1.1 or higher and Flask-Compress
-   (the latest version is recommended)
--  PyTorch version 1.2 or higher (the latest version is recommended)
--  TorchVision version 0.6 or higher (the latest version is recommended)
--  Captum (the latest version is recommended)
--  Matplotlib version 3.3.4, since Captum currently uses a Matplotlib
-   function whose arguments have been renamed in later versions
+-  PyTorch version 1.10.0 or higher
+-  TorchVision version 0.11.0 or higher
+-  Captum version 0.8.0, as Captum Insights was retired after this version
+   and is no longer supported 
+-  Matplotlib version 3.5.0 or higher
 
 To install Captum in an Anaconda or pip virtual environment, use the
 appropriate command for your environment below:
@@ -113,13 +112,13 @@ With ``conda``:
 
 .. code-block:: sh
 
-    conda install pytorch torchvision captum flask-compress matplotlib=3.3.4 -c pytorch
+    conda install "pytorch>=1.10.0" "torchvision>=0.11.0" "captum=0.8.0" "matplotlib>=3.5.0" flask-compress ipywidgets -c pytorch
 
 With ``pip``:
 
 .. code-block:: sh
 
-    pip install torch torchvision captum matplotlib==3.3.4 Flask-Compress
+    pip install "torch>=1.10.0" "torchvision>=0.11.0" "captum==0.8.0" "matplotlib>=3.5.0" flask-compress ipywidgets
 
 Restart this notebook in the environment you set up, and you’re ready to
 go!
@@ -266,8 +265,10 @@ integrated_gradients = IntegratedGradients(model)
 attributions_ig = integrated_gradients.attribute(input_img, target=pred_label_idx, n_steps=200)
 
 # Show the original image for comparison
-_ = viz.visualize_image_attr(None, np.transpose(transformed_img.squeeze().cpu().detach().numpy(), (1,2,0)), 
-                      method="original_image", title="Original Image")
+_ = viz.visualize_image_attr(np.ones_like(np.transpose(transformed_img.squeeze().cpu().detach().numpy(), (1,2,0))),
+                             np.transpose(transformed_img.squeeze().cpu().detach().numpy(), (1,2,0)),
+                             method="original_image",
+                             title="Original Image")
 
 default_cmap = LinearSegmentedColormap.from_list('custom blue', 
                                                  [(0, '#ffffff'),
@@ -495,5 +496,9 @@ visualizer = AttributionVisualizer(
 # model’s predictions with associated probabilities, and view heatmaps of
 # the attribution compared with the original image.
 # 
+# If you are not using a Jupyter Notebook, you can use
+# ``visualizer.serve(debug=True)`` instead. This starts a local web server
+# and prints a URL that you can open in your browser.
+#
 
 visualizer.render()
