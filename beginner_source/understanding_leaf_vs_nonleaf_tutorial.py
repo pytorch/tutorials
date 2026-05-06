@@ -90,7 +90,7 @@ loss = F.mse_loss(y_pred, y)              # scalar loss
 # .. mermaid::
 #
 #    graph TD
-
+#
 #        x["x<br/>is_leaf=True<br/>requires_grad=False<br/>retains_grad=False<br/>grad=None"]
 #        W["W<br/>is_leaf=True<br/>requires_grad=True<br/>retains_grad=False<br/>grad=None"]
 #        b["b<br/>is_leaf=True<br/>requires_grad=True<br/>retains_grad=False<br/>grad=None"]
@@ -99,7 +99,7 @@ loss = F.mse_loss(y_pred, y)              # scalar loss
 #        relu["y_pred = relu(z)<br/>is_leaf=False<br/>requires_grad=True<br/>retains_grad=False<br/>grad=None"]
 #        y["y<br/>is_leaf=True<br/>requires_grad=False<br/>retains_grad=False<br/>grad=None"]
 #        loss["loss = mse(y_pred, y)<br/>is_leaf=False<br/>requires_grad=True<br/>retains_grad=False<br/>grad=None"]
-
+#
 #        x --> matmul
 #        W --> matmul
 #        matmul --> z
@@ -278,7 +278,7 @@ print(f"{loss.grad=}")
 # .. mermaid::
 #
 #    graph TD
-
+#
 #         x["x<br/>is_leaf=True<br/>requires_grad=False<br/>retains_grad=False<br/>grad=None"]
 #         W["W<br/>is_leaf=True<br/>requires_grad=True<br/>retains_grad=False<br/>grad=torch.Tensor"]
 #         b["b<br/>is_leaf=True<br/>requires_grad=True<br/>retains_grad=False<br/>grad=torch.Tensor"]
@@ -287,6 +287,7 @@ print(f"{loss.grad=}")
 #         relu["y_pred = relu(z)<br/>is_leaf=False<br/>requires_grad=True<br/>retains_grad=True<br/>grad=torch.Tensor"]
 #         y["y<br/>is_leaf=True<br/>requires_grad=True<br/>retains_grad=False<br/>grad=None"]
 #         loss["loss = mse(y_pred, y)<br/>is_leaf=False<br/>requires_grad=True<br/>retains_grad=True<br/>grad=torch.Tensor"]
+#         
 #         x --> matmul
 #         W --> matmul
 #         matmul --> z
