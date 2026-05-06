@@ -113,7 +113,7 @@ With ``conda``:
 
 .. code-block:: sh
 
-    conda install pytorch torchvision captum flask-compress matplotlib=3.3.4 -c pytorch
+    conda install pytorch torchvision captum flask-compress matplotlib=3.3.4 -c conda-forge or pip install torch torchvision captum matplotlib==3.3.4 Flask-Compress
 
 With ``pip``:
 

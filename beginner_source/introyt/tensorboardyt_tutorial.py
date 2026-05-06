@@ -28,7 +28,7 @@ With ``conda``:
 
 .. code-block:: sh
 
-    conda install pytorch torchvision -c pytorch
+    conda install pytorch torchvision -c conda-forge or pip install torch torchvision
     conda install matplotlib tensorboard
 
 With ``pip``:

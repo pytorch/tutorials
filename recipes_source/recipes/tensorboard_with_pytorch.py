@@ -15,7 +15,7 @@ Anaconda (recommended):
 
 .. code-block:: sh
 
-   $ conda install pytorch torchvision -c pytorch 
+   $ conda install pytorch torchvision -c conda-forge or pip install torch torchvision
    
 
 or pip
