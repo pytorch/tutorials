@@ -670,7 +670,7 @@ prev_time = batched_time
 #    - Low transform costs
 
 ######################################################################
-# **When to Change the Strategy:**
+# **How to Change the Strategy:**
 #
 # .. code-block:: python
 #
@@ -794,13 +794,19 @@ prev_time = batched_time
 #      - ~10x
 #      - ~2.9x
 #
+# .. note::
+#    These results are based on our benchmark dataset
+#    Actual speedups will vary depending on your specific
+#    workload, hardware, dataset size, and transform complexity.
+#
 # **Key takeaways:**
 #
-# - **Multiprocessing** (``num_workers > 0``) often provides the biggest single speedup
+# - **Multiprocessing** (``num_workers > 0``) is often the biggest lever
 # - **pin_memory + non_blocking** enables faster CPU-to-GPU transfers
 # - **persistent_workers** eliminates epoch-boundary restart overhead
-# - **__getitems__** amortizes per-sample overhead with batched fetching
-# - **Prefetcing data** overlaps H2D transfer with compute (best when data
+# - **__getitems__** enables batched fetching at the dataset level — can provide
+#   the largest speedup when your dataset supports vectorized I/O or bulk queries
+# # - **Prefetcing data** overlaps H2D transfer with compute (best when data
 #   loading is slow relative to GPU compute)
 # - Always benchmark your specific workload and hardware
 
