@@ -107,7 +107,7 @@ Before you get started, you need to have a Python environment with:
    function whose arguments have been renamed in later versions
 
 To set up the environment for this tutorial, install PyTorch and
-TorchVision following the instructions at
+torchvision following the instructions at
 `pytorch.org/get-started/locally <https://pytorch.org/get-started/locally/>`__,
 then install the remaining dependencies with ``pip``:
 

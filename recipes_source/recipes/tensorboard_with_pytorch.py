@@ -12,7 +12,7 @@ Installation
 PyTorch should be installed to log models and metrics into TensorBoard log
 directory. Install PyTorch following the instructions at
 `pytorch.org/get-started/locally <https://pytorch.org/get-started/locally/>`__,
-which provides up-to-date conda, pip, and wheel install options for every platform.
+which provides up-to-date ``pip`` install options for every platform.
 
 A typical pip install:
 

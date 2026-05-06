@@ -21,10 +21,10 @@ Follow along with the video below or on `youtube <https://www.youtube.com/watch?
 Before You Start
 ----------------
 
-To run this tutorial, you’ll need to install PyTorch, TorchVision,
+To run this tutorial, you’ll need to install PyTorch, torchvision,
 Matplotlib, and TensorBoard.
 
-Install PyTorch and TorchVision following the instructions at
+Install PyTorch and torchvision following the instructions at
 `pytorch.org/get-started/locally <https://pytorch.org/get-started/locally/>`__.
 Then install the remaining dependencies with ``pip``:
 
