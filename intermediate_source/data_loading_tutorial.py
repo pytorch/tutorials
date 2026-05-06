@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Advanced Data Loading Optimization in PyTorch
+Data Loading Optimization in PyTorch
 ==============================================
 
 **Authors**: `Divyansh Khanna <https://github.com/divyanshk>`_, `Ramanish Singh <https://github.com/ramanishsingh>`_
@@ -28,7 +28,7 @@ Introduction
 Data loading is often a critical bottleneck in deep learning pipelines. While
 GPUs can process batches extremely quickly, inefficient data loading can leave
 expensive hardware idle, waiting for the next batch of data. This tutorial
-covers advanced techniques for optimizing your data loading configuration to
+covers best practises and some techniques for optimizing your data loading configuration to
 maximize training throughput.
 
 We'll explore the key parameters of PyTorch's DataLoader and provide practical
@@ -127,12 +127,12 @@ class SyntheticDatasetBatched(Dataset):
 #
 # We use a **small dataset (500 samples)** with a **high transform
 # delay (5ms)** to ensure the pipeline remains data-bound throughout.
-# The small dataset means short epochs (15 batches each), so we run
+# The small dataset means short epochs (16 batches each), so we run
 # many epochs — making persistent_workers' benefit visible across
 # epoch boundaries.
 
 # Dataset for progressive optimization benchmarks.
-benchmark_dataset = SyntheticDataset(size=500, feature_dim=224, transform_delay=0.005)
+benchmark_dataset = SyntheticDataset(size=512, feature_dim=224, transform_delay=0.005)
 
 
 class SmallTransformerModel(nn.Module):
@@ -168,7 +168,7 @@ def create_model():
     return SmallTransformerModel().to(device)
 
 
-def train_and_benchmark(loader, max_batches=150, epochs=10, prefetch_device=None):
+def train_and_benchmark(loader, max_batches=160, epochs=10, prefetch_device=None):
     """Train a model over multiple epochs and return elapsed time and average loss.
 
     Running multiple epochs (10) with a small dataset ensures many epoch
@@ -263,14 +263,13 @@ prev_time = baseline_time
 #
 # **Training Dynamics:**
 #
-# - Batch size changes affect the effective learning rate, typically requiring adjustments
+# - Batch size changes affect the effective learning rate, typically requiring tuning
 # - Larger batches provide more stable gradient estimates but may
 #   generalize differently
 #
 # .. note::
 #    When changing batch size, remember to tune your optimizer parameters,
-#    especially the learning rate schedule, unless you're doing offline
-#    inference.
+#    especially the learning rate schedule, unless you're doing inference
 #
 # Since batch size is model-dependent (not a "just add it" optimization),
 # we benchmark it in isolation rather than folding it into the progressive
@@ -426,9 +425,7 @@ else:
 # processes, re-initializing datasets) on every epoch boundary.
 #
 # Setting ``persistent_workers=True`` keeps the workers alive across
-# epochs, eliminating this repeated startup cost. Our benchmark runs
-# for 5 epochs, so workers would normally be restarted 4 times without
-# this flag.
+# epochs, eliminating this repeated startup cost.
 #
 # **When it helps most:**
 #
@@ -482,8 +479,7 @@ prev_time = persistent_time
 # .. note::
 #    The DataPrefetcher shows its greatest benefit when H2D transfer
 #    time overlaps meaningfully with GPU compute. If data loading is
-#    already extremely fast (e.g., with ``__getitems__`` amortization),
-#    the stream synchronization overhead may exceed the benefit.
+#    already fast, the stream synchronization overhead may exceed the benefit.
 
 
 class DataPrefetcher:
@@ -585,7 +581,7 @@ else:
 # Let's add this to our cumulative configuration:
 
 benchmark_dataset_batched = SyntheticDatasetBatched(
-    size=500, feature_dim=224, transform_delay=0.005
+    size=512, feature_dim=224, transform_delay=0.005
 )
 
 batched_loader = DataLoader(
@@ -806,7 +802,7 @@ prev_time = batched_time
 # - **persistent_workers** eliminates epoch-boundary restart overhead
 # - **__getitems__** enables batched fetching at the dataset level — can provide
 #   the largest speedup when your dataset supports vectorized I/O or bulk queries
-# # - **Prefetcing data** overlaps H2D transfer with compute (best when data
+# - **Prefetcing data** overlaps H2D transfer with compute (best when data
 #   loading is slow relative to GPU compute)
 # - Always benchmark your specific workload and hardware
 
