@@ -57,7 +57,7 @@ batches, and returns them for consumption by your training loop. The
 of data they contain.
  
 For this tutorial, we’ll be using the Fashion-MNIST dataset provided by
-TorchVision. We use ``torchvision.transforms.Normalize()`` to
+TorchVision. We use ``torchvision.transforms.v2.Normalize()`` to
 zero-center and normalize the distribution of the image tile content,
 and download both training and validation data splits.
 
