@@ -65,7 +65,7 @@ and download both training and validation data splits.
 
 import torch
 import torchvision
-import torchvision.transforms as v2
+from torchvision.transforms import v2
 
 # PyTorch TensorBoard support
 from torch.utils.tensorboard import SummaryWriter
@@ -119,7 +119,7 @@ images, labels = next(dataiter)
 # Create a grid from the images and show them
 img_grid = torchvision.utils.make_grid(images)
 matplotlib_imshow(img_grid, one_channel=True)
-print('  '.join(f'{classes[labels[j]]}' for j in range(4)))
+print('  '.join(classes[labels[j]] for j in range(4)))
 
 
 #########################################################################
