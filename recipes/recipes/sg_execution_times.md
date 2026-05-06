@@ -1,6 +1,6 @@
 # Computation times
 
-**00:00.008** total execution time for 15 files **from recipes/recipes**:
+**00:00.009** total execution time for 15 files **from recipes/recipes**:
 
 | Example | Time | Mem (MB) |
 | --- | --- | --- |
