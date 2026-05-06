@@ -27,6 +27,7 @@ To make these transformations, we use the ``torchvision.transforms.v2`` API alon
 """
 
 import torch
+import torch.nn.functional as F
 from torchvision import datasets
 from torchvision.transforms import v2
 
@@ -35,7 +36,9 @@ ds = datasets.FashionMNIST(
     train=True,
     download=True,
     transform=v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)]),
-    target_transform=v2.Lambda(lambda y: torch.nn.functional.one_hot(torch.tensor(y), num_classes=10).float())
+    target_transform=v2.Lambda(
+        lambda y: F.one_hot(torch.tensor(y), num_classes=10).float()
+    ),
 )
 
 #################################################
@@ -58,7 +61,9 @@ ds = datasets.FashionMNIST(
 # to turn the integer label into a one-hot encoded tensor of size 10 (the number of labels in our dataset),
 # then cast it to ``float`` to match the expected dtype.
 
-target_transform = v2.Lambda(lambda y: torch.nn.functional.one_hot(torch.tensor(y), num_classes=10).float())
+target_transform = v2.Lambda(
+    lambda y: F.one_hot(torch.tensor(y), num_classes=10).float()
+)
 
 ######################################################################
 # --------------
@@ -67,4 +72,5 @@ target_transform = v2.Lambda(lambda y: torch.nn.functional.one_hot(torch.tensor(
 #################################################################
 # Further Reading
 # ~~~~~~~~~~~~~~~~~
-# - `torchvision.transforms API <https://pytorch.org/vision/stable/transforms.html>`_
+# - `Getting started with transforms v2 <https://pytorch.org/vision/stable/auto_examples/transforms/plot_transforms_getting_started.html>`_
+# - `torchvision.transforms.v2 API <https://pytorch.org/vision/stable/transforms.html#v2-api-reference-recommended>`_
