@@ -78,7 +78,7 @@ The main characteristics of TorchRL losses are:
 - They are stateful objects: they contain a copy of the trainable parameters
 such that `loss_module.parameters()` gives whatever is needed to train the
 algorithm.
-- They follow the `TensorDict` convention: the `torch.nn.Module.forward()`
+- They follow the `TensorDict` convention: the [`torch.nn.Module.forward()`](https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.forward)
 method will receive a TensorDict as input that contains all the necessary
 information to return a loss value.
 
@@ -334,7 +334,7 @@ parametric actor that learns how to select actions that maximize this value.
 
 Recall that building a TorchRL module requires two steps:
 
-- writing the `torch.nn.Module` that will be used as network,
+- writing the [`torch.nn.Module`](https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module) that will be used as network,
 - wrapping the network in a [`tensordict.nn.TensorDictModule`](https://docs.pytorch.org/tensordict/stable/reference/generated/tensordict.nn.TensorDictModule.html#tensordict.nn.TensorDictModule) where the
 data flow is handled by specifying the input and output keys.
 
@@ -544,7 +544,7 @@ To iterate further on this loss module we might consider:
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: coding_ddpg.ipynb`](../_downloads/e9ea08c1c8bbc809d69c69a6043d56ee/coding_ddpg.ipynb)
 

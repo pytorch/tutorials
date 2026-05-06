@@ -24,7 +24,7 @@ If you're using torchvision<=0.15, please follow
 The reference scripts for training object detection, instance
 segmentation and person keypoint detection allows for easily supporting
 adding new custom datasets. The dataset should inherit from the standard
-`torch.utils.data.Dataset` class, and implement `__len__` and
+[`torch.utils.data.Dataset`](https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.Dataset) class, and implement `__len__` and
 `__getitem__`.
 
 The only specificity that we require is that the dataset `__getitem__`
@@ -36,15 +36,15 @@ should return a tuple:
 - `boxes`, [`torchvision.tv_tensors.BoundingBoxes`](https://docs.pytorch.org/vision/stable/generated/torchvision.tv_tensors.BoundingBoxes.html#torchvision.tv_tensors.BoundingBoxes) of shape `[N, 4]`:
 the coordinates of the `N` bounding boxes in `[x0, y0, x1, y1]` format, ranging from `0`
 to `W` and `0` to `H`
-- `labels`, integer `torch.Tensor` of shape `[N]`: the label for each bounding box.
+- `labels`, integer [`torch.Tensor`](https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor) of shape `[N]`: the label for each bounding box.
 `0` represents always the background class.
 - `image_id`, int: an image identifier. It should be
 unique between all the images in the dataset, and is used during
 evaluation
-- `area`, float `torch.Tensor` of shape `[N]`: the area of the bounding box. This is used
+- `area`, float [`torch.Tensor`](https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor) of shape `[N]`: the area of the bounding box. This is used
 during evaluation with the COCO metric, to separate the metric
 scores between small, medium and large boxes.
-- `iscrowd`, uint8 `torch.Tensor` of shape `[N]`: instances with `iscrowd=True` will be
+- `iscrowd`, uint8 [`torch.Tensor`](https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor) of shape `[N]`: instances with `iscrowd=True` will be
 ignored during evaluation.
 - (optionally) `masks`, [`torchvision.tv_tensors.Mask`](https://docs.pytorch.org/vision/stable/generated/torchvision.tv_tensors.Mask.html#torchvision.tv_tensors.Mask) of shape `[N, H, W]`: the segmentation
 masks for each one of the objects
@@ -103,15 +103,15 @@ Here is one example of a pair of images and segmentation masks
 
 So each image has a corresponding
 segmentation mask, where each color correspond to a different instance.
-Let's write a `torch.utils.data.Dataset` class for this dataset.
+Let's write a [`torch.utils.data.Dataset`](https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.Dataset) class for this dataset.
 In the code below, we are wrapping images, bounding boxes and masks into
 [`torchvision.tv_tensors.TVTensor`](https://docs.pytorch.org/vision/stable/generated/torchvision.tv_tensors.TVTensor.html#torchvision.tv_tensors.TVTensor) classes so that we will be able to apply torchvision
 built-in transformations ([new Transforms API](https://pytorch.org/vision/stable/transforms.html))
 for the given object detection and segmentation task.
 Namely, image tensors will be wrapped by [`torchvision.tv_tensors.Image`](https://docs.pytorch.org/vision/stable/generated/torchvision.tv_tensors.Image.html#torchvision.tv_tensors.Image), bounding boxes into
 [`torchvision.tv_tensors.BoundingBoxes`](https://docs.pytorch.org/vision/stable/generated/torchvision.tv_tensors.BoundingBoxes.html#torchvision.tv_tensors.BoundingBoxes) and masks into [`torchvision.tv_tensors.Mask`](https://docs.pytorch.org/vision/stable/generated/torchvision.tv_tensors.Mask.html#torchvision.tv_tensors.Mask).
-As [`torchvision.tv_tensors.TVTensor`](https://docs.pytorch.org/vision/stable/generated/torchvision.tv_tensors.TVTensor.html#torchvision.tv_tensors.TVTensor) are `torch.Tensor` subclasses, wrapped objects are also tensors and inherit the plain
-`torch.Tensor` API. For more information about torchvision `tv_tensors` see
+As [`torchvision.tv_tensors.TVTensor`](https://docs.pytorch.org/vision/stable/generated/torchvision.tv_tensors.TVTensor.html#torchvision.tv_tensors.TVTensor) are [`torch.Tensor`](https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor) subclasses, wrapped objects are also tensors and inherit the plain
+[`torch.Tensor`](https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor) API. For more information about torchvision `tv_tensors` see
 [this documentation](https://pytorch.org/vision/main/auto_examples/transforms/plot_transforms_getting_started.html#what-are-tvtensors).
 
 That's all for the dataset. Now let's define a model that can perform
@@ -259,7 +259,7 @@ The results look good!
 
 In this tutorial, you have learned how to create your own training
 pipeline for object detection models on a custom dataset. For
-that, you wrote a `torch.utils.data.Dataset` class that returns the
+that, you wrote a [`torch.utils.data.Dataset`](https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.Dataset) class that returns the
 images and the ground truth boxes and segmentation masks. You also
 leveraged a Mask R-CNN model pre-trained on COCO train2017 in order to
 perform transfer learning on this new dataset.

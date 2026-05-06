@@ -32,7 +32,7 @@ AOTInductor for Python runtime.
 ## What you will learn
 
 - How to use AOTInductor for Python runtime.
-- How to use `torch._inductor.aoti_compile_and_package()` along with `torch.export.export()` to generate a compiled artifact
+- How to use [`torch._inductor.aoti_compile_and_package()`](https://docs.pytorch.org/docs/stable/user_guide/torch_compiler/torch.compiler_aot_inductor.html#torch._inductor.aoti_compile_and_package) along with [`torch.export.export()`](https://docs.pytorch.org/docs/stable/user_guide/torch_compiler/export/api_reference.html#torch.export.export) to generate a compiled artifact
 - How to load and run the artifact in a Python runtime using `torch._export.aot_load()`.
 - When to you use AOTInductor with a Python runtime
 
@@ -41,18 +41,18 @@ AOTInductor for Python runtime.
 We will use the TorchVision pretrained `ResNet18` model as an example.
 
 The first step is to export the model to a graph representation using
-`torch.export.export()`. To learn more about using this function, you can
+[`torch.export.export()`](https://docs.pytorch.org/docs/stable/user_guide/torch_compiler/export/api_reference.html#torch.export.export). To learn more about using this function, you can
 check out the [docs](https://pytorch.org/docs/main/export.html) or the
 [tutorial](https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html).
 
 Once we have exported the PyTorch model and obtained an `ExportedProgram`,
-we can apply `torch._inductor.aoti_compile_and_package()` to AOTInductor
+we can apply [`torch._inductor.aoti_compile_and_package()`](https://docs.pytorch.org/docs/stable/user_guide/torch_compiler/torch.compiler_aot_inductor.html#torch._inductor.aoti_compile_and_package) to AOTInductor
 to compile the program to a specified device, and save the generated contents
 into a ".pt2" artifact.
 
 Note
 
-This API supports the same available options that `torch.compile()`
+This API supports the same available options that [`torch.compile()`](https://docs.pytorch.org/docs/stable/generated/torch.compile.html#torch.compile)
 has, such as `mode` and `max_autotune` (for those who want to enable
 CUDA graphs and leverage Triton based matrix multiplications and
 convolutions)
@@ -101,7 +101,7 @@ Archive: resnet18.pt2
 
 ## Model Inference in Python
 
-To load and run the artifact in Python, we can use `torch._inductor.aoti_load_package()`.
+To load and run the artifact in Python, we can use [`torch._inductor.aoti_load_package()`](https://docs.pytorch.org/docs/stable/user_guide/torch_compiler/torch.compiler_aot_inductor.html#torch._inductor.aoti_load_package).
 
 ## When to use AOTInductor with a Python Runtime
 
@@ -110,7 +110,7 @@ There are mainly two reasons why one would use AOTInductor with a Python Runtime
 - `torch._inductor.aoti_compile_and_package` generates a singular
 serialized artifact. This is useful for model versioning for deployments
 and tracking model performance over time.
-- With `torch.compile()` being a JIT compiler, there is a warmup
+- With [`torch.compile()`](https://docs.pytorch.org/docs/stable/generated/torch.compile.html#torch.compile) being a JIT compiler, there is a warmup
 cost associated with the first compilation. Your deployment needs to
 account for the compilation time taken for the first inference. With
 AOTInductor, the compilation is done ahead of time using

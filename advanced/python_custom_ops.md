@@ -25,7 +25,7 @@ to `torch.compile` (that is, prevent `torch.compile` from tracing
 into the function).
 - Adding training support to an arbitrary Python function
 
-Use `torch.library.custom_op()` to create Python custom operators.
+Use [`torch.library.custom_op()`](https://docs.pytorch.org/docs/stable/library.html#torch.library.custom_op) to create Python custom operators.
 Use the C++ `TORCH_LIBRARY` APIs to create C++ custom operators (these
 work in Python-less environments).
 See the [Custom Operators Landing Page](https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html)

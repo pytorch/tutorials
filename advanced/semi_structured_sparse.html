@@ -6,7 +6,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta content="2022-07-20T23:02:43+00:00" property="article:modified_time"/>
-<title>(beta) Accelerating BERT with semi-structured (2:4) sparsity — PyTorch Tutorials 2.12.0+cu130 documentation</title>
+<title>(beta) Accelerating BERT with semi-structured (2:4) sparsity — PyTorch Tutorials 2.11.0+cu130 documentation</title>
 <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
@@ -34,7 +34,7 @@
 <link as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
 <link as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
 <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../_static/documentation_options.js?v=157caefb"></script>
+<script src="../_static/documentation_options.js?v=92f158d6"></script>
 <script src="../_static/doctools.js?v=888ff710"></script>
 <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
 <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
 <meta content="(beta) Accelerating BERT with semi-structured (2:4) sparsity - Documentation for PyTorch Tutorials, part of the PyTorch ecosystem." name="llm:description"/>
 <meta content="https://docs.pytorch.org/tutorials/llms.txt" name="llm:navigation-file"/>
 <meta content="https://docs.pytorch.org/tutorials/sitemap.xml" name="llm:sitemap"/>
-<meta content="v2.12.0+cu130" name="llm:version"/>
+<meta content="v2.11.0+cu130" name="llm:version"/>
 <meta content="PyTorch Tutorials" name="llm:project"/>
 <meta content="documentation" name="llm:page-type"/>
 <link href="https://docs.pytorch.org/tutorials/llms.txt" rel="alternate" title="LLM Navigation Guide" type="text/plain"/>
@@ -157,7 +157,7 @@
   fbq('track', 'PageView');
 </script>
 <script>
-  document.documentElement.setAttribute('data-version', 'v2.12.0+cu130');
+  document.documentElement.setAttribute('data-version', 'v2.11.0+cu130');
 </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView&amp;noscript=1" width="1"/>
@@ -354,7 +354,7 @@
 </a>
 </div>
 <div class="navbar-item desktop-only-version">
-<a class="version" href="../index.html">v2.12.0+cu130</a>
+<a class="version" href="../index.html">v2.11.0+cu130</a>
 </div>
 </div>
 <div class="navbar-header-items">
@@ -1404,7 +1404,7 @@ document.write(`
 <div class="sidebar-header-items sidebar-primary__section">
 <div class="sidebar-header-items__start">
 <div class="navbar-item">
-<a class="version" href="../index.html">v2.12.0+cu130</a>
+<a class="version" href="../index.html">v2.11.0+cu130</a>
 </div>
 </div>
 <div class="sidebar-header-items__center">
@@ -2802,18 +2802,18 @@ accelerating <code class="docutils literal notranslate"><span class="pre">nn.Lin
 <code class="docutils literal notranslate"><span class="pre">to_sparse_semi_structured</span></code> is quite straightforward. Here is an example:</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch.sparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_sparse_semi_structured</span><span class="p">,</span> <span class="n">SparseSemiStructuredTensor</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.benchmark</span><span class="w"> </span><span class="kn">import</span> <span class="n">Timer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.benchmark</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-torch-utils-benchmark sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Timer" title="torch.utils.benchmark.Timer"><span class="n">Timer</span></a>
 
 <span class="c1"># mask Linear weight to be 2:4 sparse</span>
-<span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">tile</span><span class="p">((</span><span class="mi">3072</span><span class="p">,</span> <span class="mi">2560</span><span class="p">))</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span><span class="o">.</span><span class="n">bool</span><span class="p">()</span>
-<span class="n">linear</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">10240</span><span class="p">,</span> <span class="mi">3072</span><span class="p">)</span><span class="o">.</span><span class="n">half</span><span class="p">()</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="n">mask</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></a><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">tile</span><span class="p">((</span><span class="mi">3072</span><span class="p">,</span> <span class="mi">2560</span><span class="p">))</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span><span class="o">.</span><span class="n">bool</span><span class="p">()</span>
+<span class="n">linear</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">(</span><span class="mi">10240</span><span class="p">,</span> <span class="mi">3072</span><span class="p">)</span><span class="o">.</span><span class="n">half</span><span class="p">()</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 <span class="n">linear</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">mask</span> <span class="o">*</span> <span class="n">linear</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
 
-<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3072</span><span class="p">,</span> <span class="mi">10240</span><span class="p">)</span><span class="o">.</span><span class="n">half</span><span class="p">()</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="n">x</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.rand.html#torch.rand" title="torch.rand"><span class="n">torch</span><span class="o">.</span><span class="n">rand</span></a><span class="p">(</span><span class="mi">3072</span><span class="p">,</span> <span class="mi">10240</span><span class="p">)</span><span class="o">.</span><span class="n">half</span><span class="p">()</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
 
 <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
     <span class="n">dense_output</span> <span class="o">=</span> <span class="n">linear</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-    <span class="n">dense_t</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">(</span><span class="n">stmt</span><span class="o">=</span><span class="s2">"linear(x)"</span><span class="p">,</span>
+    <span class="n">dense_t</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-benchmark sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Timer" title="torch.utils.benchmark.Timer"><span class="n">Timer</span></a><span class="p">(</span><span class="n">stmt</span><span class="o">=</span><span class="s2">"linear(x)"</span><span class="p">,</span>
                     <span class="nb">globals</span><span class="o">=</span><span class="p">{</span><span class="s2">"linear"</span><span class="p">:</span> <span class="n">linear</span><span class="p">,</span>
                              <span class="s2">"x"</span><span class="p">:</span> <span class="n">x</span><span class="p">})</span><span class="o">.</span><span class="n">blocked_autorange</span><span class="p">()</span><span class="o">.</span><span class="n">median</span> <span class="o">*</span> <span class="mf">1e3</span>
 
@@ -2821,13 +2821,13 @@ accelerating <code class="docutils literal notranslate"><span class="pre">nn.Lin
     <span class="n">linear</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">to_sparse_semi_structured</span><span class="p">(</span><span class="n">linear</span><span class="o">.</span><span class="n">weight</span><span class="p">))</span>
 
     <span class="n">sparse_output</span> <span class="o">=</span> <span class="n">linear</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-    <span class="n">sparse_t</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">(</span><span class="n">stmt</span><span class="o">=</span><span class="s2">"linear(x)"</span><span class="p">,</span>
+    <span class="n">sparse_t</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-benchmark sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Timer" title="torch.utils.benchmark.Timer"><span class="n">Timer</span></a><span class="p">(</span><span class="n">stmt</span><span class="o">=</span><span class="s2">"linear(x)"</span><span class="p">,</span>
                     <span class="nb">globals</span><span class="o">=</span><span class="p">{</span><span class="s2">"linear"</span><span class="p">:</span> <span class="n">linear</span><span class="p">,</span>
                              <span class="s2">"x"</span><span class="p">:</span> <span class="n">x</span><span class="p">})</span><span class="o">.</span><span class="n">blocked_autorange</span><span class="p">()</span><span class="o">.</span><span class="n">median</span> <span class="o">*</span> <span class="mf">1e3</span>
 
     <span class="c1"># sparse and dense matmul are numerically equivalent</span>
     <span class="c1"># On an A100 80GB, we see: `Dense: 0.870ms Sparse: 0.630ms | Speedup: 1.382x`</span>
-    <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">sparse_output</span><span class="p">,</span> <span class="n">dense_output</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+    <span class="k">assert</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.allclose.html#torch.allclose" title="torch.allclose"><span class="n">torch</span><span class="o">.</span><span class="n">allclose</span></a><span class="p">(</span><span class="n">sparse_output</span><span class="p">,</span> <span class="n">dense_output</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Dense: </span><span class="si">{</span><span class="n">dense_t</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">ms Sparse: </span><span class="si">{</span><span class="n">sparse_t</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">ms | Speedup: </span><span class="si">{</span><span class="p">(</span><span class="n">dense_t</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sparse_t</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">x"</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -2973,10 +2973,10 @@ SQuAD.</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">transformers</span>
 
 <span class="c1"># force CUTLASS use if ``cuSPARSELt`` is not available</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.manual_seed.html#torch.manual_seed" title="torch.manual_seed"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span></a><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
 
 <span class="c1"># Set default device to "cuda:0"</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">set_default_device</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda:0"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">))</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.set_default_device.html#torch.set_default_device" title="torch.set_default_device"><span class="n">torch</span><span class="o">.</span><span class="n">set_default_device</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cuda:0"</span> <span class="k">if</span> <a class="sphx-glr-backref-module-torch-cuda sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.is_available.html#torch.cuda.is_available" title="torch.cuda.is_available"><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span></a><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>We’ll also need to define some helper functions that are specific to the
@@ -3131,16 +3131,16 @@ which will help us benchmark our model.</p>
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">dataset_for_model</span><span class="o">.</span><span class="n">column_names</span>
         <span class="p">}</span>
 
-        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
             <span class="n">baseline_predictions</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span>
-            <span class="n">timer</span> <span class="o">=</span> <span class="n">benchmark</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span>
+            <span class="n">timer</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-benchmark sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Timer" title="torch.utils.benchmark.Timer"><span class="n">benchmark</span><span class="o">.</span><span class="n">Timer</span></a><span class="p">(</span>
                 <span class="n">stmt</span><span class="o">=</span><span class="s2">"model(**batch)"</span><span class="p">,</span> <span class="nb">globals</span><span class="o">=</span><span class="p">{</span><span class="s2">"model"</span><span class="p">:</span> <span class="n">model</span><span class="p">,</span> <span class="s2">"batch"</span><span class="p">:</span> <span class="n">batch</span><span class="p">}</span>
             <span class="p">)</span>
             <span class="n">p50</span> <span class="o">=</span> <span class="n">timer</span><span class="o">.</span><span class="n">blocked_autorange</span><span class="p">()</span><span class="o">.</span><span class="n">median</span> <span class="o">*</span> <span class="mi">1000</span>
             <span class="n">batch_size_to_time_sec</span><span class="p">[</span><span class="n">batch_size</span><span class="p">]</span> <span class="o">=</span> <span class="n">p50</span>
 
-            <span class="n">model_c</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">fullgraph</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">timer</span> <span class="o">=</span> <span class="n">benchmark</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span>
+            <span class="n">model_c</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.compile.html#torch.compile" title="torch.compile"><span class="n">torch</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">fullgraph</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">timer</span> <span class="o">=</span> <a class="sphx-glr-backref-module-torch-utils-benchmark sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/benchmark_utils.html#torch.utils.benchmark.Timer" title="torch.utils.benchmark.Timer"><span class="n">benchmark</span><span class="o">.</span><span class="n">Timer</span></a><span class="p">(</span>
                 <span class="n">stmt</span><span class="o">=</span><span class="s2">"model(**batch)"</span><span class="p">,</span> <span class="nb">globals</span><span class="o">=</span><span class="p">{</span><span class="s2">"model"</span><span class="p">:</span> <span class="n">model_c</span><span class="p">,</span> <span class="s2">"batch"</span><span class="p">:</span> <span class="n">batch</span><span class="p">}</span>
             <span class="p">)</span>
             <span class="n">p50</span> <span class="o">=</span> <span class="n">timer</span><span class="o">.</span><span class="n">blocked_autorange</span><span class="p">()</span><span class="o">.</span><span class="n">median</span> <span class="o">*</span> <span class="mi">1000</span>
@@ -3209,8 +3209,8 @@ vs. BERT-large or fine-tuning hyperparameters.</p>
 <span class="c1"># batch sizes to compare for eval</span>
 <span class="n">batch_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">256</span><span class="p">]</span>
 <span class="c1"># 2:4 sparsity require fp16, so we cast here for a fair comparison</span>
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">):</span>
-    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/amp.html#torch.autocast" title="torch.autocast"><span class="n">torch</span><span class="o">.</span><span class="n">autocast</span></a><span class="p">(</span><span class="s2">"cuda"</span><span class="p">):</span>
+    <span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
         <span class="n">predictions</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">tokenized_squad_dataset</span><span class="p">[</span><span class="s2">"validation"</span><span class="p">])</span>
         <span class="n">start_logits</span><span class="p">,</span> <span class="n">end_logits</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">predictions</span>
         <span class="n">fp16_baseline</span> <span class="o">=</span> <span class="n">compute_metrics</span><span class="p">(</span>
@@ -3262,7 +3262,7 @@ and the task-specific <code class="docutils literal notranslate"><span class="pr
 <span class="n">sparse_config</span> <span class="o">=</span> <span class="p">[</span>
     <span class="p">{</span><span class="s2">"tensor_fqn"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">fqn</span><span class="si">}</span><span class="s2">.weight"</span><span class="p">}</span>
     <span class="k">for</span> <span class="n">fqn</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_modules</span><span class="p">()</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"layer"</span> <span class="ow">in</span> <span class="n">fqn</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">)</span> <span class="ow">and</span> <span class="s2">"layer"</span> <span class="ow">in</span> <span class="n">fqn</span>
 <span class="p">]</span>
 </pre></div>
 </div>
@@ -3283,8 +3283,8 @@ config.</p>
 <p>We will also evaluate the model to show the accuracy degradation of
 zero-shot pruning, or pruning without fine-tuning / retraining.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">sparsifier</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">):</span>
-    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/amp.html#torch.autocast" title="torch.autocast"><span class="n">torch</span><span class="o">.</span><span class="n">autocast</span></a><span class="p">(</span><span class="s2">"cuda"</span><span class="p">):</span>
+    <span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
         <span class="n">predictions</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">tokenized_squad_dataset</span><span class="p">[</span><span class="s2">"validation"</span><span class="p">])</span>
     <span class="n">pruned</span> <span class="o">=</span> <span class="n">compute_metrics</span><span class="p">(</span>
         <span class="o">*</span><span class="n">predictions</span><span class="o">.</span><span class="n">predictions</span><span class="p">,</span>
@@ -3301,7 +3301,7 @@ mask and the weight together. This will remove the parametrizations and
 we are left with a zeroed-out 2:4 dense model.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
 <span class="n">sparsifier</span><span class="o">.</span><span class="n">squash_mask</span><span class="p">()</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">edgeitems</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.set_printoptions.html#torch.set_printoptions" title="torch.set_printoptions"><span class="n">torch</span><span class="o">.</span><span class="n">set_printoptions</span></a><span class="p">(</span><span class="n">edgeitems</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">bert</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">layer</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">intermediate</span><span class="o">.</span><span class="n">dense</span><span class="o">.</span><span class="n">weight</span><span class="p">[:</span><span class="mi">8</span><span class="p">,</span> <span class="p">:</span><span class="mi">8</span><span class="p">])</span>
 
 <span class="n">df</span><span class="p">[</span><span class="s2">"sparse_loss"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">trainer</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">log_history</span><span class="p">)[</span><span class="s2">"loss"</span><span class="p">]</span>
@@ -3316,10 +3316,10 @@ inference just like in the QuickStart Guide.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span><span class="o">.</span><span class="n">half</span><span class="p">()</span>
 <span class="c1"># accelerate for sparsity</span>
 <span class="k">for</span> <span class="n">fqn</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_modules</span><span class="p">():</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"layer"</span> <span class="ow">in</span> <span class="n">fqn</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch-nn sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="torch.nn.Linear"><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span></a><span class="p">)</span> <span class="ow">and</span> <span class="s2">"layer"</span> <span class="ow">in</span> <span class="n">fqn</span><span class="p">:</span>
         <span class="n">module</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">to_sparse_semi_structured</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">weight</span><span class="p">))</span>
 
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+<span class="k">with</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad" title="torch.no_grad"><span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span></a><span class="p">():</span>
     <span class="n">predictions</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">tokenized_squad_dataset</span><span class="p">[</span><span class="s2">"validation"</span><span class="p">])</span>
 <span class="n">start_logits</span><span class="p">,</span> <span class="n">end_logits</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">predictions</span>
 <span class="n">metrics_sparse</span> <span class="o">=</span> <span class="n">compute_metrics</span><span class="p">(</span>

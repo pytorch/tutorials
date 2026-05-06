@@ -336,7 +336,7 @@ design, there are two steps in writing a transform:
 - Adapting the environment specs.
 
 A transform can be used in two settings: on its own, it can be used as a
-`Module`. It can also be used appended to a
+[`Module`](https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module). It can also be used appended to a
 [`TransformedEnv`](https://docs.pytorch.org/rl/stable/reference/generated/torchrl.envs.transforms.TransformedEnv.html#torchrl.envs.transforms.TransformedEnv). The structure of the class allows to
 customize the behavior in the different contexts.
 

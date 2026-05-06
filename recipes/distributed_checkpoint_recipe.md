@@ -25,7 +25,7 @@ Addditionally, through the use of modules in `torch.distributed.checkpoint.state
 DCP offers support for gracefully handling `state_dict` generation and loading in distributed settings.
 This includes managing fully-qualified-name (FQN) mappings across models and optimizers, and setting default parameters for PyTorch provided parallelisms.
 
-DCP is different from `torch.save()` and `torch.load()` in a few significant ways:
+DCP is different from [`torch.save()`](https://docs.pytorch.org/docs/stable/generated/torch.save.html#torch.save) and [`torch.load()`](https://docs.pytorch.org/docs/stable/generated/torch.load.html#torch.load) in a few significant ways:
 
 - It produces multiple files per checkpoint, with at least one per rank.
 - It operates in place, meaning that the model should allocate its data first and DCP uses that storage instead.
@@ -150,7 +150,7 @@ Please go ahead and check the checkpoint directory. You should see checkpoint fi
 After saving, let's create the same FSDP-wrapped model, and load the saved state dict from storage into the model. You can load in the same world size or different world size.
 
 Please note that you will have to call `model.state_dict()` prior to loading and pass it to DCP's `load_state_dict()` API.
-This is fundamentally different from `torch.load()`, as `torch.load()` simply requires the path to the checkpoint prior for loading.
+This is fundamentally different from [`torch.load()`](https://docs.pytorch.org/docs/stable/generated/torch.load.html#torch.load), as [`torch.load()`](https://docs.pytorch.org/docs/stable/generated/torch.load.html#torch.load) simply requires the path to the checkpoint prior for loading.
 The reason that we need the `state_dict` prior to loading is:
 
 - DCP uses the pre-allocated storage from model state_dict to load from the checkpoint directory. During loading, the state_dict passed in will be updated in place.
@@ -332,7 +332,7 @@ torch_save_to_dcp(TORCH_SAVE_CHECKPOINT_DIR, f"{CHECKPOINT_DIR}_new")
 
 ## Conclusion
 
-In conclusion, we have learned how to use DCP's `save()` and `load()` APIs, as well as how they are different form `torch.save()` and `torch.load()`.
+In conclusion, we have learned how to use DCP's `save()` and `load()` APIs, as well as how they are different form [`torch.save()`](https://docs.pytorch.org/docs/stable/generated/torch.save.html#torch.save) and [`torch.load()`](https://docs.pytorch.org/docs/stable/generated/torch.load.html#torch.load).
 Additionally, we've learned how to use `get_state_dict()` and `set_state_dict()` to automatically manage parallelism-specific FQN's and defaults during state dict
 generation and loading.
 

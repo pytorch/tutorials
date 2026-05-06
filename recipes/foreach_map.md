@@ -88,7 +88,7 @@ See also:
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: foreach_map.ipynb`](../_downloads/162cf335b789dd055d4192f77cb0251c/foreach_map.ipynb)
 

@@ -12,7 +12,7 @@ to download the full example code.
 Transferring data from the CPU to the GPU is fundamental in many PyTorch applications.
 It's crucial for users to understand the most effective tools and options available for moving data between devices.
 This tutorial examines two key methods for device-to-device data transfer in PyTorch:
-`pin_memory()` and `to()` with the `non_blocking=True` option.
+[`pin_memory()`](https://docs.pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory) and [`to()`](https://docs.pytorch.org/docs/stable/generated/torch.Tensor.to.html#torch.Tensor.to) with the `non_blocking=True` option.
 
 ### What you will learn
 
@@ -87,10 +87,10 @@ before making the transfer.
 When executing a copy from a host (such as, CPU) to a device (such as, GPU), the CUDA toolkit offers modalities to do these
 operations synchronously or asynchronously with respect to the host.
 
-In practice, when calling `to()`, PyTorch always makes a call to
+In practice, when calling [`to()`](https://docs.pytorch.org/docs/stable/generated/torch.Tensor.to.html#torch.Tensor.to), PyTorch always makes a call to
 [cudaMemcpyAsync](https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1g85073372f776b4c4d5f89f7124b7bf79).
 If `non_blocking=False` (default), a `cudaStreamSynchronize` will be called after each and every `cudaMemcpyAsync`, making
-the call to `to()` blocking in the main thread.
+the call to [`to()`](https://docs.pytorch.org/docs/stable/generated/torch.Tensor.to.html#torch.Tensor.to) blocking in the main thread.
 If `non_blocking=True`, no synchronization is triggered, and the main thread on the host is not blocked.
 Therefore, from the host perspective, multiple tensors can be sent to the device simultaneously,
 as the thread does not need to wait for one transfer to be completed to initiate the other.
@@ -105,7 +105,7 @@ As the following example will show, three requirements must be met to enable thi
 1. The device must have at least one free DMA (Direct Memory Access) engine. Modern GPU architectures such as Volterra,
 Tesla, or H100 devices have more than one DMA engine.
 2. The transfer must be done on a separate, non-default cuda stream. In PyTorch, cuda streams can be handled using
-`Stream`.
+[`Stream`](https://docs.pytorch.org/docs/stable/generated/torch.cuda.Stream_class.html#torch.cuda.Stream).
 3. The source data must be in pinned memory.
 
 We demonstrate this by running profiles on the following script.
@@ -140,11 +140,11 @@ the main stream:
 ### `pin_memory()`
 
 PyTorch offers the possibility to create and send tensors to page-locked memory through the
-`pin_memory()` method and constructor arguments.
-CPU tensors on a machine where CUDA is initialized can be cast to pinned memory through the `pin_memory()`
+[`pin_memory()`](https://docs.pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory) method and constructor arguments.
+CPU tensors on a machine where CUDA is initialized can be cast to pinned memory through the [`pin_memory()`](https://docs.pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory)
 method. Importantly, `pin_memory` is blocking on the main thread of the host: it will wait for the tensor to be copied to
 page-locked memory before executing the next operation.
-New tensors can be directly created in pinned memory with functions like `zeros()`, `ones()` and other
+New tensors can be directly created in pinned memory with functions like [`zeros()`](https://docs.pytorch.org/docs/stable/generated/torch.zeros.html#torch.zeros), [`ones()`](https://docs.pytorch.org/docs/stable/generated/torch.ones.html#torch.ones) and other
 constructors.
 
 Let us check the speed of pinning memory and sending tensors to CUDA:
@@ -166,7 +166,7 @@ Let us check the speed of pinning memory and sending tensors to CUDA:
 We can observe that casting a pinned-memory tensor to GPU is indeed much faster than a pageable tensor, because under
 the hood, a pageable tensor must be copied to pinned memory before being sent to GPU.
 
-However, contrary to a somewhat common belief, calling `pin_memory()` on a pageable tensor before
+However, contrary to a somewhat common belief, calling [`pin_memory()`](https://docs.pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory) on a pageable tensor before
 casting it to GPU should not bring any significant speed-up, on the contrary this call is usually slower than just
 executing the transfer. This makes sense, since we're actually asking Python to execute an operation that CUDA will
 perform anyway before copying the data from host to device.
@@ -225,7 +225,7 @@ pageable memory, and that we know that doing these transfers asynchronously is a
 benchmark combinations of these approaches. First, let's write a couple of new functions that will call `pin_memory`
 and `to(device)` on each tensor:
 
-The benefits of using `pin_memory()` are more pronounced for
+The benefits of using [`pin_memory()`](https://docs.pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory) are more pronounced for
 somewhat large batches of large tensors:
 
 ```
@@ -272,12 +272,12 @@ If the tensor is already in pinned memory, the transfer can be accelerated, but 
 pin memory manually from python main thread is a blocking operation on the host, and hence will annihilate much of
 the benefit of using `non_blocking=True` (as CUDA does the pin_memory transfer anyway).
 
-One might now legitimately ask what use there is for the `pin_memory()` method.
+One might now legitimately ask what use there is for the [`pin_memory()`](https://docs.pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory) method.
 In the following section, we will explore further how this can be used to accelerate the data transfer even more.
 
 ## Additional considerations
 
-PyTorch notoriously provides a `DataLoader` class whose constructor accepts a
+PyTorch notoriously provides a [`DataLoader`](https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader) class whose constructor accepts a
 `pin_memory` argument.
 Considering our previous discussion on `pin_memory`, you might wonder how the `DataLoader` manages to
 accelerate data transfers if memory pinning is inherently blocking.
@@ -361,7 +361,7 @@ overall performance of an algorithm.
 
 Throughout this tutorial, we have explored several critical factors that influence transfer speeds and memory
 management when sending tensors from the host to the device. We've learned that using `non_blocking=True` generally
-accelerates data transfers, and that `pin_memory()` can also enhance performance if implemented
+accelerates data transfers, and that [`pin_memory()`](https://docs.pytorch.org/docs/stable/generated/torch.Tensor.pin_memory.html#torch.Tensor.pin_memory) can also enhance performance if implemented
 correctly. However, these techniques require careful design and calibration to be effective.
 
 Remember that profiling your code and keeping an eye on the memory consumption are essential to optimize resource

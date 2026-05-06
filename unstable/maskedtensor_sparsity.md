@@ -33,7 +33,7 @@ When creating a `MaskedTensor` with sparse tensors, there are a few principles t
 ## Sparse COO tensors
 
 In accordance with Principle #1, a sparse COO MaskedTensor is created by passing in two sparse COO tensors,
-which can be initialized by any of its constructors, for example `torch.sparse_coo_tensor()`.
+which can be initialized by any of its constructors, for example [`torch.sparse_coo_tensor()`](https://docs.pytorch.org/docs/stable/generated/torch.sparse_coo_tensor.html#torch.sparse_coo_tensor).
 
 As a recap of [sparse COO tensors](https://pytorch.org/docs/stable/sparse.html#sparse-coo-tensors), the COO format
 stands for "coordinate format", where the specified elements are stored as tuples of their indices and the
@@ -118,7 +118,7 @@ and then converted it to a sparse COO MaskedTensor with `MaskedTensor.to_sparse_
 
 Alternatively, we can also construct a sparse COO MaskedTensor directly by passing in two sparse COO tensors:
 
-Instead of using `torch.Tensor.to_sparse()`, we can also create the sparse COO tensors directly,
+Instead of using [`torch.Tensor.to_sparse()`](https://docs.pytorch.org/docs/stable/generated/torch.Tensor.to_sparse.html#torch.Tensor.to_sparse), we can also create the sparse COO tensors directly,
 which brings us to a warning:
 
 Warning

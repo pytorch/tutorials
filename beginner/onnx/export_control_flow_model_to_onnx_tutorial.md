@@ -19,12 +19,12 @@ a PyTorch model to ONNX. It highlights the challenges of exporting
 conditional statements directly and provides solutions to circumvent them.
 
 Conditional logic cannot be exported into ONNX unless they refactored
-to use `torch.cond()`. Let's start with a simple model
+to use [`torch.cond()`](https://docs.pytorch.org/docs/stable/generated/torch.cond.html#torch.cond). Let's start with a simple model
 implementing a test.
 
 What you will learn:
 
-- How to refactor the model to use `torch.cond()` for exporting.
+- How to refactor the model to use [`torch.cond()`](https://docs.pytorch.org/docs/stable/generated/torch.cond.html#torch.cond) for exporting.
 - How to export a model with control flow logic to ONNX.
 
 ### Prerequisites
@@ -47,12 +47,12 @@ a random input tensor to confirm they execute as expected.
 Exporting this model using torch.export.export fails because the control
 flow logic in the forward pass creates a graph break that the exporter cannot
 handle. This behavior is expected, as conditional logic not written using
-`torch.cond()` is unsupported.
+[`torch.cond()`](https://docs.pytorch.org/docs/stable/generated/torch.cond.html#torch.cond) is unsupported.
 
 A try-except block is used to capture the expected failure during the export
 process. If the export unexpectedly succeeds, an `AssertionError` is raised.
 
-## Suggested Patch: Refactoring with `torch.cond()`
+## Suggested Patch: Refactoring with [`torch.cond()`](https://docs.pytorch.org/docs/stable/generated/torch.cond.html#torch.cond)
 
 To make the control flow exportable, the tutorial demonstrates replacing the
 forward method in `ForwardWithControlFlowTest` with a refactored version that
@@ -71,7 +71,7 @@ Let's export again.
 ## Conclusion
 
 This tutorial demonstrates the challenges of exporting models with conditional
-logic to ONNX and presents a practical solution using `torch.cond()`.
+logic to ONNX and presents a practical solution using [`torch.cond()`](https://docs.pytorch.org/docs/stable/generated/torch.cond.html#torch.cond).
 While the default exporters may fail or produce imperfect graphs, refactoring the
 model's logic ensures compatibility and generates a faithful ONNX representation.
 

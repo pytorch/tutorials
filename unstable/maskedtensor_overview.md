@@ -8,7 +8,7 @@ to download the full example code.
 This tutorial is designed to serve as a starting point for using MaskedTensors
 and discuss its masking semantics.
 
-MaskedTensor serves as an extension to `torch.Tensor` that provides the user with the ability to:
+MaskedTensor serves as an extension to [`torch.Tensor`](https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor) that provides the user with the ability to:
 
 - use any masked semantics (for example, variable length tensors, nan* operators, etc.)
 - differentiation between 0 and NaN gradients
@@ -36,7 +36,7 @@ There are a few different ways to construct a MaskedTensor:
 
 - The first way is to directly invoke the MaskedTensor class
 - The second (and our recommended way) is to use `masked.masked_tensor()` and `masked.as_masked_tensor()`
-factory functions, which are analogous to `torch.tensor()` and `torch.as_tensor()`
+factory functions, which are analogous to [`torch.tensor()`](https://docs.pytorch.org/docs/stable/generated/torch.tensor.html#torch.tensor) and [`torch.as_tensor()`](https://docs.pytorch.org/docs/stable/generated/torch.as_tensor.html#torch.as_tensor)
 
 Throughout this tutorial, we will be assuming the import line: from torch.masked import masked_tensor.
 
@@ -55,7 +55,7 @@ return a Tensor with filled values.
 ### Indexing and slicing
 
 `MaskedTensor` is a Tensor subclass, which means that it inherits the same semantics for indexing and slicing
-as `torch.Tensor`. Below are some examples of common indexing and slicing patterns:
+as [`torch.Tensor`](https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor). Below are some examples of common indexing and slicing patterns:
 
 ```
 # float is used for cleaner visualization when being printed
@@ -72,7 +72,7 @@ and illustrate how `MaskedTensor` can solve these problems.
 
 ### Distinguishing between 0 and NaN gradient
 
-One issue that `torch.Tensor` runs into is the inability to distinguish between gradients that are
+One issue that [`torch.Tensor`](https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor) runs into is the inability to distinguish between gradients that are
 undefined (NaN) vs. gradients that are actually 0. Because PyTorch does not have a way of marking a value
 as specified/valid vs. unspecified/invalid, it is forced to rely on NaN or 0 (depending on the use case), leading
 to unreliable semantics since many operations aren't meant to handle NaN values properly. What is even more confusing
@@ -84,7 +84,7 @@ in the chain of operations a NaN value manifests).
 #### torch.where
 
 In [Issue 10729](https://github.com/pytorch/pytorch/issues/10729), we notice a case where the order of operations
-can matter when using `torch.where()` because we have trouble differentiating between if the 0 is a real 0
+can matter when using [`torch.where()`](https://docs.pytorch.org/docs/stable/generated/torch.where.html#torch.where) because we have trouble differentiating between if the 0 is a real 0
 or one from undefined gradients. Therefore, we remain consistent and mask out the results:
 
 Current result:
@@ -116,7 +116,7 @@ Current result:
 
 `MaskedTensor` result:
 
-### `torch.nansum()` and `torch.nanmean()`
+### [`torch.nansum()`](https://docs.pytorch.org/docs/stable/generated/torch.nansum.html#torch.nansum) and [`torch.nanmean()`](https://docs.pytorch.org/docs/stable/generated/torch.nanmean.html#torch.nanmean)
 
 In [Issue 67180](https://github.com/pytorch/pytorch/issues/67180),
 the gradient isn't calculate properly (a longstanding issue), whereas `MaskedTensor` handles it correctly.
