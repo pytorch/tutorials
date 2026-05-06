@@ -50,7 +50,7 @@ batched_dot(x, y)
 ```
 
 ```
-tensor([2.1562, 0.2182])
+tensor([5.6218, 1.7690])
 ```
 
 vmap can be helpful in hiding batch dimensions, leading to a simpler
@@ -137,7 +137,7 @@ def grad_sample(sample):
 # vmap(grad_sample)(batch_of_samples)
 ```
 
-**Total running time of the script:** (0 minutes 0.128 seconds)
+**Total running time of the script:** (0 minutes 0.129 seconds)
 
 [`Download Jupyter notebook: vmap_recipe.ipynb`](../_downloads/baac6b344671f1d23068ee2437262745/vmap_recipe.ipynb)
 

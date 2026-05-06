@@ -324,7 +324,7 @@ See also
 - [Implementing High-Performance Transformers with Scaled Dot Product Attention](https://docs.pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html)
 - [torch.nn.functional.scaled_dot_product_attention](https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html)
 
-**Total running time of the script:** (0 minutes 0.534 seconds)
+**Total running time of the script:** (0 minutes 0.531 seconds)
 
 [`Download Jupyter notebook: variable_length_attention_tutorial.ipynb`](../_downloads/cfdf124bd7816bfeb1ac0be551804d16/variable_length_attention_tutorial.ipynb)
 
