@@ -76,8 +76,8 @@ from torch.utils.tensorboard import SummaryWriter
 # 
 
 # Gather datasets and prepare them for consumption
-transform = v2.Compose(
-    [v2.ToImage(),
+transform = v2.Compose([
+    v2.ToImage(),
     v2.ToDtype(torch.float32, scale=True),
     v2.Normalize((0.5,), (0.5,))])
 
@@ -207,17 +207,18 @@ for epoch in range(1):  # loop over the dataset multiple times
 
         running_loss += loss.item()
         if i % 1000 == 999:    # Every 1000 mini-batches...
-            print(f'Batch {i+1}')
+            print(f'Batch {i + 1}')
             # Check against the validation set
             running_vloss = 0.0
             
             # In evaluation mode some model specific operations can be omitted eg. dropout layer
             net.eval() # Switching to evaluation mode, eg. turning off regularisation
-            for j, vdata in enumerate(validation_loader, 0):
-                vinputs, vlabels = vdata
-                voutputs = net(vinputs)
-                vloss = criterion(voutputs, vlabels)
-                running_vloss += vloss.item()
+            with torch.no_grad():
+                for j, vdata in enumerate(validation_loader, 0):
+                    vinputs, vlabels = vdata
+                    voutputs = net(vinputs)
+                    vloss = criterion(voutputs, vlabels)
+                    running_vloss += vloss.item()
             net.train() # Switching back to training mode, eg. turning on regularisation
             
             avg_loss = running_loss / 1000
