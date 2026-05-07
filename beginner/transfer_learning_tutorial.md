@@ -147,7 +147,7 @@ checkout our [Quantized Transfer Learning for Computer Vision Tutorial](https://
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: transfer_learning_tutorial.ipynb`](../_downloads/74249e7f9f1f398f57ccd094a4f3021b/transfer_learning_tutorial.ipynb)
 

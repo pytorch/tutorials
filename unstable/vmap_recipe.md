@@ -50,7 +50,7 @@ batched_dot(x, y)
 ```
 
 ```
-tensor([-2.3403, 2.6274])
+tensor([-1.6629, 2.5945])
 ```
 
 vmap can be helpful in hiding batch dimensions, leading to a simpler
