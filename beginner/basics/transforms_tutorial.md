@@ -26,74 +26,80 @@ several commonly-used transforms out of the box.
 
 The FashionMNIST features are in PIL Image format, and the labels are integers.
 For training, we need the features as normalized tensors, and the labels as one-hot encoded tensors.
-To make these transformations, we use `ToTensor` and `Lambda`.
+To make these transformations, we use the `torchvision.transforms.v2` API along with `torch.nn.functional.one_hot`.
 
 ```
 import torch
+import torch.nn.functional as F
 from torchvision import datasets
-from torchvision.transforms import ToTensor, Lambda
+from torchvision.transforms import v2
 
 ds = datasets.FashionMNIST(
  root="data",
  train=True,
  download=True,
- transform=ToTensor(),
- target_transform=Lambda(lambda y: torch.zeros(10, dtype=torch.float).scatter_(0, torch.tensor(y), value=1))
+ transform=v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)]),
+ target_transform=v2.Lambda(
+ lambda y: F.one_hot(torch.tensor(y), num_classes=10).float()
+ ),
 )
 ```
 
 ```
 0%| | 0.00/26.4M [00:00<?, ?B/s]
- 0%| | 65.5k/26.4M [00:00<01:11, 367kB/s]
- 1%| | 229k/26.4M [00:00<00:38, 688kB/s]
- 3%|▎ | 918k/26.4M [00:00<00:12, 2.12MB/s]
- 14%|█▍ | 3.67M/26.4M [00:00<00:03, 7.33MB/s]
- 34%|███▍ | 9.08M/26.4M [00:00<00:00, 18.5MB/s]
- 47%|████▋ | 12.4M/26.4M [00:00<00:00, 18.9MB/s]
- 68%|██████▊ | 18.1M/26.4M [00:01<00:00, 27.8MB/s]
- 82%|████████▏ | 21.7M/26.4M [00:01<00:00, 25.4MB/s]
-100%|██████████| 26.4M/26.4M [00:01<00:00, 19.5MB/s]
+ 0%| | 65.5k/26.4M [00:00<01:11, 368kB/s]
+ 1%| | 229k/26.4M [00:00<00:37, 691kB/s]
+ 3%|▎ | 918k/26.4M [00:00<00:11, 2.13MB/s]
+ 14%|█▍ | 3.67M/26.4M [00:00<00:03, 7.36MB/s]
+ 32%|███▏ | 8.52M/26.4M [00:00<00:01, 17.2MB/s]
+ 47%|████▋ | 12.6M/26.4M [00:00<00:00, 19.7MB/s]
+ 65%|██████▌ | 17.3M/26.4M [00:01<00:00, 26.2MB/s]
+ 82%|████████▏ | 21.8M/26.4M [00:01<00:00, 26.3MB/s]
+100%|██████████| 26.4M/26.4M [00:01<00:00, 19.6MB/s]
 
  0%| | 0.00/29.5k [00:00<?, ?B/s]
-100%|██████████| 29.5k/29.5k [00:00<00:00, 329kB/s]
+100%|██████████| 29.5k/29.5k [00:00<00:00, 335kB/s]
 
  0%| | 0.00/4.42M [00:00<?, ?B/s]
- 1%|▏ | 65.5k/4.42M [00:00<00:11, 370kB/s]
- 5%|▌ | 229k/4.42M [00:00<00:05, 699kB/s]
- 21%|██ | 918k/4.42M [00:00<00:01, 2.16MB/s]
- 83%|████████▎ | 3.67M/4.42M [00:00<00:00, 7.46MB/s]
-100%|██████████| 4.42M/4.42M [00:00<00:00, 6.25MB/s]
+ 1%|▏ | 65.5k/4.42M [00:00<00:11, 375kB/s]
+ 5%|▌ | 229k/4.42M [00:00<00:05, 706kB/s]
+ 21%|██ | 918k/4.42M [00:00<00:01, 2.18MB/s]
+ 83%|████████▎ | 3.67M/4.42M [00:00<00:00, 7.53MB/s]
+100%|██████████| 4.42M/4.42M [00:00<00:00, 6.31MB/s]
 
  0%| | 0.00/5.15k [00:00<?, ?B/s]
-100%|██████████| 5.15k/5.15k [00:00<00:00, 62.8MB/s]
+100%|██████████| 5.15k/5.15k [00:00<00:00, 62.0MB/s]
 ```
 
-## ToTensor()
+## ToImage() and ToDtype()
 
-[ToTensor](https://pytorch.org/vision/stable/transforms.html#torchvision.transforms.ToTensor)
-converts a PIL image or NumPy `ndarray` into a `FloatTensor`. and scales
-the image's pixel intensity values in the range [0., 1.]
+The `torchvision.transforms.v2` API replaces the legacy `ToTensor` transform with a two-step pipeline.
+[v2.ToImage](https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.ToImage.html)
+converts a PIL image or NumPy `ndarray` into a `torchvision.tv_tensors.Image` tensor, and
+[v2.ToDtype](https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.ToDtype.html)
+with `scale=True` casts it to `float32` and scales the pixel intensity values to the range [0., 1.].
 
 ## Lambda Transforms
 
-Lambda transforms apply any user-defined lambda function. Here, we define a function
-to turn the integer into a one-hot encoded tensor.
-It first creates a zero tensor of size 10 (the number of labels in our dataset) and calls
-[scatter_](https://pytorch.org/docs/stable/generated/torch.Tensor.scatter_.html) which assigns a
-`value=1` on the index as given by the label `y`.
+Lambda transforms apply any user-defined lambda function. Here, we use
+[torch.nn.functional.one_hot](https://pytorch.org/docs/stable/generated/torch.nn.functional.one_hot.html)
+to turn the integer label into a one-hot encoded tensor of size 10 (the number of labels in our dataset),
+then cast it to `float` to match the expected dtype.
 
 ```
-target_transform = Lambda(lambda y: torch.zeros(
- 10, dtype=torch.float).scatter_(dim=0, index=torch.tensor(y), value=1))
+target_transform = v2.Lambda(
+ lambda y: F.one_hot(torch.tensor(y), num_classes=10).float()
+)
 ```
 
 ---
 
 ### Further Reading
 
-- [torchvision.transforms API](https://pytorch.org/vision/stable/transforms.html)
+- [Getting started with transforms v2](https://pytorch.org/vision/stable/auto_examples/transforms/plot_transforms_getting_started.html)
+- [torchvision.transforms.v2 API](https://pytorch.org/vision/stable/transforms.html#v2-api-reference-recommended)
 
-**Total running time of the script:** (0 minutes 4.340 seconds)
+**Total running time of the script:** (0 minutes 4.318 seconds)
 
 [`Download Jupyter notebook: transforms_tutorial.ipynb`](../../_downloads/9bdb71ef4a637dc36fb461904ccb7056/transforms_tutorial.ipynb)
 
