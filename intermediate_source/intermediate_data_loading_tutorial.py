@@ -28,7 +28,7 @@ Introduction
 Data loading is often a critical bottleneck in deep learning pipelines. While
 GPUs can process batches extremely quickly, inefficient data loading can leave
 expensive hardware idle, waiting for the next batch of data. This tutorial
-covers best practises and some techniques for optimizing your data loading configuration to
+covers best practices and some techniques for optimizing your data loading configuration to
 maximize training throughput.
 
 We'll explore the key parameters of PyTorch's DataLoader and provide practical
@@ -44,7 +44,6 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
 
-# Check if CUDA is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
@@ -131,12 +130,10 @@ class SyntheticDatasetBatched(Dataset):
 # many epochs — making persistent_workers' benefit visible across
 # epoch boundaries.
 
-# Dataset for progressive optimization benchmarks.
 benchmark_dataset = SyntheticDataset(size=512, feature_dim=224, transform_delay=0.005)
 
 
 class SmallTransformerModel(nn.Module):
-    """A model with conv + transformer layers for realistic GPU compute."""
 
     def __init__(self):
         super().__init__()
@@ -147,7 +144,6 @@ class SmallTransformerModel(nn.Module):
             nn.ReLU(),
             nn.AdaptiveAvgPool2d((7, 7)),
         )
-        # Transformer encoder on flattened spatial tokens
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=64, nhead=4, dim_feedforward=128, batch_first=True
         )
@@ -286,7 +282,7 @@ def benchmark_batch_size(batch_size, num_batches=10):
     for i, (data, labels) in enumerate(loader):
         if i >= num_batches:
             break
-        data = data.to(device)
+        data = data.to(device, non_blocking=True)
         _ = data.sum()
     if torch.cuda.is_available():
         torch.cuda.synchronize()
@@ -603,7 +599,7 @@ print(
 prev_time = batched_time
 
 ######################################################################
-# The ``in_order`` Parameter
+# ``in_order`` parameter
 # --------------------------
 #
 # By default (``in_order=True``), the DataLoader returns batches in
@@ -732,7 +728,7 @@ prev_time = batched_time
 #     import torch.multiprocessing as mp
 #     mp.set_sharing_strategy('file_system')
 #
-# **5. Clean up leaked shared memory:**
+# **4. Clean up leaked shared memory:**
 #
 # .. code-block:: bash
 #
@@ -759,52 +755,34 @@ prev_time = batched_time
 #
 # .. list-table::
 #    :header-rows: 1
-#    :widths: 50 20 15 15
+#    :widths: 55 20 20
 #
 #    * - Configuration
-#      - Time
 #      - vs Baseline
 #      - vs Previous
 #    * - Baseline (num_workers=0, no pinning)
-#      - ~32s
 #      - 1.00x
 #      - —
 #    * - \+ num_workers=4, prefetch_factor=2
-#      - ~12s
 #      - ~2.7x
 #      - ~2.7x
 #    * - \+ pin_memory=True
-#      - ~11.5s
 #      - ~2.8x
 #      - ~1.0x
 #    * - \+ persistent_workers=True
-#      - ~9s
 #      - ~3.7x
 #      - ~1.3x
 #    * - \+ DataPrefetcher (H2D overlap)
-#      - ~9s
 #      - ~3.6x
 #      - ~1.0x
 #    * - \+ __getitems__ (batched fetching)
-#      - ~3s
 #      - ~10x
 #      - ~2.9x
 #
 # .. note::
-#    These results are based on our benchmark dataset
+#    These results are based on our benchmark dataset.
 #    Actual speedups will vary depending on your specific
 #    workload, hardware, dataset size, and transform complexity.
-#
-# **Key takeaways:**
-#
-# - **Multiprocessing** (``num_workers > 0``) is often the biggest lever
-# - **pin_memory + non_blocking** enables faster CPU-to-GPU transfers
-# - **persistent_workers** eliminates epoch-boundary restart overhead
-# - **__getitems__** enables batched fetching at the dataset level — can provide
-#   the largest speedup when your dataset supports vectorized I/O or bulk queries
-# - **Prefetcing data** overlaps H2D transfer with compute (best when data
-#   loading is slow relative to GPU compute)
-# - Always benchmark your specific workload and hardware
 
 ######################################################################
 # Summary and Best Practices
@@ -829,6 +807,19 @@ prev_time = batched_time
 #
 # 7. **Use ``file_system`` sharing strategy** when hitting file descriptor limits.
 #
+
+######################################################################
+# Conclusion
+# ----------
+#
+# In this tutorial, we learned how to progressively optimize a PyTorch
+# data loading pipeline — from a naive single-process baseline to a
+# fully optimized configuration using multiprocessing workers, pinned
+# memory, persistent workers, CUDA stream-based prefetching, and batched
+# dataset fetching with ``__getitems__``. Each optimization targets a
+# different bottleneck, and together they can yield an order-of-magnitude
+# improvement in throughput. These should be considered best practices
+# and performance is dependent on the specific workload.
 
 ######################################################################
 # Additional Resources
