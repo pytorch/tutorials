@@ -455,7 +455,7 @@ persistent_loader = DataLoader(
     persistent_workers=True,
 )
 
-print("\n+ persistent_workers=True (5 epochs):")
+print("\n+ persistent_workers=True (10 epochs):")
 non_persistent_time, _ = train_and_benchmark(non_persistent_loader)
 persistent_time, persistent_loss = train_and_benchmark(persistent_loader)
 print(f"  Without persistent_workers: {non_persistent_time:.4f}s")
