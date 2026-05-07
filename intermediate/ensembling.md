@@ -178,13 +178,13 @@ print(f'Predictions with vmap {with_vmap.timeit(100)}')
 ```
 
 ```
-Predictions without vmap <torch.utils.benchmark.utils.common.Measurement object at 0x7f9e1a776da0>
+Predictions without vmap <torch.utils.benchmark.utils.common.Measurement object at 0x7f80f8f79e40>
 [model(minibatch) for model, minibatch in zip(models, minibatches)]
- 1.24 ms
+ 1.44 ms
  1 measurement, 100 runs , 1 thread
-Predictions with vmap <torch.utils.benchmark.utils.common.Measurement object at 0x7f9e1a782770>
+Predictions with vmap <torch.utils.benchmark.utils.common.Measurement object at 0x7f80f8f816c0>
 vmap(fmodel)(params, buffers, minibatches)
- 562.21 us
+ 568.19 us
  1 measurement, 100 runs , 1 thread
 ```
 
@@ -197,7 +197,7 @@ operation or if the underlying kernels weren't optimized for older hardware
 (GPUs). If you see any of these cases, please let us know by opening an issue
 on GitHub.
 
-**Total running time of the script:** (0 minutes 0.757 seconds)
+**Total running time of the script:** (0 minutes 0.775 seconds)
 
 [`Download Jupyter notebook: ensembling.ipynb`](../_downloads/1342193c7104875f1847417466d1417c/ensembling.ipynb)
 
