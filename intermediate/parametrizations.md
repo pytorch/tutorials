@@ -48,45 +48,9 @@ Assume that we want to have a square linear layer with symmetric weights, that i
 with weights `X` such that `X = Xᵀ`. One way to do so is
 to copy the upper-triangular part of the matrix into its lower-triangular part
 
-```
-import torch
-import torch.nn as nn
-import torch.nn.utils.parametrize as parametrize
-
-def symmetric(X):
- return X.triu() + X.triu(1).transpose(-1, -2)
-
-X = torch.rand(3, 3)
-A = symmetric(X)
-assert torch.allclose(A, A.T) # A is symmetric
-print(A) # Quick visual check
-```
-
-```
-tensor([[0.1458, 0.9875, 0.8986],
- [0.9875, 0.8578, 0.9746],
- [0.8986, 0.9746, 0.4921]])
-```
-
 We can then use this idea to implement a linear layer with symmetric weights
 
-```
-class LinearSymmetric(nn.Module):
- def __init__(self, n_features):
- super().__init__()
- self.weight = nn.Parameter(torch.rand(n_features, n_features))
-
- def forward(self, x):
- A = symmetric(self.weight)
- return x @ A
-```
-
 The layer can be then used as a regular linear layer
-
-```
-layer = LinearSymmetric(3)
-out = layer(torch.rand(8, 3))
-```
 
 This implementation, although correct and self-contained, presents a number of problems:
 
@@ -107,44 +71,10 @@ Parametrizations can solve all these problems as well as others.
 Let's start by reimplementing the code above using `torch.nn.utils.parametrize`.
 The only thing that we have to do is to write the parametrization as a regular `nn.Module`
 
-```
-class Symmetric(nn.Module):
- def forward(self, X):
- return X.triu() + X.triu(1).transpose(-1, -2)
-```
-
 This is all we need to do. Once we have this, we can transform any regular layer into a
 symmetric layer by doing
 
-```
-layer = nn.Linear(3, 3)
-parametrize.register_parametrization(layer, "weight", Symmetric())
-```
-
-```
-ParametrizedLinear(
- in_features=3, out_features=3, bias=True
- (parametrizations): ModuleDict(
- (weight): ParametrizationList(
- (0): Symmetric()
- )
- )
-)
-```
-
 Now, the matrix of the linear layer is symmetric
-
-```
-A = layer.weight
-assert torch.allclose(A, A.T) # A is symmetric
-print(A) # Quick visual check
-```
-
-```
-tensor([[ 0.0643, 0.5066, -0.2095],
- [ 0.5066, -0.2072, 0.1243],
- [-0.2095, 0.1243, -0.1397]], grad_fn=<AddBackward0>)
-```
 
 We can do the same thing with any other layer. For example, we can create a CNN with
 [skew-symmetric](https://en.wikipedia.org/wiki/Skew-symmetric_matrix) kernels.
@@ -152,25 +82,7 @@ We use a similar parametrization, copying the upper-triangular part with signs
 reversed into the lower-triangular part
 
 ```
-class Skew(nn.Module):
- def forward(self, X):
- A = X.triu(1)
- return A - A.transpose(-1, -2)
-
-cnn = nn.Conv2d(in_channels=5, out_channels=8, kernel_size=3)
-parametrize.register_parametrization(cnn, "weight", Skew())
 # Print a few kernels
-print(cnn.weight[0, 1])
-print(cnn.weight[2, 2])
-```
-
-```
-tensor([[ 0.0000, 0.1216, 0.1221],
- [-0.1216, 0.0000, 0.0005],
- [-0.1221, -0.0005, 0.0000]], grad_fn=<SelectBackward0>)
-tensor([[ 0.0000, -0.1246, 0.0959],
- [ 0.1246, 0.0000, 0.1372],
- [-0.0959, -0.1372, 0.0000]], grad_fn=<SelectBackward0>)
 ```
 
 ## Inspecting a parametrized module
@@ -188,99 +100,20 @@ just as we did in our implementation of `LinearSymmetric` above.
 
 Registered parametrizations are stored under a `parametrizations` attribute within the module.
 
-```
-layer = nn.Linear(3, 3)
-print(f"Unparametrized:\n{layer}")
-parametrize.register_parametrization(layer, "weight", Symmetric())
-print(f"\nParametrized:\n{layer}")
-```
-
-```
-Unparametrized:
-Linear(in_features=3, out_features=3, bias=True)
-
-Parametrized:
-ParametrizedLinear(
- in_features=3, out_features=3, bias=True
- (parametrizations): ModuleDict(
- (weight): ParametrizationList(
- (0): Symmetric()
- )
- )
-)
-```
-
 This `parametrizations` attribute is an `nn.ModuleDict`, and it can be accessed as such
-
-```
-print(layer.parametrizations)
-print(layer.parametrizations.weight)
-```
-
-```
-ModuleDict(
- (weight): ParametrizationList(
- (0): Symmetric()
- )
-)
-ParametrizationList(
- (0): Symmetric()
-)
-```
 
 Each element of this `nn.ModuleDict` is a `ParametrizationList`, which behaves like an
 `nn.Sequential`. This list will allow us to concatenate parametrizations on one weight.
 Since this is a list, we can access the parametrizations indexing it. Here's
 where our `Symmetric` parametrization sits
 
-```
-print(layer.parametrizations.weight[0])
-```
-
-```
-Symmetric()
-```
-
 The other thing that we notice is that, if we print the parameters, we see that the
 parameter `weight` has been moved
 
-```
-print(dict(layer.named_parameters()))
-```
-
-```
-{'bias': Parameter containing:
-tensor([0.0730, 0.3524, 0.0013], requires_grad=True), 'parametrizations.weight.original': Parameter containing:
-tensor([[-0.5105, 0.0342, 0.2011],
- [-0.3474, 0.5558, -0.2112],
- [ 0.0018, -0.0479, 0.0839]], requires_grad=True)}
-```
-
 It now sits under `layer.parametrizations.weight.original`
-
-```
-print(layer.parametrizations.weight.original)
-```
-
-```
-Parameter containing:
-tensor([[-0.5105, 0.0342, 0.2011],
- [-0.3474, 0.5558, -0.2112],
- [ 0.0018, -0.0479, 0.0839]], requires_grad=True)
-```
 
 Besides these three small differences, the parametrization is doing exactly the same
 as our manual implementation
-
-```
-symmetric = Symmetric()
-weight_orig = layer.parametrizations.weight.original
-print(torch.dist(layer.weight, symmetric(weight_orig)))
-```
-
-```
-tensor(0., grad_fn=<DistBackward0>)
-```
 
 ## Parametrizations are first-class citizens
 
@@ -295,33 +128,6 @@ to CUDA when calling `model = model.cuda()`.
 Parametrizations come with an inbuilt caching system via the context manager
 `parametrize.cached()`
 
-```
-class NoisyParametrization(nn.Module):
- def forward(self, X):
- print("Computing the Parametrization")
- return X
-
-layer = nn.Linear(4, 4)
-parametrize.register_parametrization(layer, "weight", NoisyParametrization())
-print("Here, layer.weight is recomputed every time we call it")
-foo = layer.weight + layer.weight.T
-bar = layer.weight.sum()
-with parametrize.cached():
- print("Here, it is computed just the first time layer.weight is called")
- foo = layer.weight + layer.weight.T
- bar = layer.weight.sum()
-```
-
-```
-Computing the Parametrization
-Here, layer.weight is recomputed every time we call it
-Computing the Parametrization
-Computing the Parametrization
-Computing the Parametrization
-Here, it is computed just the first time layer.weight is called
-Computing the Parametrization
-```
-
 ## Concatenating parametrizations
 
 Concatenating two parametrizations is as easy as registering them on the same tensor.
@@ -331,56 +137,10 @@ maps the skew-symmetric matrices to the orthogonal matrices of positive determin
 concatenate `Skew` and a parametrization that implements the Cayley map to get a layer with
 orthogonal weights
 
-```
-class CayleyMap(nn.Module):
- def __init__(self, n):
- super().__init__()
- self.register_buffer("Id", torch.eye(n))
-
- def forward(self, X):
- # (I + X)(I - X)^{-1}
- return torch.linalg.solve(self.Id - X, self.Id + X)
-
-layer = nn.Linear(3, 3)
-parametrize.register_parametrization(layer, "weight", Skew())
-parametrize.register_parametrization(layer, "weight", CayleyMap(3))
-X = layer.weight
-print(torch.dist(X.T @ X, torch.eye(3))) # X is orthogonal
-```
-
-```
-tensor(9.4243e-08, grad_fn=<DistBackward0>)
-```
-
 This may also be used to prune a parametrized module, or to reuse parametrizations. For example,
 the matrix exponential maps the symmetric matrices to the Symmetric Positive Definite (SPD) matrices
 But the matrix exponential also maps the skew-symmetric matrices to the orthogonal matrices.
 Using these two facts, we may reuse the parametrizations before to our advantage
-
-```
-class MatrixExponential(nn.Module):
- def forward(self, X):
- return torch.matrix_exp(X)
-
-layer_orthogonal = nn.Linear(3, 3)
-parametrize.register_parametrization(layer_orthogonal, "weight", Skew())
-parametrize.register_parametrization(layer_orthogonal, "weight", MatrixExponential())
-X = layer_orthogonal.weight
-print(torch.dist(X.T @ X, torch.eye(3))) # X is orthogonal
-
-layer_spd = nn.Linear(3, 3)
-parametrize.register_parametrization(layer_spd, "weight", Symmetric())
-parametrize.register_parametrization(layer_spd, "weight", MatrixExponential())
-X = layer_spd.weight
-print(torch.dist(X, X.T)) # X is symmetric
-print((torch.linalg.eigvalsh(X) > 0.).all()) # X is positive definite
-```
-
-```
-tensor(1.1827e-06, grad_fn=<DistBackward0>)
-tensor(8.4950e-08, grad_fn=<DistBackward0>)
-tensor(True)
-```
 
 ## Initializing parametrizations
 
@@ -395,74 +155,16 @@ it will be used when assigning to the parametrized tensor.
 
 Let's upgrade our implementation of the `Skew` class to support this
 
-```
-class Skew(nn.Module):
- def forward(self, X):
- A = X.triu(1)
- return A - A.transpose(-1, -2)
-
- def right_inverse(self, A):
- # We assume that A is skew-symmetric
- # We take the upper-triangular elements, as these are those used in the forward
- return A.triu(1)
-```
-
 We may now initialize a layer that is parametrized with `Skew`
-
-```
-layer = nn.Linear(3, 3)
-parametrize.register_parametrization(layer, "weight", Skew())
-X = torch.rand(3, 3)
-X = X - X.T # X is now skew-symmetric
-layer.weight = X # Initialize layer.weight to be X
-print(torch.dist(layer.weight, X)) # layer.weight == X
-```
-
-```
-tensor(0., grad_fn=<DistBackward0>)
-```
 
 This `right_inverse` works as expected when we concatenate parametrizations.
 To see this, let's upgrade the Cayley parametrization to also support being initialized
 
 ```
-class CayleyMap(nn.Module):
- def __init__(self, n):
- super().__init__()
- self.register_buffer("Id", torch.eye(n))
-
- def forward(self, X):
- # Assume X skew-symmetric
- # (I + X)(I - X)^{-1}
- return torch.linalg.solve(self.Id - X, self.Id + X)
-
- def right_inverse(self, A):
- # Assume A orthogonal
- # See https://en.wikipedia.org/wiki/Cayley_transform#Matrix_map
- # (A - I)(A + I)^{-1}
- return torch.linalg.solve(A + self.Id, self.Id - A)
-
-layer_orthogonal = nn.Linear(3, 3)
-parametrize.register_parametrization(layer_orthogonal, "weight", Skew())
-parametrize.register_parametrization(layer_orthogonal, "weight", CayleyMap(3))
 # Sample an orthogonal matrix with positive determinant
-X = torch.empty(3, 3)
-nn.init.orthogonal_(X)
-if X.det() < 0.:
- X[0].neg_()
-layer_orthogonal.weight = X
-print(torch.dist(layer_orthogonal.weight, X)) # layer_orthogonal.weight == X
-```
-
-```
-tensor(0.4042, grad_fn=<DistBackward0>)
 ```
 
 This initialization step can be written more succinctly as
-
-```
-layer_orthogonal.weight = nn.init.orthogonal_(layer_orthogonal.weight)
-```
 
 The name of this method comes from the fact that we would often expect
 that `forward(right_inverse(X)) == X`. This is a direct way of rewriting that
@@ -471,147 +173,25 @@ This constraint is not strongly enforced in practice. In fact, at times, it migh
 interest to relax this relation. For example, consider the following implementation
 of a randomized pruning method:
 
-```
-class PruningParametrization(nn.Module):
- def __init__(self, X, p_drop=0.2):
- super().__init__()
- # sample zeros with probability p_drop
- mask = torch.full_like(X, 1.0 - p_drop)
- self.mask = torch.bernoulli(mask)
-
- def forward(self, X):
- return X * self.mask
-
- def right_inverse(self, A):
- return A
-```
-
 In this case, it is not true that for every matrix A `forward(right_inverse(A)) == A`.
 This is only true when the matrix `A` has zeros in the same positions as the mask.
 Even then, if we assign a tensor to a pruned parameter, it will comes as no surprise
 that tensor will be, in fact, pruned
-
-```
-layer = nn.Linear(3, 4)
-X = torch.rand_like(layer.weight)
-print(f"Initialization matrix:\n{X}")
-parametrize.register_parametrization(layer, "weight", PruningParametrization(layer.weight))
-layer.weight = X
-print(f"\nInitialized weight:\n{layer.weight}")
-```
-
-```
-Initialization matrix:
-tensor([[0.1977, 0.6341, 0.8741],
- [0.0889, 0.7483, 0.2032],
- [0.5919, 0.4701, 0.5542],
- [0.5251, 0.2216, 0.0285]])
-
-Initialized weight:
-tensor([[0.1977, 0.6341, 0.8741],
- [0.0889, 0.7483, 0.2032],
- [0.5919, 0.4701, 0.5542],
- [0.0000, 0.2216, 0.0285]], grad_fn=<MulBackward0>)
-```
 
 ## Removing parametrizations
 
 We may remove all the parametrizations from a parameter or a buffer in a module
 by using `parametrize.remove_parametrizations()`
 
-```
-layer = nn.Linear(3, 3)
-print("Before:")
-print(layer)
-print(layer.weight)
-parametrize.register_parametrization(layer, "weight", Skew())
-print("\nParametrized:")
-print(layer)
-print(layer.weight)
-parametrize.remove_parametrizations(layer, "weight")
-print("\nAfter. Weight has skew-symmetric values but it is unconstrained:")
-print(layer)
-print(layer.weight)
-```
-
-```
-Before:
-Linear(in_features=3, out_features=3, bias=True)
-Parameter containing:
-tensor([[-0.4301, 0.2170, 0.1803],
- [ 0.0498, 0.5271, -0.5730],
- [-0.3622, -0.4856, 0.1367]], requires_grad=True)
-
-Parametrized:
-ParametrizedLinear(
- in_features=3, out_features=3, bias=True
- (parametrizations): ModuleDict(
- (weight): ParametrizationList(
- (0): Skew()
- )
- )
-)
-tensor([[ 0.0000, 0.2170, 0.1803],
- [-0.2170, 0.0000, -0.5730],
- [-0.1803, 0.5730, 0.0000]], grad_fn=<SubBackward0>)
-
-After. Weight has skew-symmetric values but it is unconstrained:
-Linear(in_features=3, out_features=3, bias=True)
-Parameter containing:
-tensor([[ 0.0000, 0.2170, 0.1803],
- [-0.2170, 0.0000, -0.5730],
- [-0.1803, 0.5730, 0.0000]], requires_grad=True)
-```
-
 When removing a parametrization, we may choose to leave the original parameter (i.e. that in
 `layer.parametriations.weight.original`) rather than its parametrized version by setting
 the flag `leave_parametrized=False`
 
 ```
-layer = nn.Linear(3, 3)
-print("Before:")
-print(layer)
-print(layer.weight)
-parametrize.register_parametrization(layer, "weight", Skew())
-print("\nParametrized:")
-print(layer)
-print(layer.weight)
-parametrize.remove_parametrizations(layer, "weight", leave_parametrized=False)
-print("\nAfter. Same as Before:")
-print(layer)
-print(layer.weight)
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-```
-Before:
-Linear(in_features=3, out_features=3, bias=True)
-Parameter containing:
-tensor([[-0.1875, 0.5208, -0.1998],
- [ 0.3884, -0.4590, 0.5749],
- [-0.5048, 0.0980, -0.3540]], requires_grad=True)
-
-Parametrized:
-ParametrizedLinear(
- in_features=3, out_features=3, bias=True
- (parametrizations): ModuleDict(
- (weight): ParametrizationList(
- (0): Skew()
- )
- )
-)
-tensor([[ 0.0000, 0.5208, -0.1998],
- [-0.5208, 0.0000, 0.5749],
- [ 0.1998, -0.5749, 0.0000]], grad_fn=<SubBackward0>)
-
-After. Same as Before:
-Linear(in_features=3, out_features=3, bias=True)
-Parameter containing:
-tensor([[ 0.0000, 0.5208, -0.1998],
- [ 0.0000, 0.0000, 0.5749],
- [ 0.0000, 0.0000, 0.0000]], requires_grad=True)
-```
-
-**Total running time of the script:** (0 minutes 0.059 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: parametrizations.ipynb`](../_downloads/c9153ca254003481aecc7a760a7b046f/parametrizations.ipynb)
 

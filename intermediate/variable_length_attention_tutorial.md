@@ -111,49 +111,6 @@ The helper function `create_varlen_metadata` returns the required
 `cu_seqlens` and `max_seqlen` given `input_batch` and the end of
 sequence token ID that marks the end of documents.
 
-```
-import torch
-
-def create_varlen_metadata(input_batch: torch.Tensor, eos_id: int):
- batch_size, seq_len = input_batch.shape
- device = input_batch.device
- cu_seqlens_list, all_seq_lengths = [], []
- offset = 0
-
- for b in range(batch_size):
- tokens = input_batch[b]
- eos_positions = (tokens == eos_id).nonzero(as_tuple=True)[0].to(torch.int32)
-
- # we use the position of the eos tokens to mark the end of documents
- sample_cu_seqlens = torch.cat(
- [
- torch.tensor([0], dtype=torch.int32, device=device),
- eos_positions + 1,
- torch.tensor([seq_len], dtype=torch.int32, device=device),
- ]
- )
- sample_cu_seqlens = torch.unique_consecutive(sample_cu_seqlens)
-
- seq_lengths = torch.diff(sample_cu_seqlens)
- all_seq_lengths.append(seq_lengths)
-
- cu_seqlens_adjusted = sample_cu_seqlens[:-1] + offset
- cu_seqlens_list.append(cu_seqlens_adjusted)
-
- offset += seq_len
-
- packed_cu_seqlens = torch.cat(
- cu_seqlens_list + [torch.tensor([offset], dtype=torch.int32, device=device)]
- )
-
- max_seqlen = 0
- if len(all_seq_lengths) > 0:
- all_seq_lengths = torch.cat(all_seq_lengths)
- max_seqlen = all_seq_lengths.max().item()
-
- return packed_cu_seqlens, max_seqlen
-```
-
 ### Implementing the Attention Block with `varlen_attn`
 
 Let's explore how we would use `varlen_attn` in an Attention module.
@@ -168,49 +125,6 @@ Before we call `varlen_attn`, we also pack our input so that it has
 the shape `(total tokens, dim)`. Recall that variable length attention
 allows us to collapse the `batch_size` dimension so that we can lay
 out our input samples contiguously.
-
-```
-import torch
-import torch.nn as nn
-from torch.nn.attention.varlen import varlen_attn
-
-class SimpleVarlenAttention(nn.Module):
- def __init__(self, embed_dim: int, num_heads: int):
- super().__init__()
- self.embed_dim = embed_dim
- self.num_heads = num_heads
- self.head_dim = embed_dim // num_heads
-
- self.qkv_proj = nn.Linear(embed_dim, 3 * embed_dim, bias=False)
- self.out_proj = nn.Linear(embed_dim, embed_dim, bias=False)
-
- def forward(
- self, x: torch.Tensor, cu_seq: torch.Tensor, max_len: int
- ) -> torch.Tensor:
- batch_size, seq_len, _ = x.shape
- x_packed = x.view(batch_size * seq_len, -1) # pack x into (total_tokens, dim)
-
- qkv = self.qkv_proj(x_packed)
- q, k, v = qkv.chunk(3, dim=-1)
-
- q = q.view(-1, self.num_heads, self.head_dim)
- k = k.view(-1, self.num_heads, self.head_dim)
- v = v.view(-1, self.num_heads, self.head_dim)
-
- attn_out = varlen_attn(
- query=q,
- key=k,
- value=v,
- cu_seq_q=cu_seq,
- cu_seq_k=cu_seq,
- max_q=max_len,
- max_k=max_len,
- window_size=(-1, 0),
- )
- attn_out = attn_out.view(-1, self.embed_dim)
- attn_out = self.out_proj(attn_out)
- return attn_out.view(batch_size, seq_len, self.embed_dim)
-```
 
 We can also use `torch.compile` with `varlen_attn` and define:
 
@@ -228,84 +142,12 @@ Attention forward, and everything else stays the same.
 Now, we can use this `SimpleVarlenAttention` module in a simple
 Transformer.
 
-```
-class SimpleVarlenTransformer(nn.Module):
- """
- simple 1 layer transformer with varlen attention
- """
-
- def __init__(self, vocab_size: int, embed_dim: int, num_heads: int):
- super().__init__()
- self.tok_embeddings = nn.Embedding(vocab_size, embed_dim)
- self.attention = SimpleVarlenAttention(embed_dim, num_heads)
- self.norm = nn.LayerNorm(embed_dim)
-
- def forward(
- self, tokens: torch.Tensor, cu_seq: torch.Tensor, max_len: int
- ) -> torch.Tensor:
- x = self.tok_embeddings(tokens)
- x = x + self.attention(x, cu_seq, max_len)
- x = self.norm(x)
- return x
-```
-
 ### Running a Training Step
 
 Now we're ready to put all the pieces together! Let's run a training
 step with our `SimpleVarlenTransformer`. We define our model, compute
 `cu_seq` and `max_len` using `create_varlen_metadata`, and run a
 forward and backward pass.
-
-```
-def main():
- torch.manual_seed(42)
-
- batch_size = 3
- seq_len = 64
- vocab_size = 1000
- embed_dim = 128
- num_heads = 4
- eos_id = 2
- num_docs = 3
- device = "cuda"
- dtype = torch.bfloat16
-
- model = SimpleVarlenTransformer(vocab_size, embed_dim, num_heads).to(
- device=device, dtype=dtype
- )
-
- # create input_batch tokens
- input_batch = torch.randint(0, vocab_size, (batch_size, seq_len), device=device)
-
- for b in range(batch_size):
- # getting random positions to cut the input into multiple documents
- doc_positions = torch.randint(10, seq_len - 1, (num_docs - 1,))
- for pos in doc_positions:
- input_batch[b, pos] = eos_id # insert eos token to simulate end of sample
- input_batch[b, -1] = eos_id
-
- cu_seq, max_len = create_varlen_metadata(input_batch, eos_id)
- print(
- f"cu_seq: {cu_seq}, max_len: {max_len}"
- ) # cu_seq: tensor([0, 32, 47, 64, 92, 103, 128, 168, 177, 192]), max_len: 40
-
- # fwd pass
- output = model(input_batch, cu_seq, max_len)
- print(f"output shape: {output.shape}") # (3, 64, 128)
-
- # bwd pass
- loss = output.mean()
- loss.backward()
-
-if __name__ == "__main__":
- main()
-```
-
-```
-cu_seq: tensor([ 0, 32, 47, 64, 92, 103, 128, 168, 177, 192], device='cuda:0',
- dtype=torch.int32), max_len: 40
-output shape: torch.Size([3, 64, 128])
-```
 
 ## Conclusion
 
@@ -324,7 +166,11 @@ See also
 - [Implementing High-Performance Transformers with Scaled Dot Product Attention](https://docs.pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html)
 - [torch.nn.functional.scaled_dot_product_attention](https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html)
 
-**Total running time of the script:** (0 minutes 0.545 seconds)
+```
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+```
+
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: variable_length_attention_tutorial.ipynb`](../_downloads/cfdf124bd7816bfeb1ac0be551804d16/variable_length_attention_tutorial.ipynb)
 

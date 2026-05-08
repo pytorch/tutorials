@@ -71,6 +71,14 @@ Getting-Started
 
 ![](_static/img/thumbnails/cropped/generic-pytorch-logo.png)](intermediate/pinmem_nonblock.html)
 
+[#### Data Loading Optimization in PyTorch
+
+Optimize DataLoader configuration with num_workers, pin_memory, persistent_workers for maximum training throughput.
+
+Getting-Started,Best-Practice
+
+![](_static/img/thumbnails/cropped/generic-pytorch-logo.png)](intermediate/intermediate_data_loading_tutorial.html)
+
 [#### Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors
 
 Learn the subtleties of requires_grad, retain_grad, leaf, and non-leaf tensors

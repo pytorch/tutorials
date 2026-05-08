@@ -24,49 +24,12 @@ if a certain backend has a custom implementation that should be dispatched
 for a given op.
 
 ```
-import torch
-
 # exit cleanly if we are on a device that doesn't support ``torch.compile``
-if torch.cuda.get_device_capability() < (7, 0):
- print("Exiting because torch.compile is not supported on this device.")
- import sys
- sys.exit(0)
-
-from torch.overrides import BaseTorchFunctionMode
 
 # Define our mode, Note: ``BaseTorchFunctionMode``
 # implements the actual invocation of func(..)
-class AddToMultiplyMode(BaseTorchFunctionMode):
- def __torch_function__(self, func, types, args=(), kwargs=None):
- if func == torch.Tensor.add:
- func = torch.mul
-
- return super().__torch_function__(func, types, args, kwargs)
-
-@torch.compile()
-def test_fn(x, y):
- return x + y * x # Note: infix operators map to torch.Tensor.* methods
-
-x = torch.rand(2, 2)
-y = torch.rand_like(x)
-
-with AddToMultiplyMode():
- z = test_fn(x, y)
-
-assert torch.allclose(z, x * y * x)
 
 # The mode can also be used within the compiled region as well like this:
-
-@torch.compile()
-def test_fn(x, y):
- with AddToMultiplyMode():
- return x + y * x # Note: infix operators map to torch.Tensor.* methods
-
-x = torch.rand(2, 2)
-y = torch.rand_like(x)
-z = test_fn(x, y)
-
-assert torch.allclose(z, x * y * x)
 ```
 
 ## Conclusion
@@ -78,7 +41,11 @@ of calling torch function on every op invocation.
 
 - See [Extending Torch API with Modes](https://pytorch.org/docs/stable/notes/extending.html#extending-all-torch-api-with-modes) for other examples and background on Torch Function modes.
 
-**Total running time of the script:** (0 minutes 9.971 seconds)
+```
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+```
+
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: torch_compile_torch_function_modes.ipynb`](../_downloads/d036a4d61563d6157e333f7e5b20b091/torch_compile_torch_function_modes.ipynb)
 

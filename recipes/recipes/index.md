@@ -92,11 +92,6 @@ Timer quick start
 [Model Interpretability using Captum](Captum_Recipe.html#sphx-glr-recipes-recipes-captum-recipe-py)
 
 Model Interpretability using Captum
-![](../../_images/sphx_glr_module_load_state_dict_tips_thumb.png)
-
-[Tips for Loading an nn.Module from a Checkpoint](module_load_state_dict_tips.html#sphx-glr-recipes-recipes-module-load-state-dict-tips-py)
-
-Tips for Loading an nn.Module from a Checkpoint
 ![](../../_images/sphx_glr_amp_recipe_thumb.png)
 
 [Automatic Mixed Precision](amp_recipe.html#sphx-glr-recipes-recipes-amp-recipe-py)
@@ -107,6 +102,11 @@ Automatic Mixed Precision
 [PyTorch Profiler](profiler_recipe.html#sphx-glr-recipes-recipes-profiler-recipe-py)
 
 PyTorch Profiler
+![](../../_images/sphx_glr_module_load_state_dict_tips_thumb.png)
+
+[Tips for Loading an nn.Module from a Checkpoint](module_load_state_dict_tips.html#sphx-glr-recipes-recipes-module-load-state-dict-tips-py)
+
+Tips for Loading an nn.Module from a Checkpoint
 ![](../../_images/sphx_glr_benchmark_thumb.png)
 
 [SyntaxError](benchmark.html#sphx-glr-recipes-recipes-benchmark-py)

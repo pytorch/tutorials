@@ -39,6 +39,13 @@ In this recipe, we will follow the same steps as the regional compilation recipe
 
 First, let's import the necessary libraries for loading our data:
 
+```
+import torch
+torch.set_grad_enabled(False)
+
+from time import perf_counter
+```
+
 ## Defining the Neural Network
 
 We will use the same neural network structure as the regional compilation recipe.
@@ -49,6 +56,37 @@ we will create a `Layer` using the `nn.Module` class as a proxy for a repeated r
 We will then create a `Model` which is composed of 64 instances of this
 `Layer` class.
 
+```
+class Layer(torch.nn.Module):
+ def __init__(self):
+ super().__init__()
+ self.linear1 = torch.nn.Linear(10, 10)
+ self.relu1 = torch.nn.ReLU()
+ self.linear2 = torch.nn.Linear(10, 10)
+ self.relu2 = torch.nn.ReLU()
+
+ def forward(self, x):
+ a = self.linear1(x)
+ a = self.relu1(a)
+ a = torch.sigmoid(a)
+ b = self.linear2(a)
+ b = self.relu2(b)
+ return b
+
+class Model(torch.nn.Module):
+ def __init__(self):
+ super().__init__()
+ self.linear = torch.nn.Linear(10, 10)
+ self.layers = torch.nn.ModuleList([Layer() for _ in range(64)])
+
+ def forward(self, x):
+ # In regional compilation, the self.linear is outside of the scope of ``torch.compile``.
+ x = self.linear(x)
+ for layer in self.layers:
+ x = layer(x)
+ return x
+```
+
 ## Compiling the model ahead-of-time
 
 Since we're compiling the model ahead-of-time, we need to prepare representative
@@ -56,10 +94,44 @@ input examples, that we expect the model to see during actual deployments.
 
 Let's create an instance of `Model` and pass it some sample input data.
 
+```
+model = Model().cuda()
+input = torch.randn(10, 10, device="cuda")
+output = model(input)
+print(f"{output.shape=}")
+```
+
+```
+output.shape=torch.Size([10, 10])
+```
+
 Now, let's compile our model ahead-of-time. We will use `input` created above to pass
 to `torch.export`. This will yield a `torch.export.ExportedProgram` which we can compile.
 
+```
+path = torch._inductor.aoti_compile_and_package(
+ torch.export.export(model, args=(input,))
+)
+```
+
+```
+/usr/lib/python3.10/copyreg.py:101: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+ return cls.__new__(cls, *args)
+/var/lib/ci-user/.local/lib/python3.10/site-packages/torch/_inductor/compile_fx.py:320: UserWarning: TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
+ warnings.warn(
+```
+
 We can load from this `path` and use it to perform inference.
+
+```
+compiled_binary = torch._inductor.aoti_load_package(path)
+output_compiled = compiled_binary(input)
+print(f"{output_compiled.shape=}")
+```
+
+```
+output_compiled.shape=torch.Size([10, 10])
+```
 
 ## Compiling _regions_ of the model ahead-of-time
 
@@ -69,6 +141,22 @@ Since the compute pattern is shared by all the blocks that
 are repeated in a model (`Layer` instances in this cases), we can just
 compile a single block and let the inductor reuse it.
 
+```
+model = Model().cuda()
+path = torch._inductor.aoti_compile_and_package(
+ torch.export.export(model.layers[0], args=(input,)),
+ inductor_configs={
+ # compile artifact w/o saving params in the artifact
+ "aot_inductor.package_constants_in_so": False,
+ }
+)
+```
+
+```
+/usr/lib/python3.10/copyreg.py:101: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+ return cls.__new__(cls, *args)
+```
+
 An exported program (`torch.export.ExportedProgram`) contains the Tensor computation,
 a `state_dict` containing tensor values of all lifted parameters and buffer alongside
 other metadata. We specify the `aot_inductor.package_constants_in_so` to be `False` to
@@ -76,6 +164,22 @@ not serialize the model parameters in the generated artifact.
 
 Now, when loading the compiled binary, we can reuse the existing parameters of
 each block. This lets us take advantage of the compiled binary obtained above.
+
+```
+for layer in model.layers:
+ compiled_layer = torch._inductor.aoti_load_package(path)
+ compiled_layer.load_constants(
+ layer.state_dict(), check_full_update=True, user_managed=True
+ )
+ layer.forward = compiled_layer
+
+output_regional_compiled = model(input)
+print(f"{output_regional_compiled.shape=}")
+```
+
+```
+output_regional_compiled.shape=torch.Size([10, 10])
+```
 
 Just like JIT regional compilation, compiling regions within a model ahead-of-time
 leads to significantly reduced cold start times. The actual number will vary from
@@ -90,6 +194,65 @@ reducing the cold start times.
 
 Next, let's measure the compilation time of the full model and the regional compilation.
 
+```
+def measure_compile_time(input, regional=False):
+ start = perf_counter()
+ model = aot_compile_load_model(regional=regional)
+ torch.cuda.synchronize()
+ end = perf_counter()
+ # make sure the model works.
+ _ = model(input)
+ return end - start
+
+def aot_compile_load_model(regional=False) -> torch.nn.Module:
+ input = torch.randn(10, 10, device="cuda")
+ model = Model().cuda()
+
+ inductor_configs = {}
+ if regional:
+ inductor_configs = {"aot_inductor.package_constants_in_so": False}
+
+ # Reset the compiler caches to ensure no reuse between different runs
+ torch.compiler.reset()
+ with torch._inductor.utils.fresh_inductor_cache():
+ path = torch._inductor.aoti_compile_and_package(
+ torch.export.export(
+ model.layers[0] if regional else model,
+ args=(input,)
+ ),
+ inductor_configs=inductor_configs,
+ )
+
+ if regional:
+ for layer in model.layers:
+ compiled_layer = torch._inductor.aoti_load_package(path)
+ compiled_layer.load_constants(
+ layer.state_dict(), check_full_update=True, user_managed=True
+ )
+ layer.forward = compiled_layer
+ else:
+ model = torch._inductor.aoti_load_package(path)
+ return model
+
+input = torch.randn(10, 10, device="cuda")
+full_model_compilation_latency = measure_compile_time(input, regional=False)
+print(f"Full model compilation time = {full_model_compilation_latency:.2f} seconds")
+
+regional_compilation_latency = measure_compile_time(input, regional=True)
+print(f"Regional compilation time = {regional_compilation_latency:.2f} seconds")
+
+assert regional_compilation_latency < full_model_compilation_latency
+```
+
+```
+/usr/lib/python3.10/copyreg.py:101: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+ return cls.__new__(cls, *args)
+Full model compilation time = 11.58 seconds
+/usr/lib/python3.10/copyreg.py:101: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+ return cls.__new__(cls, *args)
+Regional compilation time = 5.03 seconds
+```
+
 There may also be layers in a model incompatible with compilation. So,
 full compilation will result in a fragmented computation graph resulting
 in potential latency degradation. In these case, regional compilation
@@ -103,11 +266,7 @@ blocks, which is typically seen in large generative models. We used this
 recipe on various models to speed up real-time performance. Learn more
 [here](https://huggingface.co/blog/zerogpu-aoti).
 
-```
-# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
-```
-
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 43.163 seconds)
 
 [`Download Jupyter notebook: regional_aot.ipynb`](../_downloads/358714d0b9f9354d8e8cd3af8154ba50/regional_aot.ipynb)
 
