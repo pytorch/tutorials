@@ -20,13 +20,6 @@ Follow along with the video below or on [youtube](https://www.youtube.com/watch?
 To run this tutorial, you'll need to install PyTorch, TorchVision,
 Matplotlib, and TensorBoard.
 
-With `conda`:
-
-```
-conda install pytorch torchvision -c pytorch
-conda install matplotlib tensorboard
-```
-
 With `pip`:
 
 ```
