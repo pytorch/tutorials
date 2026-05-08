@@ -193,9 +193,9 @@ please check out [Optional: Data Parallelism](data_parallel_tutorial.html).
 ## Where do I go next?
 
 - [Train neural nets to play video games](../../intermediate/reinforcement_q_learning.html)
-- [Train a state-of-the-art ResNet network on imagenet](https://github.com/pytorch/examples/tree/master/imagenet)
-- [Train a face generator using Generative Adversarial Networks](https://github.com/pytorch/examples/tree/master/dcgan)
-- [Train a word-level language model using Recurrent LSTM networks](https://github.com/pytorch/examples/tree/master/word_language_model)
+- [Train a state-of-the-art ResNet network on imagenet](https://github.com/pytorch/examples/tree/main/imagenet)
+- [Train a face generator using Generative Adversarial Networks](https://github.com/pytorch/examples/tree/main/dcgan)
+- [Train a word-level language model using Recurrent LSTM networks](https://github.com/pytorch/examples/tree/main/word_language_model)
 - [More examples](https://github.com/pytorch/examples)
 - [More tutorials](https://github.com/pytorch/tutorials)
 - [Discuss PyTorch on the Forums](https://discuss.pytorch.org/)

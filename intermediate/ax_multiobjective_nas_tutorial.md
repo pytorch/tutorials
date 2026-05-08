@@ -230,7 +230,7 @@ for their help with integrating TorchX with Ax.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: ax_multiobjective_nas_tutorial.ipynb`](../_downloads/ad03db8275f44695d56f05ca66e808fa/ax_multiobjective_nas_tutorial.ipynb)
 

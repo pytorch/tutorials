@@ -63,9 +63,9 @@ print(A) # Quick visual check
 ```
 
 ```
-tensor([[0.8627, 0.3537, 0.2552],
- [0.3537, 0.7302, 0.4310],
- [0.2552, 0.4310, 0.6271]])
+tensor([[0.8155, 0.0625, 0.8990],
+ [0.0625, 0.1134, 0.6530],
+ [0.8990, 0.6530, 0.8431]])
 ```
 
 We can then use this idea to implement a linear layer with symmetric weights
@@ -141,9 +141,9 @@ print(A) # Quick visual check
 ```
 
 ```
-tensor([[ 0.5399, -0.0897, 0.4565],
- [-0.0897, -0.4838, 0.5683],
- [ 0.4565, 0.5683, -0.1598]], grad_fn=<AddBackward0>)
+tensor([[-0.2472, 0.3558, 0.2020],
+ [ 0.3558, -0.5042, -0.1211],
+ [ 0.2020, -0.1211, 0.4649]], grad_fn=<AddBackward0>)
 ```
 
 We can do the same thing with any other layer. For example, we can create a CNN with
@@ -165,12 +165,12 @@ print(cnn.weight[2, 2])
 ```
 
 ```
-tensor([[ 0.0000, -0.0457, -0.1099],
- [ 0.0457, 0.0000, -0.0338],
- [ 0.1099, 0.0338, 0.0000]], grad_fn=<SelectBackward0>)
-tensor([[ 0.0000, 0.1477, 0.1265],
- [-0.1477, 0.0000, 0.0365],
- [-0.1265, -0.0365, 0.0000]], grad_fn=<SelectBackward0>)
+tensor([[ 0.0000, 0.0152, 0.0432],
+ [-0.0152, 0.0000, 0.0790],
+ [-0.0432, -0.0790, 0.0000]], grad_fn=<SelectBackward0>)
+tensor([[ 0.0000, -0.0643, 0.0202],
+ [ 0.0643, 0.0000, 0.0522],
+ [-0.0202, -0.0522, 0.0000]], grad_fn=<SelectBackward0>)
 ```
 
 ## Inspecting a parametrized module
@@ -250,10 +250,10 @@ print(dict(layer.named_parameters()))
 
 ```
 {'bias': Parameter containing:
-tensor([ 0.5199, 0.3290, -0.0801], requires_grad=True), 'parametrizations.weight.original': Parameter containing:
-tensor([[ 0.0440, -0.0268, -0.2095],
- [ 0.4412, -0.0272, 0.4580],
- [-0.0363, -0.3654, 0.2196]], requires_grad=True)}
+tensor([-0.4866, -0.1177, -0.0083], requires_grad=True), 'parametrizations.weight.original': Parameter containing:
+tensor([[-0.3308, -0.4555, -0.3303],
+ [ 0.0967, -0.0632, -0.2613],
+ [ 0.4991, 0.0190, 0.0462]], requires_grad=True)}
 ```
 
 It now sits under `layer.parametrizations.weight.original`
@@ -264,9 +264,9 @@ print(layer.parametrizations.weight.original)
 
 ```
 Parameter containing:
-tensor([[ 0.0440, -0.0268, -0.2095],
- [ 0.4412, -0.0272, 0.4580],
- [-0.0363, -0.3654, 0.2196]], requires_grad=True)
+tensor([[-0.3308, -0.4555, -0.3303],
+ [ 0.0967, -0.0632, -0.2613],
+ [ 0.4991, 0.0190, 0.0462]], requires_grad=True)
 ```
 
 Besides these three small differences, the parametrization is doing exactly the same
@@ -349,7 +349,7 @@ print(torch.dist(X.T @ X, torch.eye(3))) # X is orthogonal
 ```
 
 ```
-tensor(5.9605e-08, grad_fn=<DistBackward0>)
+tensor(3.8804e-08, grad_fn=<DistBackward0>)
 ```
 
 This may also be used to prune a parametrized module, or to reuse parametrizations. For example,
@@ -377,8 +377,8 @@ print((torch.linalg.eigvalsh(X) > 0.).all()) # X is positive definite
 ```
 
 ```
-tensor(8.1755e-07, grad_fn=<DistBackward0>)
-tensor(2.1073e-08, grad_fn=<DistBackward0>)
+tensor(6.7418e-06, grad_fn=<DistBackward0>)
+tensor(4.2147e-08, grad_fn=<DistBackward0>)
 tensor(True)
 ```
 
@@ -455,7 +455,7 @@ print(torch.dist(layer_orthogonal.weight, X)) # layer_orthogonal.weight == X
 ```
 
 ```
-tensor(2.7618, grad_fn=<DistBackward0>)
+tensor(2.0785, grad_fn=<DistBackward0>)
 ```
 
 This initialization step can be written more succinctly as
@@ -502,16 +502,16 @@ print(f"\nInitialized weight:\n{layer.weight}")
 
 ```
 Initialization matrix:
-tensor([[0.1757, 0.4710, 0.7066],
- [0.7102, 0.6342, 0.4077],
- [0.7021, 0.0822, 0.7871],
- [0.6944, 0.2017, 0.4063]])
+tensor([[3.9920e-01, 5.2088e-01, 8.8771e-01],
+ [4.5370e-01, 6.2376e-01, 4.3672e-01],
+ [5.2631e-01, 6.1613e-04, 8.6040e-01],
+ [1.8436e-01, 6.9048e-01, 2.9032e-01]])
 
 Initialized weight:
-tensor([[0.1757, 0.4710, 0.7066],
- [0.0000, 0.6342, 0.4077],
- [0.7021, 0.0822, 0.7871],
- [0.6944, 0.0000, 0.4063]], grad_fn=<MulBackward0>)
+tensor([[3.9920e-01, 5.2088e-01, 0.0000e+00],
+ [4.5370e-01, 6.2376e-01, 0.0000e+00],
+ [5.2631e-01, 6.1613e-04, 8.6040e-01],
+ [1.8436e-01, 6.9048e-01, 0.0000e+00]], grad_fn=<MulBackward0>)
 ```
 
 ## Removing parametrizations
@@ -538,9 +538,9 @@ print(layer.weight)
 Before:
 Linear(in_features=3, out_features=3, bias=True)
 Parameter containing:
-tensor([[-0.4931, 0.5590, -0.0801],
- [ 0.2996, -0.2757, 0.4940],
- [ 0.5435, 0.2553, 0.2608]], requires_grad=True)
+tensor([[ 0.1078, -0.5584, -0.3319],
+ [ 0.1462, -0.0172, -0.1068],
+ [-0.3083, 0.0238, -0.1956]], requires_grad=True)
 
 Parametrized:
 ParametrizedLinear(
@@ -551,16 +551,16 @@ ParametrizedLinear(
  )
  )
 )
-tensor([[ 0.0000, 0.5590, -0.0801],
- [-0.5590, 0.0000, 0.4940],
- [ 0.0801, -0.4940, 0.0000]], grad_fn=<SubBackward0>)
+tensor([[ 0.0000, -0.5584, -0.3319],
+ [ 0.5584, 0.0000, -0.1068],
+ [ 0.3319, 0.1068, 0.0000]], grad_fn=<SubBackward0>)
 
 After. Weight has skew-symmetric values but it is unconstrained:
 Linear(in_features=3, out_features=3, bias=True)
 Parameter containing:
-tensor([[ 0.0000, 0.5590, -0.0801],
- [-0.5590, 0.0000, 0.4940],
- [ 0.0801, -0.4940, 0.0000]], requires_grad=True)
+tensor([[ 0.0000, -0.5584, -0.3319],
+ [ 0.5584, 0.0000, -0.1068],
+ [ 0.3319, 0.1068, 0.0000]], requires_grad=True)
 ```
 
 When removing a parametrization, we may choose to leave the original parameter (i.e. that in
@@ -586,9 +586,9 @@ print(layer.weight)
 Before:
 Linear(in_features=3, out_features=3, bias=True)
 Parameter containing:
-tensor([[ 0.0255, 0.5619, -0.5489],
- [ 0.3822, -0.4281, 0.5075],
- [-0.2563, -0.1984, -0.2294]], requires_grad=True)
+tensor([[-0.1926, 0.0986, -0.3033],
+ [ 0.0010, -0.5083, 0.1356],
+ [-0.1665, -0.2469, -0.5287]], requires_grad=True)
 
 Parametrized:
 ParametrizedLinear(
@@ -599,15 +599,15 @@ ParametrizedLinear(
  )
  )
 )
-tensor([[ 0.0000, 0.5619, -0.5489],
- [-0.5619, 0.0000, 0.5075],
- [ 0.5489, -0.5075, 0.0000]], grad_fn=<SubBackward0>)
+tensor([[ 0.0000, 0.0986, -0.3033],
+ [-0.0986, 0.0000, 0.1356],
+ [ 0.3033, -0.1356, 0.0000]], grad_fn=<SubBackward0>)
 
 After. Same as Before:
 Linear(in_features=3, out_features=3, bias=True)
 Parameter containing:
-tensor([[ 0.0000, 0.5619, -0.5489],
- [ 0.0000, 0.0000, 0.5075],
+tensor([[ 0.0000, 0.0986, -0.3033],
+ [ 0.0000, 0.0000, 0.1356],
  [ 0.0000, 0.0000, 0.0000]], requires_grad=True)
 ```
 
