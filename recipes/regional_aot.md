@@ -247,7 +247,7 @@ assert regional_compilation_latency < full_model_compilation_latency
 ```
 /usr/lib/python3.10/copyreg.py:101: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
  return cls.__new__(cls, *args)
-Full model compilation time = 11.31 seconds
+Full model compilation time = 11.39 seconds
 /usr/lib/python3.10/copyreg.py:101: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
  return cls.__new__(cls, *args)
 Regional compilation time = 4.78 seconds
@@ -266,7 +266,7 @@ blocks, which is typically seen in large generative models. We used this
 recipe on various models to speed up real-time performance. Learn more
 [here](https://huggingface.co/blog/zerogpu-aoti).
 
-**Total running time of the script:** (0 minutes 41.312 seconds)
+**Total running time of the script:** (0 minutes 41.469 seconds)
 
 [`Download Jupyter notebook: regional_aot.ipynb`](../_downloads/358714d0b9f9354d8e8cd3af8154ba50/regional_aot.ipynb)
 

@@ -2839,7 +2839,7 @@ document.write(`
 to download the full example code.</p>
 </div>
 <section class="sphx-glr-example-title" id="pytorch-tensors">
-<span id="sphx-glr-beginner-examples-tensor-polynomial-tensor-py"></span><h1>PyTorch: Tensors<a class="headerlink" href="#pytorch-tensors" title="Link to this heading">#</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Dec 03, 2020 | Last Updated: May 08, 2026 | Last Verified: Nov 05, 2024</p>
+<span id="sphx-glr-beginner-examples-tensor-polynomial-tensor-py"></span><h1>PyTorch: Tensors<a class="headerlink" href="#pytorch-tensors" title="Link to this heading">#</a></h1><p class="date-info-last-verified" style="color: #6c6c6d; font-size: small;">Created On: Dec 03, 2020 | Last Updated: Sep 29, 2025 | Last Verified: Nov 05, 2024</p>
 <p>A third order polynomial, trained to predict <span class="math">\(y=\sin(x)\)</span> from <span class="math">\(-\pi\)</span>
 to <span class="math">\(\pi\)</span> by minimizing squared Euclidean distance.</p>
 <p>This implementation uses PyTorch tensors to manually compute the forward pass,
@@ -2850,40 +2850,42 @@ a generic n-dimensional array to be used for arbitrary numeric computation.</p>
 <p>The biggest difference between a numpy array and a PyTorch Tensor is that
 a PyTorch Tensor can run on either CPU or GPU. To run operations on the GPU,
 just cast the Tensor to a cuda datatype.</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>99 790.0559692382812
-199 549.7947998046875
-299 383.794189453125
-399 268.98193359375
-499 189.4921875
-599 134.4034881591797
-699 96.18841552734375
-799 69.65364837646484
-899 51.212276458740234
-999 38.38441467285156
-1099 29.453691482543945
-1199 23.230966567993164
-1299 18.891754150390625
-1399 15.863533973693848
-1499 13.748701095581055
-1599 12.270726203918457
-1699 11.237112045288086
-1799 10.513790130615234
-1899 10.007309913635254
-1999 9.652443885803223
-Result: y = 0.028725096955895424 + 0.8470777869224548 x + -0.004955556709319353 x^2 + -0.09195590019226074 x^3
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>99 2817.53076171875
+199 1875.147216796875
+299 1249.3450927734375
+399 833.6575927734375
+499 557.4564208984375
+599 373.87896728515625
+699 251.823486328125
+799 170.64385986328125
+899 116.63096618652344
+999 80.67913818359375
+1099 56.73923110961914
+1199 40.79128646850586
+1299 30.162139892578125
+1399 23.07457160949707
+1499 18.3460693359375
+1599 15.189774513244629
+1699 13.081764221191406
+1799 11.673008918762207
+1899 10.73098373413086
+1999 10.100631713867188
+Result: y = 0.017516303807497025 + 0.8258533477783203 x + -0.003021855605766177 x^2 + -0.08893691003322601 x^3
 </pre></div>
 </div>
 <div class="line-block">
 <div class="line"><br/></div>
 </div>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+
 
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">dtype</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">torch</span><span class="o">.</span><span class="n">float</span></a>
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">torch</span><span class="o">.</span><span class="n">device</span></a><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
 <span class="c1"># device = torch.device("cuda:0") # Uncomment this to run on GPU</span>
 
 <span class="c1"># Create random input and output data</span>
-<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.linspace.html#torch.linspace" title="torch.linspace"><span class="n">torch</span><span class="o">.</span><span class="n">linspace</span></a><span class="p">(</span><span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">dtype</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">dtype</span></a><span class="p">)</span>
+<a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.linspace.html#torch.linspace" title="torch.linspace"><span class="n">torch</span><span class="o">.</span><span class="n">linspace</span></a><span class="p">(</span><span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="torch.device"><span class="n">device</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">dtype</span></a><span class="o">=</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="torch.dtype"><span class="n">dtype</span></a><span class="p">)</span>
 <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">y</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-function" href="https://docs.pytorch.org/docs/stable/generated/torch.sin.html#torch.sin" title="torch.sin"><span class="n">torch</span><span class="o">.</span><span class="n">sin</span></a><span class="p">(</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">x</span></a><span class="p">)</span>
 
 <span class="c1"># Randomly initialize weights</span>
@@ -2919,7 +2921,7 @@ Result: y = 0.028725096955895424 + 0.8470777869224548 x + -0.004955556709319353 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Result: y = </span><span class="si">{</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">a</span></a><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">b</span></a><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x + </span><span class="si">{</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">c</span></a><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^2 + </span><span class="si">{</span><a class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-class sphx-glr-backref-instance" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="torch.Tensor"><span class="n">d</span></a><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^3'</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.216 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.223 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-examples-tensor-polynomial-tensor-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/e5fb02f2aefe0d0ecaec99610c21a513/polynomial_tensor.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">polynomial_tensor.ipynb</span></code></a></p>
@@ -3136,7 +3138,7 @@ Result: y = 0.028725096955895424 + 0.8470777869224548 x + -0.004955556709319353 
        "headline": "PyTorch: Tensors",
        "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment.",
        "url": "/beginner/examples_tensor/polynomial_tensor.html",
-       "articleBody": "Note Go to the end to download the full example code. PyTorch: Tensors# A third order polynomial, trained to predict \\(y=\\sin(x)\\) from \\(-\\pi\\) to \\(\\pi\\) by minimizing squared Euclidean distance. This implementation uses PyTorch tensors to manually compute the forward pass, loss, and backward pass. A PyTorch Tensor is basically the same as a numpy array: it does not know anything about deep learning or computational graphs or gradients, and is just a generic n-dimensional array to be used for arbitrary numeric computation. The biggest difference between a numpy array and a PyTorch Tensor is that a PyTorch Tensor can run on either CPU or GPU. To run operations on the GPU, just cast the Tensor to a cuda datatype. 99 790.0559692382812 199 549.7947998046875 299 383.794189453125 399 268.98193359375 499 189.4921875 599 134.4034881591797 699 96.18841552734375 799 69.65364837646484 899 51.212276458740234 999 38.38441467285156 1099 29.453691482543945 1199 23.230966567993164 1299 18.891754150390625 1399 15.863533973693848 1499 13.748701095581055 1599 12.270726203918457 1699 11.237112045288086 1799 10.513790130615234 1899 10.007309913635254 1999 9.652443885803223 Result: y = 0.028725096955895424 + 0.8470777869224548 x + -0.004955556709319353 x^2 + -0.09195590019226074 x^3 import torch dtype = torch.float device = torch.device(\"cpu\") # device = torch.device(\"cuda:0\") # Uncomment this to run on GPU # Create random input and output data x = torch.linspace(-torch.pi, torch.pi, 2000, device=device, dtype=dtype) y = torch.sin(x) # Randomly initialize weights a = torch.randn((), device=device, dtype=dtype) b = torch.randn((), device=device, dtype=dtype) c = torch.randn((), device=device, dtype=dtype) d = torch.randn((), device=device, dtype=dtype) learning_rate = 1e-6 for t in range(2000): # Forward pass: compute predicted y y_pred = a + b * x + c * x ** 2 + d * x ** 3 # Compute and print loss loss = (y_pred - y).pow(2).sum().item() if t % 100 == 99: print(t, loss) # Backprop to compute gradients of a, b, c, d with respect to loss grad_y_pred = 2.0 * (y_pred - y) grad_a = grad_y_pred.sum() grad_b = (grad_y_pred * x).sum() grad_c = (grad_y_pred * x ** 2).sum() grad_d = (grad_y_pred * x ** 3).sum() # Update weights using gradient descent a -= learning_rate * grad_a b -= learning_rate * grad_b c -= learning_rate * grad_c d -= learning_rate * grad_d print(f\u0027Result: y = {a.item()} + {b.item()} x + {c.item()} x^2 + {d.item()} x^3\u0027) Total running time of the script: (0 minutes 0.216 seconds) Download Jupyter notebook: polynomial_tensor.ipynb Download Python source code: polynomial_tensor.py Download zipped: polynomial_tensor.zip",
+       "articleBody": "Note Go to the end to download the full example code. PyTorch: Tensors# A third order polynomial, trained to predict \\(y=\\sin(x)\\) from \\(-\\pi\\) to \\(\\pi\\) by minimizing squared Euclidean distance. This implementation uses PyTorch tensors to manually compute the forward pass, loss, and backward pass. A PyTorch Tensor is basically the same as a numpy array: it does not know anything about deep learning or computational graphs or gradients, and is just a generic n-dimensional array to be used for arbitrary numeric computation. The biggest difference between a numpy array and a PyTorch Tensor is that a PyTorch Tensor can run on either CPU or GPU. To run operations on the GPU, just cast the Tensor to a cuda datatype. 99 2817.53076171875 199 1875.147216796875 299 1249.3450927734375 399 833.6575927734375 499 557.4564208984375 599 373.87896728515625 699 251.823486328125 799 170.64385986328125 899 116.63096618652344 999 80.67913818359375 1099 56.73923110961914 1199 40.79128646850586 1299 30.162139892578125 1399 23.07457160949707 1499 18.3460693359375 1599 15.189774513244629 1699 13.081764221191406 1799 11.673008918762207 1899 10.73098373413086 1999 10.100631713867188 Result: y = 0.017516303807497025 + 0.8258533477783203 x + -0.003021855605766177 x^2 + -0.08893691003322601 x^3 import torch import math dtype = torch.float device = torch.device(\"cpu\") # device = torch.device(\"cuda:0\") # Uncomment this to run on GPU # Create random input and output data x = torch.linspace(-math.pi, math.pi, 2000, device=device, dtype=dtype) y = torch.sin(x) # Randomly initialize weights a = torch.randn((), device=device, dtype=dtype) b = torch.randn((), device=device, dtype=dtype) c = torch.randn((), device=device, dtype=dtype) d = torch.randn((), device=device, dtype=dtype) learning_rate = 1e-6 for t in range(2000): # Forward pass: compute predicted y y_pred = a + b * x + c * x ** 2 + d * x ** 3 # Compute and print loss loss = (y_pred - y).pow(2).sum().item() if t % 100 == 99: print(t, loss) # Backprop to compute gradients of a, b, c, d with respect to loss grad_y_pred = 2.0 * (y_pred - y) grad_a = grad_y_pred.sum() grad_b = (grad_y_pred * x).sum() grad_c = (grad_y_pred * x ** 2).sum() grad_d = (grad_y_pred * x ** 3).sum() # Update weights using gradient descent a -= learning_rate * grad_a b -= learning_rate * grad_b c -= learning_rate * grad_c d -= learning_rate * grad_d print(f\u0027Result: y = {a.item()} + {b.item()} x + {c.item()} x^2 + {d.item()} x^3\u0027) Total running time of the script: (0 minutes 0.223 seconds) Download Jupyter notebook: polynomial_tensor.ipynb Download Python source code: polynomial_tensor.py Download zipped: polynomial_tensor.zip",
        "author": {
          "@type": "Organization",
          "name": "PyTorch Contributors",
