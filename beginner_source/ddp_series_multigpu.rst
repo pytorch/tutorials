@@ -202,7 +202,7 @@ Running the distributed training job
 Here's what the code looks like:
 
 .. code-block:: python
-   
+
    def main(rank, world_size, total_epochs, save_every):
       ddp_setup(rank, world_size)
       dataset, model, optimizer = load_train_objs()
