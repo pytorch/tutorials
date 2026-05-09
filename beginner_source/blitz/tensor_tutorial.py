@@ -106,6 +106,8 @@ print(f"Device tensor is stored on: {tensor.device}")
 
 # We move our tensor to the GPU if available
 device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else 'cpu'
+tensor = tensor.to(device)
+print(f"Device tensor is stored on: {tensor.device}")
 
 
 ######################################################################
