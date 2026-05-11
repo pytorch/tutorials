@@ -21,7 +21,7 @@ torch.manual_seed(1)
 ```
 
 ```
-<torch._C.Generator object at 0x7f51a16133f0>
+<torch._C.Generator object at 0x7fe76b54f1d0>
 ```
 
 ### Creating Tensors
@@ -241,7 +241,7 @@ print(z.grad_fn)
 
 ```
 tensor([5., 7., 9.], grad_fn=<AddBackward0>)
-<AddBackward0 object at 0x7f5106db9b40>
+<AddBackward0 object at 0x7fe6c26b3760>
 ```
 
 So Tensors know what created them. z knows that it wasn't read in from
@@ -260,7 +260,7 @@ print(s.grad_fn)
 
 ```
 tensor(21., grad_fn=<SumBackward0>)
-<SumBackward0 object at 0x7f5106dbba00>
+<SumBackward0 object at 0x7fe6c283c5e0>
 ```
 
 So now, what is the derivative of this sum with respect to the first
@@ -339,7 +339,7 @@ print(new_z.grad_fn)
 ```
 False False
 None
-<AddBackward0 object at 0x7f50eeea7100>
+<AddBackward0 object at 0x7fe6c26b2350>
 True
 None
 ```
@@ -362,7 +362,7 @@ True
 False
 ```
 
-**Total running time of the script:** (0 minutes 0.329 seconds)
+**Total running time of the script:** (0 minutes 0.411 seconds)
 
 [`Download Jupyter notebook: pytorch_tutorial.ipynb`](../../_downloads/c4bf1a4ba1714ace73ad54fe5c6d9d00/pytorch_tutorial.ipynb)
 

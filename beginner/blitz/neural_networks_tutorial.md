@@ -129,7 +129,9 @@ You need to clear the existing gradients though, else gradients will be
 accumulated to existing gradients.
 
 Now we shall call `loss.backward()`, and have a look at conv1's bias
-gradients before and after the backward.
+gradients before and after the backward. Since we have not introduced an
+optimizer yet, we clear the gradients directly on the model. Once using an
+optimizer, prefer `optimizer.zero_grad()` as shown below.
 
 Now, we have seen how to use loss functions.
 
@@ -157,7 +159,8 @@ We can implement this using simple Python code:
 ```
 learning_rate = 0.01
 for f in net.parameters():
- f.data.sub_(f.grad.data * learning_rate)
+ with torch.no_grad():
+ f -= f.grad * learning_rate
 ```
 
 However, as you use neural networks, you want to use various different

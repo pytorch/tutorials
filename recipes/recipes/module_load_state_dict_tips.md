@@ -89,7 +89,7 @@ print(f"loading time without mmap={end_time - start_time}")
 ```
 
 ```
-loading time without mmap=0.032340288162231445
+loading time without mmap=0.031795501708984375
 ```
 
 The `mmap` keyword argument to `torch.load` attempts to solve the above two
@@ -107,7 +107,7 @@ print(f"loading time with mmap={end_time - start_time}")
 ```
 
 ```
-loading time with mmap=0.002758502960205078
+loading time with mmap=0.00735783576965332
 ```
 
 As mentioned above, one can use this argument to do per-tensor processing on a
@@ -203,7 +203,7 @@ To recap, in this tutorial we learned about `torch.load(mmap=True)`, the
 `nn.Module.load_state_dict(assign=True)` as well as how these tools could
 be used to aid when loading a model from a checkpoint.
 
-**Total running time of the script:** (0 minutes 0.545 seconds)
+**Total running time of the script:** (0 minutes 0.549 seconds)
 
 [`Download Jupyter notebook: module_load_state_dict_tips.ipynb`](../../_downloads/fcca435d443f10eec1be8769b2b3a010/module_load_state_dict_tips.ipynb)
 
