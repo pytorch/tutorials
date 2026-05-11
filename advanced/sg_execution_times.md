@@ -4,7 +4,7 @@
 
 | Example | Time | Mem (MB) |
 | --- | --- | --- |
-| [Neural Transfer Using PyTorch](neural_style_tutorial.html#sphx-glr-advanced-neural-style-tutorial-py) (`neural_style_tutorial.py`) | 00:00.003 | 0.0 |
+| [Neural Transfer Using PyTorch](neural_style_tutorial.html#sphx-glr-advanced-neural-style-tutorial-py) (`neural_style_tutorial.py`) | 00:00.002 | 0.0 |
 | [TorchRL objectives: Coding a DDPG loss](coding_ddpg.html#sphx-glr-advanced-coding-ddpg-py) (`coding_ddpg.py`) | 00:00.002 | 0.0 |
 | [Custom Python Operators](python_custom_ops.html#sphx-glr-advanced-python-custom-ops-py) (`python_custom_ops.py`) | 00:00.002 | 0.0 |
 | [Pendulum: Writing your environment and transforms with TorchRL](pendulum.html#sphx-glr-advanced-pendulum-py) (`pendulum.py`) | 00:00.002 | 0.0 |
