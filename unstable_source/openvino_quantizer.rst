@@ -15,7 +15,7 @@ Introduction
 
     This is an experimental feature, the quantization API is subject to change.
 
-This tutorial demonstrates how to use ``OpenVINOQuantizer`` from `Neural Network Compression Framework (NNCF) <https://github.com/openvinotoolkit/nncf/tree/develop>`_ in PyTorch 2 Export Quantization flow to generate a quantized model customized for the `OpenVINO torch.compile backend <https://docs.openvino.ai/2024/openvino-workflow/torch-compile.html>`_ and explains how to lower the quantized model into the `OpenVINO <https://docs.openvino.ai/2024/index.html>`_ representation.
+This tutorial demonstrates how to use ``OpenVINOQuantizer`` from `Executorch <https://github.com/pytorch/executorch/>`_ in PyTorch 2 Export Quantization flow to generate a quantized model customized for the `OpenVINO torch.compile backend <https://docs.openvino.ai/2024/openvino-workflow/torch-compile.html>`_ and explains how to lower the quantized model into the `OpenVINO <https://docs.openvino.ai/2024/index.html>`_ representation.
 ``OpenVINOQuantizer`` unlocks the full potential of low-precision OpenVINO kernels due to the placement of quantizers designed specifically for the OpenVINO.
 
 The PyTorch 2 export quantization flow uses ``torch.export`` to capture the model into a graph and performs quantization transformations on top of the ATen graph.
@@ -135,7 +135,7 @@ Below is the list of essential parameters and their description:
 
     * ``INT8_TRANSFORMER`` - special quantization scheme to preserve accuracy after quantization of Transformer models (BERT, Llama, etc.). None is default, i.e. no specific scheme is defined.
 
-    * ``INT8WO_SYM``, ``INT8WO_ASYM``, ``INT4WO_SYM``, ``INT4WO_ASYM`` - these are weights-only quantization schemes. They apply vanilla min-max quantization to model weights to INT8/INT4 with Symmetric and Asymmetric schemes.
+    * ``INT8WO_SYM``, ``INT8WO_ASYM``, ``INT4WO_SYM``, ``INT4WO_ASYM`` - these are weights-only quantization schemes. They apply simple min-max quantization to model weights to INT8/INT4 with Symmetric and Asymmetric schemes.
 
     .. code-block:: python
 
