@@ -193,7 +193,7 @@ English (perhaps because of overlap with other languages).
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: char_rnn_classification_tutorial.ipynb`](../_downloads/13b143c2380f4768d9432d808ad50799/char_rnn_classification_tutorial.ipynb)
 

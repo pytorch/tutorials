@@ -163,7 +163,7 @@ Build a simple FX pass that fuses batch norm into convolution to improve perform
 
 FX
 
-![](_static/img/thumbnails/cropped/Deploying-PyTorch-in-Python-via-a-REST-API-with-Flask.png)](intermediate/torch_compile_conv_bn_fuser)
+![](_static/img/thumbnails/cropped/Deploying-PyTorch-in-Python-via-a-REST-API-with-Flask.png)](intermediate/torch_compile_conv_bn_fuser.html)
 
 [#### Building a Simple Performance Profiler with FX
 

@@ -396,7 +396,7 @@ production training jobs.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: distributed_training_with_ray_tutorial.ipynb`](../_downloads/98ac2c5de546105f5c566c256db2aaec/distributed_training_with_ray_tutorial.ipynb)
 

@@ -141,7 +141,7 @@ For more detailed information, see:
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: python_custom_ops.ipynb`](../_downloads/9878ff22933dc5322c65087cfef530a2/python_custom_ops.ipynb)
 

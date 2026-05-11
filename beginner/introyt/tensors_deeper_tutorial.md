@@ -533,7 +533,7 @@ are reflected in the other:
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: tensors_deeper_tutorial.ipynb`](../../_downloads/63a0f0fc7b3ffb15d3a5ac8db3d521ee/tensors_deeper_tutorial.ipynb)
 
