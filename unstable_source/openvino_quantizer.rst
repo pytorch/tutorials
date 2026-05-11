@@ -118,7 +118,8 @@ After we capture the FX Module to be quantized, we will import the OpenVINOQuant
 
 .. code-block:: python
 
-    from nncf.experimental.torch.fx import OpenVINOQuantizer
+    from executorch.backends.openvino.quantizer import OpenVINOQuantizer
+    from executorch.backends.openvino.quantizer import QuantizationMode
 
     quantizer = OpenVINOQuantizer()
 
@@ -126,21 +127,20 @@ After we capture the FX Module to be quantized, we will import the OpenVINOQuant
 Below is the list of essential parameters and their description:
 
 
-* ``preset`` - defines quantization scheme for the model. Two types of presets are available:
+* ``mode`` - defines quantization scheme for the model. Multiple modes are supported:
 
-    * ``PERFORMANCE`` (default) - defines symmetric quantization of weights and activations
+    * ``INT8_SYM`` (default) - defines symmetric quantization of weights and activations. This is the best for performance
 
-    * ``MIXED`` - weights are quantized with symmetric quantization and the activations are quantized with asymmetric quantization. This preset is recommended for models with non-ReLU and asymmetric activation functions, e.g. ELU, PReLU, GELU, etc.
+    * ``INT8_MIXED`` - weights are quantized with symmetric quantization and the activations are quantized with asymmetric quantization. This preset is recommended for models with non-ReLU and asymmetric activation functions, e.g. ELU, PReLU, GELU, etc.
 
-    .. code-block:: python
+    * ``INT8_TRANSFORMER`` - special quantization scheme to preserve accuracy after quantization of Transformer models (BERT, Llama, etc.). None is default, i.e. no specific scheme is defined.
 
-        OpenVINOQuantizer(preset=nncf.QuantizationPreset.MIXED)
-
-* ``model_type`` - used to specify quantization scheme required for specific type of the model. Transformer is the only supported special quantization scheme to preserve accuracy after quantization of Transformer models (BERT, Llama, etc.). None is default, i.e. no specific scheme is defined.
+    * ``INT8WO_SYM``, ``INT8WO_ASYM``, ``INT4WO_SYM``, ``INT4WO_ASYM`` - these are weights-only quantization schemes. They apply vanilla min-max quantization to model weights to INT8/INT4 with Symmetric and Asymmetric schemes.
 
     .. code-block:: python
 
-        OpenVINOQuantizer(model_type=nncf.ModelType.Transformer)
+        OpenVINOQuantizer(mode=QuantizationMode.INT8_SYM)
+
 
 * ``ignored_scope`` - this parameter can be used to exclude some layers from the quantization process to preserve the model accuracy.  For example, when you want to exclude the last layer of the model from quantization.  Below are some examples of how to use this parameter:
 
