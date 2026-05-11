@@ -50,7 +50,7 @@ print(f"{nt=}")
 ```
 
 ```
-/var/lib/ci-user/.local/lib/python3.10/site-packages/torch/nested/__init__.py:256: UserWarning: The PyTorch API of nested tensors is in prototype stage and will change in the near future. We recommend specifying layout=torch.jagged when constructing a nested tensor, as this layout receives active development, has better operator coverage, and works with torch.compile. (Triggered internally at /pytorch/aten/src/ATen/NestedTensorImpl.cpp:178.)
+/usr/local/lib/python3.10/dist-packages/torch/nested/__init__.py:256: UserWarning: The PyTorch API of nested tensors is in prototype stage and will change in the near future. We recommend specifying layout=torch.jagged when constructing a nested tensor, as this layout receives active development, has better operator coverage, and works with torch.compile. (Triggered internally at /pytorch/aten/src/ATen/NestedTensorImpl.cpp:178.)
  return _nested.nested_tensor(
 nt=nested_tensor([
  tensor([[ 0., 1., 2., 3., 4., 5.],
@@ -230,32 +230,32 @@ Result of Matmul:
 Result of Dropout:
  nested_tensor([
  tensor([[[ 0.8646, 1.9258, 2.8390, -1.9998],
- [ -0.0000, 0.6710, 3.7301, -24.0928]],
+ [ -7.0462, 0.6710, 3.7301, -24.0928]],
 
  [[ -3.3959, 1.2899, -7.5805, 21.5696],
- [ -8.1640, -0.9239, -17.1650, 48.9432]]], device='cuda:0'),
- tensor([[[ -0.8017, 3.4442, -0.3162, 5.2595, 4.0282],
+ [ -0.0000, -0.9239, -17.1650, 48.9432]]], device='cuda:0'),
+ tensor([[[ -0.8017, 3.4442, -0.3162, 5.2595, 0.0000],
  [-19.8043, 11.0372, 16.1357, 28.4842, 17.6957],
- [ -0.0000, 18.6302, 0.0000, 51.7090, 31.3631]],
+ [-38.8070, 18.6302, 32.5877, 51.7090, 31.3631]],
 
- [[ 6.6050, 3.5359, 8.5781, -17.2933, 0.0000],
+ [[ 6.6050, 3.5359, 8.5781, -0.0000, 10.8996],
  [ 15.1053, 0.0000, 21.7439, -43.2226, 22.6003],
- [ 23.6055, 18.3577, 34.9098, -69.1519, 34.3011]]], device='cuda:0')
+ [ 0.0000, 0.0000, 34.9098, -69.1519, 34.3011]]], device='cuda:0')
 ], device='cuda:0')
 Result of Softmax:
  nested_tensor([
  tensor([[[8.9692e-02, 2.5920e-01, 6.4599e-01, 5.1141e-03],
- [2.2401e-02, 4.3820e-02, 9.3378e-01, 7.7075e-13]],
+ [1.9950e-05, 4.4823e-02, 9.5516e-01, 7.8840e-13]],
 
  [[1.4375e-11, 1.5583e-09, 2.1892e-13, 1.0000e+00],
- [1.5800e-25, 2.2030e-22, 1.9480e-29, 1.0000e+00]]], device='cuda:0'),
- tensor([[[1.5961e-03, 1.1144e-01, 2.5935e-03, 6.8453e-01, 1.9984e-01],
+ [5.5494e-22, 2.2030e-22, 1.9480e-29, 1.0000e+00]]], device='cuda:0'),
+ tensor([[[1.9859e-03, 1.3866e-01, 3.2269e-03, 8.5170e-01, 4.4272e-03],
  [1.0679e-21, 2.6476e-08, 4.3361e-06, 9.9998e-01, 2.0634e-05],
- [3.4921e-23, 4.3061e-15, 3.4921e-23, 1.0000e+00, 1.4585e-09]],
+ [4.8915e-40, 4.3061e-15, 4.9628e-09, 1.0000e+00, 1.4585e-09]],
 
- [[1.2136e-01, 5.6384e-03, 8.7284e-01, 5.0719e-12, 1.6426e-04],
+ [[1.2264e-02, 5.6981e-04, 8.8209e-02, 1.6600e-05, 8.9894e-01],
  [3.8999e-04, 1.0738e-10, 2.9797e-01, 1.8180e-29, 7.0164e-01],
- [7.9792e-06, 4.1963e-08, 6.4764e-01, 0.0000e+00, 3.5236e-01]]],
+ [4.4690e-16, 4.4690e-16, 6.4764e-01, 0.0000e+00, 3.5236e-01]]],
  device='cuda:0')
 ], device='cuda:0')
 ```
@@ -524,16 +524,14 @@ print("padded tensor multi-head attention takes", compiled_time_padded, "seconds
 ```
 === without torch.compile ===
 nested and padded calculations differ by 0.0
-nested tensor multi-head attention takes 0.013390112999786652 seconds
-padded tensor multi-head attention takes 0.009795884999675764 seconds
-/var/lib/ci-user/.local/lib/python3.10/site-packages/torch/_functorch/_aot_autograd/autograd_cache.py:542: UserWarning: NestedTensor does not implement _stable_hash_for_caching. For PT2-compatible tensor subclasses, it is recommended to implement _stable_hash_for_caching(self) -> str for stable AOT autograd caching.
- warn_once(
-/var/lib/ci-user/.local/lib/python3.10/site-packages/torch/_inductor/compile_fx.py:320: UserWarning: TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
+nested tensor multi-head attention takes 0.012290388000110397 seconds
+padded tensor multi-head attention takes 0.00976687500042317 seconds
+/usr/local/lib/python3.10/dist-packages/torch/_inductor/compile_fx.py:322: UserWarning: TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
  warnings.warn(
 === with torch.compile ===
 nested and padded calculations differ by 0.0
-nested tensor multi-head attention takes 0.002587316999779432 seconds
-padded tensor multi-head attention takes 0.009721387999888975 seconds
+nested tensor multi-head attention takes 0.002841140999862546 seconds
+padded tensor multi-head attention takes 0.009684723000191298 seconds
 ```
 
 Note that without `torch.compile`, the overhead of the python subclass nested tensor
@@ -547,7 +545,7 @@ print(f"Nested speedup: {compiled_time_padded / compiled_time_nested:.3f}")
 ```
 
 ```
-Nested speedup: 3.757
+Nested speedup: 3.409
 ```
 
 ## Conclusion
@@ -561,7 +559,7 @@ For more information, check out the docs for the
 
 - [Accelerating PyTorch Transformers by replacing nn.Transformer with Nested Tensors and torch.compile](https://docs.pytorch.org/tutorials/intermediate/transformer_building_blocks.html)
 
-**Total running time of the script:** (0 minutes 6.362 seconds)
+**Total running time of the script:** (0 minutes 6.229 seconds)
 
 [`Download Jupyter notebook: nestedtensor.ipynb`](../_downloads/0e22044ad9c3abd953c575aedd5e4595/nestedtensor.ipynb)
 

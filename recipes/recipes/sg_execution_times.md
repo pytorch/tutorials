@@ -1,10 +1,10 @@
 # Computation times
 
-**00:00.536** total execution time for 15 files **from recipes/recipes**:
+**00:00.551** total execution time for 15 files **from recipes/recipes**:
 
 | Example | Time | Mem (MB) |
 | --- | --- | --- |
-| [Tips for Loading an nn.Module from a Checkpoint](module_load_state_dict_tips.html#sphx-glr-recipes-recipes-module-load-state-dict-tips-py) (`module_load_state_dict_tips.py`) | 00:00.530 | 0.0 |
+| [Tips for Loading an nn.Module from a Checkpoint](module_load_state_dict_tips.html#sphx-glr-recipes-recipes-module-load-state-dict-tips-py) (`module_load_state_dict_tips.py`) | 00:00.545 | 0.0 |
 | [Reasoning about Shapes in PyTorch](reasoning_about_shapes.html#sphx-glr-recipes-recipes-reasoning-about-shapes-py) (`reasoning_about_shapes.py`) | 00:00.002 | 0.0 |
 | [Changing default device](changing_default_device.html#sphx-glr-recipes-recipes-changing-default-device-py) (`changing_default_device.py`) | 00:00.002 | 0.0 |
 | [Extension points in nn.Module for load_state_dict and tensor subclasses](swap_tensors.html#sphx-glr-recipes-recipes-swap-tensors-py) (`swap_tensors.py`) | 00:00.002 | 0.0 |

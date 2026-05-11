@@ -47,27 +47,27 @@ ds = datasets.FashionMNIST(
 
 ```
 0%| | 0.00/26.4M [00:00<?, ?B/s]
- 0%| | 65.5k/26.4M [00:00<01:10, 372kB/s]
- 1%| | 197k/26.4M [00:00<00:44, 592kB/s]
- 3%|▎ | 819k/26.4M [00:00<00:13, 1.93MB/s]
- 13%|█▎ | 3.31M/26.4M [00:00<00:03, 6.74MB/s]
- 35%|███▌ | 9.37M/26.4M [00:00<00:01, 16.7MB/s]
- 58%|█████▊ | 15.4M/26.4M [00:01<00:00, 22.6MB/s]
- 79%|███████▉ | 20.9M/26.4M [00:01<00:00, 25.4MB/s]
+ 0%| | 65.5k/26.4M [00:00<01:10, 373kB/s]
+ 1%| | 229k/26.4M [00:00<00:37, 701kB/s]
+ 3%|▎ | 885k/26.4M [00:00<00:12, 2.08MB/s]
+ 13%|█▎ | 3.47M/26.4M [00:00<00:03, 7.06MB/s]
+ 35%|███▌ | 9.34M/26.4M [00:00<00:01, 16.6MB/s]
+ 58%|█████▊ | 15.4M/26.4M [00:01<00:00, 22.7MB/s]
+ 81%|████████ | 21.3M/26.4M [00:01<00:00, 26.2MB/s]
 100%|██████████| 26.4M/26.4M [00:01<00:00, 19.9MB/s]
 
  0%| | 0.00/29.5k [00:00<?, ?B/s]
-100%|██████████| 29.5k/29.5k [00:00<00:00, 336kB/s]
+100%|██████████| 29.5k/29.5k [00:00<00:00, 337kB/s]
 
  0%| | 0.00/4.42M [00:00<?, ?B/s]
- 1%|▏ | 65.5k/4.42M [00:00<00:11, 372kB/s]
- 5%|▌ | 229k/4.42M [00:00<00:05, 701kB/s]
- 21%|██ | 918k/4.42M [00:00<00:01, 2.17MB/s]
- 83%|████████▎ | 3.67M/4.42M [00:00<00:00, 7.47MB/s]
-100%|██████████| 4.42M/4.42M [00:00<00:00, 6.25MB/s]
+ 1%|▏ | 65.5k/4.42M [00:00<00:11, 370kB/s]
+ 5%|▌ | 229k/4.42M [00:00<00:05, 706kB/s]
+ 21%|██ | 918k/4.42M [00:00<00:01, 2.18MB/s]
+ 83%|████████▎ | 3.67M/4.42M [00:00<00:00, 7.54MB/s]
+100%|██████████| 4.42M/4.42M [00:00<00:00, 6.30MB/s]
 
  0%| | 0.00/5.15k [00:00<?, ?B/s]
-100%|██████████| 5.15k/5.15k [00:00<00:00, 54.1MB/s]
+100%|██████████| 5.15k/5.15k [00:00<00:00, 67.1MB/s]
 ```
 
 ## ToImage() and ToDtype()
@@ -98,7 +98,7 @@ target_transform = v2.Lambda(
 - [Getting started with transforms v2](https://pytorch.org/vision/stable/auto_examples/transforms/plot_transforms_getting_started.html)
 - [torchvision.transforms.v2 API](https://pytorch.org/vision/stable/transforms.html#v2-api-reference-recommended)
 
-**Total running time of the script:** (0 minutes 4.313 seconds)
+**Total running time of the script:** (0 minutes 4.290 seconds)
 
 [`Download Jupyter notebook: transforms_tutorial.ipynb`](../../_downloads/9bdb71ef4a637dc36fb461904ccb7056/transforms_tutorial.ipynb)
 
