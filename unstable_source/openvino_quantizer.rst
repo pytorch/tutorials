@@ -15,7 +15,7 @@ Introduction
 
     This is an experimental feature, the quantization API is subject to change.
 
-This tutorial demonstrates how to use ``OpenVINOQuantizer`` from `Executorch <https://github.com/pytorch/executorch/>`_ in PyTorch 2 Export Quantization flow to generate a quantized model customized for the `OpenVINO torch.compile backend <https://docs.openvino.ai/2024/openvino-workflow/torch-compile.html>`_ and explains how to lower the quantized model into the `OpenVINO <https://docs.openvino.ai/2024/index.html>`_ representation.
+This tutorial demonstrates how to use ``OpenVINOQuantizer`` from `Executorch <https://github.com/pytorch/executorch/blob/main/backends/openvino/quantizer/quantizer.py>`_ in PyTorch 2 Export Quantization flow to generate a quantized model customized for the `OpenVINO torch.compile backend <https://docs.openvino.ai/2024/openvino-workflow/torch-compile.html>`_ and explains how to lower the quantized model into the `OpenVINO <https://docs.openvino.ai/2024/index.html>`_ representation.
 ``OpenVINOQuantizer`` unlocks the full potential of low-precision OpenVINO kernels due to the placement of quantizers designed specifically for the OpenVINO.
 
 The PyTorch 2 export quantization flow uses ``torch.export`` to capture the model into a graph and performs quantization transformations on top of the ATen graph.
