@@ -45,13 +45,13 @@ import torch.nn.functional as F
 class Net(nn.Module):
 
     def __init__(self):
-        super(Net, self).__init__()
+        super().__init__()
         # 1 input image channel, 6 output channels, 5x5 square convolution
         # kernel
         self.conv1 = nn.Conv2d(1, 6, 5)
         self.conv2 = nn.Conv2d(6, 16, 5)
         # an affine operation: y = Wx + b
-        self.fc1 = nn.Linear(16 * 5 * 5, 120)  # 5*5 from image dimension 
+        self.fc1 = nn.Linear(16 * 5 * 5, 120)  # 5*5 from image dimension
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
 
@@ -205,7 +205,9 @@ print(loss.grad_fn.next_functions[0][0].next_functions[0][0])  # ReLU
 #
 #
 # Now we shall call ``loss.backward()``, and have a look at conv1's bias
-# gradients before and after the backward.
+# gradients before and after the backward. Since we have not introduced an
+# optimizer yet, we clear the gradients directly on the model. Once using an
+# optimizer, prefer ``optimizer.zero_grad()`` as shown below.
 
 
 net.zero_grad()     # zeroes the gradient buffers of all parameters
@@ -246,7 +248,8 @@ print(net.conv1.bias.grad)
 #
 #     learning_rate = 0.01
 #     for f in net.parameters():
-#         f.data.sub_(f.grad.data * learning_rate)
+#         with torch.no_grad():
+#             f -= f.grad * learning_rate
 #
 # However, as you use neural networks, you want to use various different
 # update rules such as SGD, Nesterov-SGD, Adam, RMSProp, etc.
