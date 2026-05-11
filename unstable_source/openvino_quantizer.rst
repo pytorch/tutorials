@@ -165,12 +165,6 @@ Below is the list of essential parameters and their description:
         OpenVINOQuantizer(ignored_scope=nncf.IgnoredScope(subgraphs=[subgraph]))
 
 
-* ``target_device`` - defines the target device, the specificity of which will be taken into account during optimization. The following values are supported: ``ANY`` (default), ``CPU``, ``CPU_SPR``, ``GPU``, and ``NPU``.
-
-    .. code-block:: python
-
-        OpenVINOQuantizer(target_device=nncf.TargetDevice.CPU)
-
 For further details on `OpenVINOQuantizer` please see the `documentation <https://openvinotoolkit.github.io/nncf/autoapi/nncf/experimental/torch/fx/index.html#nncf.experimental.torch.fx.OpenVINOQuantizer>`_.
 
 After we import the backend-specific Quantizer, we will prepare the model for post-training quantization.
