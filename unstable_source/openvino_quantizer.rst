@@ -211,9 +211,8 @@ This should significantly speed up inference time in comparison with the eager m
 4. Optional: Improve quantized model metrics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-NNCF implements advanced quantization algorithms like `SmoothQuant <https://arxiv.org/abs/2211.10438>`_ and `BiasCorrection <https://arxiv.org/abs/1906.04721>`_, which help
-to improve the quantized model metrics while minimizing the output discrepancies between the original and compressed models.
-These advanced NNCF algorithms can be accessed via the NNCF `quantize_pt2e` API:
+NNCF implements advanced quantization algorithms like `SmoothQuant <https://arxiv.org/abs/2211.10438>`_ and `BiasCorrection <https://arxiv.org/abs/1906.04721>`_ for static activation and weights quantization. For weights-only quantization, there are `AWQ https://arxiv.org/abs/2306.00978`_ and `Scale Estimation https://github.com/openvinotoolkit/nncf/blob/develop/src/nncf/quantization/algorithms/weight_compression/scale_estimation.py`_ algorithms. These techniques help in improving the quantized model metrics while minimizing the output discrepancies between the original and compressed models.
+These advanced NNCF algorithms can be accessed via the NNCF `quantize_pt2e` API for static activation and weights or `compress_pt2e` for weights-only quantization:
 
 .. code-block:: python
 
@@ -234,7 +233,7 @@ These advanced NNCF algorithms can be accessed via the NNCF `quantize_pt2e` API:
 
 
 For further details, please see the `documentation <https://openvinotoolkit.github.io/nncf/autoapi/nncf/experimental/torch/fx/index.html#nncf.experimental.torch.fx.quantize_pt2e>`_
-and a complete `example on Resnet18 quantization <https://github.com/openvinotoolkit/nncf/blob/develop/examples/post_training_quantization/torch_fx/resnet18/README.md>`_.
+and `for some examples with llama and stable_diffusion checkout <https://github.com/openvinotoolkit/nncf/blob/develop/examples/post_training_quantization/torch_fx/resnet18/README.md>`_. For `YoloV26 example with this API <https://github.com/pytorch/executorch/tree/main/examples/models/yolo26>`
 
 Conclusion
 ------------
