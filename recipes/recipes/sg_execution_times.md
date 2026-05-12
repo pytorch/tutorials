@@ -1,13 +1,13 @@
 # Computation times
 
-**00:00.540** total execution time for 15 files **from recipes/recipes**:
+**00:00.551** total execution time for 15 files **from recipes/recipes**:
 
 | Example | Time | Mem (MB) |
 | --- | --- | --- |
-| [Tips for Loading an nn.Module from a Checkpoint](module_load_state_dict_tips.html#sphx-glr-recipes-recipes-module-load-state-dict-tips-py) (`module_load_state_dict_tips.py`) | 00:00.533 | 0.0 |
-| [Changing default device](changing_default_device.html#sphx-glr-recipes-recipes-changing-default-device-py) (`changing_default_device.py`) | 00:00.002 | 0.0 |
+| [Tips for Loading an nn.Module from a Checkpoint](module_load_state_dict_tips.html#sphx-glr-recipes-recipes-module-load-state-dict-tips-py) (`module_load_state_dict_tips.py`) | 00:00.545 | 0.0 |
 | [Extension points in nn.Module for load_state_dict and tensor subclasses](swap_tensors.html#sphx-glr-recipes-recipes-swap-tensors-py) (`swap_tensors.py`) | 00:00.002 | 0.0 |
 | [Reasoning about Shapes in PyTorch](reasoning_about_shapes.html#sphx-glr-recipes-recipes-reasoning-about-shapes-py) (`reasoning_about_shapes.py`) | 00:00.002 | 0.0 |
+| [Changing default device](changing_default_device.html#sphx-glr-recipes-recipes-changing-default-device-py) (`changing_default_device.py`) | 00:00.002 | 0.0 |
 | [Model Interpretability using Captum](Captum_Recipe.html#sphx-glr-recipes-recipes-captum-recipe-py) (`Captum_Recipe.py`) | 00:00.000 | 0.0 |
 | [Automatic Mixed Precision](amp_recipe.html#sphx-glr-recipes-recipes-amp-recipe-py) (`amp_recipe.py`) | 00:00.000 | 0.0 |
 | [SyntaxError](benchmark.html#sphx-glr-recipes-recipes-benchmark-py) (`benchmark.py`) | 00:00.000 | 0.0 |
