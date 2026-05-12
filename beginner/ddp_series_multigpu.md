@@ -178,6 +178,23 @@ if __name__ == "__main__":
 
 Here's what the code looks like:
 
+```
+def main(rank, world_size, total_epochs, save_every):
+ ddp_setup(rank, world_size)
+ dataset, model, optimizer = load_train_objs()
+ train_data = prepare_dataloader(dataset, batch_size=32)
+ trainer = Trainer(model, train_data, optimizer, rank, save_every)
+ trainer.train(total_epochs)
+ destroy_process_group()
+
+if __name__ == "__main__":
+ import sys
+ total_epochs = int(sys.argv[1])
+ save_every = int(sys.argv[2])
+ world_size = torch.cuda.device_count()
+ mp.spawn(main, args=(world_size, total_epochs, save_every,), nprocs=world_size)
+```
+
 ## Further Reading
 
 - [Fault Tolerant distributed training](ddp_series_fault_tolerance.html) (next tutorial in this series)
