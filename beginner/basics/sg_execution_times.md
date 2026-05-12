@@ -1,10 +1,10 @@
 # Computation times
 
-**00:04.400** total execution time for 9 files **from beginner/basics**:
+**00:04.335** total execution time for 9 files **from beginner/basics**:
 
 | Example | Time | Mem (MB) |
 | --- | --- | --- |
-| sphx_glr_beginner_basics_transforms_tutorial.py (`transforms_tutorial.py`) | 00:04.384 | 0.0 |
+| sphx_glr_beginner_basics_transforms_tutorial.py (`transforms_tutorial.py`) | 00:04.320 | 0.0 |
 | sphx_glr_beginner_basics_quickstart_tutorial.py (`quickstart_tutorial.py`) | 00:00.002 | 0.0 |
 | sphx_glr_beginner_basics_tensorqs_tutorial.py (`tensorqs_tutorial.py`) | 00:00.002 | 0.0 |
 | sphx_glr_beginner_basics_data_tutorial.py (`data_tutorial.py`) | 00:00.002 | 0.0 |

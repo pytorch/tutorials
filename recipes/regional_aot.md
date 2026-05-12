@@ -117,7 +117,7 @@ path = torch._inductor.aoti_compile_and_package(
 ```
 /usr/lib/python3.10/copyreg.py:101: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
  return cls.__new__(cls, *args)
-/usr/local/lib/python3.10/dist-packages/torch/_inductor/compile_fx.py:322: UserWarning: TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
+/var/lib/ci-user/.local/lib/python3.10/site-packages/torch/_inductor/compile_fx.py:320: UserWarning: TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
  warnings.warn(
 ```
 
@@ -247,10 +247,10 @@ assert regional_compilation_latency < full_model_compilation_latency
 ```
 /usr/lib/python3.10/copyreg.py:101: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
  return cls.__new__(cls, *args)
-Full model compilation time = 11.29 seconds
+Full model compilation time = 11.52 seconds
 /usr/lib/python3.10/copyreg.py:101: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
  return cls.__new__(cls, *args)
-Regional compilation time = 4.78 seconds
+Regional compilation time = 5.03 seconds
 ```
 
 There may also be layers in a model incompatible with compilation. So,
@@ -266,7 +266,7 @@ blocks, which is typically seen in large generative models. We used this
 recipe on various models to speed up real-time performance. Learn more
 [here](https://huggingface.co/blog/zerogpu-aoti).
 
-**Total running time of the script:** (0 minutes 41.385 seconds)
+**Total running time of the script:** (0 minutes 42.945 seconds)
 
 [`Download Jupyter notebook: regional_aot.ipynb`](../_downloads/358714d0b9f9354d8e8cd3af8154ba50/regional_aot.ipynb)
 

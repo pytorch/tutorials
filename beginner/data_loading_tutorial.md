@@ -211,7 +211,7 @@ For an example with training code, please see
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: data_loading_tutorial.ipynb`](../_downloads/f498e3bcd9b6159ecfb1a07d6551287d/data_loading_tutorial.ipynb)
 
