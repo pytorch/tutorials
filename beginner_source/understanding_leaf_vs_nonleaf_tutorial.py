@@ -87,11 +87,26 @@ loss = F.mse_loss(y_pred, y)              # scalar loss
 #    \cdots \cdot
 #    \frac{\partial \mathbf{f}_1}{\partial \mathbf{x}}
 #
-# .. figure:: /_static/img/understanding_leaf_vs_nonleaf/comp-graph-1.png
-#    :alt: Computational graph after forward pass
+# .. mermaid::
 #
-#    Computational graph after forward pass
+#    graph TD
 #
+#        x["x<br/>is_leaf=True<br/>requires_grad=False<br/>retains_grad=False<br/>grad=None"]
+#        W["W<br/>is_leaf=True<br/>requires_grad=True<br/>retains_grad=False<br/>grad=None"]
+#        b["b<br/>is_leaf=True<br/>requires_grad=True<br/>retains_grad=False<br/>grad=None"]
+#        matmul["x @ W"]
+#        z["z = x @ W + b<br/>is_leaf=False<br/>requires_grad=True<br/>retains_grad=False<br/>grad=None"]
+#        relu["y_pred = relu(z)<br/>is_leaf=False<br/>requires_grad=True<br/>retains_grad=False<br/>grad=None"]
+#        y["y<br/>is_leaf=True<br/>requires_grad=False<br/>retains_grad=False<br/>grad=None"]
+#        loss["loss = mse(y_pred, y)<br/>is_leaf=False<br/>requires_grad=True<br/>retains_grad=False<br/>grad=None"]
+#
+#        x --> matmul
+#        W --> matmul
+#        matmul --> z
+#        b --> z
+#        z --> relu
+#        relu --> loss
+#        y --> loss
 # PyTorch considers a node to be a *leaf* if it is not the result of a
 # tensor operation with at least one input having ``requires_grad=True``
 # (e.g. ``x``, ``W``, ``b``, and ``y``), and everything else to be
@@ -260,11 +275,26 @@ print(f"{loss.grad=}")
 # convention, this attribute will print ``False`` for any leaf node, even
 # if it requires its gradient.
 #
-# .. figure:: /_static/img/understanding_leaf_vs_nonleaf/comp-graph-2.png
-#    :alt: Computational graph after backward pass
+# .. mermaid::
 #
-#    Computational graph after backward pass
+#    graph TD
 #
+#         x["x<br/>is_leaf=True<br/>requires_grad=False<br/>retains_grad=False<br/>grad=None"]
+#         W["W<br/>is_leaf=True<br/>requires_grad=True<br/>retains_grad=False<br/>grad=torch.Tensor"]
+#         b["b<br/>is_leaf=True<br/>requires_grad=True<br/>retains_grad=False<br/>grad=torch.Tensor"]
+#         matmul["x @ W"]
+#         z["z = x @ W + b<br/>is_leaf=False<br/>requires_grad=True<br/>retains_grad=True<br/>grad=torch.Tensor"]
+#         relu["y_pred = relu(z)<br/>is_leaf=False<br/>requires_grad=True<br/>retains_grad=True<br/>grad=torch.Tensor"]
+#         y["y<br/>is_leaf=True<br/>requires_grad=True<br/>retains_grad=False<br/>grad=None"]
+#         loss["loss = mse(y_pred, y)<br/>is_leaf=False<br/>requires_grad=True<br/>retains_grad=True<br/>grad=torch.Tensor"]
+#
+#         x --> matmul
+#         W --> matmul
+#         matmul --> z
+#         b --> z
+#         z --> relu
+#         relu --> loss
+#         y --> loss
 # If you call ``retain_grad()`` on a leaf tensor, it results in a no-op
 # since leaf tensors already retain their gradients by default (when
 # ``requires_grad=True``).

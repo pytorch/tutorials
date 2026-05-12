@@ -24,13 +24,6 @@ Before You Start
 To run this tutorial, you’ll need to install PyTorch, TorchVision,
 Matplotlib, and TensorBoard.
 
-With ``conda``:
-
-.. code-block:: sh
-
-    conda install pytorch torchvision -c pytorch
-    conda install matplotlib tensorboard
-
 With ``pip``:
 
 .. code-block:: sh
@@ -59,7 +52,7 @@ import torch.optim as optim
 
 # Image datasets and image manipulation
 import torchvision
-import torchvision.transforms as transforms
+from torchvision.transforms import v2
 
 # Image display
 import matplotlib.pyplot as plt
@@ -67,14 +60,6 @@ import numpy as np
 
 # PyTorch TensorBoard support
 from torch.utils.tensorboard import SummaryWriter
-
-# In case you are using an environment that has TensorFlow installed,
-# such as Google Colab, uncomment the following code to avoid
-# a bug with saving embeddings to your TensorBoard directory
-
-# import tensorflow as tf
-# import tensorboard as tb
-# tf.io.gfile = tb.compat.tensorflow_stub.io.gfile
 
 ######################################################################
 # Showing Images in TensorBoard
@@ -84,9 +69,10 @@ from torch.utils.tensorboard import SummaryWriter
 # 
 
 # Gather datasets and prepare them for consumption
-transform = transforms.Compose(
-    [transforms.ToTensor(),
-    transforms.Normalize((0.5,), (0.5,))])
+transform = v2.Compose([
+    v2.ToImage(),
+    v2.ToDtype(torch.float32, scale=True),
+    v2.Normalize((0.5,), (0.5,))])
 
 # Store separate training and validations splits in ./data
 training_set = torchvision.datasets.FashionMNIST('./data',
@@ -171,7 +157,7 @@ writer.flush()
 
 class Net(nn.Module):
     def __init__(self):
-        super(Net, self).__init__()
+        super().__init__()
         self.conv1 = nn.Conv2d(1, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
@@ -214,18 +200,19 @@ for epoch in range(1):  # loop over the dataset multiple times
 
         running_loss += loss.item()
         if i % 1000 == 999:    # Every 1000 mini-batches...
-            print('Batch {}'.format(i + 1))
+            print(f'Batch {i + 1}')
             # Check against the validation set
             running_vloss = 0.0
             
             # In evaluation mode some model specific operations can be omitted eg. dropout layer
-            net.train(False) # Switching to evaluation mode, eg. turning off regularisation
-            for j, vdata in enumerate(validation_loader, 0):
-                vinputs, vlabels = vdata
-                voutputs = net(vinputs)
-                vloss = criterion(voutputs, vlabels)
-                running_vloss += vloss.item()
-            net.train(True) # Switching back to training mode, eg. turning on regularisation
+            net.eval() # Switching to evaluation mode, eg. turning off regularisation
+            with torch.no_grad():
+                for j, vdata in enumerate(validation_loader, 0):
+                    vinputs, vlabels = vdata
+                    voutputs = net(vinputs)
+                    vloss = criterion(voutputs, vlabels)
+                    running_vloss += vloss.item()
+            net.train() # Switching back to training mode, eg. turning on regularisation
             
             avg_loss = running_loss / 1000
             avg_vloss = running_vloss / len(validation_loader)

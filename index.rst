@@ -104,6 +104,13 @@ Welcome to PyTorch Tutorials
    :tags: Getting-Started
 
 .. customcarditem::
+   :header: Data Loading Optimization in PyTorch
+   :card_description: Optimize DataLoader configuration with num_workers, pin_memory, persistent_workers for maximum training throughput.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/intermediate_data_loading_tutorial.html
+   :tags: Getting-Started,Best-Practice
+
+.. customcarditem::
    :header: Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors
    :card_description: Learn the subtleties of requires_grad, retain_grad, leaf, and non-leaf tensors
    :image: _static/img/thumbnails/cropped/understanding_leaf_vs_nonleaf.png

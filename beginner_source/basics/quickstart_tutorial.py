@@ -26,7 +26,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 from torchvision import datasets
-from torchvision.transforms import ToTensor
+from torchvision.transforms import v2
 
 ######################################################################
 # PyTorch offers domain-specific libraries such as `TorchText <https://pytorch.org/text/stable/index.html>`_,
@@ -43,7 +43,7 @@ training_data = datasets.FashionMNIST(
     root="data",
     train=True,
     download=True,
-    transform=ToTensor(),
+    transform=v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)]),
 )
 
 # Download test data from open datasets.
@@ -51,7 +51,7 @@ test_data = datasets.FashionMNIST(
     root="data",
     train=False,
     download=True,
-    transform=ToTensor(),
+    transform=v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)]),
 )
 
 ######################################################################
