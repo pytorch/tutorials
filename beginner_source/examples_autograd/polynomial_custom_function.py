@@ -36,7 +36,7 @@ class LegendrePolynomial3(torch.autograd.Function):
         for further details.
         """
         return 0.5 * (5 * input ** 3 - 3 * input)
-    
+
     @staticmethod
     def setup_context(ctx, inputs, output):
         """
