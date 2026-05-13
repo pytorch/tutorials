@@ -217,7 +217,7 @@ reshape.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: word_embeddings_tutorial.ipynb`](../../_downloads/363afc3b7c522e4e56981679c22f1ad6/word_embeddings_tutorial.ipynb)
 

@@ -169,7 +169,7 @@ Pick up some real data and do a comparison!
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: advanced_tutorial.ipynb`](../../_downloads/99fdc80b1d3c74fcdb1432b4e7df20f7/advanced_tutorial.ipynb)
 
