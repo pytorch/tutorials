@@ -451,10 +451,10 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Facilitating New Backend Integration by PrivateUse1
-   :card_description: Learn how to integrate a new backend living outside of the pytorch/pytorch repo and maintain it to keep in sync with the native PyTorch backend.
+   :card_description: Learn how to integrate a new backend via PrivateUse1 using either C++ (production) or Python-only (prototyping) approaches.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: advanced/privateuseone.html
-   :tags: Extending-PyTorch,Frontend-APIs,C++
+   :tags: Extending-PyTorch,Frontend-APIs,C++,Python
 
 .. customcarditem::
    :header: Custom Function Tutorial: Double Backward
