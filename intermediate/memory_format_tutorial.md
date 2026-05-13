@@ -258,7 +258,7 @@ vision models using channels last, see the post
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: memory_format_tutorial.ipynb`](../_downloads/f11c58c36c9b8a5daf09d3f9a792ef84/memory_format_tutorial.ipynb)
 
