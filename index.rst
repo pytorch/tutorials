@@ -731,6 +731,13 @@ Welcome to PyTorch Tutorials
    :link: intermediate/monarch_distributed_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
+.. customcarditem::
+   :header: Debugging Hangs with Flight Recorder Using TorchComms and Debug Server
+   :card_description: Diagnose hangs using the TorchComms Flight Recorder and Debug Server periodic dumps.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/debug_hangs_with_flight_recorder.html
+   :tags: Parallel-and-Distributed-Training,Debugging
+
 .. Edge
 
 .. customcarditem::
