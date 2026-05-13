@@ -3,6 +3,7 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
+* `Data Loading Optimization in PyTorch <https://docs.pytorch.org/tutorials/intermediate/intermediate_data_loading_tutorial.html>`__
 * `Distributed Training with Ray Train <https://docs.pytorch.org/tutorials/beginner/distributed_training_with_ray_tutorial.html>`__
 * `Serve PyTorch models at scale with Ray Serve <https://docs.pytorch.org/tutorials/beginner/serving_tutorial.html>`__
 * `Hyperparameter tuning using Ray Tune <https://docs.pytorch.org/tutorials/beginner/hyperparameter_tuning_tutorial.html>`__
