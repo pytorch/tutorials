@@ -31,7 +31,7 @@ What is `torch.nn` *really*?
 # MNIST data setup
 # ----------------
 #
-# We will use the classic `MNIST <https://yann.lecun.com/exdb/mnist/index.html>`_ dataset,
+# We will use the classic `MNIST <https://huggingface.co/datasets/ylecun/mnist>`_ dataset,
 # which consists of black-and-white images of hand-drawn digits (between 0 and 9).
 #
 # We will use `pathlib <https://docs.python.org/3/library/pathlib.html>`_
@@ -110,9 +110,10 @@ print(y_train.min(), y_train.max())
 # gradient. This causes PyTorch to record all of the operations done on the tensor,
 # so that it can calculate the gradient during back-propagation *automatically*!
 #
-# For the weights, we set ``requires_grad`` **after** the initialization, since we
-# don't want that step included in the gradient. (Note that a trailing ``_`` in
-# PyTorch signifies that the operation is performed in-place.)
+# We set ``requires_grad`` **after** the initialization math. If enabled earlier,
+# PyTorch would view the weights as the result of a calculation (non-leaf) rather
+# than a source parameter, making them impossible to optimize. (Note that a trailing
+# ``_`` in PyTorch signifies that the operation is performed in-place.)
 #
 # .. note:: We are initializing the weights here with
 #    `Xavier initialisation <http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf>`_
@@ -473,7 +474,7 @@ print(loss_func(model(xb), yb))
 # walks through a nice example of creating a custom ``FacialLandmarkDataset`` class
 # as a subclass of ``Dataset``.
 #
-# PyTorch's `TensorDataset <https://pytorch.org/docs/stable/_modules/torch/utils/data/dataset.html#TensorDataset>`_
+# PyTorch's `TensorDataset <https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.TensorDataset>`_
 # is a Dataset wrapping tensors. By defining a length and way of indexing,
 # this also gives us a way to iterate, index, and slice along the first
 # dimension of a tensor. This will make it easier to access both the
