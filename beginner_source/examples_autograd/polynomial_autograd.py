@@ -2,8 +2,8 @@ r"""
 PyTorch: Tensors and autograd
 -------------------------------
 
-A third order polynomial, trained to predict :math:`y=\sin(x)` from :math:`-\pi`
-to :math:`\pi` by minimizing squared Euclidean distance.
+A third order polynomial, trained to predict :math:`y=e^x` from :math:`-1`
+to :math:`1` by minimizing squared Euclidean distance.
 
 This implementation computes the forward pass using operations on PyTorch
 Tensors, and uses PyTorch autograd to compute gradients.
