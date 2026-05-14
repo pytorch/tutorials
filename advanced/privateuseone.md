@@ -3,7 +3,6 @@
 In this tutorial we will walk through some necessary steps to integrate a new backend
 living outside `pytorch/pytorch` repo by `PrivateUse1`. Note that this tutorial assumes that
 you already have a basic understanding of PyTorch.
-you are an advanced user of PyTorch.
 
 Note
 
