@@ -125,7 +125,7 @@ for details.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: neural_tangent_kernels.ipynb`](../_downloads/412c6fac9e4f7432b11f6e67d066ee2f/neural_tangent_kernels.ipynb)
 
