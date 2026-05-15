@@ -44,7 +44,7 @@ print(x)
 
 
 ##########################################################################
-# Let’s upack what we just did:
+# Let’s unpack what we just did:
 # 
 # -  We created a tensor using one of the numerous factory methods
 #    attached to the ``torch`` module.
