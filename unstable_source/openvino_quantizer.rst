@@ -15,7 +15,7 @@ Introduction
 
     This is an experimental feature, the quantization API is subject to change.
 
-This tutorial demonstrates how to use ``OpenVINOQuantizer`` from `Neural Network Compression Framework (NNCF) <https://github.com/openvinotoolkit/nncf/tree/develop>`_ in PyTorch 2 Export Quantization flow to generate a quantized model customized for the `OpenVINO torch.compile backend <https://docs.openvino.ai/2024/openvino-workflow/torch-compile.html>`_ and explains how to lower the quantized model into the `OpenVINO <https://docs.openvino.ai/2024/index.html>`_ representation.
+This tutorial demonstrates how to use ``OpenVINOQuantizer`` from `Executorch <https://github.com/pytorch/executorch/blob/main/backends/openvino/quantizer/quantizer.py>`_ in PyTorch 2 Export Quantization flow to generate a quantized model customized for the `OpenVINO torch.compile backend <https://docs.openvino.ai/2024/openvino-workflow/torch-compile.html>`_ and explains how to lower the quantized model into the `OpenVINO <https://docs.openvino.ai/2024/index.html>`_ representation.
 ``OpenVINOQuantizer`` unlocks the full potential of low-precision OpenVINO kernels due to the placement of quantizers designed specifically for the OpenVINO.
 
 The PyTorch 2 export quantization flow uses ``torch.export`` to capture the model into a graph and performs quantization transformations on top of the ATen graph.
@@ -118,7 +118,8 @@ After we capture the FX Module to be quantized, we will import the OpenVINOQuant
 
 .. code-block:: python
 
-    from nncf.experimental.torch.fx import OpenVINOQuantizer
+    from executorch.backends.openvino.quantizer import OpenVINOQuantizer
+    from executorch.backends.openvino.quantizer import QuantizationMode
 
     quantizer = OpenVINOQuantizer()
 
@@ -126,21 +127,20 @@ After we capture the FX Module to be quantized, we will import the OpenVINOQuant
 Below is the list of essential parameters and their description:
 
 
-* ``preset`` - defines quantization scheme for the model. Two types of presets are available:
+* ``mode`` - defines quantization scheme for the model. Multiple modes are supported:
 
-    * ``PERFORMANCE`` (default) - defines symmetric quantization of weights and activations
+    * ``INT8_SYM`` (default) - defines symmetric quantization of weights and activations. This is the best for performance
 
-    * ``MIXED`` - weights are quantized with symmetric quantization and the activations are quantized with asymmetric quantization. This preset is recommended for models with non-ReLU and asymmetric activation functions, e.g. ELU, PReLU, GELU, etc.
+    * ``INT8_MIXED`` - weights are quantized with symmetric quantization and the activations are quantized with asymmetric quantization. This preset is recommended for models with non-ReLU and asymmetric activation functions, e.g. ELU, PReLU, GELU, etc.
 
-    .. code-block:: python
+    * ``INT8_TRANSFORMER`` - special quantization scheme to preserve accuracy after quantization of Transformer models (BERT, Llama, etc.). None is default, i.e. no specific scheme is defined.
 
-        OpenVINOQuantizer(preset=nncf.QuantizationPreset.MIXED)
-
-* ``model_type`` - used to specify quantization scheme required for specific type of the model. Transformer is the only supported special quantization scheme to preserve accuracy after quantization of Transformer models (BERT, Llama, etc.). None is default, i.e. no specific scheme is defined.
+    * ``INT8WO_SYM``, ``INT8WO_ASYM``, ``INT4WO_SYM``, ``INT4WO_ASYM`` - these are weights-only quantization schemes. They apply simple min-max quantization to model weights to INT8/INT4 with Symmetric and Asymmetric schemes.
 
     .. code-block:: python
 
-        OpenVINOQuantizer(model_type=nncf.ModelType.Transformer)
+        OpenVINOQuantizer(mode=QuantizationMode.INT8_SYM)
+
 
 * ``ignored_scope`` - this parameter can be used to exclude some layers from the quantization process to preserve the model accuracy.  For example, when you want to exclude the last layer of the model from quantization.  Below are some examples of how to use this parameter:
 
@@ -164,12 +164,6 @@ Below is the list of essential parameters and their description:
         subgraph = nncf.Subgraph(inputs=['layer_1', 'layer_2'], outputs=['layer_3'])
         OpenVINOQuantizer(ignored_scope=nncf.IgnoredScope(subgraphs=[subgraph]))
 
-
-* ``target_device`` - defines the target device, the specificity of which will be taken into account during optimization. The following values are supported: ``ANY`` (default), ``CPU``, ``CPU_SPR``, ``GPU``, and ``NPU``.
-
-    .. code-block:: python
-
-        OpenVINOQuantizer(target_device=nncf.TargetDevice.CPU)
 
 For further details on `OpenVINOQuantizer` please see the `documentation <https://openvinotoolkit.github.io/nncf/autoapi/nncf/experimental/torch/fx/index.html#nncf.experimental.torch.fx.OpenVINOQuantizer>`_.
 
@@ -217,9 +211,8 @@ This should significantly speed up inference time in comparison with the eager m
 4. Optional: Improve quantized model metrics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-NNCF implements advanced quantization algorithms like `SmoothQuant <https://arxiv.org/abs/2211.10438>`_ and `BiasCorrection <https://arxiv.org/abs/1906.04721>`_, which help
-to improve the quantized model metrics while minimizing the output discrepancies between the original and compressed models.
-These advanced NNCF algorithms can be accessed via the NNCF `quantize_pt2e` API:
+NNCF implements advanced quantization algorithms like `SmoothQuant <https://arxiv.org/abs/2211.10438>`_ and `BiasCorrection <https://arxiv.org/abs/1906.04721>`_ for static activation and weights quantization. For weights-only quantization, there are `AWQ https://arxiv.org/abs/2306.00978`_ and `Scale Estimation https://github.com/openvinotoolkit/nncf/blob/develop/src/nncf/quantization/algorithms/weight_compression/scale_estimation.py`_ algorithms. These techniques help in improving the quantized model metrics while minimizing the output discrepancies between the original and compressed models.
+These advanced NNCF algorithms can be accessed via the NNCF `quantize_pt2e` API for static activation and weights or `compress_pt2e` for weights-only quantization:
 
 .. code-block:: python
 
@@ -240,7 +233,7 @@ These advanced NNCF algorithms can be accessed via the NNCF `quantize_pt2e` API:
 
 
 For further details, please see the `documentation <https://openvinotoolkit.github.io/nncf/autoapi/nncf/experimental/torch/fx/index.html#nncf.experimental.torch.fx.quantize_pt2e>`_
-and a complete `example on Resnet18 quantization <https://github.com/openvinotoolkit/nncf/blob/develop/examples/post_training_quantization/torch_fx/resnet18/README.md>`_.
+and `for some examples with llama and stable_diffusion checkout <https://github.com/openvinotoolkit/nncf/blob/develop/examples/post_training_quantization/torch_fx/resnet18/README.md>`_. For `YoloV26 example with this API <https://github.com/pytorch/executorch/tree/main/examples/models/yolo26>`
 
 Conclusion
 ------------
