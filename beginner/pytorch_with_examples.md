@@ -154,8 +154,6 @@ function for computing forward and backward of \(P_3\), and use it to implement
 our model:
 
 ```
-# device = torch.device("cuda:0") # Uncomment this to run on GPU
-
 # Create Tensors to hold input and outputs.
 # By default, requires_grad=False, which indicates that we do not need to
 # compute gradients with respect to these Tensors during the backward pass.

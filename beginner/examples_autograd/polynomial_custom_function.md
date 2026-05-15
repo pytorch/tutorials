@@ -18,8 +18,6 @@ In this implementation we implement our own custom autograd function to perform
 \(P_3'(x)\). By mathematics, \(P_3'(x)=\frac{3}{2}\left(5x^2-1\right)\)
 
 ```
-# device = torch.device("cuda:0") # Uncomment this to run on GPU
-
 # Create Tensors to hold input and outputs.
 # By default, requires_grad=False, which indicates that we do not need to
 # compute gradients with respect to these Tensors during the backward pass.
