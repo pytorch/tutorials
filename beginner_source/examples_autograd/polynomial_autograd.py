@@ -14,7 +14,6 @@ Tensor that has ``x.requires_grad=True`` then ``x.grad`` is another Tensor
 holding the gradient of ``x`` with respect to some scalar value.
 """
 import torch
-import math
 
 # We want to be able to train our model on an `accelerator <https://pytorch.org/docs/stable/torch.html#accelerators>`__
 # such as CUDA, MPS, MTIA, or XPU. If the current accelerator is available, we will use it. Otherwise, we use the CPU.
@@ -39,7 +38,6 @@ b = torch.randn((), dtype=dtype, requires_grad=True)
 c = torch.randn((), dtype=dtype, requires_grad=True)
 d = torch.randn((), dtype=dtype, requires_grad=True)
 
-initial_loss = 1.
 learning_rate = 1e-5
 for t in range(5000):
     # Forward pass: compute predicted y using operations on Tensors.
