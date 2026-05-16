@@ -48,7 +48,7 @@ for t in range(5000):
     # loss.item() gets the scalar value held in the loss.
     loss = (y_pred - y).pow(2).sum()
 
-    # Calculare initial loss, so we can report loss relative to it
+    # Calculate initial loss, so we can report loss relative to it
     if t==0:
         initial_loss=loss.item()
 
