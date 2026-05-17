@@ -36,27 +36,27 @@ The high-level architecture of this flow could look like this:
     float_model(Python)                          Example Input
         \                                              /
          \                                            /
-    —--------------------------------------------------------
+    ---------------------------------------------------------
     |                         export                       |
-    —--------------------------------------------------------
+    ---------------------------------------------------------
                                 |
                         FX Graph in ATen
                                 |
                                 |           OpenVINOQuantizer
                                 |                 /
-    —--------------------------------------------------------
+    ---------------------------------------------------------
     |                      prepare_pt2e                     |
     |                           |                           |
     |                       Calibrate
     |                           |                           |
     |                      convert_pt2e                     |
-    —--------------------------------------------------------
+    ---------------------------------------------------------
                                 |
                          Quantized Model
                                 |
-    —--------------------------------------------------------
+    ---------------------------------------------------------
     |                  Lower into Inductor                  |
-    —--------------------------------------------------------
+    ---------------------------------------------------------
                                 |
                           OpenVINO model
 
@@ -164,10 +164,15 @@ Below is the list of essential parameters and their description:
         subgraph = nncf.Subgraph(inputs=['layer_1', 'layer_2'], outputs=['layer_3'])
         OpenVINOQuantizer(ignored_scope=nncf.IgnoredScope(subgraphs=[subgraph]))
 
+* ``target_device`` - defines the target device, the specificity of which will be taken into account during optimization. The following values are supported: ``ANY`` (default), ``CPU``, ``CPU_SPR``, ``GPU``, and ``NPU``.
+
+    .. code-block:: python
+
+        OpenVINOQuantizer(target_device=nncf.TargetDevice.CPU)
 
 For further details on `OpenVINOQuantizer` please see the `documentation <https://openvinotoolkit.github.io/nncf/autoapi/nncf/experimental/torch/fx/index.html#nncf.experimental.torch.fx.OpenVINOQuantizer>`_.
 
-After we import the backend-specific Quantizer, we will prepare the model for post-training quantization.
+After we import the backend-specific Quantizer, we will prepare the model for post-training quantization/weights-only quantization.
 ``prepare_pt2e`` folds BatchNorm operators into preceding Conv2d operators, and inserts observers in appropriate places in the model.
 
 .. code-block:: python
@@ -209,10 +214,17 @@ The optimized model is using low-level kernels designed specifically for Intel C
 This should significantly speed up inference time in comparison with the eager model.
 
 4. Optional: Improve quantized model metrics
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-NNCF implements advanced quantization algorithms like `SmoothQuant <https://arxiv.org/abs/2211.10438>`_ and `BiasCorrection <https://arxiv.org/abs/1906.04721>`_ for static activation and weights quantization. For weights-only quantization, there are `AWQ https://arxiv.org/abs/2306.00978`_ and `Scale Estimation https://github.com/openvinotoolkit/nncf/blob/develop/src/nncf/quantization/algorithms/weight_compression/scale_estimation.py`_ algorithms. These techniques help in improving the quantized model metrics while minimizing the output discrepancies between the original and compressed models.
-These advanced NNCF algorithms can be accessed via the NNCF `quantize_pt2e` API for static activation and weights or `compress_pt2e` for weights-only quantization:
+NNCF implements advanced quantization algorithms that help improve the metrics of a compressed model while minimizing the output discrepancies between the original and compressed models. These are accessed via the NNCF ``quantize_pt2e`` API for static activation and weights quantization, or ``compress_pt2e`` for weights-only quantization.
+
+Post Training Quantization
+""""""""""""""""""""""""""
+
+``quantize_pt2e`` can be applied on top of any ``torchao`` Quantizer to improve the accuracy of the quantized model. Key algorithms:
+
+- `SmoothQuant <https://arxiv.org/abs/2211.10438>`_ - Reduces activation quantization error by inserting smoothing scales before weighted layers, migrating quantization difficulty from hard-to-quantize activations onto the weights.
+- `BiasCorrection <https://arxiv.org/abs/1906.04721>`_ - Compares quantized and original layer outputs layer-by-layer and adjusts convolution biases to align them, compensating for the error introduced by quantization.
 
 .. code-block:: python
 
@@ -220,20 +232,66 @@ These advanced NNCF algorithms can be accessed via the NNCF `quantize_pt2e` API 
 
     calibration_loader = torch.utils.data.DataLoader(...)
 
-
     def transform_fn(data_item):
         images, _ = data_item
         return images
-
 
     calibration_dataset = nncf.Dataset(calibration_loader, transform_fn)
     quantized_model = quantize_pt2e(
         exported_model, quantizer, calibration_dataset, smooth_quant=True, fast_bias_correction=False
     )
 
+Weights Only Quantization
+"""""""""""""""""""""""""
 
-For further details, please see the `documentation <https://openvinotoolkit.github.io/nncf/autoapi/nncf/experimental/torch/fx/index.html#nncf.experimental.torch.fx.quantize_pt2e>`_
-and `for some examples with llama and stable_diffusion checkout <https://github.com/openvinotoolkit/nncf/blob/develop/examples/post_training_quantization/torch_fx/resnet18/README.md>`_. For `YoloV26 example with this API <https://github.com/pytorch/executorch/tree/main/examples/models/yolo26>`
+``compress_pt2e`` applies weight compression to a ``torch.fx.GraphModule``, targeting LLM deployment. The following activation-aware algorithms use a small calibration subset to capture activation statistics:
+
+- `AWQ <https://arxiv.org/abs/2306.00978>`_ - Activation-aware Weight Quantization that finds per-channel scales to minimize quantization error based on activation distributions.
+- `Scale Estimation <https://github.com/openvinotoolkit/nncf/blob/develop/src/nncf/quantization/algorithms/weight_compression/scale_estimation.py>`_ - Estimates scales to minimize the layer-wise output error for INT4 weight layers, iteratively refining the scales on a calibration subset.
+
+.. code-block:: python
+
+    from nncf.experimental.torch.fx import compress_pt2e
+
+    calibration_loader = torch.utils.data.DataLoader(...)
+
+    def transform_fn(data_item):
+        images, _ = data_item
+        return images
+
+    calibration_dataset = nncf.Dataset(calibration_loader, transform_fn)
+    compressed_model = compress_pt2e(
+        exported_model, quantizer, calibration_dataset, awq=True, scale_estimation=True
+    )
+
+Data-free algorithms
+~~~~~~~~~~~~~~~~~~~~
+
+When no calibration data is available, ``compress_pt2e`` can perform weight compression relying solely on the pretrained weights. Data-Free Compression uses only the weight tensor statistics, with no activations observed at any point. It can be combined with the AWQ and Mixed Precision algorithms when richer behavior is needed without giving up the no-dataset workflow.
+
+.. code-block:: python
+
+    from nncf.experimental.torch.fx import compress_pt2e
+
+    compressed_model = compress_pt2e(exported_model, quantizer, awq=True, ratio=0.8)
+
+Mixed Precision algorithms
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Mixed Precision assigns different bit-widths (e.g. INT4 vs INT8) to individual layers based on their sensitivity, keeping more sensitive layers at higher precision while aggressively compressing the rest. NNCF supports several sensitivity-ranking criteria:
+
+- **Weight Quantization Error** - Data-free metric that measures the per-layer error introduced by quantizing the weights themselves, requiring no calibration data.
+- **Hessian** - Activation-aware metric that uses second-order information about the loss to estimate how much the model output changes when a layer's weights are perturbed by quantization.
+- **Mean Variance** and **Max Variance** - Activation-aware metrics that rank layers by the mean or maximum variance of their input activations, on the intuition that layers with more spread-out activations are harder to quantize.
+- **Mean Magnitude** - Activation-aware metric that ranks layers by the average magnitude of their input activations.
+
+.. code-block:: python
+    from nncf import SensitivityMetric
+    compressed_model = compress_pt2e(
+        exported_model, quantizer, calibration_dataset, awq=True, scale_estimation=True, ratio=0.8, sensitivity_metric=SensitivityMetric.MAX_ACTIVATION_VARIANCE
+    )
+
+Checkout some `resnet <https://github.com/openvinotoolkit/nncf/blob/develop/examples/post_training_quantization/torch_fx/resnet18/README.md>`_, `llama <https://github.com/pytorch/executorch/tree/main/examples/openvino/llama>`_, `stable diffusion <https://github.com/pytorch/executorch/tree/main/examples/models/yolo26>`_ and `Yolo26 <https://github.com/pytorch/executorch/tree/main/examples/models/yolo26>`_ examples with this API.
 
 Conclusion
 ------------
