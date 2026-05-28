@@ -203,6 +203,7 @@ sitemap_url_scheme = "{link}"
 html_theme_options = {
     "navigation_with_keys": False,
     "analytics_id": "GTM-T8XT4PS",
+    "llm_generate_full": "false",
     "logo": {
         "text": "",
     },

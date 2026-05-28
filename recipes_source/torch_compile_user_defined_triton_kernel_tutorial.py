@@ -92,7 +92,7 @@ else:
 #
 # .. note::
 #
-#   ``torch.compile`` only supports configs and key arguments to ``triton.autotune``.
+#   ``torch.compile`` only supports configs, keys, restore_value, and reset_to_zero arguments to ``triton.autotune``.
 
 if not has_triton():
     print("Skipping because triton is not supported on this device.")
