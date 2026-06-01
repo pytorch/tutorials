@@ -520,14 +520,6 @@ Model-Optimization,Best-Practice,Profiling
 
 ![](_static/img/thumbnails/cropped/profiler.png)](beginner/profiler.html)
 
-[#### Performance Profiling in TensorBoard
-
-Learn how to use the TensorBoard plugin to profile and analyze your model's performance.
-
-Model-Optimization,Best-Practice,Profiling,TensorBoard
-
-![](_static/img/thumbnails/cropped/profiler.png)](intermediate/tensorboard_profiler_tutorial.html)
-
 [#### Hyperparameter Tuning Tutorial
 
 Learn how to use Ray Tune to find the best performing set of hyperparameters for your model.

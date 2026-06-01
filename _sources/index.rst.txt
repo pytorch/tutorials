@@ -516,13 +516,6 @@ Welcome to PyTorch Tutorials
    :tags: Model-Optimization,Best-Practice,Profiling
 
 .. customcarditem::
-   :header: Performance Profiling in TensorBoard
-   :card_description: Learn how to use the TensorBoard plugin to profile and analyze your model's performance.
-   :image: _static/img/thumbnails/cropped/profiler.png
-   :link: intermediate/tensorboard_profiler_tutorial.html
-   :tags: Model-Optimization,Best-Practice,Profiling,TensorBoard
-
-.. customcarditem::
    :header: Hyperparameter Tuning Tutorial
    :card_description: Learn how to use Ray Tune to find the best performing set of hyperparameters for your model.
    :image: _static/img/ray-tune.png

@@ -31,14 +31,6 @@ Model-Optimization,Best-Practice,Ax,TorchX,Ecosystem
 
 ![](_static/img/ax_logo.png)](intermediate/ax_multiobjective_nas_tutorial.html)
 
-[#### Performance Profiling in TensorBoard
-
-Learn how to use the TensorBoard plugin to profile and analyze your model's performance.
-
-Model-Optimization,Best-Practice,Profiling,TensorBoard,Ecosystem
-
-![](_static/img/thumbnails/cropped/profiler.png)](intermediate/tensorboard_profiler_tutorial.html)
-
 [#### Real Time Inference on Raspberry Pi 4
 
 This tutorial covers how to run quantized and fused models on a Raspberry Pi 4 at 30 fps.
