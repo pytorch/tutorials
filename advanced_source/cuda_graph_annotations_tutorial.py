@@ -57,7 +57,21 @@ understand and debug complex graph executions.
 # their function, making it much easier to identify performance bottlenecks
 # and understand execution flow.
 #
-# .. image:: /_static/img/cuda_graph_annotations_before_after.png
+# **Before annotations:** All kernels appear on a single stream with
+# auto-generated names, making it difficult to understand which operations
+# belong to which logical component of your model.
+#
+# .. image:: /_static/img/cuda_graph_trace_before.png
+#    :width: 100%
+#    :alt: CUDA graph trace before annotations showing all kernels on one stream
+#
+# **After annotations:** Kernels are organized into semantic lanes (streams 61
+# and 62) with meaningful labels like "attention" and "mlp", making it easy to
+# identify different components and understand the execution structure.
+#
+# .. image:: /_static/img/cuda_graph_trace_after.png
+#    :width: 100%
+#    :alt: CUDA graph trace after annotations showing kernels organized by function
 #
 # Requirements
 # ------------
