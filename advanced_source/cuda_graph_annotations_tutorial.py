@@ -419,18 +419,6 @@ def main():
 # or sequentially.
 
 ###############################################################################
-# Advanced Usage: Multiple Graphs
-# --------------------------------
-#
-# For more complex applications with multiple graphs or distributed training:
-#
-# - Use different annotation names for different components
-# - The pickle filename can include rank information for multi-GPU setups
-# - Apply the same post-processing workflow to each trace
-# - Annotations persist across graph replays, so you capture once and can
-#   profile many times
-
-###############################################################################
 # Understanding the Cleanup Passes
 # ---------------------------------
 #
