@@ -60,7 +60,7 @@ understand and debug complex graph executions.
 #
 # For this tutorial, you'll need:
 #
-# - PyTorch 2.0+
+# - PyTorch 2.13+
 # - A CUDA GPU
 # - Driver/CUDA-compat >= 13.1 for annotation support
 # - The ``cuda-bindings`` package >= 13.3.0 (``pip install cuda-python``)
@@ -96,69 +96,6 @@ from torch.cuda._annotate_cuda_graph_trace import (
     _fix_overlapping_timestamps,
     _move_overlapping_to_stream,
 )
-
-###############################################################################
-# Checking CUDA Bindings Version
-# -------------------------------
-#
-# The annotation APIs require ``cuda-bindings >= 13.3.0`` to access the
-# ``cudaGraphNodeGetToolsId`` API. Let's check if the installed version
-# supports annotations.
-
-def check_cuda_bindings_version():
-    """Check if cuda-bindings version supports annotations."""
-    try:
-        import cuda.bindings.runtime as runtime
-
-        # Check if the required API is available
-        has_tools_id = hasattr(runtime, 'cudaGraphNodeGetToolsId')
-
-        if not has_tools_id:
-            # Try to get the cuda-bindings version
-            try:
-                import importlib.metadata
-                cuda_bindings_version = importlib.metadata.version('cuda-bindings')
-            except Exception:
-                cuda_bindings_version = "unknown"
-
-            print("=" * 70)
-            print("ERROR: CUDA Bindings version too old for annotation support")
-            print("=" * 70)
-            print(f"Current cuda-bindings version: {cuda_bindings_version}")
-            print(f"Required: cuda-bindings >= 13.3.0")
-            print()
-            print("The cudaGraphNodeGetToolsId API is not available in your")
-            print("cuda-bindings installation. This API is required for kernel")
-            print("annotations to work.")
-            print()
-            print("To fix this issue, upgrade cuda-bindings:")
-            print("  pip install --upgrade cuda-bindings")
-            print()
-            print("If you're in a managed environment, you may need:")
-            print("  pip install --upgrade --break-system-packages cuda-bindings")
-            print()
-            print("After upgrading, cuda-bindings 13.3.0+ will include the")
-            print("cudaGraphNodeGetToolsId API needed for semantic annotations.")
-            print("=" * 70)
-            print()
-            return False
-
-        return True
-
-    except ImportError:
-        print("=" * 70)
-        print("ERROR: cuda-bindings not installed")
-        print("=" * 70)
-        print("The cuda-bindings package is required for annotation support.")
-        print()
-        print("To install it:")
-        print("  pip install cuda-python")
-        print()
-        print("This will install the CUDA Python bindings needed for")
-        print("kernel annotations.")
-        print("=" * 70)
-        print()
-        return False
 
 ###############################################################################
 # Building a Model
@@ -396,20 +333,15 @@ def main():
     if not torch.cuda.is_available():
         raise SystemExit("CUDA required for this tutorial")
 
-    # Check cuda-bindings version first
-    if not check_cuda_bindings_version():
-        print("WARNING: Continuing without annotation support.")
-        print("The tutorial will run, but no semantic annotations will be captured.")
-        print("Only the cleanup passes will organize kernels.\n")
-
     # Check if annotation support is available
+    # PyTorch will log a warning if cuda-bindings version is too old
     supported = not _is_tools_id_unavailable()
     print(f"Annotation support available: {supported}")
     if not supported:
         print("NOTE: Annotation API not available.")
         print("This could be due to:")
         print("  - Driver/CUDA-compat < 13.1")
-        print("  - Outdated cuda-bindings (see error above)")
+        print("  - Outdated cuda-bindings (check PyTorch warnings above)")
         print("Annotations will not be recorded, but the demo will still run.")
         print("Any lane changes you see are from cleanup passes, not annotations.\n")
 
