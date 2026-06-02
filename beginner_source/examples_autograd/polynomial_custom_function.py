@@ -29,18 +29,23 @@ class LegendrePolynomial3(torch.autograd.Function):
     """
 
     @staticmethod
-    def forward(ctx, input):
+    def forward(input):
         """
         In the forward pass we receive a Tensor containing the input and return
-        a Tensor containing the output. ctx is a context object that can be used
-        to stash information for backward computation. You can cache tensors for
-        use in the backward pass using the ``ctx.save_for_backward`` method. Other
-        objects can be stored directly as attributes on the ctx object, such as
-        ``ctx.my_object = my_object``. Check out `Extending torch.autograd <https://docs.pytorch.org/docs/stable/notes/extending.html#extending-torch-autograd>`_
+        a Tensor containing the output. Check out `Extending torch.autograd <https://docs.pytorch.org/docs/stable/notes/extending.html#extending-torch-autograd>`_
         for further details.
         """
-        ctx.save_for_backward(input)
         return 0.5 * (5 * input ** 3 - 3 * input)
+
+    @staticmethod
+    def setup_context(ctx, inputs, output):
+        """
+        Store input for use in the backward pass using ``ctx.save_for_backward``.
+        Other objects can be stored directly as attributes on the ctx object,
+        such as ``ctx.my_object = my_object``.
+        """
+        input, = inputs
+        ctx.save_for_backward(input)
 
     @staticmethod
     def backward(ctx, grad_output):
@@ -54,8 +59,11 @@ class LegendrePolynomial3(torch.autograd.Function):
 
 
 dtype = torch.float
-device = torch.device("cpu")
-# device = torch.device("cuda:0")  # Uncomment this to run on GPU
+device = (
+    torch.accelerator.current_accelerator().type
+    if torch.accelerator.is_available()
+    else "cpu"
+)
 
 # Create Tensors to hold input and outputs.
 # By default, requires_grad=False, which indicates that we do not need to

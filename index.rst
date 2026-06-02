@@ -3,6 +3,7 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
+* `Data Loading Optimization in PyTorch <https://docs.pytorch.org/tutorials/intermediate/intermediate_data_loading_tutorial.html>`__
 * `Distributed Training with Ray Train <https://docs.pytorch.org/tutorials/beginner/distributed_training_with_ray_tutorial.html>`__
 * `Serve PyTorch models at scale with Ray Serve <https://docs.pytorch.org/tutorials/beginner/serving_tutorial.html>`__
 * `Hyperparameter tuning using Ray Tune <https://docs.pytorch.org/tutorials/beginner/hyperparameter_tuning_tutorial.html>`__
@@ -102,6 +103,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/pinmem_nonblock.html
    :tags: Getting-Started
+
+.. customcarditem::
+   :header: Data Loading Optimization in PyTorch
+   :card_description: Optimize DataLoader configuration with num_workers, pin_memory, persistent_workers for maximum training throughput.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/intermediate_data_loading_tutorial.html
+   :tags: Getting-Started,Best-Practice
 
 .. customcarditem::
    :header: Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors
@@ -506,13 +514,6 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/profiler.png
    :link: beginner/profiler.html
    :tags: Model-Optimization,Best-Practice,Profiling
-
-.. customcarditem::
-   :header: Performance Profiling in TensorBoard
-   :card_description: Learn how to use the TensorBoard plugin to profile and analyze your model's performance.
-   :image: _static/img/thumbnails/cropped/profiler.png
-   :link: intermediate/tensorboard_profiler_tutorial.html
-   :tags: Model-Optimization,Best-Practice,Profiling,TensorBoard
 
 .. customcarditem::
    :header: Hyperparameter Tuning Tutorial
