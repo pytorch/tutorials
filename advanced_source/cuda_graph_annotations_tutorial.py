@@ -402,6 +402,9 @@ def main():
     print("the semantic kernel lanes.")
     print("="*60)
 
+if __name__ == "__main__":
+    main()
+
 ###############################################################################
 # Visualizing Results
 # -------------------
@@ -490,6 +493,3 @@ def main():
 # This technique is especially valuable for large models with many components,
 # distributed training setups, or any scenario where understanding the
 # execution structure is critical for performance optimization.
-
-if __name__ == "__main__":
-    main()
