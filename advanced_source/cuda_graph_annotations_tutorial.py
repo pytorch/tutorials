@@ -60,7 +60,7 @@ understand and debug complex graph executions.
 #
 # For this tutorial, you'll need:
 #
-# - PyTorch 2.13+
+# - PyTorch 2.12+
 # - A CUDA GPU
 # - Driver/CUDA-compat >= 13.1 for annotation support
 # - The ``cuda-bindings`` package >= 13.3.0 (``pip install cuda-python``)
