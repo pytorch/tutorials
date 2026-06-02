@@ -20,10 +20,10 @@ CUDA Graph Kernel Annotations and Profiling
     .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
        :class-card: card-prerequisites
 
-       * PyTorch 2.0 or later
+       * PyTorch 2.12+
        * CUDA-capable GPU
-       * Driver/CUDA-compat >= 13.1 for full annotation support
-       * cuda-python package
+       * Driver/CUDA-compat >= 13.1 for annotation support
+       * cuda-bindings >= 13.3.0
 
 CUDA graphs are a powerful optimization technique that can significantly reduce
 kernel launch overhead by capturing and replaying sequences of CUDA operations.
