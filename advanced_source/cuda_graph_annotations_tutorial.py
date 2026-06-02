@@ -40,18 +40,22 @@ understand and debug complex graph executions.
 # Overview
 # --------
 #
-# When you capture operations into a CUDA graph, the profiler shows all
-# kernels executing on a single stream. This makes it hard to distinguish
-# between different logical components of your model (e.g., attention vs MLP).
+# CUDA graph kernel annotations allow you to add semantic labels to kernels
+# during graph capture. These labels help you understand what each kernel does
+# when profiling, making it easy to identify which parts of your model (e.g.,
+# attention, MLP, normalization) are executing at any given time.
 #
-# Kernel annotations solve this by:
+# Without annotations, profiler traces show all kernels on a single stream with
+# auto-generated names, making it difficult to understand the logical structure
+# of your computation. With annotations, you can:
 #
-# 1. **Marking** kernels during graph capture with semantic labels
-# 2. **Profiling** the graph replay to collect execution traces
-# 3. **Post-processing** traces to merge annotations and create custom lanes
+# 1. **Label kernel groups** with meaningful names during capture
+# 2. **Assign custom stream IDs** for visual organization
+# 3. **Merge labels into profiler traces** for semantic visualization
 #
-# The result is a trace where kernels are organized into meaningful groups,
-# making it much easier to identify performance bottlenecks.
+# The result is a profiler trace where kernels are labeled and organized by
+# their function, making it much easier to identify performance bottlenecks
+# and understand execution flow.
 #
 # .. image:: /_static/img/cuda_graph_annotations_before_after.png
 #
