@@ -5,7 +5,7 @@
 CUDA Graph Kernel Annotations and Profiling
 ============================================
 
-**Author**: `PyTorch Team <https://github.com/pytorch>`_
+**Author**: `Shangdi Yu <https://github.com/yushangdi>`_
 
 .. grid:: 2
 
@@ -402,8 +402,49 @@ def main():
     print("the semantic kernel lanes.")
     print("="*60)
 
-if __name__ == "__main__":
-    main()
+# Example output:
+# if __name__ == "__main__":
+#     main()
+#
+# Annotation support available: True
+#
+# 1. Building transformer block model...
+#
+# 2. Capturing CUDA graph with annotations...
+# Captured graph with 13 annotated nodes
+#
+# 3. Saving annotation metadata...
+# Saved 13 annotations to traces/kernel_annotations_rank0_fwd_bwd.pkl
+#
+# 4. Profiling graph replays...
+# Saved raw trace to traces/trace_raw.json.gz
+#
+# 5. Post-processing: merging annotations into trace...
+# Annotated 65 kernels in the trace
+# Saved annotated trace to traces/trace_annotated.json.gz
+#
+# 6. Comparing traces...
+#
+# ============================================================
+# BEFORE annotation - kernels per lane (tid -> count):
+#   Stream 7: 65 kernels
+#
+# AFTER annotation - kernels per lane (tid -> count):
+#   Stream 7: 10 kernels
+#   Stream 61: 15 kernels
+#   Stream 62: 40 kernels
+# ============================================================
+#
+# ============================================================
+# SUMMARY
+# ============================================================
+# Raw trace:       traces/trace_raw.json.gz
+# Annotated trace: traces/trace_annotated.json.gz
+# Annotations:     traces/kernel_annotations_rank0_fwd_bwd.pkl
+#
+# Open the annotated trace in chrome://tracing to visualize
+# the semantic kernel lanes.
+# ============================================================
 
 ###############################################################################
 # Visualizing Results
