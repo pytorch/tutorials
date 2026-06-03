@@ -410,7 +410,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Custom Python Operators
-   :card_description: Create Custom Operators in Python. Useful for black-boxing a Python function for use with torch.compile.
+   :card_description: Create Python custom operators with correct mutation behavior, fake kernels, autograd, and opcheck.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/python_custom_ops.html
    :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
