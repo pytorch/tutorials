@@ -23,7 +23,7 @@ CUDA Graph Kernel Annotations and Profiling
        * PyTorch 2.12+
        * CUDA-capable GPU
        * Driver/CUDA-compat >= 13.1 for annotation support
-       * cuda-bindings >= 13.3.0
+       * cuda-bindings >= 13.1.0
 
 CUDA graphs are a powerful optimization technique that can significantly reduce
 kernel launch overhead by capturing and replaying sequences of CUDA operations.
@@ -81,10 +81,10 @@ understand and debug complex graph executions.
 # - PyTorch 2.12+
 # - A CUDA GPU
 # - Driver/CUDA-compat >= 13.1 for annotation support
-# - The ``cuda-bindings`` package >= 13.3.0 (``pip install cuda-python``)
+# - The ``cuda-bindings`` package >= 13.1.0 (``pip install cuda-python``)
 #
 # The cuda-bindings package provides the Python bindings for CUDA runtime APIs.
-# Version 13.3.0+ is required for the ``cudaGraphNodeGetToolsId`` API that
+# Version 13.1.0+ is required for the ``cudaGraphNodeGetToolsId`` API that
 # enables kernel annotations. If you have an older version, the tutorial will
 # run but annotations will be disabled with a warning message explaining how
 # to upgrade.
