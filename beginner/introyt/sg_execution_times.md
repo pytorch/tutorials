@@ -1,6 +1,6 @@
 # Computation times
 
-**00:00.015** total execution time for 8 files **from beginner/introyt**:
+**00:00.014** total execution time for 8 files **from beginner/introyt**:
 
 | Example | Time | Mem (MB) |
 | --- | --- | --- |

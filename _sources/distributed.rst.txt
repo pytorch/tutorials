@@ -211,6 +211,7 @@ Custom Extensions
    intermediate/rpc_param_server_tutorial
    intermediate/rpc_async_execution
    intermediate/monarch_distributed_tutorial
+   intermediate/debug_hangs_with_flight_recorder
    advanced/rpc_ddp_tutorial
    advanced/generic_join
    beginner/distributed_training_with_ray_tutorial
