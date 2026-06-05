@@ -16,6 +16,9 @@ CUDA Graph Kernel Annotations and Profiling
        * How to profile annotated graphs
        * How to post-process traces with semantic kernel lanes
        * How to visualize graph execution with custom stream assignments
+       * How to annotate communication collectives with the metadata
+         (collective type, message size, group, rank) that eager NCCL
+         traces expose but CUDA graphs drop
 
     .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
        :class-card: card-prerequisites
@@ -34,6 +37,14 @@ This tutorial demonstrates how to use **kernel annotations** to add semantic
 labels to kernels within CUDA graphs. These annotations can be merged back into
 profiler traces to create custom visualization lanes, making it easier to
 understand and debug complex graph executions.
+
+Annotations are not limited to compute kernels. One of the most valuable uses
+is annotating **communication collectives**. In eager mode, the profiler
+attaches rich metadata to every NCCL kernel -- the collective type, message
+size, process group, and ranks -- so you can see exactly what each comm is
+doing. Under CUDA graphs that metadata is lost: the collective replays as an
+opaque kernel. This tutorial shows how to re-attach that metadata with
+annotations so graphed comms read just like eager ones.
 """
 
 ###############################################################################
@@ -62,7 +73,7 @@ understand and debug complex graph executions.
 # belong to which logical component of your model.
 #
 # .. image:: /_static/img/cuda_graph_trace_before.png
-#    :width: 100%
+#    :width: 80%
 #    :alt: CUDA graph trace before annotations showing all kernels on one stream
 #
 # **After annotations:** Kernels are organized into semantic lanes (streams 61
@@ -70,8 +81,14 @@ understand and debug complex graph executions.
 # identify different components and understand the execution structure.
 #
 # .. image:: /_static/img/cuda_graph_trace_after.png
-#    :width: 100%
+#    :width: 80%
 #    :alt: CUDA graph trace after annotations showing kernels organized by function
+#
+# As another example, here is an AllReduce kernel with annotated metadata:
+#
+# .. image:: /_static/img/annotated_cudagraph.png
+#    :width: 80%
+#    :alt: AllReduce kernel with annotated metadata
 #
 # Requirements
 # ------------
@@ -95,15 +112,19 @@ understand and debug complex graph executions.
 
 import copy
 import math
+import os
 import pickle
 import sys
 from collections import Counter
 from pathlib import Path
 
 import torch
+import torch.distributed as dist
+import torch.multiprocessing
 from torch.profiler import profile, ProfilerActivity
 from torch.cuda._graph_annotations import (
     get_kernel_annotations,
+    get_stream_for_pg,
     mark_kernels,
     _is_tools_id_unavailable,
 )
@@ -398,7 +419,7 @@ def main():
     print(f"Raw trace:       {raw_trace_path}")
     print(f"Annotated trace: {annotated_path}")
     print(f"Annotations:     {annotations_path}")
-    print("\nOpen the annotated trace in chrome://tracing to visualize")
+    print("\nOpen the annotated trace in https://ui.perfetto.dev/ to visualize")
     print("the semantic kernel lanes.")
     print("="*60)
 
@@ -442,25 +463,216 @@ def main():
 # Annotated trace: traces/trace_annotated.json.gz
 # Annotations:     traces/kernel_annotations_rank0_fwd_bwd.pkl
 #
-# Open the annotated trace in chrome://tracing to visualize
+# Open the annotated trace in https://ui.perfetto.dev/ to visualize
 # the semantic kernel lanes.
 # ============================================================
 
 ###############################################################################
-# Visualizing Results
-# -------------------
+# Annotating Communication Collectives
+# -------------------------------------
 #
-# To view the annotated trace:
+# In eager mode the profiler **automatically intercepts** NCCL collectives and
+# records rich metadata: collective type, input/output message sizes, the process
+# group, its size, and the participating ranks.
 #
-# 1. Open Chrome/Chromium browser
-# 2. Navigate to ``chrome://tracing``
-# 3. Click "Load" and select the ``trace_annotated.json.gz`` file
-# 4. You should see kernels organized into custom lanes like "qkv_proj",
-#    "attention", "out_proj", and "mlp"
+# Under CUDA graphs that automatic interception stops working. The collective is
+# captured once and then replayed as an opaque kernel node. The profiler cannot
+# intercept graph replay, so it has nothing to attach the NCCL metadata to. The
+# kernels still show up in the trace (e.g., ``ncclDevKernel_AllReduce_Sum_f32_RING_LL``),
+# but they are opaque: you cannot tell what collective type it is, how many bytes
+# moved, or which process group it belongs to.
 #
-# The custom stream IDs (61, 62) specified in ``mark_kernels`` appear as
-# separate lanes, making it easy to see which operations run concurrently
-# or sequentially.
+# Annotations close this gap. By wrapping the collective in ``mark_kernels``
+# with the same fields the profiler auto-attaches in eager mode, we manually
+# re-attach that metadata to the graphed kernel. After post-processing, a
+# graphed collective reads just like an eager one. The helper below builds the
+# metadata dict; using the field names the profiler uses in eager
+# (``In msg nelems``, ``Group size``, ``Process Group Name``, ...) keeps the
+# annotated trace consistent with non-graphed traces.
+
+def annotate_collective(collective_name, input_tensor, output_tensor, group=None):
+    """Annotate a collective with the metadata eager NCCL traces expose.
+
+    Returns a ``mark_kernels`` context manager. Any kernels launched inside
+    (i.e. the collective) are tagged with the collective type, message sizes,
+    dtype, and the process group's name/description/ranks, and placed on a
+    dedicated lane keyed by the process group so comms are visually separated
+    from compute.
+
+    The field names match the keys the profiler records for eager collectives
+    (``In msg nelems``, ``Group size``, ``Process Group Name``, ...), so an
+    annotated graphed collective reads exactly like a non-graphed one.
+    """
+    pg = group if group is not None else (dist.group.WORLD if dist.is_initialized() else None)
+    ranks = dist.get_process_group_ranks(pg) if pg is not None else [0]
+    group_name = getattr(pg, "group_name", "default")
+    group_desc = getattr(pg, "group_desc", "default")
+
+    # NCCL always uses its own internal stream, so key the lane on the process
+    # group (name + description) and give it a stable id (>= 60).
+    pg_key = f"{group_name}_{group_desc}"
+    annotation = {
+        "name": collective_name,
+        "In msg nelems": input_tensor.numel(),
+        "Out msg nelems": output_tensor.numel(),
+        "Group size": len(ranks),
+        "dtype": str(input_tensor.dtype).replace("torch.", ""),
+        "Process Group Name": group_name,
+        "Process Group Description": group_desc,
+        "Process Group Ranks": ranks,
+        "stream": get_stream_for_pg(pg_key),
+    }
+    return mark_kernels(annotation)
+
+###############################################################################
+# A Block That Mixes Compute and Communication
+# ----------------------------------------------
+#
+# A tensor- or data-parallel layer interleaves matmuls with collectives. Here
+# the projection output is all-reduced across the group, mirroring the comm in
+# a tensor-parallel linear. The collective is annotated with
+# ``annotate_collective`` and lands on its own lane.
+
+def build_comm_block(group=None):
+    """Create a compute + collective block annotated for profiling."""
+    device = "cuda"
+    torch.manual_seed(0)
+    dim = 1024
+    params = {
+        "x": torch.randn(4, 256, dim, device=device),
+        "W": torch.randn(dim, dim, device=device) / math.sqrt(dim),
+    }
+
+    def forward():
+        with mark_kernels({"name": "proj", "stream": 61}):
+            h = params["x"] @ params["W"]
+
+        # All-reduce the projection output across the group (e.g. tensor
+        # parallel). all_reduce is in-place, so the input and output tensors
+        # are the same. The annotation re-attaches the NCCL metadata that a
+        # CUDA graph would otherwise drop.
+        if dist.is_available() and dist.is_initialized():
+            with annotate_collective("all_reduce", h, h, group):
+                dist.all_reduce(h)
+        return h
+
+    return forward
+
+###############################################################################
+# Running the Communication Demo
+# -------------------------------
+#
+
+WORLD_SIZE = 2
+
+def init_pg(rank, world_size):
+    """Initialize a NCCL group for one rank of the spawned demo."""
+    os.environ["MASTER_ADDR"] = "127.0.0.1"
+    os.environ["MASTER_PORT"] = "29500"
+    os.environ["RANK"] = str(rank)
+    os.environ["WORLD_SIZE"] = str(world_size)
+    # Use loopback interface for single-node setup
+    os.environ["NCCL_SOCKET_IFNAME"] = "lo"
+    dist.init_process_group("nccl", rank=rank, world_size=world_size)
+    torch.cuda.set_device(rank)
+
+def _comm_worker(rank, world_size):
+    """Per-rank worker: build, capture, profile, and (on rank 0) post-process."""
+    init_pg(rank, world_size)
+
+    output_dir = Path("traces_comm")
+
+    if rank == 0:
+        print("\nBuilding compute + collective block...")
+    model_fn = build_comm_block()
+
+    if rank == 0:
+        print("Capturing CUDA graph with annotations...")
+    graph, _ = capture_graph_with_annotations(model_fn)
+
+    # Every rank participates in the collective during profiling, but only
+    # rank 0 saves and post-processes the trace.
+    if rank == 0:
+        annotations_path = save_annotations(output_dir)
+        raw_trace_path = profile_graph(graph, output_dir)
+        annotated_path, _, annotated_trace = post_process_trace(
+            raw_trace_path, annotations_path, output_dir
+        )
+
+        # Print the args of the annotated collective kernel(s) to show that the
+        # eager-style metadata is now attached to the graphed comm.
+        print("\nAnnotated collective kernels (metadata restored):")
+        for event in annotated_trace["traceEvents"]:
+            args = event.get("args", {})
+            if args.get("In msg nelems") is not None:
+                print(f"  {event.get('name', '?')[:40]}")
+                for key in (
+                    "In msg nelems",
+                    "Out msg nelems",
+                    "Group size",
+                    "dtype",
+                    "Process Group Name",
+                    "Process Group Description",
+                    "Process Group Ranks",
+                    "stream",
+                ):
+                    if key in args:
+                        print(f"      {key}: {args[key]}")
+        print(f"\nAnnotated trace: {annotated_path}")
+    else:
+        # Match rank 0's warmup + profiled replays so the collective completes.
+        for _ in range(3):
+            graph.replay()
+        torch.cuda.synchronize()
+        for _ in range(5):
+            graph.replay()
+        torch.cuda.synchronize()
+
+    dist.destroy_process_group()
+
+def comm_annotation_demo():
+    """Spawn a ``world_size=2`` group and surface the comm metadata."""
+    if not (dist.is_available() and torch.cuda.is_available()):
+        print("Distributed/NCCL unavailable; skipping comm annotation demo.")
+        return
+    if torch.cuda.device_count() < WORLD_SIZE:
+        print(f"Need {WORLD_SIZE} GPUs for the comm demo; skipping.")
+        return
+
+    torch.multiprocessing.spawn(
+        _comm_worker, args=(WORLD_SIZE,), nprocs=WORLD_SIZE, join=True
+    )
+
+# Example output (2 GPUs):
+# if __name__ == "__main__":
+#     comm_annotation_demo()
+#
+# Building compute + collective block...
+# Capturing CUDA graph with annotations...
+# Captured graph with 2 annotated nodes
+# Saved 2 annotations to traces_comm/kernel_annotations_rank0_fwd_bwd.pkl
+# Saved raw trace to traces_comm/trace_raw.json.gz
+# Annotated 5 kernels in the trace
+# Saved annotated trace to traces_comm/trace_annotated.json.gz
+#
+# The all_reduce runs a real NCCL kernel
+# (``ncclDevKernel_AllReduce_Sum_f32_RING_LL``) across the two ranks:
+#
+# Annotated collective kernels (metadata restored):
+#   ncclDevKernel_AllReduce_Sum_f32_RING_LL
+#       In msg nelems: 1048576
+#       Out msg nelems: 1048576
+#       Group size: 2
+#       dtype: float32
+#       Process Group Name: default
+#       Process Group Description: default
+#       Process Group Ranks: [0, 1]
+#       stream: 60
+#
+# In the trace viewer, the all-reduce sits on its own dedicated comm lane
+# (stream 60), and selecting it shows the collective type, message sizes, group,
+# and ranks -- the same fields you would see in an eager trace, now recovered
+# for a CUDA-graphed collective. This metadata is LOST without annotations.
 
 ###############################################################################
 # Understanding the Cleanup Passes
@@ -528,8 +740,11 @@ def main():
 #
 # - Use ``mark_kernels()`` to label regions during graph capture
 # - Enable annotations with ``enable_annotations=True``
+# - Annotate communication collectives to recover the NCCL metadata
+#   (collective type, message size, group, rank) that CUDA graphs drop but
+#   eager traces expose
 # - Post-process traces with ``annotate_trace()`` and cleanup passes
-# - View results in chrome://tracing for intuitive visualization
+# - View results in https://ui.perfetto.dev/ for intuitive visualization
 #
 # This technique is especially valuable for large models with many components,
 # distributed training setups, or any scenario where understanding the
