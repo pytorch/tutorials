@@ -27,6 +27,7 @@ CUDA Graph Kernel Annotations and Profiling
        * CUDA-capable GPU
        * Driver/CUDA-compat >= 13.1 for annotation support
        * cuda-bindings >= 13.1.0
+       * perfetto (``pip install perfetto``)
 
 CUDA graphs are a powerful optimization technique that can significantly reduce
 kernel launch overhead by capturing and replaying sequences of CUDA operations.
@@ -99,6 +100,7 @@ annotations so graphed comms read just like eager ones.
 # - A CUDA GPU
 # - Driver/CUDA-compat >= 13.1 for annotation support
 # - The ``cuda-bindings`` package >= 13.1.0 (``pip install cuda-python``)
+# - The ``perfetto`` package for writing the trace (``pip install perfetto``)
 #
 # The cuda-bindings package provides the Python bindings for CUDA runtime APIs.
 # Version 13.1.0+ is required for the ``cudaGraphNodeGetToolsId`` API that
@@ -111,11 +113,13 @@ annotations so graphed comms read just like eager ones.
 # appear in the final trace.
 
 import copy
+import hashlib
+import json
 import math
 import os
 import pickle
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 
 import torch
@@ -131,9 +135,6 @@ from torch.cuda._graph_annotations import (
 from torch.cuda._annotate_cuda_graph_trace import (
     annotate_trace,
     load_trace,
-    save_trace,
-    _fix_overlapping_timestamps,
-    _move_overlapping_to_stream,
 )
 
 ###############################################################################
@@ -297,13 +298,185 @@ def save_annotations(output_dir):
 #
 # 1. Loading the raw trace and annotations
 # 2. Calling ``annotate_trace()`` to apply the annotations
-# 3. Running cleanup passes to handle overlapping kernels
-# 4. Saving the annotated trace
+# 3. Emitting a native Perfetto ``.pftrace`` that preserves overlapping kernels
+#    on their real stream
 #
 # The result is a trace where kernels are organized by your semantic labels.
+#
+# **Why a Perfetto protobuf trace (not Chrome JSON)?** A Chrome JSON trace --
+# the format ``torch.profiler.export_chrome_trace`` produces -- has a
+# fundamental limitation: a single track (a ``(pid, tid)`` row) can only show
+# **properly nested** slices, never crossing/overlapping ones.
+#
+# Perfetto's native **protobuf** trace (``.pftrace``) solves this
+# via the ``TrackDescriptor`` field ``sibling_merge_key``. We split
+# overlapping slices across hidden *backing* tracks (so each protobuf
+# begin/end stack stays validly nested), then give those backing tracks the
+# **same** ``sibling_merge_key`` so the Perfetto UI merges them back into a
+# single logical row. Nothing is relocated to a fake stream and no timestamp is
+# clamped -- the overlap is shown faithfully on the kernel's real stream.
+#
+# This converter is adapted from Driss Guessous's `transformer_nuggets
+# <https://github.com/drisspg/transformer_nuggets>`_
+# (``transformer_nuggets/utils/track_event.py``); we inline a compact,
+# self-contained version here. It needs the ``perfetto`` package
+# (``pip install perfetto``).
+
+def _stable_uuid(*parts):
+    """A stable 60-bit track UUID derived from its identifying parts."""
+    digest = hashlib.sha1(":".join(str(p) for p in parts).encode()).hexdigest()
+    return int(digest[:15], 16)
+
+
+def _assign_nesting_lanes(slices):
+    """Split overlapping slices into backing lanes so each lane is nestable.
+
+    A lane only holds slices that are either disjoint or fully contained, so a
+    begin/end stack on that lane never has crossing slices. Returns
+    ``(lane_of_index, lane_count)``. The lane is a *backing* track index, not a
+    user-visible stream -- lanes sharing a stream are merged back in the UI.
+    """
+    order = sorted(
+        range(len(slices)),
+        key=lambda i: (slices[i]["ts"], -slices[i]["end"], slices[i]["index"]),
+    )
+    lane_of = {}
+    lane_end_stacks = []
+    for i in order:
+        s = slices[i]
+        assigned = None
+        for lane, stack in enumerate(lane_end_stacks):
+            while stack and stack[-1] <= s["ts"]:
+                stack.pop()
+            # Valid if the lane is free or this slice nests inside the open one.
+            if not stack or s["end"] <= stack[-1]:
+                stack.append(s["end"])
+                assigned = lane
+                break
+        if assigned is None:
+            lane_end_stacks.append([s["end"]])
+            assigned = len(lane_end_stacks) - 1
+        lane_of[i] = assigned
+    return lane_of, len(lane_end_stacks)
+
+
+def _add_debug_annotation(track_event, name, value):
+    """Carry a Chrome event arg over as a typed Perfetto debug annotation."""
+    ann = track_event.debug_annotations.add()
+    ann.name = str(name)
+    # bool must be checked before int (bool is a subclass of int in Python).
+    if isinstance(value, bool):
+        ann.bool_value = value
+    elif isinstance(value, int):
+        ann.int_value = value
+    elif isinstance(value, float):
+        ann.double_value = value
+    elif value is None:
+        ann.string_value = "null"
+    elif isinstance(value, str):
+        ann.string_value = value
+    else:
+        ann.legacy_json_value = json.dumps(value, default=str)
+
+
+def write_perfetto_trace(trace, output_path):
+    """Convert a Chrome JSON trace dict to a native Perfetto ``.pftrace``.
+
+    Each Chrome ``(pid, tid)`` row becomes a ``TrackDescriptor``; each ``ph='X'``
+    slice becomes a ``TYPE_SLICE_BEGIN`` / ``TYPE_SLICE_END`` pair. Overlapping
+    slices are split across backing lanes that share a ``sibling_merge_key`` so
+    the UI re-merges them onto their real stream.
+    """
+    from perfetto.trace_builder.proto_builder import TraceProtoBuilder
+    from perfetto.protos.perfetto.trace.perfetto_trace_pb2 import (
+        TrackDescriptor,
+        TrackEvent,
+    )
+
+    events = trace["traceEvents"]
+
+    # Collect the process/thread names emitted as metadata ('M') events.
+    process_names, thread_names = {}, {}
+    for e in events:
+        if e.get("ph") == "M":
+            if e.get("name") == "process_name":
+                process_names[e.get("pid")] = e.get("args", {}).get("name", "")
+            elif e.get("name") == "thread_name":
+                key = (e.get("pid"), e.get("tid"))
+                thread_names[key] = e.get("args", {}).get("name", "")
+
+    # Group complete ('X') slices by their (pid, tid) track.
+    slices_by_track = defaultdict(list)
+    for i, e in enumerate(events):
+        if e.get("ph") == "X":
+            ts = float(e.get("ts", 0) or 0)
+            dur = float(e.get("dur", 0) or 0)
+            slices_by_track[(e.get("pid"), e.get("tid"))].append(
+                {"event": e, "index": i, "ts": ts, "end": ts + dur}
+            )
+
+    def ts_us_to_ns(value):
+        return int(round(value * 1000.0))
+
+    builder = TraceProtoBuilder()
+    SEQ = 1
+
+    # One descriptor per process.
+    for pid in {pid for (pid, _tid) in slices_by_track}:
+        pkt = builder.add_packet()
+        desc = pkt.track_descriptor
+        desc.uuid = _stable_uuid("process", pid)
+        desc.name = process_names.get(pid, f"process {pid}")
+
+    # One descriptor per backing lane; emit begin/end markers per slice.
+    markers = []
+    for (pid, tid), slices in slices_by_track.items():
+        lane_of, lane_count = _assign_nesting_lanes(slices)
+        name = thread_names.get((pid, tid), f"stream {tid}")
+        lane_uuids = []
+        for lane in range(lane_count):
+            uuid = _stable_uuid("track", pid, tid, lane)
+            lane_uuids.append(uuid)
+            pkt = builder.add_packet()
+            desc = pkt.track_descriptor
+            desc.uuid = uuid
+            desc.parent_uuid = _stable_uuid("process", pid)
+            desc.name = name
+            # Multiple lanes for one stream -> merge them into one UI row.
+            if lane_count > 1:
+                desc.sibling_merge_behavior = (
+                    TrackDescriptor.SIBLING_MERGE_BEHAVIOR_BY_SIBLING_MERGE_KEY
+                )
+                desc.sibling_merge_key = f"{pid}:{tid}:{name}"
+        for i, s in enumerate(slices):
+            uuid = lane_uuids[lane_of[i]]
+            markers.append((ts_us_to_ns(s["ts"]), 1, uuid, "begin", s["event"]))
+            markers.append((ts_us_to_ns(s["end"]), 0, uuid, "end", s["event"]))
+
+    # Begin markers must be ordered before end markers at the same timestamp.
+    markers.sort(key=lambda m: (m[0], m[1]))
+    for ts_ns, _rank, uuid, kind, event in markers:
+        pkt = builder.add_packet()
+        pkt.timestamp = ts_ns
+        pkt.trusted_packet_sequence_id = SEQ
+        track_event = pkt.track_event
+        track_event.track_uuid = uuid
+        if kind == "begin":
+            track_event.type = TrackEvent.TYPE_SLICE_BEGIN
+            track_event.name = event.get("name", "slice")
+            if event.get("cat"):
+                track_event.categories.append(event["cat"])
+            for key, value in (event.get("args") or {}).items():
+                _add_debug_annotation(track_event, key, value)
+        else:
+            track_event.type = TrackEvent.TYPE_SLICE_END
+
+    Path(output_path).write_bytes(builder.serialize())
+    return output_path
+
 
 def post_process_trace(raw_trace_path, annotations_path, output_dir):
-    """Merge annotations into the trace and apply cleanup."""
+    """Merge annotations into the trace and emit a Perfetto ``.pftrace``."""
     output_dir = Path(output_dir)
 
     # Load raw trace and annotations
@@ -318,13 +491,11 @@ def post_process_trace(raw_trace_path, annotations_path, output_dir):
     num_annotated = annotate_trace(annotated_trace, annotations)
     print(f"Annotated {num_annotated} kernels in the trace")
 
-    # Cleanup passes: move overlapping kernels and fix timestamps
-    _move_overlapping_to_stream(annotated_trace)
-    _fix_overlapping_timestamps(annotated_trace)
-
-    # Save the annotated trace
-    annotated_path = output_dir / "trace_annotated.json.gz"
-    save_trace(annotated_trace, annotated_path)
+    # Emit a native Perfetto protobuf trace. Overlapping kernels are split onto
+    # backing lanes that re-merge in the UI -- no kernel is relocated to a fake
+    # stream and no timestamp is mutated.
+    annotated_path = output_dir / "trace_annotated.pftrace"
+    write_perfetto_trace(annotated_trace, annotated_path)
     print(f"Saved annotated trace to {annotated_path}")
 
     return annotated_path, raw_trace, annotated_trace
@@ -442,7 +613,7 @@ def main():
 #
 # 5. Post-processing: merging annotations into trace...
 # Annotated 65 kernels in the trace
-# Saved annotated trace to traces/trace_annotated.json.gz
+# Saved annotated trace to traces/trace_annotated.pftrace
 #
 # 6. Comparing traces...
 #
@@ -460,7 +631,7 @@ def main():
 # SUMMARY
 # ============================================================
 # Raw trace:       traces/trace_raw.json.gz
-# Annotated trace: traces/trace_annotated.json.gz
+# Annotated trace: traces/trace_annotated.pftrace
 # Annotations:     traces/kernel_annotations_rank0_fwd_bwd.pkl
 #
 # Open the annotated trace in https://ui.perfetto.dev/ to visualize
@@ -653,7 +824,7 @@ def comm_annotation_demo():
 # Saved 2 annotations to traces_comm/kernel_annotations_rank0_fwd_bwd.pkl
 # Saved raw trace to traces_comm/trace_raw.json.gz
 # Annotated 5 kernels in the trace
-# Saved annotated trace to traces_comm/trace_annotated.json.gz
+# Saved annotated trace to traces_comm/trace_annotated.pftrace
 #
 # The all_reduce runs a real NCCL kernel
 # (``ncclDevKernel_AllReduce_Sum_f32_RING_LL``) across the two ranks:
@@ -675,21 +846,23 @@ def comm_annotation_demo():
 # for a CUDA-graphed collective. This metadata is LOST without annotations.
 
 ###############################################################################
-# Understanding the Cleanup Passes
-# ---------------------------------
+# How Overlapping Kernels Are Handled
+# ------------------------------------
 #
-# The post-processing applies two cleanup functions:
+# Graphed CUDA kernels often overlap slightly, and a single trace track can
+# only render properly nested slices. The Perfetto converter handles this
+# faithfully:
 #
-# 1. ``_move_overlapping_to_stream()``: If kernels on the same lane overlap
-#    in time, move one to a different lane. This prevents visual overlap in
-#    the trace viewer.
+# 1. ``_assign_nesting_lanes()``: For each stream, overlapping slices are split
+#    across hidden *backing* lanes so that each lane's begin/end stack is validly
+#    nested. A lane is a backing track index, **not** a user-visible stream.
 #
-# 2. ``_fix_overlapping_timestamps()``: Adjust timestamps slightly if
-#    overlapping kernels would cause confusion. This is a last resort to
-#    ensure the trace renders correctly.
+# 2. ``sibling_merge_key``: All backing lanes for one stream are given the same
+#    merge key, so the Perfetto UI merges them back into a single logical row.
 #
-# These passes ensure that the trace is both accurate and readable, even
-# when the original execution has complex concurrency patterns.
+# The result: overlaps render correctly on the kernel's **real** stream. No
+# kernel is relocated to a fabricated stream, and no timestamp is mutated --
+# unlike the legacy Chrome-JSON workaround, which had to do both.
 
 ###############################################################################
 # Performance Considerations
