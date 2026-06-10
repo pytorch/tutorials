@@ -553,7 +553,7 @@ def main():
         print("  - Driver/CUDA-compat < 13.1")
         print("  - Outdated cuda-bindings (check PyTorch warnings above)")
         print("Annotations will not be recorded, but the demo will still run.")
-        print("Any lane changes you see are from cleanup passes, not annotations.\n")
+        print("Kernels will be reassigned to the default lane, not semantic lanes.\n")
 
     output_dir = Path("traces")
 
@@ -888,11 +888,6 @@ def comm_annotation_demo():
 # - Verify that ``enable_annotations=True`` was passed to ``torch.cuda.graph()``
 # - Ensure ``cuda-python`` is installed
 #
-# **Kernels still overlapping in the trace?**
-#
-# - The cleanup passes should handle this automatically
-# - If issues persist, try assigning explicit stream IDs in ``mark_kernels``
-#
 # **Annotations not showing up in specific kernels?**
 #
 # - Some operations may not launch kernels (e.g., tensor views)
@@ -916,7 +911,7 @@ def comm_annotation_demo():
 # - Annotate communication collectives to recover the NCCL metadata
 #   (collective type, message size, group, rank) that CUDA graphs drop but
 #   eager traces expose
-# - Post-process traces with ``annotate_trace()`` and cleanup passes
+# - Post-process traces with ``annotate_trace()``
 # - View results in https://ui.perfetto.dev/ for intuitive visualization
 #
 # This technique is especially valuable for large models with many components,
