@@ -47,27 +47,27 @@ ds = datasets.FashionMNIST(
 
 ```
 0%| | 0.00/26.4M [00:00<?, ?B/s]
- 0%| | 65.5k/26.4M [00:00<01:10, 375kB/s]
+ 0%| | 65.5k/26.4M [00:00<01:10, 376kB/s]
  1%| | 229k/26.4M [00:00<00:37, 704kB/s]
- 3%|▎ | 885k/26.4M [00:00<00:12, 2.09MB/s]
- 13%|█▎ | 3.47M/26.4M [00:00<00:03, 7.08MB/s]
- 36%|███▌ | 9.50M/26.4M [00:00<00:01, 16.9MB/s]
- 59%|█████▉ | 15.6M/26.4M [00:01<00:00, 22.9MB/s]
- 81%|████████ | 21.4M/26.4M [00:01<00:00, 26.2MB/s]
-100%|██████████| 26.4M/26.4M [00:01<00:00, 20.0MB/s]
+ 3%|▎ | 918k/26.4M [00:00<00:11, 2.17MB/s]
+ 14%|█▍ | 3.67M/26.4M [00:00<00:03, 7.49MB/s]
+ 37%|███▋ | 9.76M/26.4M [00:00<00:00, 17.3MB/s]
+ 60%|█████▉ | 15.8M/26.4M [00:01<00:00, 23.1MB/s]
+ 82%|████████▏ | 21.8M/26.4M [00:01<00:00, 26.7MB/s]
+100%|██████████| 26.4M/26.4M [00:01<00:00, 19.9MB/s]
 
  0%| | 0.00/29.5k [00:00<?, ?B/s]
-100%|██████████| 29.5k/29.5k [00:00<00:00, 336kB/s]
+100%|██████████| 29.5k/29.5k [00:00<00:00, 338kB/s]
 
  0%| | 0.00/4.42M [00:00<?, ?B/s]
- 1%|▏ | 65.5k/4.42M [00:00<00:11, 369kB/s]
- 5%|▌ | 229k/4.42M [00:00<00:06, 694kB/s]
- 21%|██ | 918k/4.42M [00:00<00:01, 2.15MB/s]
- 83%|████████▎ | 3.67M/4.42M [00:00<00:00, 7.41MB/s]
-100%|██████████| 4.42M/4.42M [00:00<00:00, 6.21MB/s]
+ 1%|▏ | 65.5k/4.42M [00:00<00:11, 375kB/s]
+ 5%|▌ | 229k/4.42M [00:00<00:05, 705kB/s]
+ 20%|██ | 885k/4.42M [00:00<00:01, 2.09MB/s]
+ 81%|████████ | 3.57M/4.42M [00:00<00:00, 7.32MB/s]
+100%|██████████| 4.42M/4.42M [00:00<00:00, 6.30MB/s]
 
  0%| | 0.00/5.15k [00:00<?, ?B/s]
-100%|██████████| 5.15k/5.15k [00:00<00:00, 55.1MB/s]
+100%|██████████| 5.15k/5.15k [00:00<00:00, 58.5MB/s]
 ```
 
 ## ToImage() and ToDtype()
@@ -98,7 +98,7 @@ target_transform = v2.Lambda(
 - [Getting started with transforms v2](https://pytorch.org/vision/stable/auto_examples/transforms/plot_transforms_getting_started.html)
 - [torchvision.transforms.v2 API](https://pytorch.org/vision/stable/transforms.html#v2-api-reference-recommended)
 
-**Total running time of the script:** (0 minutes 4.312 seconds)
+**Total running time of the script:** (0 minutes 4.274 seconds)
 
 [`Download Jupyter notebook: transforms_tutorial.ipynb`](../../_downloads/9bdb71ef4a637dc36fb461904ccb7056/transforms_tutorial.ipynb)
 
