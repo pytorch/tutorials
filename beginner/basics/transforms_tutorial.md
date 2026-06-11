@@ -28,48 +28,6 @@ The FashionMNIST features are in PIL Image format, and the labels are integers.
 For training, we need the features as normalized tensors, and the labels as one-hot encoded tensors.
 To make these transformations, we use the `torchvision.transforms.v2` API along with `torch.nn.functional.one_hot`.
 
-```
-import torch
-import torch.nn.functional as F
-from torchvision import datasets
-from torchvision.transforms import v2
-
-ds = datasets.FashionMNIST(
- root="data",
- train=True,
- download=True,
- transform=v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)]),
- target_transform=v2.Lambda(
- lambda y: F.one_hot(torch.tensor(y), num_classes=10).float()
- ),
-)
-```
-
-```
-0%| | 0.00/26.4M [00:00<?, ?B/s]
- 0%| | 65.5k/26.4M [00:00<01:10, 376kB/s]
- 1%| | 229k/26.4M [00:00<00:37, 704kB/s]
- 3%|▎ | 918k/26.4M [00:00<00:11, 2.17MB/s]
- 14%|█▍ | 3.67M/26.4M [00:00<00:03, 7.49MB/s]
- 37%|███▋ | 9.76M/26.4M [00:00<00:00, 17.3MB/s]
- 60%|█████▉ | 15.8M/26.4M [00:01<00:00, 23.1MB/s]
- 82%|████████▏ | 21.8M/26.4M [00:01<00:00, 26.7MB/s]
-100%|██████████| 26.4M/26.4M [00:01<00:00, 19.9MB/s]
-
- 0%| | 0.00/29.5k [00:00<?, ?B/s]
-100%|██████████| 29.5k/29.5k [00:00<00:00, 338kB/s]
-
- 0%| | 0.00/4.42M [00:00<?, ?B/s]
- 1%|▏ | 65.5k/4.42M [00:00<00:11, 375kB/s]
- 5%|▌ | 229k/4.42M [00:00<00:05, 705kB/s]
- 20%|██ | 885k/4.42M [00:00<00:01, 2.09MB/s]
- 81%|████████ | 3.57M/4.42M [00:00<00:00, 7.32MB/s]
-100%|██████████| 4.42M/4.42M [00:00<00:00, 6.30MB/s]
-
- 0%| | 0.00/5.15k [00:00<?, ?B/s]
-100%|██████████| 5.15k/5.15k [00:00<00:00, 58.5MB/s]
-```
-
 ## ToImage() and ToDtype()
 
 The `torchvision.transforms.v2` API replaces the legacy `ToTensor` transform with a two-step pipeline.
@@ -85,12 +43,6 @@ Lambda transforms apply any user-defined lambda function. Here, we use
 to turn the integer label into a one-hot encoded tensor of size 10 (the number of labels in our dataset),
 then cast it to `float` to match the expected dtype.
 
-```
-target_transform = v2.Lambda(
- lambda y: F.one_hot(torch.tensor(y), num_classes=10).float()
-)
-```
-
 ---
 
 ### Further Reading
@@ -98,7 +50,11 @@ target_transform = v2.Lambda(
 - [Getting started with transforms v2](https://pytorch.org/vision/stable/auto_examples/transforms/plot_transforms_getting_started.html)
 - [torchvision.transforms.v2 API](https://pytorch.org/vision/stable/transforms.html#v2-api-reference-recommended)
 
-**Total running time of the script:** (0 minutes 4.274 seconds)
+```
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+```
+
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: transforms_tutorial.ipynb`](../../_downloads/9bdb71ef4a637dc36fb461904ccb7056/transforms_tutorial.ipynb)
 

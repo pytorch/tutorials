@@ -520,6 +520,14 @@ Model-Optimization,Best-Practice,Profiling
 
 ![](_static/img/thumbnails/cropped/profiler.png)](beginner/profiler.html)
 
+[#### CUDA Graph Kernel Annotations and Profiling
+
+Learn how to annotate CUDA graph kernels for semantic profiling traces with custom visualization lanes.
+
+Model-Optimization,Best-Practice,Profiling,CUDA
+
+![](_static/img/thumbnails/cropped/profiler.png)](advanced/cuda_graph_annotations_tutorial.html)
+
 [#### Hyperparameter Tuning Tutorial
 
 Learn how to use Ray Tune to find the best performing set of hyperparameters for your model.

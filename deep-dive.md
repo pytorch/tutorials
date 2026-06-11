@@ -15,6 +15,14 @@ Profiling
 
 ![](_static/img/thumbnails/cropped/pytorch-logo.png)](beginner/profiler.html)
 
+[#### CUDA Graph Kernel Annotations and Profiling
+
+Learn how to annotate CUDA graph kernels for semantic profiling traces with custom visualization lanes.
+
+Profiling,CUDA,Model-Optimization
+
+![](_static/img/thumbnails/cropped/profiler.png)](advanced/cuda_graph_annotations_tutorial.html)
+
 [#### Parametrizations Tutorial
 
 Learn how to use torch.nn.utils.parametrize to put constraints on your parameters (e.g. make them orthogonal, symmetric positive definite, low-rank...)

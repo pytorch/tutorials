@@ -58,13 +58,13 @@ Word Embeddings: Encoding Lexical Semantics
 [Sequence Models and Long Short-Term Memory Networks](sequence_models_tutorial.html#sphx-glr-beginner-nlp-sequence-models-tutorial-py)
 
 Sequence Models and Long Short-Term Memory Networks
-![](../../_images/sphx_glr_deep_learning_tutorial_thumb.png)
-
-[Deep Learning with PyTorch](deep_learning_tutorial.html#sphx-glr-beginner-nlp-deep-learning-tutorial-py)
-
-Deep Learning with PyTorch
 ![](../../_images/sphx_glr_pytorch_tutorial_thumb.png)
 
 [Introduction to PyTorch](pytorch_tutorial.html#sphx-glr-beginner-nlp-pytorch-tutorial-py)
 
 Introduction to PyTorch
+![](../../_images/sphx_glr_deep_learning_tutorial_thumb.png)
+
+[Deep Learning with PyTorch](deep_learning_tutorial.html#sphx-glr-beginner-nlp-deep-learning-tutorial-py)
+
+Deep Learning with PyTorch

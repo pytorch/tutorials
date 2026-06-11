@@ -516,6 +516,13 @@ Welcome to PyTorch Tutorials
    :tags: Model-Optimization,Best-Practice,Profiling
 
 .. customcarditem::
+   :header: CUDA Graph Kernel Annotations and Profiling
+   :card_description: Learn how to annotate CUDA graph kernels for semantic profiling traces with custom visualization lanes.
+   :image: _static/img/thumbnails/cropped/profiler.png
+   :link: advanced/cuda_graph_annotations_tutorial.html
+   :tags: Model-Optimization,Best-Practice,Profiling,CUDA
+
+.. customcarditem::
    :header: Hyperparameter Tuning Tutorial
    :card_description: Learn how to use Ray Tune to find the best performing set of hyperparameters for your model.
    :image: _static/img/ray-tune.png

@@ -78,84 +78,18 @@ Note that a CUDA-enabled backend is required for training with the `semilearn` p
 See [Enabling CUDA in Google Colab](https://pytorch.org/tutorials/beginner/colab#enabling-cuda) for instructions
 on enabling CUDA in Google Colab.
 
-```
-import semilearn
-from semilearn import get_dataset, get_data_loader, get_net_builder, get_algorithm, get_config, Trainer
-```
-
 After importing necessary functions, we first set the hyper-parameters of the
 algorithm.
-
-```
-config = {
- 'algorithm': 'freematch',
- 'net': 'vit_tiny_patch2_32',
- 'use_pretrain': True,
- 'pretrain_path': 'https://github.com/microsoft/Semi-supervised-learning/releases/download/v.0.0.0/vit_tiny_patch2_32_mlp_im_1k_32.pth',
-
- # optimization configs
- 'epoch': 1,
- 'num_train_iter': 500,
- 'num_eval_iter': 500,
- 'num_log_iter': 50,
- 'optim': 'AdamW',
- 'lr': 5e-4,
- 'layer_decay': 0.5,
- 'batch_size': 16,
- 'eval_batch_size': 16,
-
- # dataset configs
- 'dataset': 'cifar10',
- 'num_labels': 40,
- 'num_classes': 10,
- 'img_size': 32,
- 'crop_ratio': 0.875,
- 'data_dir': './data',
- 'ulb_samples_per_class': None,
-
- # algorithm specific configs
- 'hard_label': True,
- 'T': 0.5,
- 'ema_p': 0.999,
- 'ent_loss_ratio': 0.001,
- 'uratio': 2,
- 'ulb_loss_ratio': 1.0,
-
- # device configs
- 'gpu': 0,
- 'world_size': 1,
- 'distributed': False,
- "num_workers": 4,
-}
-config = get_config(config)
-```
 
 Then, we load the dataset and create data loaders for training and testing.
 And we specify the model and algorithm to use.
 
-```
-dataset_dict = get_dataset(config, config.algorithm, config.dataset, config.num_labels, config.num_classes, data_dir=config.data_dir, include_lb_to_ulb=config.include_lb_to_ulb)
-train_lb_loader = get_data_loader(config, dataset_dict['train_lb'], config.batch_size)
-train_ulb_loader = get_data_loader(config, dataset_dict['train_ulb'], int(config.batch_size * config.uratio))
-eval_loader = get_data_loader(config, dataset_dict['eval'], config.eval_batch_size)
-algorithm = get_algorithm(config, get_net_builder(config.net, from_name=False), tb_log=None, logger=None)
-```
-
 We can start training the algorithms on CIFAR-10 with 40 labels now.
 We train for 500 iterations and evaluate every 500 iterations.
-
-```
-trainer = Trainer(config, algorithm)
-trainer.fit(train_lb_loader, train_ulb_loader, eval_loader)
-```
 
 Finally, let's evaluate the trained model on the validation set.
 After training 500 iterations with `FreeMatch` on only 40 labels of
 CIFAR-10, we obtain a classifier that achieves around 87% accuracy on the validation set.
-
-```
-trainer.evaluate(eval_loader)
-```
 
 ## Use USB to Train `SoftMatch` with specific imbalanced algorithm on imbalanced CIFAR-10
 
@@ -166,83 +100,23 @@ by setting the `lb_imb_ratio` and `ulb_imb_ratio` to 10.
 Also, we replace the `algorithm` with `softmatch` and set the `imbalanced`
 to `True`.
 
-```
-config = {
- 'algorithm': 'softmatch',
- 'net': 'vit_tiny_patch2_32',
- 'use_pretrain': True,
- 'pretrain_path': 'https://github.com/microsoft/Semi-supervised-learning/releases/download/v.0.0.0/vit_tiny_patch2_32_mlp_im_1k_32.pth',
-
- # optimization configs
- 'epoch': 1,
- 'num_train_iter': 500,
- 'num_eval_iter': 500,
- 'num_log_iter': 50,
- 'optim': 'AdamW',
- 'lr': 5e-4,
- 'layer_decay': 0.5,
- 'batch_size': 16,
- 'eval_batch_size': 16,
-
- # dataset configs
- 'dataset': 'cifar10',
- 'num_labels': 1500,
- 'num_classes': 10,
- 'img_size': 32,
- 'crop_ratio': 0.875,
- 'data_dir': './data',
- 'ulb_samples_per_class': None,
- 'lb_imb_ratio': 10,
- 'ulb_imb_ratio': 10,
- 'ulb_num_labels': 3000,
-
- # algorithm specific configs
- 'hard_label': True,
- 'T': 0.5,
- 'ema_p': 0.999,
- 'ent_loss_ratio': 0.001,
- 'uratio': 2,
- 'ulb_loss_ratio': 1.0,
-
- # device configs
- 'gpu': 0,
- 'world_size': 1,
- 'distributed': False,
- "num_workers": 4,
-}
-config = get_config(config)
-```
-
 Then, we re-load the dataset and create data loaders for training and testing.
 And we specify the model and algorithm to use.
-
-```
-dataset_dict = get_dataset(config, config.algorithm, config.dataset, config.num_labels, config.num_classes, data_dir=config.data_dir, include_lb_to_ulb=config.include_lb_to_ulb)
-train_lb_loader = get_data_loader(config, dataset_dict['train_lb'], config.batch_size)
-train_ulb_loader = get_data_loader(config, dataset_dict['train_ulb'], int(config.batch_size * config.uratio))
-eval_loader = get_data_loader(config, dataset_dict['eval'], config.eval_batch_size)
-algorithm = get_algorithm(config, get_net_builder(config.net, from_name=False), tb_log=None, logger=None)
-```
 
 We can start Train the algorithms on CIFAR-10 with 40 labels now.
 We train for 500 iterations and evaluate every 500 iterations.
 
-```
-trainer = Trainer(config, algorithm)
-trainer.fit(train_lb_loader, train_ulb_loader, eval_loader)
-```
-
 Finally, let's evaluate the trained model on the validation set.
-
-```
-trainer.evaluate(eval_loader)
-```
 
 References:
 - [1] USB: [microsoft/Semi-supervised-learning](https://github.com/microsoft/Semi-supervised-learning)
 - [2] Kihyuk Sohn et al. FixMatch: Simplifying Semi-Supervised Learning with Consistency and Confidence
 - [3] Yidong Wang et al. FreeMatch: Self-adaptive Thresholding for Semi-supervised Learning
 - [4] Hao Chen et al. SoftMatch: Addressing the Quantity-Quality Trade-off in Semi-supervised Learning
+
+```
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+```
 
 [`Download Jupyter notebook: usb_semisup_learn.ipynb`](../_downloads/1fe2913c46f55656d34ab03760cafcdc/usb_semisup_learn.ipynb)
 

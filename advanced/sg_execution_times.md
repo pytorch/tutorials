@@ -1,11 +1,12 @@
 # Computation times
 
-**00:00.012** total execution time for 7 files **from advanced**:
+**00:00.014** total execution time for 8 files **from advanced**:
 
 | Example | Time | Mem (MB) |
 | --- | --- | --- |
 | [Neural Transfer Using PyTorch](neural_style_tutorial.html#sphx-glr-advanced-neural-style-tutorial-py) (`neural_style_tutorial.py`) | 00:00.003 | 0.0 |
-| [TorchRL objectives: Coding a DDPG loss](coding_ddpg.html#sphx-glr-advanced-coding-ddpg-py) (`coding_ddpg.py`) | 00:00.002 | 0.0 |
+| [TorchRL objectives: Coding a DDPG loss](coding_ddpg.html#sphx-glr-advanced-coding-ddpg-py) (`coding_ddpg.py`) | 00:00.003 | 0.0 |
+| [CUDA Graph Kernel Annotations and Profiling](cuda_graph_annotations_tutorial.html#sphx-glr-advanced-cuda-graph-annotations-tutorial-py) (`cuda_graph_annotations_tutorial.py`) | 00:00.002 | 0.0 |
 | [Custom Python Operators](python_custom_ops.html#sphx-glr-advanced-python-custom-ops-py) (`python_custom_ops.py`) | 00:00.002 | 0.0 |
 | [Pendulum: Writing your environment and transforms with TorchRL](pendulum.html#sphx-glr-advanced-pendulum-py) (`pendulum.py`) | 00:00.002 | 0.0 |
 | [Creating Extensions Using NumPy and SciPy](numpy_extensions_tutorial.html#sphx-glr-advanced-numpy-extensions-tutorial-py) (`numpy_extensions_tutorial.py`) | 00:00.002 | 0.0 |

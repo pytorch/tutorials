@@ -29,67 +29,9 @@ vision transformer model from torchvision, but feel free to substitute
 with your own model. We will also use `torch.optim.Adam` as our optimizer,
 but, again, feel free to substitute with your own optimizer.
 
-```
-import torch
-from torchvision import models
-from pickle import dump
-
-model = models.vit_l_16(weights='DEFAULT').cuda()
-optimizer = torch.optim.Adam(model.parameters())
-```
-
-```
-Downloading: "https://download.pytorch.org/models/vit_l_16-852ce7e3.pth" to /var/lib/ci-user/.cache/torch/hub/checkpoints/vit_l_16-852ce7e3.pth
-
- 0%| | 0.00/1.13G [00:00<?, ?B/s]
- 4%|▎ | 43.1M/1.13G [00:00<00:02, 452MB/s]
- 7%|▋ | 87.0M/1.13G [00:00<00:02, 457MB/s]
- 11%|█▏ | 131M/1.13G [00:00<00:02, 432MB/s]
- 15%|█▌ | 175M/1.13G [00:00<00:02, 443MB/s]
- 19%|█▊ | 217M/1.13G [00:00<00:02, 443MB/s]
- 22%|██▏ | 261M/1.13G [00:00<00:02, 448MB/s]
- 26%|██▌ | 304M/1.13G [00:00<00:01, 452MB/s]
- 30%|██▉ | 348M/1.13G [00:00<00:01, 446MB/s]
- 34%|███▎ | 390M/1.13G [00:00<00:01, 420MB/s]
- 37%|███▋ | 432M/1.13G [00:01<00:01, 424MB/s]
- 41%|████ | 473M/1.13G [00:01<00:01, 424MB/s]
- 45%|████▍ | 517M/1.13G [00:01<00:01, 435MB/s]
- 48%|████▊ | 561M/1.13G [00:01<00:01, 442MB/s]
- 52%|█████▏ | 604M/1.13G [00:01<00:01, 443MB/s]
- 56%|█████▌ | 647M/1.13G [00:01<00:01, 447MB/s]
- 59%|█████▉ | 690M/1.13G [00:01<00:01, 427MB/s]
- 63%|██████▎ | 734M/1.13G [00:01<00:01, 436MB/s]
- 67%|██████▋ | 778M/1.13G [00:01<00:00, 443MB/s]
- 71%|███████ | 820M/1.13G [00:01<00:00, 428MB/s]
- 74%|███████▍ | 864M/1.13G [00:02<00:00, 437MB/s]
- 78%|███████▊ | 906M/1.13G [00:02<00:00, 438MB/s]
- 82%|████████▏ | 948M/1.13G [00:02<00:00, 437MB/s]
- 85%|████████▌ | 991M/1.13G [00:02<00:00, 441MB/s]
- 89%|████████▉ | 1.01G/1.13G [00:02<00:00, 422MB/s]
- 93%|█████████▎| 1.05G/1.13G [00:02<00:00, 400MB/s]
- 96%|█████████▋| 1.09G/1.13G [00:02<00:00, 415MB/s]
-100%|██████████| 1.13G/1.13G [00:02<00:00, 434MB/s]
-```
-
 Now let's define our typical training loop. You should use real images when
 training, but for the purposes of this tutorial, we are passing in fake
 inputs and not worrying about loading any actual data.
-
-```
-IMAGE_SIZE = 224
-
-def train(model, optimizer):
- # create our fake image input: tensor shape is batch_size, channels, height, width
- fake_image = torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE).cuda()
-
- # call our forward and backward
- loss = model.forward(fake_image)
- loss.sum().backward()
-
- # optimizer update
- optimizer.step()
- optimizer.zero_grad()
-```
 
 ## Memory usage during training
 
@@ -111,19 +53,12 @@ the CUDA memory timeline to look like.
 
 ```
 # tell CUDA to start recording memory allocations
-torch.cuda.memory._record_memory_history(enabled='all')
 
 # train 3 steps
-for _ in range(3):
- train(model, optimizer)
 
 # save a snapshot of the memory allocations
-s = torch.cuda.memory._snapshot()
-with open(f"snapshot.pickle", "wb") as f:
- dump(s, f)
 
 # tell CUDA to stop recording memory allocations now
-torch.cuda.memory._record_memory_history(enabled=None)
 ```
 
 Now open up the snapshot in the CUDA Memory Visualizer at
@@ -206,30 +141,13 @@ optimizer = torch.optim.Adam(model.parameters())
 ```
 # Instead of having just *one* optimizer, we will have a ``dict`` of optimizers
 # for every parameter so we could reference them in our hook.
-optimizer_dict = {p: torch.optim.Adam([p], foreach=False) for p in model.parameters()}
 
 # Define our hook, which will call the optimizer ``step()`` and ``zero_grad()``
-def optimizer_hook(parameter) -> None:
- optimizer_dict[parameter].step()
- optimizer_dict[parameter].zero_grad()
 
 # Register the hook onto every parameter
-for p in model.parameters():
- p.register_post_accumulate_grad_hook(optimizer_hook)
 
 # Now remember our previous ``train()`` function? Since the optimizer has been
 # fused into the backward, we can remove the optimizer step and zero_grad calls.
-def train(model):
- # create our fake image input: tensor shape is batch_size, channels, height, width
- fake_image = torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE).cuda()
-
- # call our forward and backward
- loss = model.forward(fake_image)
- loss.sum().backward()
-
- # optimizer update --> no longer needed!
- # optimizer.step()
- # optimizer.zero_grad()
 ```
 
 That took about 10 lines of changes in our sample model, which is neat.
@@ -248,22 +166,14 @@ We will consult our friend, the memory snapshot.
 ```
 # delete optimizer memory from before to get a clean slate for the next
 # memory snapshot
-del optimizer
 
 # tell CUDA to start recording memory allocations
-torch.cuda.memory._record_memory_history(enabled='all')
 
 # train 3 steps. note that we no longer pass the optimizer into train()
-for _ in range(3):
- train(model)
 
 # save a snapshot of the memory allocations
-s = torch.cuda.memory._snapshot()
-with open(f"snapshot-opt-in-bwd.pickle", "wb") as f:
- dump(s, f)
 
 # tell CUDA to stop recording memory allocations now
-torch.cuda.memory._record_memory_history(enabled=None)
 ```
 
 Yes, take some time to drag your snapshot into the CUDA Memory Visualizer.
@@ -304,7 +214,11 @@ fusing the optimizer into the backward step through the new
 technique (when gradients memory is significant). Along the way, we also learned
 about memory snapshots, which are generally useful in memory optimization.
 
-**Total running time of the script:** (0 minutes 8.924 seconds)
+```
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+```
+
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: optimizer_step_in_backward_tutorial.ipynb`](../_downloads/dfe0a5e2472fa9d26daaa0f82eefb5b6/optimizer_step_in_backward_tutorial.ipynb)
 

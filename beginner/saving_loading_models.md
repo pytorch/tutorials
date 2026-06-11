@@ -481,6 +481,10 @@ utilization. To save a `DataParallel` model generically, save the
 `model.module.state_dict()`. This way, you have the flexibility to
 load the model any way you want to any device you want.
 
+```
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+```
+
 [`Download Jupyter notebook: saving_loading_models.ipynb`](../_downloads/e139fbbcadcc4d83aab8995db4b9147c/saving_loading_models.ipynb)
 
 [`Download Python source code: saving_loading_models.py`](../_downloads/7d5771891cc8e2f733352e4fc8fc63b6/saving_loading_models.py)

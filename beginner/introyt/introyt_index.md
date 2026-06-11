@@ -27,6 +27,10 @@ You can run this tutorial in a couple of ways:
 - **On the cloud**: This is the easiest way to get started! Each section has a Colab link at the top, which opens a notebook with the code in a fully-hosted environment. Pro tip: Use Colab with a GPU runtime to speed up operations *Runtime > Change runtime type > GPU*
 - **Locally**: This option requires you to set up PyTorch and torchvision on your local machine ([installation instructions](https://pytorch.org/get-started/locally/)). Download the notebook or copy the code into your favorite IDE.
 
+```
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+```
+
 [`Download Jupyter notebook: introyt_index.ipynb`](../../_downloads/4c8d6db87ab5b363f09703de2705d99d/introyt_index.ipynb)
 
 [`Download Python source code: introyt_index.py`](../../_downloads/f30f771f8bfaa8317b7c5bd0ad02786d/introyt_index.py)
