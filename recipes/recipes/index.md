@@ -37,11 +37,6 @@ Reducing torch.compile cold start compilation time with regional compilation
 
 [https://pytorch.org/tutorials/recipes/regional_compilation.html](https://pytorch.org/tutorials/recipes/regional_compilation.html)
 
-![](../../_images/sphx_glr_changing_default_device_thumb.png)
-
-[Changing default device](changing_default_device.html#sphx-glr-recipes-recipes-changing-default-device-py)
-
-Changing default device
 ![](../../_images/sphx_glr_swap_tensors_thumb.png)
 
 [Extension points in nn.Module for load_state_dict and tensor subclasses](swap_tensors.html#sphx-glr-recipes-recipes-swap-tensors-py)
@@ -72,11 +67,6 @@ Defining a Neural Network in PyTorch
 [Performance Tuning Guide](tuning_guide.html#sphx-glr-recipes-recipes-tuning-guide-py)
 
 Performance Tuning Guide
-![](../../_images/sphx_glr_what_is_state_dict_thumb.png)
-
-[What is a state_dict in PyTorch](what_is_state_dict.html#sphx-glr-recipes-recipes-what-is-state-dict-py)
-
-What is a state_dict in PyTorch
 ![](../../_images/sphx_glr_reasoning_about_shapes_thumb.png)
 
 [Reasoning about Shapes in PyTorch](reasoning_about_shapes.html#sphx-glr-recipes-recipes-reasoning-about-shapes-py)
@@ -92,21 +82,31 @@ Timer quick start
 [Model Interpretability using Captum](Captum_Recipe.html#sphx-glr-recipes-recipes-captum-recipe-py)
 
 Model Interpretability using Captum
-![](../../_images/sphx_glr_amp_recipe_thumb.png)
-
-[Automatic Mixed Precision](amp_recipe.html#sphx-glr-recipes-recipes-amp-recipe-py)
-
-Automatic Mixed Precision
-![](../../_images/sphx_glr_profiler_recipe_thumb.png)
-
-[PyTorch Profiler](profiler_recipe.html#sphx-glr-recipes-recipes-profiler-recipe-py)
-
-PyTorch Profiler
 ![](../../_images/sphx_glr_module_load_state_dict_tips_thumb.png)
 
 [Tips for Loading an nn.Module from a Checkpoint](module_load_state_dict_tips.html#sphx-glr-recipes-recipes-module-load-state-dict-tips-py)
 
 Tips for Loading an nn.Module from a Checkpoint
+![](../../_images/sphx_glr_changing_default_device_thumb.png)
+
+[Changing default device](changing_default_device.html#sphx-glr-recipes-recipes-changing-default-device-py)
+
+Changing default device
+![](../../_images/sphx_glr_amp_recipe_thumb.png)
+
+[Automatic Mixed Precision](amp_recipe.html#sphx-glr-recipes-recipes-amp-recipe-py)
+
+Automatic Mixed Precision
+![](../../_images/sphx_glr_what_is_state_dict_thumb.png)
+
+[What is a state_dict in PyTorch](what_is_state_dict.html#sphx-glr-recipes-recipes-what-is-state-dict-py)
+
+What is a state_dict in PyTorch
+![](../../_images/sphx_glr_profiler_recipe_thumb.png)
+
+[PyTorch Profiler](profiler_recipe.html#sphx-glr-recipes-recipes-profiler-recipe-py)
+
+PyTorch Profiler
 ![](../../_images/sphx_glr_benchmark_thumb.png)
 
 [SyntaxError](benchmark.html#sphx-glr-recipes-recipes-benchmark-py)

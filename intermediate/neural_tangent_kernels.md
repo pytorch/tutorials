@@ -21,41 +21,7 @@ This tutorial requires PyTorch 2.6.0 or later.
 
 First, some setup. Let's define a simple CNN that we wish to compute the NTK of.
 
-```
-import torch
-import torch.nn as nn
-from torch.func import functional_call, vmap, vjp, jvp, jacrev
-
-if torch.accelerator.is_available() and torch.accelerator.device_count() > 0:
- device = torch.accelerator.current_accelerator()
-else:
- device = torch.device("cpu")
-
-class CNN(nn.Module):
- def __init__(self):
- super(CNN, self).__init__()
- self.conv1 = nn.Conv2d(3, 32, (3, 3))
- self.conv2 = nn.Conv2d(32, 32, (3, 3))
- self.conv3 = nn.Conv2d(32, 32, (3, 3))
- self.fc = nn.Linear(21632, 10)
-
- def forward(self, x):
- x = self.conv1(x)
- x = x.relu()
- x = self.conv2(x)
- x = x.relu()
- x = self.conv3(x)
- x = x.flatten(1)
- x = self.fc(x)
- return x
-```
-
 And let's generate some random data
-
-```
-x_train = torch.randn(20, 3, 32, 32, device=device)
-x_test = torch.randn(5, 3, 32, 32, device=device)
-```
 
 ## Create a function version of the model
 
@@ -73,13 +39,7 @@ this assumption in mind, we can easily generate a function that evaluates the
 model on a single data point:
 
 ```
-net = CNN().to(device)
-
 # Detaching the parameters because we won't be calling Tensor.backward().
-params = {k: v.detach() for k, v in net.named_parameters()}
-
-def fnet_single(params, x):
- return functional_call(net, params, (x.unsqueeze(0),)).squeeze(0)
 ```
 
 ## Compute the NTK: method 1 (Jacobian contraction)
@@ -98,70 +58,10 @@ of all combinations of data points from \(x_1\) and \(x_2\).
 The first method consists of doing just that - computing the two Jacobians,
 and contracting them. Here's how to compute the NTK in the batched case:
 
-```
-def empirical_ntk_jacobian_contraction(fnet_single, params, x1, x2):
- # Compute J(x1)
- jac1 = vmap(jacrev(fnet_single), (None, 0))(params, x1)
- jac1 = jac1.values()
- jac1 = [j.flatten(2) for j in jac1]
-
- # Compute J(x2)
- jac2 = vmap(jacrev(fnet_single), (None, 0))(params, x2)
- jac2 = jac2.values()
- jac2 = [j.flatten(2) for j in jac2]
-
- # Compute J(x1) @ J(x2).T
- result = torch.stack([torch.einsum('Naf,Mbf->NMab', j1, j2) for j1, j2 in zip(jac1, jac2)])
- result = result.sum(0)
- return result
-
-result = empirical_ntk_jacobian_contraction(fnet_single, params, x_train, x_test)
-print(result.shape)
-```
-
-```
-torch.Size([20, 5, 10, 10])
-```
-
 In some cases, you may only want the diagonal or the trace of this quantity,
 especially if you know beforehand that the network architecture results in an
 NTK where the non-diagonal elements can be approximated by zero. It's easy to
 adjust the above function to do that:
-
-```
-def empirical_ntk_jacobian_contraction(fnet_single, params, x1, x2, compute='full'):
- # Compute J(x1)
- jac1 = vmap(jacrev(fnet_single), (None, 0))(params, x1)
- jac1 = jac1.values()
- jac1 = [j.flatten(2) for j in jac1]
-
- # Compute J(x2)
- jac2 = vmap(jacrev(fnet_single), (None, 0))(params, x2)
- jac2 = jac2.values()
- jac2 = [j.flatten(2) for j in jac2]
-
- # Compute J(x1) @ J(x2).T
- einsum_expr = None
- if compute == 'full':
- einsum_expr = 'Naf,Mbf->NMab'
- elif compute == 'trace':
- einsum_expr = 'Naf,Maf->NM'
- elif compute == 'diagonal':
- einsum_expr = 'Naf,Maf->NMa'
- else:
- assert False
-
- result = torch.stack([torch.einsum(einsum_expr, j1, j2) for j1, j2 in zip(jac1, jac2)])
- result = result.sum(0)
- return result
-
-result = empirical_ntk_jacobian_contraction(fnet_single, params, x_train, x_test, 'trace')
-print(result.shape)
-```
-
-```
-torch.Size([20, 5])
-```
 
 The asymptotic time complexity of this method is \(N O [FP]\) (time to
 compute the Jacobians) + \(N^2 O^2 P\) (time to contract the Jacobians),
@@ -200,47 +100,7 @@ Jacobian-vector product) to compute the NTK.
 Let's code that up:
 
 ```
-def empirical_ntk_ntk_vps(func, params, x1, x2, compute='full'):
- def get_ntk(x1, x2):
- def func_x1(params):
- return func(params, x1)
-
- def func_x2(params):
- return func(params, x2)
-
- output, vjp_fn = vjp(func_x1, params)
-
- def get_ntk_slice(vec):
- # This computes ``vec @ J(x2).T``
- # `vec` is some unit vector (a single slice of the Identity matrix)
- vjps = vjp_fn(vec)
- # This computes ``J(X1) @ vjps``
- _, jvps = jvp(func_x2, (params,), vjps)
- return jvps
-
- # Here's our identity matrix
- basis = torch.eye(output.numel(), dtype=output.dtype, device=output.device).view(output.numel(), -1)
- return vmap(get_ntk_slice)(basis)
-
- # ``get_ntk(x1, x2)`` computes the NTK for a single data point x1, x2
- # Since the x1, x2 inputs to ``empirical_ntk_ntk_vps`` are batched,
- # we actually wish to compute the NTK between every pair of data points
- # between {x1} and {x2}. That's what the ``vmaps`` here do.
- result = vmap(vmap(get_ntk, (None, 0)), (0, None))(x1, x2)
-
- if compute == 'full':
- return result
- if compute == 'trace':
- return torch.einsum('NMKK->NM', result)
- if compute == 'diagonal':
- return torch.einsum('NMKK->NMK', result)
-
 # Disable TensorFloat-32 for convolutions on Ampere+ GPUs to sacrifice performance in favor of accuracy
-with torch.backends.cudnn.flags(allow_tf32=False):
- result_from_jacobian_contraction = empirical_ntk_jacobian_contraction(fnet_single, params, x_test, x_train)
- result_from_ntk_vps = empirical_ntk_ntk_vps(fnet_single, params, x_test, x_train)
-
-assert torch.allclose(result_from_jacobian_contraction, result_from_ntk_vps, atol=1e-5)
 ```
 
 Our code for `empirical_ntk_ntk_vps` looks like a direct translation from
@@ -261,7 +121,11 @@ Memory-wise, both methods should be comparable. See section 3.3 in
 [Fast Finite Width Neural Tangent Kernel](https://arxiv.org/abs/2206.08720)
 for details.
 
-**Total running time of the script:** (0 minutes 0.740 seconds)
+```
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+```
+
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: neural_tangent_kernels.ipynb`](../_downloads/412c6fac9e4f7432b11f6e67d066ee2f/neural_tangent_kernels.ipynb)
 

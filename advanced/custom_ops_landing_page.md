@@ -9,7 +9,10 @@ APIs.
 
 ## Authoring a custom operator from Python
 
-Please see [Custom Python Operators](python_custom_ops.html#python-custom-ops-tutorial).
+Please see [Custom Python Operators](python_custom_ops.html#python-custom-ops-tutorial) for the Python guide. It covers
+the required schema and mutation/aliasing contract, `opcheck`, functional
+operators, mutable operators, and optional registrations such as autograd and
+`torch.vmap`.
 
 You may wish to author a custom operator from Python (as opposed to C++) if:
 
@@ -35,8 +38,8 @@ You may wish to author a custom operator from C++ (as opposed to Python) if:
 ## The Custom Operators Manual
 
 For information not covered in the tutorials and this page, please see
-[The Custom Operators Manual](https://docs.google.com/document/d/1_W62p8WJOQQUzPsJYa7s701JXt0qf2OfLub2sbkHOaU)
-(we're working on moving the information to our docs site). We recommend that you
+[The Custom Operators Manual](https://docs.pytorch.org/docs/main/notes/custom_operators.html).
+We recommend that you
 first read one of the tutorials above and then use the Custom Operators Manual as a reference;
 it is not meant to be read head to toe.
 

@@ -16,7 +16,7 @@ Extending-PyTorch,Frontend-APIs,C++,CUDA
 
 [#### Custom Python Operators
 
-Create Custom Operators in Python. Useful for black-boxing a Python function for use with torch.compile.
+Create Python custom operators with correct mutation behavior, fake kernels, autograd, and opcheck.
 
 Extending-PyTorch,Frontend-APIs,C++,CUDA
 

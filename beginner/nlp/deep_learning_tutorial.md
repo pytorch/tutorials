@@ -33,29 +33,10 @@ output below is the mapping of the \(i\)'th row of the input under
 
 ```
 # Author: Robert Guthrie
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-
-torch.manual_seed(1)
 ```
 
 ```
-<torch._C.Generator object at 0x7f564c613dd0>
-```
-
-```
-lin = nn.Linear(5, 3) # maps from R^5 to R^3, parameters A, b
 # data is 2x5. A maps from 5 to 3... can we map "data" under A?
-data = torch.randn(2, 5)
-print(lin(data)) # yes
-```
-
-```
-tensor([[ 0.1755, -0.3268, -0.5069],
- [-0.6602, 0.2260, 0.1089]], grad_fn=<AddmmBackward0>)
 ```
 
 ### Non-Linearities
@@ -101,16 +82,6 @@ tanh or ReLU.
 # In pytorch, most non-linearities are in torch.functional (we have it imported as F)
 # Note that non-linearites typically don't have parameters like affine maps do.
 # That is, they don't have weights that are updated during training.
-data = torch.randn(2, 2)
-print(data)
-print(F.relu(data))
-```
-
-```
-tensor([[-0.5404, -2.2102],
- [ 2.1130, -0.0040]])
-tensor([[0.0000, 0.0000],
- [2.1130, 0.0000]])
 ```
 
 ### Softmax and Probabilities
@@ -136,18 +107,6 @@ then dividing by the normalization constant.
 
 ```
 # Softmax is also in torch.nn.functional
-data = torch.randn(5)
-print(data)
-print(F.softmax(data, dim=0))
-print(F.softmax(data, dim=0).sum()) # Sums to 1 because it is a distribution!
-print(F.log_softmax(data, dim=0)) # theres also log_softmax
-```
-
-```
-tensor([ 1.3800, -1.3505, 0.3455, 0.5046, 1.8213])
-tensor([0.2948, 0.0192, 0.1048, 0.1228, 0.4584])
-tensor(1.)
-tensor([-1.2214, -3.9519, -2.2560, -2.0969, -0.7801])
 ```
 
 ### Objective Functions
@@ -254,59 +213,8 @@ That is, we pass the input through an affine map and then do log
 softmax.
 
 ```
-data = [("me gusta comer en la cafeteria".split(), "SPANISH"),
- ("Give it to me".split(), "ENGLISH"),
- ("No creo que sea una buena idea".split(), "SPANISH"),
- ("No it is not a good idea to get lost at sea".split(), "ENGLISH")]
-
-test_data = [("Yo creo que si".split(), "SPANISH"),
- ("it is lost on me".split(), "ENGLISH")]
-
 # word_to_ix maps each word in the vocab to a unique integer, which will be its
 # index into the Bag of words vector
-word_to_ix = {}
-for sent, _ in data + test_data:
- for word in sent:
- if word not in word_to_ix:
- word_to_ix[word] = len(word_to_ix)
-print(word_to_ix)
-
-VOCAB_SIZE = len(word_to_ix)
-NUM_LABELS = 2
-
-class BoWClassifier(nn.Module): # inheriting from nn.Module!
-
- def __init__(self, num_labels, vocab_size):
- # calls the init function of nn.Module. Dont get confused by syntax,
- # just always do it in an nn.Module
- super(BoWClassifier, self).__init__()
-
- # Define the parameters that you will need. In this case, we need A and b,
- # the parameters of the affine mapping.
- # Torch defines nn.Linear(), which provides the affine map.
- # Make sure you understand why the input dimension is vocab_size
- # and the output is num_labels!
- self.linear = nn.Linear(vocab_size, num_labels)
-
- # NOTE! The non-linearity log softmax does not have parameters! So we don't need
- # to worry about that here
-
- def forward(self, bow_vec):
- # Pass the input through the linear layer,
- # then pass that through log_softmax.
- # Many non-linearities and other functions are in torch.nn.functional
- return F.log_softmax(self.linear(bow_vec), dim=1)
-
-def make_bow_vector(sentence, word_to_ix):
- vec = torch.zeros(len(word_to_ix))
- for word in sentence:
- vec[word_to_ix[word]] += 1
- return vec.view(1, -1)
-
-def make_target(label, label_to_ix):
- return torch.LongTensor([label_to_ix[label]])
-
-model = BoWClassifier(NUM_LABELS, VOCAB_SIZE)
 
 # the model knows its parameters. The first output below is A, the second is b.
 # Whenever you assign a component to a class variable in the __init__ function
@@ -314,41 +222,14 @@ model = BoWClassifier(NUM_LABELS, VOCAB_SIZE)
 # self.linear = nn.Linear(...)
 # Then through some Python magic from the PyTorch devs, your module
 # (in this case, BoWClassifier) will store knowledge of the nn.Linear's parameters
-for param in model.parameters():
- print(param)
 
 # To run the model, pass in a BoW vector
 # Here we don't need to train, so the code is wrapped in torch.no_grad()
-with torch.no_grad():
- sample = data[0]
- bow_vector = make_bow_vector(sample[0], word_to_ix)
- log_probs = model(bow_vector)
- print(log_probs)
-```
-
-```
-{'me': 0, 'gusta': 1, 'comer': 2, 'en': 3, 'la': 4, 'cafeteria': 5, 'Give': 6, 'it': 7, 'to': 8, 'No': 9, 'creo': 10, 'que': 11, 'sea': 12, 'una': 13, 'buena': 14, 'idea': 15, 'is': 16, 'not': 17, 'a': 18, 'good': 19, 'get': 20, 'lost': 21, 'at': 22, 'Yo': 23, 'si': 24, 'on': 25}
-Parameter containing:
-tensor([[ 0.1194, 0.0609, -0.1268, 0.1274, 0.1191, 0.1739, -0.1099, -0.0323,
- -0.0038, 0.0286, -0.1488, -0.1392, 0.1067, -0.0460, 0.0958, 0.0112,
- 0.0644, 0.0431, 0.0713, 0.0972, -0.1816, 0.0987, -0.1379, -0.1480,
- 0.0119, -0.0334],
- [ 0.1152, -0.1136, -0.1743, 0.1427, -0.0291, 0.1103, 0.0630, -0.1471,
- 0.0394, 0.0471, -0.1313, -0.0931, 0.0669, 0.0351, -0.0834, -0.0594,
- 0.1796, -0.0363, 0.1106, 0.0849, -0.1268, -0.1668, 0.1882, 0.0102,
- 0.1344, 0.0406]], requires_grad=True)
-Parameter containing:
-tensor([0.0631, 0.1465], requires_grad=True)
-tensor([[-0.5378, -0.8771]])
 ```
 
 Which of the above values corresponds to the log probability of ENGLISH,
 and which to SPANISH? We never defined it, but we need to if we want to
 train the thing.
-
-```
-label_to_ix = {"SPANISH": 0, "ENGLISH": 1}
-```
 
 So lets train! To do this, we pass instances through to get log
 probabilities, compute a loss function, compute the gradient of the loss
@@ -365,61 +246,14 @@ softmax for you.
 
 ```
 # Run on test data before we train, just to see a before-and-after
-with torch.no_grad():
- for instance, label in test_data:
- bow_vec = make_bow_vector(instance, word_to_ix)
- log_probs = model(bow_vec)
- print(log_probs)
 
 # Print the matrix column corresponding to "creo"
-print(next(model.parameters())[:, word_to_ix["creo"]])
-
-loss_function = nn.NLLLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.1)
 
 # Usually you want to pass over the training data several times.
 # 100 is much bigger than on a real data set, but real datasets have more than
 # two instances. Usually, somewhere between 5 and 30 epochs is reasonable.
-for epoch in range(100):
- for instance, label in data:
- # Step 1. Remember that PyTorch accumulates gradients.
- # We need to clear them out before each instance
- model.zero_grad()
-
- # Step 2. Make our BOW vector and also we must wrap the target in a
- # Tensor as an integer. For example, if the target is SPANISH, then
- # we wrap the integer 0. The loss function then knows that the 0th
- # element of the log probabilities is the log probability
- # corresponding to SPANISH
- bow_vec = make_bow_vector(instance, word_to_ix)
- target = make_target(label, label_to_ix)
-
- # Step 3. Run our forward pass.
- log_probs = model(bow_vec)
-
- # Step 4. Compute the loss, gradients, and update the parameters by
- # calling optimizer.step()
- loss = loss_function(log_probs, target)
- loss.backward()
- optimizer.step()
-
-with torch.no_grad():
- for instance, label in test_data:
- bow_vec = make_bow_vector(instance, word_to_ix)
- log_probs = model(bow_vec)
- print(log_probs)
 
 # Index corresponding to Spanish goes up, English goes down!
-print(next(model.parameters())[:, word_to_ix["creo"]])
-```
-
-```
-tensor([[-0.9297, -0.5020]])
-tensor([[-0.6388, -0.7506]])
-tensor([-0.1488, -0.1313], grad_fn=<SelectBackward0>)
-tensor([[-0.2093, -1.6669]])
-tensor([[-2.5330, -0.0828]])
-tensor([ 0.2803, -0.5605], grad_fn=<SelectBackward0>)
 ```
 
 We got the right answer! You can see that the log probability for
@@ -430,7 +264,11 @@ Now you see how to make a PyTorch component, pass some data through it
 and do gradient updates. We are ready to dig deeper into what deep NLP
 has to offer.
 
-**Total running time of the script:** (0 minutes 0.264 seconds)
+```
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+```
+
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: deep_learning_tutorial.ipynb`](../../_downloads/dd1c511de656ab48216de2866264b28f/deep_learning_tutorial.ipynb)
 

@@ -24,6 +24,14 @@ PyTorch has two [primitives to work with data](https://pytorch.org/docs/stable/d
 `Dataset` stores the samples and their corresponding labels, and `DataLoader` wraps an iterable around
 the `Dataset`.
 
+```
+import torch
+from torch import nn
+from torch.utils.data import DataLoader
+from torchvision import datasets
+from torchvision.transforms import v2
+```
+
 PyTorch offers domain-specific libraries such as [TorchText](https://pytorch.org/text/stable/index.html),
 [TorchVision](https://pytorch.org/vision/stable/index.html), and [TorchAudio](https://pytorch.org/audio/stable/index.html),
 all of which include datasets. For this tutorial, we will be using a TorchVision dataset.
@@ -35,8 +43,45 @@ use the FashionMNIST dataset. Every TorchVision `Dataset` includes two arguments
 
 ```
 # Download training data from open datasets.
+training_data = datasets.FashionMNIST(
+ root="data",
+ train=True,
+ download=True,
+ transform=v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)]),
+)
 
 # Download test data from open datasets.
+test_data = datasets.FashionMNIST(
+ root="data",
+ train=False,
+ download=True,
+ transform=v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale=True)]),
+)
+```
+
+```
+0%| | 0.00/26.4M [00:00<?, ?B/s]
+ 0%| | 65.5k/26.4M [00:00<01:10, 374kB/s]
+ 1%| | 229k/26.4M [00:00<00:37, 703kB/s]
+ 3%|▎ | 885k/26.4M [00:00<00:12, 2.08MB/s]
+ 13%|█▎ | 3.47M/26.4M [00:00<00:03, 7.08MB/s]
+ 35%|███▌ | 9.31M/26.4M [00:00<00:01, 16.5MB/s]
+ 58%|█████▊ | 15.3M/26.4M [00:01<00:00, 22.5MB/s]
+ 81%|████████ | 21.3M/26.4M [00:01<00:00, 26.3MB/s]
+100%|██████████| 26.4M/26.4M [00:01<00:00, 19.9MB/s]
+
+ 0%| | 0.00/29.5k [00:00<?, ?B/s]
+100%|██████████| 29.5k/29.5k [00:00<00:00, 339kB/s]
+
+ 0%| | 0.00/4.42M [00:00<?, ?B/s]
+ 1%|▏ | 65.5k/4.42M [00:00<00:11, 374kB/s]
+ 4%|▍ | 197k/4.42M [00:00<00:07, 596kB/s]
+ 19%|█▉ | 852k/4.42M [00:00<00:01, 2.03MB/s]
+ 77%|███████▋ | 3.41M/4.42M [00:00<00:00, 7.00MB/s]
+100%|██████████| 4.42M/4.42M [00:00<00:00, 6.30MB/s]
+
+ 0%| | 0.00/5.15k [00:00<?, ?B/s]
+100%|██████████| 5.15k/5.15k [00:00<00:00, 49.5MB/s]
 ```
 
 We pass the `Dataset` as an argument to `DataLoader`. This wraps an iterable over our dataset, and supports
@@ -44,7 +89,21 @@ automatic batching, sampling, shuffling and multiprocess data loading. Here we d
 in the dataloader iterable will return a batch of 64 features and labels.
 
 ```
+batch_size = 64
+
 # Create data loaders.
+train_dataloader = DataLoader(training_data, batch_size=batch_size)
+test_dataloader = DataLoader(test_data, batch_size=batch_size)
+
+for X, y in test_dataloader:
+ print(f"Shape of X [N, C, H, W]: {X.shape}")
+ print(f"Shape of y: {y.shape} {y.dtype}")
+ break
+```
+
+```
+Shape of X [N, C, H, W]: torch.Size([64, 1, 28, 28])
+Shape of y: torch.Size([64]) torch.int64
 ```
 
 Read more about [loading data in PyTorch](data_tutorial.html).
@@ -60,7 +119,43 @@ operations in the neural network, we move it to the [accelerator](https://pytorc
 such as CUDA, MPS, MTIA, or XPU. If the current accelerator is available, we will use it. Otherwise, we use the CPU.
 
 ```
+device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
+print(f"Using {device} device")
+
 # Define model
+class NeuralNetwork(nn.Module):
+ def __init__(self):
+ super().__init__()
+ self.flatten = nn.Flatten()
+ self.linear_relu_stack = nn.Sequential(
+ nn.Linear(28*28, 512),
+ nn.ReLU(),
+ nn.Linear(512, 512),
+ nn.ReLU(),
+ nn.Linear(512, 10)
+ )
+
+ def forward(self, x):
+ x = self.flatten(x)
+ logits = self.linear_relu_stack(x)
+ return logits
+
+model = NeuralNetwork().to(device)
+print(model)
+```
+
+```
+Using cuda device
+NeuralNetwork(
+ (flatten): Flatten(start_dim=1, end_dim=-1)
+ (linear_relu_stack): Sequential(
+ (0): Linear(in_features=784, out_features=512, bias=True)
+ (1): ReLU()
+ (2): Linear(in_features=512, out_features=512, bias=True)
+ (3): ReLU()
+ (4): Linear(in_features=512, out_features=10, bias=True)
+ )
+)
 ```
 
 Read more about [building neural networks in PyTorch](buildmodel_tutorial.html).
@@ -72,14 +167,145 @@ Read more about [building neural networks in PyTorch](buildmodel_tutorial.html).
 To train a model, we need a [loss function](https://pytorch.org/docs/stable/nn.html#loss-functions)
 and an [optimizer](https://pytorch.org/docs/stable/optim.html).
 
+```
+loss_fn = nn.CrossEntropyLoss()
+optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
+```
+
 In a single training loop, the model makes predictions on the training dataset (fed to it in batches), and
 backpropagates the prediction error to adjust the model's parameters.
 
+```
+def train(dataloader, model, loss_fn, optimizer):
+ size = len(dataloader.dataset)
+ model.train()
+ for batch, (X, y) in enumerate(dataloader):
+ X, y = X.to(device), y.to(device)
+
+ # Compute prediction error
+ pred = model(X)
+ loss = loss_fn(pred, y)
+
+ # Backpropagation
+ loss.backward()
+ optimizer.step()
+ optimizer.zero_grad()
+
+ if batch % 100 == 0:
+ loss, current = loss.item(), (batch + 1) * len(X)
+ print(f"loss: {loss:>7f} [{current:>5d}/{size:>5d}]")
+```
+
 We also check the model's performance against the test dataset to ensure it is learning.
+
+```
+def test(dataloader, model, loss_fn):
+ size = len(dataloader.dataset)
+ num_batches = len(dataloader)
+ model.eval()
+ test_loss, correct = 0, 0
+ with torch.no_grad():
+ for X, y in dataloader:
+ X, y = X.to(device), y.to(device)
+ pred = model(X)
+ test_loss += loss_fn(pred, y).item()
+ correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+ test_loss /= num_batches
+ correct /= size
+ print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
+```
 
 The training process is conducted over several iterations (*epochs*). During each epoch, the model learns
 parameters to make better predictions. We print the model's accuracy and loss at each epoch; we'd like to see the
 accuracy increase and the loss decrease with every epoch.
+
+```
+epochs = 5
+for t in range(epochs):
+ print(f"Epoch {t+1}\n-------------------------------")
+ train(train_dataloader, model, loss_fn, optimizer)
+ test(test_dataloader, model, loss_fn)
+print("Done!")
+```
+
+```
+Epoch 1
+-------------------------------
+loss: 2.287929 [ 64/60000]
+loss: 2.277886 [ 6464/60000]
+loss: 2.262308 [12864/60000]
+loss: 2.268297 [19264/60000]
+loss: 2.228547 [25664/60000]
+loss: 2.209891 [32064/60000]
+loss: 2.216661 [38464/60000]
+loss: 2.180392 [44864/60000]
+loss: 2.174863 [51264/60000]
+loss: 2.151043 [57664/60000]
+Test Error:
+ Accuracy: 41.7%, Avg loss: 2.135157
+
+Epoch 2
+-------------------------------
+loss: 2.140177 [ 64/60000]
+loss: 2.129097 [ 6464/60000]
+loss: 2.072162 [12864/60000]
+loss: 2.104294 [19264/60000]
+loss: 2.040111 [25664/60000]
+loss: 1.973909 [32064/60000]
+loss: 2.011614 [38464/60000]
+loss: 1.923002 [44864/60000]
+loss: 1.932298 [51264/60000]
+loss: 1.873114 [57664/60000]
+Test Error:
+ Accuracy: 52.8%, Avg loss: 1.857768
+
+Epoch 3
+-------------------------------
+loss: 1.885505 [ 64/60000]
+loss: 1.853244 [ 6464/60000]
+loss: 1.736381 [12864/60000]
+loss: 1.799351 [19264/60000]
+loss: 1.687926 [25664/60000]
+loss: 1.629079 [32064/60000]
+loss: 1.664764 [38464/60000]
+loss: 1.557717 [44864/60000]
+loss: 1.590669 [51264/60000]
+loss: 1.496627 [57664/60000]
+Test Error:
+ Accuracy: 62.1%, Avg loss: 1.500708
+
+Epoch 4
+-------------------------------
+loss: 1.564957 [ 64/60000]
+loss: 1.527836 [ 6464/60000]
+loss: 1.378173 [12864/60000]
+loss: 1.468020 [19264/60000]
+loss: 1.354613 [25664/60000]
+loss: 1.336662 [32064/60000]
+loss: 1.359657 [38464/60000]
+loss: 1.275993 [44864/60000]
+loss: 1.317611 [51264/60000]
+loss: 1.226052 [57664/60000]
+Test Error:
+ Accuracy: 63.8%, Avg loss: 1.243255
+
+Epoch 5
+-------------------------------
+loss: 1.319289 [ 64/60000]
+loss: 1.299213 [ 6464/60000]
+loss: 1.132497 [12864/60000]
+loss: 1.252420 [19264/60000]
+loss: 1.134921 [25664/60000]
+loss: 1.144925 [32064/60000]
+loss: 1.171439 [38464/60000]
+loss: 1.099671 [44864/60000]
+loss: 1.144780 [51264/60000]
+loss: 1.067686 [57664/60000]
+Test Error:
+ Accuracy: 65.1%, Avg loss: 1.082312
+
+Done!
+```
 
 Read more about [Training your model](optimization_tutorial.html).
 
@@ -89,20 +315,61 @@ Read more about [Training your model](optimization_tutorial.html).
 
 A common way to save a model is to serialize the internal state dictionary (containing the model parameters).
 
+```
+torch.save(model.state_dict(), "model.pth")
+print("Saved PyTorch Model State to model.pth")
+```
+
+```
+Saved PyTorch Model State to model.pth
+```
+
 ## Loading Models
 
 The process for loading a model includes re-creating the model structure and loading
 the state dictionary into it.
 
+```
+model = NeuralNetwork().to(device)
+model.load_state_dict(torch.load("model.pth", weights_only=True))
+```
+
+```
+<All keys matched successfully>
+```
+
 This model can now be used to make predictions.
+
+```
+classes = [
+ "T-shirt/top",
+ "Trouser",
+ "Pullover",
+ "Dress",
+ "Coat",
+ "Sandal",
+ "Shirt",
+ "Sneaker",
+ "Bag",
+ "Ankle boot",
+]
+
+model.eval()
+x, y = test_data[0][0], test_data[0][1]
+with torch.no_grad():
+ x = x.to(device)
+ pred = model(x)
+ predicted, actual = classes[pred[0].argmax(0)], classes[y]
+ print(f'Predicted: "{predicted}", Actual: "{actual}"')
+```
+
+```
+Predicted: "Ankle boot", Actual: "Ankle boot"
+```
 
 Read more about [Saving & Loading your model](saveloadrun_tutorial.html).
 
-```
-# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
-```
-
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 59.141 seconds)
 
 [`Download Jupyter notebook: quickstart_tutorial.ipynb`](../../_downloads/af0caf6d7af0dda755f4c9d7af9ccc2c/quickstart_tutorial.ipynb)
 

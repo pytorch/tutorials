@@ -43,11 +43,6 @@ Introduction ||
 sphx_glr_beginner_introyt_modelsyt_tutorial.py
 
 Introduction ||
-![](../../_images/sphx_glr_autogradyt_tutorial_thumb.png)
-
-sphx_glr_beginner_introyt_autogradyt_tutorial.py
-
-Introduction ||
 ![](../../_images/sphx_glr_captumyt_thumb.png)
 
 sphx_glr_beginner_introyt_captumyt.py
@@ -56,6 +51,11 @@ Introduction ||
 ![](../../_images/sphx_glr_tensors_deeper_tutorial_thumb.png)
 
 sphx_glr_beginner_introyt_tensors_deeper_tutorial.py
+
+Introduction ||
+![](../../_images/sphx_glr_introyt1_tutorial_thumb.png)
+
+sphx_glr_beginner_introyt_introyt1_tutorial.py
 
 Introduction ||
 ![](../../_images/sphx_glr_trainingyt_thumb.png)
@@ -68,8 +68,8 @@ Introduction ||
 sphx_glr_beginner_introyt_tensorboardyt_tutorial.py
 
 Introduction ||
-![](../../_images/sphx_glr_introyt1_tutorial_thumb.png)
+![](../../_images/sphx_glr_autogradyt_tutorial_thumb.png)
 
-sphx_glr_beginner_introyt_introyt1_tutorial.py
+sphx_glr_beginner_introyt_autogradyt_tutorial.py
 
 Introduction ||

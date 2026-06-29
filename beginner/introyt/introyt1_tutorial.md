@@ -21,27 +21,8 @@ Follow along with the video beginning at [03:50](https://www.youtube.com/watch?v
 
 First, we'll import pytorch.
 
-```
-import torch
-```
-
 Let's see a few basic tensor manipulations. First, just a few of the
 ways to create tensors:
-
-```
-z = torch.zeros(5, 3)
-print(z)
-print(z.dtype)
-```
-
-```
-tensor([[0., 0., 0.],
- [0., 0., 0.],
- [0., 0., 0.],
- [0., 0., 0.],
- [0., 0., 0.]])
-torch.float32
-```
 
 Above, we create a 5x3 matrix filled with zeros, and query its datatype
 to find out that the zeros are 32-bit floating point numbers, which is
@@ -50,143 +31,31 @@ the default PyTorch.
 What if you wanted integers instead? You can always override the
 default:
 
-```
-i = torch.ones((5, 3), dtype=torch.int16)
-print(i)
-```
-
-```
-tensor([[1, 1, 1],
- [1, 1, 1],
- [1, 1, 1],
- [1, 1, 1],
- [1, 1, 1]], dtype=torch.int16)
-```
-
 You can see that when we do change the default, the tensor helpfully
 reports this when printed.
 
 It's common to initialize learning weights randomly, often with a
 specific seed for the PRNG for reproducibility of results:
 
-```
-torch.manual_seed(1729)
-r1 = torch.rand(2, 2)
-print('A random tensor:')
-print(r1)
-
-r2 = torch.rand(2, 2)
-print('\nA different random tensor:')
-print(r2) # new values
-
-torch.manual_seed(1729)
-r3 = torch.rand(2, 2)
-print('\nShould match r1:')
-print(r3) # repeats values of r1 because of re-seed
-```
-
-```
-A random tensor:
-tensor([[0.3126, 0.3791],
- [0.3087, 0.0736]])
-
-A different random tensor:
-tensor([[0.4216, 0.0691],
- [0.2332, 0.4047]])
-
-Should match r1:
-tensor([[0.3126, 0.3791],
- [0.3087, 0.0736]])
-```
-
 PyTorch tensors perform arithmetic operations intuitively. Tensors of
 similar shapes may be added, multiplied, etc. Operations with scalars
 are distributed over the tensor:
 
 ```
-ones = torch.ones(2, 3)
-print(ones)
-
-twos = torch.ones(2, 3) * 2 # every element is multiplied by 2
-print(twos)
-
-threes = ones + twos # addition allowed because shapes are similar
-print(threes) # tensors are added element-wise
-print(threes.shape) # this has the same dimensions as input tensors
-
-r1 = torch.rand(2, 3)
-r2 = torch.rand(3, 2)
 # uncomment this line to get a runtime error
 # r3 = r1 + r2
-```
-
-```
-tensor([[1., 1., 1.],
- [1., 1., 1.]])
-tensor([[2., 2., 2.],
- [2., 2., 2.]])
-tensor([[3., 3., 3.],
- [3., 3., 3.]])
-torch.Size([2, 3])
 ```
 
 Here's a small sample of the mathematical operations available:
 
 ```
-r = (torch.rand(2, 2) - 0.5) * 2 # values between -1 and 1
-print('A random matrix, r:')
-print(r)
-
 # Common mathematical operations are supported:
-print('\nAbsolute value of r:')
-print(torch.abs(r))
 
 # ...as are trigonometric functions:
-print('\nInverse sine of r:')
-print(torch.asin(r))
 
 # ...and linear algebra operations like determinant and singular value decomposition
-print('\nDeterminant of r:')
-print(torch.det(r))
-print('\nSingular value decomposition of r:')
-print(torch.svd(r))
 
 # ...and statistical and aggregate operations:
-print('\nAverage and standard deviation of r:')
-print(torch.std_mean(r))
-print('\nMaximum value of r:')
-print(torch.max(r))
-```
-
-```
-A random matrix, r:
-tensor([[ 0.9956, -0.2232],
- [ 0.3858, -0.6593]])
-
-Absolute value of r:
-tensor([[0.9956, 0.2232],
- [0.3858, 0.6593]])
-
-Inverse sine of r:
-tensor([[ 1.4775, -0.2251],
- [ 0.3961, -0.7199]])
-
-Determinant of r:
-tensor(-0.5703)
-
-Singular value decomposition of r:
-torch.return_types.svd(
-U=tensor([[-0.8353, -0.5497],
- [-0.5497, 0.8353]]),
-S=tensor([1.1793, 0.4836]),
-V=tensor([[-0.8851, -0.4654],
- [ 0.4654, -0.8851]]))
-
-Average and standard deviation of r:
-(tensor(0.7217), tensor(0.1247))
-
-Maximum value of r:
-tensor(0.9956)
 ```
 
 There's a good deal more to know about the power of PyTorch tensors,
@@ -198,12 +67,6 @@ going into more depth in another video.
 Follow along with the video beginning at [10:00](https://www.youtube.com/watch?v=IC0_FRiX-sw&t=600s).
 
 Let's talk about how we can express models in PyTorch
-
-```
-import torch # for all things PyTorch
-import torch.nn as nn # for torch.nn.Module, the parent object for PyTorch models
-import torch.nn.functional as F # for the activation function
-```
 
 ![le-net-5 diagram](../../_images/mnist.png)
 
@@ -230,39 +93,6 @@ classifies it into one of ten bins representing the 10 digits.
 
 How do we express this simple neural network in code?
 
-```
-class LeNet(nn.Module):
-
- def __init__(self):
- super(LeNet, self).__init__()
- # 1 input image channel (black & white), 6 output channels, 5x5 square convolution
- # kernel
- self.conv1 = nn.Conv2d(1, 6, 5)
- self.conv2 = nn.Conv2d(6, 16, 5)
- # an affine operation: y = Wx + b
- self.fc1 = nn.Linear(16 * 5 * 5, 120) # 5*5 from image dimension
- self.fc2 = nn.Linear(120, 84)
- self.fc3 = nn.Linear(84, 10)
-
- def forward(self, x):
- # Max pooling over a (2, 2) window
- x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
- # If the size is a square you can only specify a single number
- x = F.max_pool2d(F.relu(self.conv2(x)), 2)
- x = x.view(-1, self.num_flat_features(x))
- x = F.relu(self.fc1(x))
- x = F.relu(self.fc2(x))
- x = self.fc3(x)
- return x
-
- def num_flat_features(self, x):
- size = x.size()[1:] # all dimensions except the batch dimension
- num_features = 1
- for s in size:
- num_features *= s
- return num_features
-```
-
 Looking over this code, you should be able to spot some structural
 similarities with the diagram above.
 
@@ -282,38 +112,6 @@ Python class, adding whatever properties and methods you need to
 support your model's computation.
 
 Let's instantiate this object and run a sample input through it.
-
-```
-net = LeNet()
-print(net) # what does the object tell us about itself?
-
-input = torch.rand(1, 1, 32, 32) # stand-in for a 32x32 black & white image
-print('\nImage batch shape:')
-print(input.shape)
-
-output = net(input) # we don't call forward() directly
-print('\nRaw output:')
-print(output)
-print(output.shape)
-```
-
-```
-LeNet(
- (conv1): Conv2d(1, 6, kernel_size=(5, 5), stride=(1, 1))
- (conv2): Conv2d(6, 16, kernel_size=(5, 5), stride=(1, 1))
- (fc1): Linear(in_features=400, out_features=120, bias=True)
- (fc2): Linear(in_features=120, out_features=84, bias=True)
- (fc3): Linear(in_features=84, out_features=10, bias=True)
-)
-
-Image batch shape:
-torch.Size([1, 1, 32, 32])
-
-Raw output:
-tensor([[ 0.0898, 0.0318, 0.1485, 0.0301, -0.0085, -0.1135, -0.0296, 0.0164,
- 0.0039, 0.0616]], grad_fn=<AddmmBackward0>)
-torch.Size([1, 10])
-```
 
 There are a few important things happening above:
 
@@ -355,14 +153,6 @@ PyTorch tensor.
 
 ```
 #%matplotlib inline
-
-import torch
-import torchvision
-import torchvision.transforms as transforms
-
-transform = transforms.Compose(
- [transforms.ToTensor(),
- transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))])
 ```
 
 Here, we specify two transformations for our input:
@@ -401,48 +191,6 @@ Next, we'll create an instance of the CIFAR10 dataset. This is a set of
 (bird, cat, deer, dog, frog, horse) and 4 of vehicles (airplane,
 automobile, ship, truck):
 
-```
-trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
- download=True, transform=transform)
-```
-
-```
-0%| | 0.00/170M [00:00<?, ?B/s]
- 1%| | 885k/170M [00:00<00:21, 7.80MB/s]
- 4%|▍ | 7.18M/170M [00:00<00:04, 38.5MB/s]
- 7%|▋ | 11.8M/170M [00:00<00:03, 41.8MB/s]
- 9%|▉ | 16.1M/170M [00:00<00:03, 41.9MB/s]
- 12%|█▏ | 20.8M/170M [00:00<00:03, 43.7MB/s]
- 15%|█▌ | 25.8M/170M [00:00<00:03, 45.9MB/s]
- 18%|█▊ | 31.1M/170M [00:00<00:02, 48.2MB/s]
- 21%|██▏ | 36.3M/170M [00:00<00:02, 49.1MB/s]
- 24%|██▍ | 41.5M/170M [00:00<00:02, 50.0MB/s]
- 27%|██▋ | 46.6M/170M [00:01<00:02, 50.2MB/s]
- 30%|███ | 51.8M/170M [00:01<00:02, 50.8MB/s]
- 33%|███▎ | 56.9M/170M [00:01<00:02, 50.9MB/s]
- 36%|███▋ | 62.1M/170M [00:01<00:02, 51.1MB/s]
- 40%|███▉ | 67.4M/170M [00:01<00:01, 51.6MB/s]
- 43%|████▎ | 72.6M/170M [00:01<00:01, 51.9MB/s]
- 46%|████▌ | 77.9M/170M [00:01<00:01, 52.0MB/s]
- 49%|████▉ | 83.1M/170M [00:01<00:01, 51.7MB/s]
- 52%|█████▏ | 88.3M/170M [00:01<00:01, 49.3MB/s]
- 55%|█████▍ | 93.3M/170M [00:01<00:01, 49.5MB/s]
- 58%|█████▊ | 98.5M/170M [00:02<00:01, 50.2MB/s]
- 61%|██████ | 104M/170M [00:02<00:01, 49.9MB/s]
- 64%|██████▍ | 109M/170M [00:02<00:01, 50.8MB/s]
- 67%|██████▋ | 114M/170M [00:02<00:01, 51.0MB/s]
- 70%|██████▉ | 119M/170M [00:02<00:00, 51.3MB/s]
- 73%|███████▎ | 124M/170M [00:02<00:00, 51.1MB/s]
- 76%|███████▌ | 130M/170M [00:02<00:00, 50.9MB/s]
- 79%|███████▉ | 135M/170M [00:02<00:00, 50.7MB/s]
- 83%|████████▎ | 141M/170M [00:02<00:00, 54.9MB/s]
- 87%|████████▋ | 148M/170M [00:02<00:00, 59.6MB/s]
- 91%|█████████ | 155M/170M [00:03<00:00, 62.6MB/s]
- 95%|█████████▌| 162M/170M [00:03<00:00, 64.6MB/s]
- 99%|█████████▉| 169M/170M [00:03<00:00, 66.1MB/s]
-100%|██████████| 170M/170M [00:03<00:00, 52.1MB/s]
-```
-
 Note
 
 When you run the cell above, it may take a little time for the
@@ -466,11 +214,6 @@ will be split into training and test subsets.
 
 Once your dataset is ready, you can give it to the `DataLoader`:
 
-```
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=4,
- shuffle=True, num_workers=2)
-```
-
 A `Dataset` subclass wraps access to the data, and is specialized to
 the type of data it's serving. The `DataLoader` knows *nothing* about
 the data, but organizes the input tensors served by the `Dataset` into
@@ -483,32 +226,11 @@ and we told it to spin up two workers to load data from disk.
 It's good practice to visualize the batches your `DataLoader` serves:
 
 ```
-import matplotlib.pyplot as plt
-import numpy as np
-
-classes = ('plane', 'car', 'bird', 'cat',
- 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-
-def imshow(img):
- img = img / 2 + 0.5 # unnormalize
- npimg = img.numpy()
- plt.imshow(np.transpose(npimg, (1, 2, 0)))
-
 # get some random training images
-dataiter = iter(trainloader)
-images, labels = next(dataiter)
 
 # show images
-imshow(torchvision.utils.make_grid(images))
+
 # print labels
-print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
-```
-
-![introyt1 tutorial](../../_images/sphx_glr_introyt1_tutorial_001.png)
-
-```
-Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers). Got range [-0.49473685..1.5632443].
- ship car horse ship
 ```
 
 Running the above cell should show you a strip of four images, and the
@@ -522,105 +244,29 @@ Let's put all the pieces together, and train a model:
 
 ```
 #%matplotlib inline
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-
-import torchvision
-import torchvision.transforms as transforms
-
-import matplotlib
-import matplotlib.pyplot as plt
-import numpy as np
 ```
 
 First, we'll need training and test datasets. If you haven't already,
 run the cell below to make sure the dataset is downloaded. (It may take
 a minute.)
 
-```
-transform = transforms.Compose(
- [transforms.ToTensor(),
- transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-
-trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
- download=True, transform=transform)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=4,
- shuffle=True, num_workers=2)
-
-testset = torchvision.datasets.CIFAR10(root='./data', train=False,
- download=True, transform=transform)
-testloader = torch.utils.data.DataLoader(testset, batch_size=4,
- shuffle=False, num_workers=2)
-
-classes = ('plane', 'car', 'bird', 'cat',
- 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-```
-
 We'll run our check on the output from `DataLoader`:
 
 ```
-import matplotlib.pyplot as plt
-import numpy as np
-
 # functions to show an image
 
-def imshow(img):
- img = img / 2 + 0.5 # unnormalize
- npimg = img.numpy()
- plt.imshow(np.transpose(npimg, (1, 2, 0)))
-
 # get some random training images
-dataiter = iter(trainloader)
-images, labels = next(dataiter)
 
 # show images
-imshow(torchvision.utils.make_grid(images))
+
 # print labels
-print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
-```
-
-![introyt1 tutorial](../../_images/sphx_glr_introyt1_tutorial_002.png)
-
-```
-cat cat deer frog
 ```
 
 This is the model we'll train. If it looks familiar, that's because it's
 a variant of LeNet - discussed earlier in this video - adapted for
 3-color images.
 
-```
-class Net(nn.Module):
- def __init__(self):
- super(Net, self).__init__()
- self.conv1 = nn.Conv2d(3, 6, 5)
- self.pool = nn.MaxPool2d(2, 2)
- self.conv2 = nn.Conv2d(6, 16, 5)
- self.fc1 = nn.Linear(16 * 5 * 5, 120)
- self.fc2 = nn.Linear(120, 84)
- self.fc3 = nn.Linear(84, 10)
-
- def forward(self, x):
- x = self.pool(F.relu(self.conv1(x)))
- x = self.pool(F.relu(self.conv2(x)))
- x = x.view(-1, 16 * 5 * 5)
- x = F.relu(self.fc1(x))
- x = F.relu(self.fc2(x))
- x = self.fc3(x)
- return x
-
-net = Net()
-```
-
 The last ingredients we need are a loss function and an optimizer:
-
-```
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-```
 
 The loss function, as discussed earlier in this video, is a measure of
 how far from our ideal output the model's prediction was. Cross-entropy
@@ -635,49 +281,6 @@ in the model - which is what the optimizer adjusts.
 
 Finally, all of this is assembled into the training loop. Go ahead and
 run this cell, as it will likely take a few minutes to execute:
-
-```
-for epoch in range(2): # loop over the dataset multiple times
-
- running_loss = 0.0
- for i, data in enumerate(trainloader, 0):
- # get the inputs
- inputs, labels = data
-
- # zero the parameter gradients
- optimizer.zero_grad()
-
- # forward + backward + optimize
- outputs = net(inputs)
- loss = criterion(outputs, labels)
- loss.backward()
- optimizer.step()
-
- # print statistics
- running_loss += loss.item()
- if i % 2000 == 1999: # print every 2000 mini-batches
- print('[%d, %5d] loss: %.3f' %
- (epoch + 1, i + 1, running_loss / 2000))
- running_loss = 0.0
-
-print('Finished Training')
-```
-
-```
-[1, 2000] loss: 2.195
-[1, 4000] loss: 1.879
-[1, 6000] loss: 1.656
-[1, 8000] loss: 1.576
-[1, 10000] loss: 1.517
-[1, 12000] loss: 1.461
-[2, 2000] loss: 1.415
-[2, 4000] loss: 1.368
-[2, 6000] loss: 1.334
-[2, 8000] loss: 1.327
-[2, 10000] loss: 1.318
-[2, 12000] loss: 1.261
-Finished Training
-```
 
 Here, we are doing only **2 training epochs** (line 1) - that is, two
 passes over the training dataset. Each pass has an inner loop that
@@ -735,31 +338,16 @@ This is the reason datasets are split into training and test subsets -
 to test the generality of the model, we ask it to make predictions on
 data it hasn't trained on:
 
-```
-correct = 0
-total = 0
-with torch.no_grad():
- for data in testloader:
- images, labels = data
- outputs = net(images)
- _, predicted = torch.max(outputs.data, 1)
- total += labels.size(0)
- correct += (predicted == labels).sum().item()
-
-print('Accuracy of the network on the 10000 test images: %d %%' % (
- 100 * correct / total))
-```
-
-```
-Accuracy of the network on the 10000 test images: 54 %
-```
-
 If you followed along, you should see that the model is roughly 50%
 accurate at this point. That's not exactly state-of-the-art, but it's
 far better than the 10% accuracy we'd expect from a random output. This
 demonstrates that some general learning did happen in the model.
 
-**Total running time of the script:** (1 minutes 24.486 seconds)
+```
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+```
+
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: introyt1_tutorial.ipynb`](../../_downloads/3195443a0ced3cabc0ad643537bdb5cd/introyt1_tutorial.ipynb)
 

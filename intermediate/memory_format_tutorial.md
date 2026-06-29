@@ -39,13 +39,62 @@ last memory formats.
 
 Classic PyTorch contiguous tensor
 
+```
+import torch
+
+N, C, H, W = 10, 3, 32, 32
+x = torch.empty(N, C, H, W)
+print(x.stride()) # Outputs: (3072, 1024, 32, 1)
+```
+
+```
+(3072, 1024, 32, 1)
+```
+
 Conversion operator
+
+```
+x = x.to(memory_format=torch.channels_last)
+print(x.shape) # Outputs: (10, 3, 32, 32) as dimensions order preserved
+print(x.stride()) # Outputs: (3072, 1, 96, 3)
+```
+
+```
+torch.Size([10, 3, 32, 32])
+(3072, 1, 96, 3)
+```
 
 Back to contiguous
 
+```
+x = x.to(memory_format=torch.contiguous_format)
+print(x.stride()) # Outputs: (3072, 1024, 32, 1)
+```
+
+```
+(3072, 1024, 32, 1)
+```
+
 Alternative option
 
+```
+x = x.contiguous(memory_format=torch.channels_last)
+print(x.stride()) # Outputs: (3072, 1, 96, 3)
+```
+
+```
+(3072, 1, 96, 3)
+```
+
 Format checks
+
+```
+print(x.is_contiguous(memory_format=torch.channels_last)) # Outputs: True
+```
+
+```
+True
+```
 
 There are minor difference between the two APIs `to` and
 `contiguous`. We suggest to stick with `to` when explicitly
@@ -66,6 +115,17 @@ would restride tensor with a meaningful stride on dimensions whose
 sizes are 1 in order to properly represent the intended memory
 format
 
+```
+special_x = torch.empty(4, 1, 4, 4)
+print(special_x.is_contiguous(memory_format=torch.channels_last)) # Outputs: True
+print(special_x.is_contiguous(memory_format=torch.contiguous_format)) # Outputs: True
+```
+
+```
+True
+True
+```
+
 Same thing applies to explicit permutation API `permute`. In
 special case where ambiguity could occur, `permute` does not
 guarantee to produce a stride that properly carry the intended
@@ -79,13 +139,59 @@ format.
 
 Create as channels last
 
+```
+x = torch.empty(N, C, H, W, memory_format=torch.channels_last)
+print(x.stride()) # Outputs: (3072, 1, 96, 3)
+```
+
+```
+(3072, 1, 96, 3)
+```
+
 `clone` preserves memory format
+
+```
+y = x.clone()
+print(y.stride()) # Outputs: (3072, 1, 96, 3)
+```
+
+```
+(3072, 1, 96, 3)
+```
 
 `to`, `cuda`, `float` ... preserves memory format
 
+```
+if torch.cuda.is_available():
+ y = x.cuda()
+ print(y.stride()) # Outputs: (3072, 1, 96, 3)
+```
+
+```
+(3072, 1, 96, 3)
+```
+
 `empty_like`, `*_like` operators preserves memory format
 
+```
+y = torch.empty_like(x)
+print(y.stride()) # Outputs: (3072, 1, 96, 3)
+```
+
+```
+(3072, 1, 96, 3)
+```
+
 Pointwise operators preserves memory format
+
+```
+z = x + y
+print(z.stride()) # Outputs: (3072, 1, 96, 3)
+```
+
+```
+(3072, 1, 96, 3)
+```
 
 `Conv`, `Batchnorm` modules using `cudnn` backends support channels last
 (only works for cuDNN >= 7.6). Convolution modules, unlike binary
@@ -93,6 +199,22 @@ p-wise operator, have channels last as the dominating memory format.
 If all inputs are in contiguous memory format, the operator
 produces output in contiguous memory format. Otherwise, output will
 be in channels last memory format.
+
+```
+if torch.backends.cudnn.is_available() and torch.backends.cudnn.version() >= 7603:
+ model = torch.nn.Conv2d(8, 4, 3).cuda().half()
+ model = model.to(memory_format=torch.channels_last) # Module parameters need to be channels last
+
+ input = torch.randint(1, 10, (2, 8, 4, 4), dtype=torch.float32, requires_grad=True)
+ input = input.to(device="cuda", memory_format=torch.channels_last, dtype=torch.float16)
+
+ out = model(input)
+ print(out.is_contiguous(memory_format=torch.channels_last)) # Outputs: True
+```
+
+```
+True
+```
 
 When input tensor reaches a operator without channels last support,
 a permutation should automatically apply in the kernel to restore
@@ -205,8 +327,11 @@ correctly.
 
 ```
 # Need to be done once, after model initialization (or load)
+model = model.to(memory_format=torch.channels_last) # Replace with your model
 
 # Need to be done for every input
+input = input.to(memory_format=torch.channels_last) # Replace with your input
+output = model(input)
 ```
 
 However, not all operators fully converted to support channels last
@@ -230,11 +355,90 @@ or introduce memory format checks into eager execution mode and run your model.
 After running the code below, operators will raise an exception if the output of the
 operator doesn't match the memory format of the input.
 
+```
+def contains_cl(args):
+ for t in args:
+ if isinstance(t, torch.Tensor):
+ if t.is_contiguous(memory_format=torch.channels_last) and not t.is_contiguous():
+ return True
+ elif isinstance(t, list) or isinstance(t, tuple):
+ if contains_cl(list(t)):
+ return True
+ return False
+
+def print_inputs(args, indent=""):
+ for t in args:
+ if isinstance(t, torch.Tensor):
+ print(indent, t.stride(), t.shape, t.device, t.dtype)
+ elif isinstance(t, list) or isinstance(t, tuple):
+ print(indent, type(t))
+ print_inputs(list(t), indent=indent + " ")
+ else:
+ print(indent, t)
+
+def check_wrapper(fn):
+ name = fn.__name__
+
+ def check_cl(*args, **kwargs):
+ was_cl = contains_cl(args)
+ try:
+ result = fn(*args, **kwargs)
+ except Exception as e:
+ print("`{}` inputs are:".format(name))
+ print_inputs(args)
+ print("-------------------")
+ raise e
+ failed = False
+ if was_cl:
+ if isinstance(result, torch.Tensor):
+ if result.dim() == 4 and not result.is_contiguous(memory_format=torch.channels_last):
+ print(
+ "`{}` got channels_last input, but output is not channels_last:".format(name),
+ result.shape,
+ result.stride(),
+ result.device,
+ result.dtype,
+ )
+ failed = True
+ if failed and True:
+ print("`{}` inputs are:".format(name))
+ print_inputs(args)
+ raise Exception("Operator `{}` lost channels_last property".format(name))
+ return result
+
+ return check_cl
+
+old_attrs = dict()
+
+def attribute(m):
+ old_attrs[m] = dict()
+ for i in dir(m):
+ e = getattr(m, i)
+ exclude_functions = ["is_cuda", "has_names", "numel", "stride", "Tensor", "is_contiguous", "__class__"]
+ if i not in exclude_functions and not i.startswith("_") and "__call__" in dir(e):
+ try:
+ old_attrs[m][i] = e
+ setattr(m, i, check_wrapper(e))
+ except Exception as e:
+ print(i)
+ print(e)
+
+attribute(torch.Tensor)
+attribute(torch.nn.functional)
+attribute(torch)
+```
+
 If you found an operator that doesn't support channels last tensors
 and you want to contribute, feel free to use following developers
 guide [pytorch/pytorch](https://github.com/pytorch/pytorch/wiki/Writing-memory-format-aware-operators).
 
 Code below is to recover the attributes of torch.
+
+```
+for (m, attrs) in old_attrs.items():
+ for (k, v) in attrs.items():
+ setattr(m, k, v)
+```
 
 ## Work to do
 
@@ -254,11 +458,7 @@ how to use it for performance gains. For a practical example of accelerating
 vision models using channels last, see the post
 [here](https://pytorch.org/blog/accelerating-pytorch-vision-models-with-channels-last-on-cpu/).
 
-```
-# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
-```
-
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.341 seconds)
 
 [`Download Jupyter notebook: memory_format_tutorial.ipynb`](../_downloads/f11c58c36c9b8a5daf09d3f9a792ef84/memory_format_tutorial.ipynb)
 

@@ -38,7 +38,7 @@ C++ extensions and dispatcher usage.
 
 .. customcarditem::
    :header: Custom Python Operators
-   :card_description: Create Custom Operators in Python. Useful for black-boxing a Python function for use with torch.compile.
+   :card_description: Create Python custom operators with correct mutation behavior, fake kernels, autograd, and opcheck.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/python_custom_ops.html
    :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
@@ -90,14 +90,12 @@ C++ extensions and dispatcher usage.
 .. Page TOC
 .. -----------------------------------------
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :includehidden:
    :hidden:
    :caption: Extending PyTorch
 
    advanced/custom_ops_landing_page
-   advanced/python_custom_ops
-   advanced/cpp_custom_ops
    intermediate/custom_function_double_backward_tutorial
    intermediate/custom_function_conv_bn_tutorial
    advanced/cpp_extension

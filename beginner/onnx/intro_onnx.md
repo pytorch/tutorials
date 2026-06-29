@@ -70,10 +70,6 @@ sit tight and have fun going through all of them to learn all there is about the
 2. [Extending the ONNX exporter operator support](onnx_registry_tutorial.html)
 3. [Export a model with control flow to ONNX](export_control_flow_model_to_onnx_tutorial.html)
 
-```
-# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
-```
-
 [`Download Jupyter notebook: intro_onnx.ipynb`](../../_downloads/33f8140bedc02273a55c752fe79058e5/intro_onnx.ipynb)
 
 [`Download Python source code: intro_onnx.py`](../../_downloads/ea6986634c1fca7a6c0eaddbfd7f799c/intro_onnx.py)

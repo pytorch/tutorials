@@ -61,35 +61,7 @@ If you are running this in Google Colab, make sure you install the following dep
 ## Setup
 
 ```
-import torch
-import tqdm
-from tensordict.nn import TensorDictModule as Mod, TensorDictSequential as Seq
-from torch import nn
-from torchrl.collectors import SyncDataCollector
-from torchrl.data import LazyMemmapStorage, TensorDictReplayBuffer
-from torchrl.envs import (
- Compose,
- ExplorationType,
- GrayScale,
- InitTracker,
- ObservationNorm,
- Resize,
- RewardScaling,
- set_exploration_type,
- StepCounter,
- ToTensorImage,
- TransformedEnv,
-)
-from torchrl.envs.libs.gym import GymEnv
-from torchrl.modules import ConvNet, EGreedyModule, LSTMModule, MLP, QValueModule
-from torchrl.objectives import DQNLoss, SoftUpdate
 
-is_fork = multiprocessing.get_start_method() == "fork"
-device = (
- torch.device(0)
- if torch.cuda.is_available() and not is_fork
- else torch.device("cpu")
-)
 ```
 
 ## Environment
@@ -129,27 +101,7 @@ Fortunately, the [`LSTMModule`](https://docs.pytorch.org/rl/stable/reference/gen
 equipped with a helper method to build just that transform for us, so
 we can wait until we build it!
 
-```
-env = TransformedEnv(
- GymEnv("CartPole-v1", from_pixels=True, device=device),
- Compose(
- ToTensorImage(),
- GrayScale(),
- Resize(84, 84),
- StepCounter(),
- InitTracker(),
- RewardScaling(loc=0.0, scale=0.1),
- ObservationNorm(standard_normal=True, in_keys=["pixels"]),
- ),
-)
-```
-
 As always, we need to initialize manually our normalization constants:
-
-```
-env.transform[-1].init_stats(1000, reduce_dim=[0, 1, 2], cat_dim=0, keep_dims=[0])
-td = env.reset()
-```
 
 ## Policy
 
@@ -164,26 +116,8 @@ We build a convolutional network flanked with a [`torch.nn.AdaptiveAvgPool2d`](h
 that will squash the output in a vector of size 64. The [`ConvNet`](https://docs.pytorch.org/rl/stable/reference/generated/torchrl.modules.ConvNet.html#torchrl.modules.ConvNet)
 can assist us with this:
 
-```
-feature = Mod(
- ConvNet(
- num_cells=[32, 32, 64],
- squeeze_output=True,
- aggregator_class=nn.AdaptiveAvgPool2d,
- aggregator_kwargs={"output_size": (1, 1)},
- device=device,
- ),
- in_keys=["pixels"],
- out_keys=["embed"],
-)
-```
-
 we execute the first module on a batch of data to gather the size of the
 output vector:
-
-```
-n_cells = feature(env.reset())["embed"].shape[-1]
-```
 
 ### LSTM Module
 
@@ -207,22 +141,7 @@ Also, the LSTM cannot have a `bidirectional` attribute set to `True` as
 this wouldn't be usable in online settings. In this case, the default value
 is the correct one.
 
-```
-lstm = LSTMModule(
- input_size=n_cells,
- hidden_size=128,
- device=device,
- in_key="embed",
- out_key="embed",
-)
-```
-
 Let us look at the LSTM Module class, specifically its in and out_keys:
-
-```
-print("in_keys", lstm.in_keys)
-print("out_keys", lstm.out_keys)
-```
 
 We can see that these values contain the key we indicated as the in_key (and out_key)
 as well as recurrent key names. The out_keys are preceded by a "next" prefix
@@ -237,38 +156,15 @@ environment to make sure that the recurrent states are passed to the buffer.
 The [`make_tensordict_primer()`](https://docs.pytorch.org/rl/stable/reference/generated/torchrl.modules.LSTMModule.html#id0) method does
 exactly that:
 
-```
-env.append_transform(lstm.make_tensordict_primer())
-```
-
 and that's it! We can print the environment to check that everything looks good now
 that we have added the primer:
-
-```
-print(env)
-```
 
 ### MLP
 
 We use a single-layer MLP to represent the action values we'll be using for
 our policy.
 
-```
-mlp = MLP(
- out_features=2,
- num_cells=[
- 64,
- ],
- device=device,
-)
-```
-
 and fill the bias with zeros:
-
-```
-mlp[-1].bias.data.fill_(0.0)
-mlp = Mod(mlp, in_keys=["embed"], out_keys=["action_value"])
-```
 
 ### Using the Q-Values to select an action
 
@@ -280,10 +176,6 @@ The only thing we need to do is to specify the action space, which can be done
 either by passing a string or an action-spec. This allows us to use
 Categorical (sometimes called "sparse") encoding or the one-hot version of it.
 
-```
-qval = QValueModule(spec=env.action_spec)
-```
-
 Note
 
 TorchRL also provides a wrapper class [`torchrl.modules.QValueActor`](https://docs.pytorch.org/rl/stable/reference/generated/torchrl.modules.QValueActor.html#torchrl.modules.QValueActor) that
@@ -294,25 +186,11 @@ what we do here.
 
 We can now put things together in a [`TensorDictSequential`](https://docs.pytorch.org/tensordict/stable/reference/generated/tensordict.nn.TensorDictSequential.html#tensordict.nn.TensorDictSequential)
 
-```
-stoch_policy = Seq(feature, lstm, mlp, qval)
-```
-
 DQN being a deterministic algorithm, exploration is a crucial part of it.
 We'll be using an \(\epsilon\)-greedy policy with an epsilon of 0.2 decaying
 progressively to 0.
 This decay is achieved via a call to [`step()`](https://docs.pytorch.org/rl/stable/reference/generated/torchrl.modules.EGreedyModule.html#torchrl.modules.EGreedyModule.step)
 (see training loop below).
-
-```
-exploration_module = EGreedyModule(
- annealing_num_steps=1_000_000, spec=env.action_spec, eps_init=0.2
-)
-stoch_policy = Seq(
- stoch_policy,
- exploration_module,
-)
-```
 
 ### Using the model for the loss
 
@@ -327,16 +205,8 @@ calling a [`set_recurrent_mode()`](https://docs.pytorch.org/rl/stable/reference/
 will return a new instance of the LSTM (with shared weights) that will
 assume that the input data is sequential in nature.
 
-```
-policy = Seq(feature, lstm.set_recurrent_mode(True), mlp, qval)
-```
-
 Because we still have a couple of uninitialized parameters we should
 initialize them before creating an optimizer and such.
-
-```
-policy(env.reset())
-```
 
 ## DQN Loss
 
@@ -349,19 +219,9 @@ To use the Double-DQN, we ask for a `delay_value` argument that will
 create a non-differentiable copy of the network parameters to be used
 as a target network.
 
-```
-loss_fn = DQNLoss(policy, action_space=env.action_spec, delay_value=True)
-```
-
 Since we are using a double DQN, we need to update the target parameters.
 We'll use a `SoftUpdate` instance to carry out
 this work.
-
-```
-updater = SoftUpdate(loss_fn, eps=0.95)
-
-optim = torch.optim.Adam(policy.parameters(), lr=3e-4)
-```
 
 ## Collector and replay buffer
 
@@ -378,65 +238,12 @@ Note
 For the sake of efficiency, we're only running a few thousands iterations
 here. In a real setting, the total number of frames should be set to 1M.
 
-```
-collector = SyncDataCollector(env, stoch_policy, frames_per_batch=50, total_frames=200, device=device)
-rb = TensorDictReplayBuffer(
- storage=LazyMemmapStorage(20_000), batch_size=4, prefetch=10
-)
-```
-
 ## Training loop
 
 To keep track of the progress, we will run the policy in the environment once
 every 50 data collection, and plot the results after training.
 
-```
-utd = 16
-pbar = tqdm.tqdm(total=1_000_000)
-longest = 0
-
-traj_lens = []
-for i, data in enumerate(collector):
- if i == 0:
- print(
- "Let us print the first batch of data.\nPay attention to the key names "
- "which will reflect what can be found in this data structure, in particular: "
- "the output of the QValueModule (action_values, action and chosen_action_value),"
- "the 'is_init' key that will tell us if a step is initial or not, and the "
- "recurrent_state keys.\n",
- data,
- )
- pbar.update(data.numel())
- # it is important to pass data that is not flattened
- rb.extend(data.unsqueeze(0).to_tensordict().cpu())
- for _ in range(utd):
- s = rb.sample().to(device, non_blocking=True)
- loss_vals = loss_fn(s)
- loss_vals["loss"].backward()
- optim.step()
- optim.zero_grad()
- longest = max(longest, data["step_count"].max().item())
- pbar.set_description(
- f"steps: {longest}, loss_val: {loss_vals['loss'].item(): 4.4f}, action_spread: {data['action'].sum(0)}"
- )
- exploration_module.step(data.numel())
- updater.step()
-
- with set_exploration_type(ExplorationType.DETERMINISTIC), torch.no_grad():
- rollout = env.rollout(10000, stoch_policy)
- traj_lens.append(rollout.get(("next", "step_count")).max().item())
-```
-
 Let's plot our results:
-
-```
-if traj_lens:
- from matplotlib import pyplot as plt
-
- plt.plot(traj_lens)
- plt.xlabel("Test collection")
- plt.title("Test trajectory lengths")
-```
 
 ## Conclusion
 
@@ -454,6 +261,10 @@ the data
 ## Further Reading
 
 - The TorchRL documentation can be found [here](https://pytorch.org/rl/).
+
+```
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+```
 
 [`Download Jupyter notebook: dqn_with_rnn_tutorial.ipynb`](../_downloads/224d2179034ef4c00cd9b86f2976062a/dqn_with_rnn_tutorial.ipynb)
 

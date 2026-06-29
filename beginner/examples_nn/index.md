@@ -1,3 +1,8 @@
+![](../../_images/sphx_glr_dynamic_net_thumb.png)
+
+[PyTorch: Control Flow + Weight Sharing](dynamic_net.html#sphx-glr-beginner-examples-nn-dynamic-net-py)
+
+PyTorch: Control Flow + Weight Sharing
 ![](../../_images/sphx_glr_polynomial_module_thumb.png)
 
 [PyTorch: Custom nn Modules](polynomial_module.html#sphx-glr-beginner-examples-nn-polynomial-module-py)
@@ -13,8 +18,3 @@ PyTorch: optim
 [PyTorch: nn](polynomial_nn.html#sphx-glr-beginner-examples-nn-polynomial-nn-py)
 
 PyTorch: nn
-![](../../_images/sphx_glr_dynamic_net_thumb.png)
-
-[PyTorch: Control Flow + Weight Sharing](dynamic_net.html#sphx-glr-beginner-examples-nn-dynamic-net-py)
-
-PyTorch: Control Flow + Weight Sharing

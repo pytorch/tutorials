@@ -30,13 +30,6 @@ for a quicker walkthrough of Profiler API usage.
 
 ---
 
-```
-import torch
-import numpy as np
-from torch import nn
-import torch.autograd.profiler as profiler
-```
-
 ## Performance debugging using Profiler
 
 Profiler can be useful to identify performance bottlenecks in your
@@ -54,24 +47,6 @@ show up under its corresponding label.
 Note that using Profiler incurs some overhead, and is best used only for investigating
 code. Remember to remove it if you are benchmarking runtimes.
 
-```
-class MyModule(nn.Module):
- def __init__(self, in_features: int, out_features: int, bias: bool = True):
- super(MyModule, self).__init__()
- self.linear = nn.Linear(in_features, out_features, bias)
-
- def forward(self, input, mask):
- with profiler.record_function("LINEAR PASS"):
- out = self.linear(input)
-
- with profiler.record_function("MASK INDICES"):
- threshold = out.sum(axis=1).mean().item()
- hi_idx = np.argwhere(mask.cpu().numpy() > threshold)
- hi_idx = torch.from_numpy(hi_idx).cuda()
-
- return out, hi_idx
-```
-
 ## Profile the forward pass
 
 We initialize random input and mask tensors, and the model.
@@ -87,15 +62,7 @@ Warning
 Remember to remove it if you are benchmarking performance.
 
 ```
-model = MyModule(500, 10).cuda()
-input = torch.rand(128, 500).cuda()
-mask = torch.rand((500, 500, 500), dtype=torch.double).cuda()
-
 # warm-up
-model(input, mask)
-
-with profiler.profile(with_stack=True, profile_memory=True) as prof:
- out, idx = model(input, mask)
 ```
 
 ## Print profiler results
@@ -119,8 +86,6 @@ When running profiler in a notebook, you might see entries like `<ipython-input-
 instead of filenames in the stacktrace. These correspond to `<notebook-cell>(line number): calling-function`.
 
 ```
-print(prof.key_averages(group_by_stack_n=5).table(sort_by='self_cpu_time_total', row_limit=5))
-
 """
 (Some columns are omitted)
 
@@ -173,17 +138,7 @@ operation at line 12 consumes 953.67 Mb. This operation copies `mask` to the CPU
 it to `torch.float` instead?
 
 ```
-model = MyModule(500, 10).cuda()
-input = torch.rand(128, 500).cuda()
-mask = torch.rand((500, 500, 500), dtype=torch.float).cuda()
-
 # warm-up
-model(input, mask)
-
-with profiler.profile(with_stack=True, profile_memory=True) as prof:
- out, idx = model(input, mask)
-
-print(prof.key_averages(group_by_stack_n=5).table(sort_by='self_cpu_time_total', row_limit=5))
 
 """
 (Some columns are omitted)
@@ -239,32 +194,7 @@ copies the array back to CUDA as a tensor. We could eliminate both of these if w
 `torch` function `nonzero()` here instead.
 
 ```
-class MyModule(nn.Module):
- def __init__(self, in_features: int, out_features: int, bias: bool = True):
- super(MyModule, self).__init__()
- self.linear = nn.Linear(in_features, out_features, bias)
-
- def forward(self, input, mask):
- with profiler.record_function("LINEAR PASS"):
- out = self.linear(input)
-
- with profiler.record_function("MASK INDICES"):
- threshold = out.sum(axis=1).mean()
- hi_idx = (mask > threshold).nonzero(as_tuple=True)
-
- return out, hi_idx
-
-model = MyModule(500, 10).cuda()
-input = torch.rand(128, 500).cuda()
-mask = torch.rand((500, 500, 500), dtype=torch.float).cuda()
-
 # warm-up
-model(input, mask)
-
-with profiler.profile(with_stack=True, profile_memory=True) as prof:
- out, idx = model(input, mask)
-
-print(prof.key_averages(group_by_stack_n=5).table(sort_by='self_cpu_time_total', row_limit=5))
 
 """
 (Some columns are omitted)
@@ -316,6 +246,10 @@ Read more about Profiler here:
 - [Profiler Usage Recipe](https://docs.pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
 - [Profiling RPC-Based Workloads](https://pytorch.org/tutorials/recipes/distributed_rpc_profiling.html)
 - [Profiler API Docs](https://pytorch.org/docs/stable/autograd.html?highlight=profiler#profiler)
+
+```
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+```
 
 [`Download Jupyter notebook: profiler.ipynb`](../_downloads/9fc6c90b1bbbfd4201d66c498708f33f/profiler.ipynb)
 

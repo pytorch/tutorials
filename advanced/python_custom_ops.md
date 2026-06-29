@@ -1,150 +1,133 @@
-Note
-
-Go to the end
-to download the full example code.
-
 # Custom Python Operators
 
  What you will learn
 
-- How to integrate custom operators written in Python with PyTorch
-- How to test custom operators using `torch.library.opcheck`
+- When to create a Python custom operator
+- How to choose between functional and mutable operator contracts
+- Why the schema and mutation/aliasing contract are required
+- Where fake kernels, autograd, and other registrations fit
 
- Prerequisites
-
-- PyTorch 2.4 or later
-
-PyTorch offers a large library of operators that work on Tensors (e.g.
-`torch.add`, `torch.sum`, etc). However, you might wish to use a new customized
-operator with PyTorch, perhaps written by a third-party library. This tutorial
+PyTorch offers a large library of operators that work on Tensors, such as
+`torch.add` and `torch.sum`. However, you might wish to use a new custom
+operator with PyTorch, perhaps written by a third-party library. This guide
 shows how to wrap Python functions so that they behave like PyTorch native
-operators. Reasons why you may wish to create a custom operator in PyTorch include:
+operators.
 
-- Treating an arbitrary Python function as an opaque callable with respect
-to `torch.compile` (that is, prevent `torch.compile` from tracing
-into the function).
-- Adding training support to an arbitrary Python function
+Reasons why you may wish to create a custom operator in PyTorch include:
 
-Use [`torch.library.custom_op()`](https://docs.pytorch.org/docs/stable/library.html#torch.library.custom_op) to create Python custom operators.
-Use the C++ `TORCH_LIBRARY` APIs to create C++ custom operators (these
-work in Python-less environments).
-See the [Custom Operators Landing Page](https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html)
-for more details.
+- treating an arbitrary Python function as an opaque callable with respect to
+`torch.compile` and/or `torch.export`
+- adding training support to an arbitrary Python function.
 
 Please note that if your operation can be expressed as a composition of
-existing PyTorch operators, then there is usually no need to use the custom operator
-API - everything (for example `torch.compile`, training support) should
-just work.
+existing PyTorch operators, then there is usually no need to use the custom
+operator API. `torch.compile`, training support, and other PyTorch subsystems
+should usually work.
 
-## Example: Wrapping PIL's crop into a custom operator
+Every custom operator needs:
 
-Let's say that we are using PIL's `crop` operation.
+- a stable schema and mutation/aliasing contract;
+- validation with `torch.library.opcheck`;
+- a fake kernel if it returns tensors and must work with `torch.compile` or
+`torch.export`.
 
-`crop` is not handled effectively out-of-the-box by
-`torch.compile`: `torch.compile` induces a
-["graph break"](https://pytorch.org/docs/stable/torch.compiler_faq.html#graph-breaks)
-on functions it is unable to handle and graph breaks are bad for performance.
-The following code demonstrates this by raising an error
-(`torch.compile` with `fullgraph=True` raises an error if a
-graph break occurs).
+Choose one path:
 
-```
-# The following raises an error. Uncomment the line to see it.
-# cropped_img = f(img)
-```
+- [Functional custom operators](python_custom_ops_functional.html#python-custom-ops-functional): the
+operator returns fresh tensors and mutates no inputs.
+- [Mutable custom operators](python_custom_ops_mutable.html#python-custom-ops-mutable): the operator
+mutates an input or writes into an output buffer. Starting in PyTorch 2.13,
+this includes PyTorch-style in-place and `out=` custom operators.
+- [Optional registrations](python_custom_ops_registrations.html#python-custom-ops-registrations): add
+autograd, `torch.vmap`, Tensor subclass behavior, or other subsystem
+support after the base operator passes `opcheck`.
 
-In order to black-box `crop` for use with `torch.compile`, we need to
-do two things:
+Choose your path
 
-1. wrap the function into a PyTorch custom operator.
-2. add a "`FakeTensor` kernel" (aka "meta kernel") to the operator.
-Given some `FakeTensors` inputs (dummy Tensors that don't have storage),
-this function should return dummy Tensors of your choice with the correct
-Tensor metadata (shape/strides/`dtype`/device).
+- **Any custom operator:** read
+Schema and mutation/aliasing contract
+and Validation. You need a stable
+schema, representative examples, and `opcheck`.
+- **Code that returns new tensors and does not mutate inputs:** read
+[Functional custom operators](python_custom_ops_functional.html#python-custom-ops-functional). You need
+`custom_op(..., mutates_args=())`, a fake kernel for `torch.compile`,
+and `opcheck`.
+- **A kernel that writes into existing memory:** read
+[Mutable custom operators](python_custom_ops_mutable.html#python-custom-ops-mutable). You need
+accurate `mutates_args` and one clear mutation pattern.
+- **In-place, ``out=``, or maybe-out behavior:** read
+[Mutable custom operators](python_custom_ops_mutable.html#python-custom-ops-mutable) and
+Schema contract. Starting in
+PyTorch 2.13, tagged in-place and `out=` custom operators are available;
+split maybe-out behavior into separate operators.
+- **Training support, ``vmap``, or Tensor subclass behavior:** read
+[Adding registrations](python_custom_ops_registrations.html#python-custom-ops-registrations). Start with a
+validated base operator, then add the registration for that subsystem.
 
-```
-# Use torch.library.custom_op to define a new custom operator.
-# If your operator mutates any input Tensors, their names must be specified
-# in the ``mutates_args`` argument.
+For Python-less environments or AOTInductor, define the operator and backend
+kernels in C++ instead. See the
+[C++ custom operator tutorial](cpp_custom_ops.html#cpp-custom-ops-tutorial).
 
-# Use register_fake to add a ``FakeTensor`` kernel for the operator
-```
+## Before you start
 
-After this, `crop` now works without graph breaks:
+A kernel is the implementation. An operator is the PyTorch-facing contract:
+name, inputs, outputs, mutation behavior, and subsystem registrations.
 
-## Adding training support for crop
+A custom operator gives PyTorch an explicit boundary. Use it when tracing into
+the implementation is impossible or undesirable.
 
-Use `torch.library.register_autograd` to add training support for an operator.
-Prefer this over directly using `torch.autograd.Function`; some compositions of
-`autograd.Function` with PyTorch operator registration APIs can lead to (and
-has led to) silent incorrectness when composed with `torch.compile`.
+## Required: schema and mutation/aliasing contract
 
-If you don't need training support, there is no need to use
-`torch.library.register_autograd`.
-If you end up training with a `custom_op` that doesn't have an autograd
-registration, we'll raise an error message.
+Decide the schema and mutation/aliasing contract before writing registrations.
+PyTorch uses the schema and registrations to reason about mutation/aliasing;
+it does not infer the contract from the Python function body.
 
-The gradient formula for `crop` is essentially `PIL.paste` (we'll leave the
-derivation as an exercise to the reader). Let's first wrap `paste` into a
-custom operator:
+Two Tensors alias when they share the same underlying storage. For example,
+`y = x.view(-1)` creates a
+[view](https://docs.pytorch.org/docs/main/tensor_view.html) `y` that aliases
+`x`, so writing to `y` can change `x`.
 
-And now let's use `register_autograd` to specify the gradient formula for `crop`:
+- The schema must be stable: the mutation and aliasing behavior must be correct
+and consistent. This means that an operator must not return an output that
+sometimes aliases its input. Also, the operator may not mutate an input that
+is not marked as being mutated.
+- A functional custom operator must return fresh tensors. Do not return an
+input tensor, a view of an input, or two outputs that alias each other.
+- A mutable custom operator must list every mutated argument in `mutates_args`.
+- A fake kernel must return tensors with the same metadata as the real kernel:
+shape, dtype, device, layout, strides, and storage offset when relevant.
+`empty_like(x)` is only correct when the real output has the same metadata
+as `x`. The functional custom operator page shows an executable example of
+this metadata mismatch.
+- Fake kernels may inspect metadata, but must not read tensor data.
+- Avoid "maybe-out" operators. An operator that sometimes allocates a new
+tensor and sometimes writes into an output buffer has different aliasing
+contracts for different calls.
 
-Note that the backward must be a composition of PyTorch-understood operators,
-which is why we wrapped paste into a custom operator instead of directly using
-PIL's paste.
+Split maybe-out behavior into two operators: one functional operator that
+allocates and one mutable operator that writes into an output buffer.
 
-This is the correct gradient, with 1s (white) in the cropped region and 0s
-(black) in the unused region.
+## Required: validate with opcheck
 
-## Testing Python Custom operators
+`torch.library.opcheck` validates the registration contract: schema, fake
+kernel, autograd registration, and behavior under compilation APIs.
 
-Use `torch.library.opcheck` to test that the custom operator was registered
-correctly. This does not test that the gradients are mathematically correct;
-please write separate tests for that (either manual ones or `torch.autograd.gradcheck`).
+Run `opcheck` on representative inputs:
 
-To use `opcheck`, pass it a set of example inputs to test against. If your
-operator supports training, then the examples should include Tensors that
-require grad. If your operator supports multiple devices, then the examples
-should include Tensors from each device.
+- each supported device;
+- important dtypes;
+- edge shapes such as empty tensors;
+- important memory formats or non-contiguous strides;
+- inputs with `requires_grad=True` if the operator supports training.
 
-## Mutable Python Custom operators
+`opcheck` is not a numerical correctness test. Use
+`torch.testing.assert_close` or ordinary unit tests for forward correctness,
+and `torch.autograd.gradcheck` for gradient formulas.
 
-You can also wrap a Python function that mutates its inputs into a custom
-operator.
-Functions that mutate inputs are common because that is how many low-level
-kernels are written; for example, a kernel that computes `sin` may take in
-the input and an output tensor and write `input.sin()` to the output tensor.
+## Next steps
 
-We'll use `numpy.sin` to demonstrate an example of a mutable Python
-custom operator.
+Read one base-contract page first, then add registrations only if needed:
 
-Because the operator doesn't return anything, there is no need to register
-a `FakeTensor` kernel (meta kernel) to get it to work with `torch.compile`.
-
-And here's an `opcheck` run telling us that we did indeed register the operator correctly.
-`opcheck` would error out if we forgot to add the output to `mutates_args`, for example.
-
-## Conclusion
-
-In this tutorial, we learned how to use `torch.library.custom_op` to
-create a custom operator in Python that works with PyTorch subsystems
-such as `torch.compile` and autograd.
-
-This tutorial provides a basic introduction to custom operators.
-For more detailed information, see:
-
-- [the torch.library documentation](https://pytorch.org/docs/stable/library.html)
-- [the Custom Operators Manual](https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html#the-custom-operators-manual)
-
-```
-# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
-```
-
-**Total running time of the script:** (0 minutes 0.002 seconds)
-
-[`Download Jupyter notebook: python_custom_ops.ipynb`](../_downloads/9878ff22933dc5322c65087cfef530a2/python_custom_ops.ipynb)
-
-[`Download Python source code: python_custom_ops.py`](../_downloads/ce0cb1cce555cead1bcaba8a6d337c6f/python_custom_ops.py)
-
-[`Download zipped: python_custom_ops.zip`](../_downloads/f7f21519a06aff88cc7a5a2be58e9038/python_custom_ops.zip)
+- [Functional custom operators](python_custom_ops_functional.html#python-custom-ops-functional)
+- [Mutable custom operators](python_custom_ops_mutable.html#python-custom-ops-mutable)
+- [Adding training and other registrations](python_custom_ops_registrations.html#python-custom-ops-registrations)
