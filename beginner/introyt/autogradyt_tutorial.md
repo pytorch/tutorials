@@ -142,7 +142,7 @@ plt.plot(a.detach(), b.detach())
 ![autogradyt tutorial](../../_images/sphx_glr_autogradyt_tutorial_001.png)
 
 ```
-[<matplotlib.lines.Line2D object at 0x7f87dbf441f0>]
+[<matplotlib.lines.Line2D object at 0x7f669d73e8c0>]
 ```
 
 Let's have a closer look at the tensor `b`. When we print it, we see
@@ -233,17 +233,17 @@ print(a.grad_fn)
 
 ```
 d:
-<AddBackward0 object at 0x7f87dbfbead0>
-((<MulBackward0 object at 0x7f87dbfbeb00>, 0), (None, 0))
-((<SinBackward0 object at 0x7f87dbfbeb00>, 0), (None, 0))
-((<AccumulateGrad object at 0x7f87dbfbead0>, 0),)
+<AddBackward0 object at 0x7f669d73ed70>
+((<MulBackward0 object at 0x7f669d799b10>, 0), (None, 0))
+((<SinBackward0 object at 0x7f669ee29600>, 0), (None, 0))
+((<AccumulateGrad object at 0x7f669ee2afb0>, 0),)
 ()
 
 c:
-<MulBackward0 object at 0x7f87dbfbeb00>
+<MulBackward0 object at 0x7f669d799b10>
 
 b:
-<SinBackward0 object at 0x7f87dbfbeb00>
+<SinBackward0 object at 0x7f669ee29600>
 
 a:
 None
@@ -268,7 +268,7 @@ tensor([ 2.0000e+00, 1.9319e+00, 1.7321e+00, 1.4142e+00, 1.0000e+00,
  -1.4142e+00, -1.0000e+00, -5.1764e-01, 2.3850e-08, 5.1764e-01,
  1.0000e+00, 1.4142e+00, 1.7321e+00, 1.9319e+00, 2.0000e+00])
 
-[<matplotlib.lines.Line2D object at 0x7f8825e63e80>]
+[<matplotlib.lines.Line2D object at 0x7f66dba85810>]
 ```
 
 Recall the computation steps we took to get here:
@@ -339,8 +339,8 @@ print(model.layer2.weight.grad)
 ```
 
 ```
-tensor([-0.0016, -0.0818, 0.0703, 0.0748, -0.0582, -0.0850, 0.0397, 0.0175,
- -0.0720, -0.0077], grad_fn=<SliceBackward0>)
+tensor([-0.0675, 0.0176, -0.0559, 0.0622, -0.0136, 0.0552, 0.0584, -0.0203,
+ -0.0178, 0.0863], grad_fn=<SliceBackward0>)
 None
 ```
 
@@ -359,7 +359,7 @@ print(loss)
 ```
 
 ```
-tensor(149.8522, grad_fn=<SumBackward0>)
+tensor(160.6450, grad_fn=<SumBackward0>)
 ```
 
 Now, let's call `loss.backward()` and see what happens:
@@ -371,10 +371,10 @@ print(model.layer2.weight.grad[0][0:10])
 ```
 
 ```
-tensor([-0.0016, -0.0818, 0.0703, 0.0748, -0.0582, -0.0850, 0.0397, 0.0175,
- -0.0720, -0.0077], grad_fn=<SliceBackward0>)
-tensor([ 0.0201, -2.4306, -2.9136, -4.6195, -3.3820, -1.7600, -1.9710, -4.3936,
- -3.8690, -2.3710])
+tensor([-0.0675, 0.0176, -0.0559, 0.0622, -0.0136, 0.0552, 0.0584, -0.0203,
+ -0.0178, 0.0863], grad_fn=<SliceBackward0>)
+tensor([ 0.6731, 2.8170, 0.8231, 1.8924, 0.1741, 3.4062, 3.9465, -0.7412,
+ 4.9373, 3.2361])
 ```
 
 We can see that the gradients have been computed for each learning
@@ -389,10 +389,10 @@ print(model.layer2.weight.grad[0][0:10])
 ```
 
 ```
-tensor([-0.0016, -0.0793, 0.0732, 0.0794, -0.0548, -0.0832, 0.0417, 0.0219,
- -0.0681, -0.0053], grad_fn=<SliceBackward0>)
-tensor([ 0.0201, -2.4306, -2.9136, -4.6195, -3.3820, -1.7600, -1.9710, -4.3936,
- -3.8690, -2.3710])
+tensor([-0.0682, 0.0147, -0.0568, 0.0603, -0.0138, 0.0518, 0.0545, -0.0196,
+ -0.0227, 0.0831], grad_fn=<SliceBackward0>)
+tensor([ 0.6731, 2.8170, 0.8231, 1.8924, 0.1741, 3.4062, 3.9465, -0.7412,
+ 4.9373, 3.2361])
 ```
 
 You should see that `layer2`'s weights have changed.
@@ -418,10 +418,10 @@ print(model.layer2.weight.grad[0][0:10])
 ```
 
 ```
-tensor([ 0.0201, -2.4306, -2.9136, -4.6195, -3.3820, -1.7600, -1.9710, -4.3936,
- -3.8690, -2.3710])
-tensor([ 7.1808, 1.8001, -27.1814, -27.9180, -11.5710, 0.6070, -11.3512,
- -27.9193, -11.8396, 1.2162])
+tensor([ 0.6731, 2.8170, 0.8231, 1.8924, 0.1741, 3.4062, 3.9465, -0.7412,
+ 4.9373, 3.2361])
+tensor([ 10.8123, 12.1829, 12.2367, 19.5866, 13.7326, 1.6797, -1.6301,
+ -10.6940, 31.4443, 1.7577])
 tensor([0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
 ```
 
@@ -540,8 +540,8 @@ print(y)
 ```
 
 ```
-tensor([0.6092, 0.2856, 0.2003, 0.6330, 0.3509], requires_grad=True)
-tensor([0.6092, 0.2856, 0.2003, 0.6330, 0.3509])
+tensor([0.1650, 0.7460, 0.7037, 0.4142, 0.5120], requires_grad=True)
+tensor([0.1650, 0.7460, 0.7037, 0.4142, 0.5120])
 ```
 
 We did this above when we wanted to graph some of our tensors. This is
@@ -598,21 +598,14 @@ print(prf.key_averages().table(sort_by="self_cpu_time_total"))
 ```
 /var/lib/workspace/beginner_source/introyt/autogradyt_tutorial.py:493: FutureWarning: The attribute `use_cuda` will be deprecated soon, please use ``use_device = 'cuda'`` instead.
  with torch.autograd.profiler.profile(use_cuda=run_on_gpu) as prf:
------------------------------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------
+------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------
  Name Self CPU % Self CPU CPU total % CPU total CPU time avg Self CUDA Self CUDA % CUDA total CUDA time avg # of Calls
------------------------------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------
- cudaEventRecord 50.20% 8.660ms 50.20% 8.660ms 2.165us 0.000us 0.00% 0.000us 0.000us 4000
- aten::div 25.02% 4.317ms 25.02% 4.317ms 4.317us 8.232ms 50.11% 8.232ms 8.232us 1000
- aten::mul 24.69% 4.259ms 24.69% 4.259ms 4.259us 8.195ms 49.89% 8.195ms 8.195us 1000
- cudaDeviceSynchronize 0.06% 10.990us 0.06% 10.990us 10.990us 0.000us 0.00% 0.000us 0.000us 1
- cudaStreamIsCapturing 0.01% 2.210us 0.01% 2.210us 1.105us 0.000us 0.00% 0.000us 0.000us 2
- cudaDeviceGetStreamPriorityRange 0.01% 1.350us 0.01% 1.350us 1.350us 0.000us 0.00% 0.000us 0.000us 1
- INVALID 0.01% 1.090us 0.01% 1.090us 1.090us 0.000us 0.00% 0.000us 0.000us 1
- cudaGetDeviceProperties_v2 0.00% 0.650us 0.00% 0.650us 0.325us 0.000us 0.00% 0.000us 0.000us 2
- cudaGetDeviceCount 0.00% 0.470us 0.00% 0.470us 0.235us 0.000us 0.00% 0.000us 0.000us 2
------------------------------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------
-Self CPU time total: 17.253ms
-Self CUDA time total: 16.427ms
+------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------
+ aten::div 51.09% 4.759ms 51.09% 4.759ms 4.759us 8.099ms 50.58% 8.099ms 8.099us 1000
+ aten::mul 48.91% 4.556ms 48.91% 4.556ms 4.556us 7.914ms 49.42% 7.914ms 7.914us 1000
+------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------
+Self CPU time total: 9.314ms
+Self CUDA time total: 16.013ms
 ```
 
 The profiler can also label individual sub-blocks of code, break out the
@@ -692,7 +685,7 @@ print(y)
 ```
 
 ```
-tensor([1365.1293, -549.4789, 1063.6375], grad_fn=<MulBackward0>)
+tensor([-1112.9620, 555.9911, 411.6963], grad_fn=<MulBackward0>)
 ```
 
 If we tried to call `y.backward()` now, we'd get a runtime error and a
@@ -737,9 +730,9 @@ torch.autograd.functional.jacobian(exp_adder, inputs)
 ```
 
 ```
-(tensor([0.5025]), tensor([0.9665]))
+(tensor([0.0674]), tensor([0.9578]))
 
-(tensor([[3.3058]]), tensor([[3.]]))
+(tensor([[2.1394]]), tensor([[3.]]))
 ```
 
 If you look closely, the first output should equal \(2e^x\) (since
@@ -755,11 +748,11 @@ torch.autograd.functional.jacobian(exp_adder, inputs)
 ```
 
 ```
-(tensor([0.4151, 0.0915, 0.4464]), tensor([0.0413, 0.0451, 0.4503]))
+(tensor([0.5772, 0.6058, 0.1612]), tensor([0.7461, 0.1232, 0.3229]))
 
-(tensor([[3.0290, 0.0000, 0.0000],
- [0.0000, 2.1916, 0.0000],
- [0.0000, 0.0000, 3.1255]]), tensor([[3., 0., 0.],
+(tensor([[3.5622, 0.0000, 0.0000],
+ [0.0000, 3.6654, 0.0000],
+ [0.0000, 0.0000, 2.3498]]), tensor([[3., 0., 0.],
  [0., 3., 0.],
  [0., 0., 3.]]))
 ```
@@ -784,7 +777,7 @@ torch.autograd.functional.vjp(do_some_doubling, inputs, v=my_gradients)
 ```
 
 ```
-(tensor([-808.9982, -830.4892, 962.1851]), tensor([1.0240e+02, 1.0240e+03, 1.0240e-01]))
+(tensor([-877.6174, 100.1990, 992.8687]), tensor([1.0240e+02, 1.0240e+03, 1.0240e-01]))
 ```
 
 The `torch.autograd.functional.jvp()` method performs the same matrix
@@ -795,7 +788,7 @@ For more information, including performance notes on the [docs for the
 functional
 API](https://pytorch.org/docs/stable/autograd.html#functional-higher-level-api)
 
-**Total running time of the script:** (0 minutes 0.840 seconds)
+**Total running time of the script:** (0 minutes 0.549 seconds)
 
 [`Download Jupyter notebook: autogradyt_tutorial.ipynb`](../../_downloads/ed9d4f94afb79f7dada6742a06c486a5/autogradyt_tutorial.ipynb)
 

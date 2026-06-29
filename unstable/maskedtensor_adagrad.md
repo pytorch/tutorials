@@ -157,7 +157,7 @@ as reduction semantics.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: maskedtensor_adagrad.ipynb`](../_downloads/47938958651109329db81a660b33e45d/maskedtensor_adagrad.ipynb)
 

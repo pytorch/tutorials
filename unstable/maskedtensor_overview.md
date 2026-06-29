@@ -321,14 +321,14 @@ print("mt:\n", mt)
 
 ```
 x:
- tensor([[-2.2749, -inf, -inf],
- [ 0.0257, -inf, 0.5438],
+ tensor([[-0.2700, -inf, -inf],
+ [-1.9368, -inf, 1.3289],
  [ -inf, -inf, -inf]])
 mt:
  MaskedTensor(
  [
- [ -2.2749, --, --],
- [ 0.0257, --, 0.5438],
+ [ -0.2700, --, --],
+ [ -1.9368, --, 1.3289],
  [ --, --, --]
  ]
 )
@@ -346,8 +346,8 @@ x.softmax(0)
 ```
 
 ```
-tensor([[0.0911, nan, 0.0000],
- [0.9089, nan, 1.0000],
+tensor([[0.8412, nan, 0.0000],
+ [0.1588, nan, 1.0000],
  [0.0000, nan, 0.0000]])
 ```
 
@@ -360,8 +360,8 @@ mt.softmax(0)
 ```
 MaskedTensor(
  [
- [ 0.0911, --, --],
- [ 0.9089, --, 1.0000],
+ [ 0.8412, --, --],
+ [ 0.1588, --, 1.0000],
  [ --, --, --]
  ]
 )
@@ -463,7 +463,7 @@ To continue learning more, you can find our
 [MaskedTensor Sparsity tutorial](https://pytorch.org/tutorials/prototype/maskedtensor_sparsity.html)
 to see how MaskedTensor enables sparsity and the different storage formats we currently support.
 
-**Total running time of the script:** (0 minutes 0.163 seconds)
+**Total running time of the script:** (0 minutes 0.158 seconds)
 
 [`Download Jupyter notebook: maskedtensor_overview.ipynb`](../_downloads/098f809744385f9a587451e656698b10/maskedtensor_overview.ipynb)
 

@@ -146,10 +146,6 @@ else:
  print("Tagged in-place and out= custom operators require PyTorch 2.13 or later.")
 ```
 
-```
-Tagged in-place and out= custom operators require PyTorch 2.13 or later.
-```
-
 ## Validate the operator
 
 And here's an `opcheck` run telling us that we did indeed register the
@@ -177,7 +173,7 @@ for example in examples:
 For autograd, `torch.vmap`, or other subsystem behavior, continue to
 [Adding Training and Other Registrations to Python Custom Operators](python_custom_ops_registrations.html#python-custom-ops-registrations).
 
-**Total running time of the script:** (0 minutes 2.982 seconds)
+**Total running time of the script:** (0 minutes 3.100 seconds)
 
 [`Download Jupyter notebook: python_custom_ops_mutable.ipynb`](../_downloads/2ad45859ef46acfccc19a6cf604ed3bf/python_custom_ops_mutable.ipynb)
 
