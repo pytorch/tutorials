@@ -232,9 +232,11 @@ Post Training Quantization
 
     calibration_loader = torch.utils.data.DataLoader(...)
 
+
     def transform_fn(data_item):
         images, _ = data_item
         return images
+
 
     calibration_dataset = nncf.Dataset(calibration_loader, transform_fn)
     quantized_model = quantize_pt2e(
