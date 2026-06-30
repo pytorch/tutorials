@@ -99,11 +99,21 @@ def download_dcgan_data() -> None:
 
 def download_lenet_mnist() -> None:
     # Download model for beginner_source/fgsm_tutorial.py
-    download_url_to_file("https://docs.google.com/uc?export=download&id=1HJV2nUHJqclXQ8flKvcWmjZ-OU5DGatl",
-                         prefix=BEGINNER_DATA_DIR,
-                         dst="lenet_mnist_model.pth",
-                         sha256="cb5f8e578aef96d5c1a2cc5695e1aa9bbf4d0fe00d25760eeebaaac6ebc2edcb",
-                         )
+    sha256 = "c042f14781771cb6c58c833e9752fe89544d12c0649d0f2fc53f00a4ef09229c"
+    try:
+        download_url_to_file("https://drive.google.com/uc?export=download&id=1aTeORNI4Ja5GvBo3Ip0eNjUQFvlmPBgg",
+                             prefix=BEGINNER_DATA_DIR,
+                             dst="lenet_mnist_model.pth",
+                             sha256=sha256,
+                             )
+    except Exception as e:
+        # Drive links can rot or rate-limit; fall back to the S3 mirror.
+        print(f"Drive download failed ({e}); falling back to S3 mirror")
+        download_url_to_file("https://s3.amazonaws.com/pytorch-tutorial-assets/lenet_mnist_model_v2.pth",
+                             prefix=BEGINNER_DATA_DIR,
+                             dst="lenet_mnist_model.pth",
+                             sha256=sha256,
+                             )
 
 def download_gpu_quantization_torchao() -> None:
     # Download SAM model checkpoint unstable_source/gpu_quantization_torchao_tutorial.py

@@ -1,3 +1,7 @@
+# 🎉 PyTorch Docathon Leaderboard 2026 🎉
+
+The leaderboard for the PyTorch Docathon 2026 can be found here: https://docs.pytorch.org/docs/docathons/docathon-leaderboard-2026.html
+
 # 🎉 PyTorch Docathon Leaderboard 2025 🎉
 
 This is the list of the docathon contributors that have participated and contributed to the PyTorch H1 2025 docathon. A big shout out to everyone who have participated!

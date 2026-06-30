@@ -30,14 +30,14 @@ sudo apt-get install -y pandoc
 # Install PyTorch Nightly for test.
 if [ "${USE_NIGHTLY:-0}" -eq 1 ]; then
   sudo pip uninstall -y torch torchvision torchaudio
-  pip3 install torch==2.12.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/test/cu130
+  pip3 install torch==2.13.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/test/cu130
   pip show torch
 fi
 
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
-# Install 2.12 to merge all 2.12 PRs - uncomment to install nightly binaries (update the version as needed).
+# Install 2.13 to merge all 2.13 PRs - uncomment to install nightly binaries (update the version as needed).
 # sudo pip uninstall -y torch torchvision torchaudio torchtext torchdata
-# pip3 install torch==2.12.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu130
+# pip3 install torch==2.13.0 torchvision torchaudio --no-cache-dir --index-url https://download.pytorch.org/whl/test/cu130
 # Install two language tokenizers for Translation with TorchText tutorial
 # Note: keep this version consistent with the spacy version in requirements.txt
 pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
@@ -57,9 +57,6 @@ if [[ "${JOB_TYPE}" == "worker" ]]; then
 
   # TODO: Fix bugs in these tutorials to make them runnable again
   # python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py || true
-
-  # Remove runnable code from tensorboard_profiler_tutorial.py as it frequently crashes, see https://github.com/pytorch/pytorch/issues/74139
-  # python $DIR/remove_runnable_code.py intermediate_source/tensorboard_profiler_tutorial.py intermediate_source/tensorboard_profiler_tutorial.py || true
 
   # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.

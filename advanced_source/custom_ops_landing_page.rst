@@ -10,12 +10,21 @@ In order to do so, you must register the custom operation with PyTorch via the P
 `torch.library docs <https://pytorch.org/docs/stable/library.html>`_ or C++ ``TORCH_LIBRARY``
 APIs.
 
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   python_custom_ops
+   cpp_custom_ops
 
 
 Authoring a custom operator from Python
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Please see :ref:`python-custom-ops-tutorial`.
+Please see :ref:`python-custom-ops-tutorial` for the Python guide. It covers
+the required schema and mutation/aliasing contract, ``opcheck``, functional
+operators, mutable operators, and optional registrations such as autograd and
+``torch.vmap``.
 
 You may wish to author a custom operator from Python (as opposed to C++) if:
 
@@ -43,8 +52,8 @@ The Custom Operators Manual
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For information not covered in the tutorials and this page, please see
-`The Custom Operators Manual <https://docs.google.com/document/d/1_W62p8WJOQQUzPsJYa7s701JXt0qf2OfLub2sbkHOaU>`_
-(we're working on moving the information to our docs site). We recommend that you
+`The Custom Operators Manual <https://docs.pytorch.org/docs/main/notes/custom_operators.html>`_.
+We recommend that you
 first read one of the tutorials above and then use the Custom Operators Manual as a reference;
 it is not meant to be read head to toe.
 

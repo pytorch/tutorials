@@ -38,6 +38,13 @@ and speed.
    :tags: Profiling
 
 .. customcarditem::
+   :header: CUDA Graph Kernel Annotations and Profiling
+   :card_description: Learn how to annotate CUDA graph kernels for semantic profiling traces with custom visualization lanes.
+   :image: _static/img/thumbnails/cropped/profiler.png
+   :link: advanced/cuda_graph_annotations_tutorial.html
+   :tags: Profiling,CUDA,Model-Optimization
+
+.. customcarditem::
    :header: Parametrizations Tutorial
    :card_description: Learn how to use torch.nn.utils.parametrize to put constraints on your parameters (e.g. make them orthogonal, symmetric positive definite, low-rank...)
    :image: _static/img/thumbnails/cropped/parametrizations.png
@@ -140,6 +147,7 @@ and speed.
    :hidden:
 
    beginner/profiler
+   advanced/cuda_graph_annotations_tutorial
    beginner/vt_tutorial
    intermediate/parametrizations
    intermediate/pruning_tutorial
