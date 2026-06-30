@@ -129,7 +129,7 @@ Below is the list of essential parameters and their description:
 
 * ``mode`` - defines quantization scheme for the model. Multiple modes are supported:
 
-    * ``INT8_SYM`` (default) - defines symmetric quantization of weights and activations. This is the best for performance
+    * ``INT8_SYM`` (default) - defines symmetric quantization of weights and activations.
 
     * ``INT8_MIXED`` - weights are quantized with symmetric quantization and the activations are quantized with asymmetric quantization. This preset is recommended for models with non-ReLU and asymmetric activation functions, e.g. ELU, PReLU, GELU, etc.
 
