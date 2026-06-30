@@ -241,13 +241,18 @@ Post Training Quantization
         exported_model, quantizer, calibration_dataset, smooth_quant=True, fast_bias_correction=False
     )
 
-Weights Only Quantization
+Weights Only Compression
 """""""""""""""""""""""""
 
 ``compress_pt2e`` applies weight compression to a ``torch.fx.GraphModule``, targeting LLM deployment. The following activation-aware algorithms use a small calibration subset to capture activation statistics:
 
 - `AWQ <https://arxiv.org/abs/2306.00978>`_ - Activation-aware Weight Quantization that finds per-channel scales to minimize quantization error based on activation distributions.
 - `Scale Estimation <https://github.com/openvinotoolkit/nncf/blob/develop/src/nncf/quantization/algorithms/weight_compression/scale_estimation.py>`_ - Estimates scales to minimize the layer-wise output error for INT4 weight layers, iteratively refining the scales on a calibration subset.
+
+Mixed Precision algorithms
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+`Mixed Precision <https://github.com/openvinotoolkit/nncf/blob/develop/docs/usage/post_training_compression/weights_compression/Usage.md#mixed-precision-modes>`_ assigns different bit-widths (e.g. INT4 vs INT8) to individual layers based on their sensitivity, keeping more sensitive layers at higher precision while aggressively compressing the rest. NNCF supports several sensitivity-ranking criteria
 
 .. code-block:: python
 
@@ -259,34 +264,7 @@ Weights Only Quantization
         images, _ = data_item
         return images
 
-    calibration_dataset = nncf.Dataset(calibration_loader, transform_fn)
-    compressed_model = compress_pt2e(
-        exported_model, quantizer, calibration_dataset, awq=True, scale_estimation=True
-    )
-
-Data-free algorithms
-~~~~~~~~~~~~~~~~~~~~
-
-When no calibration data is available, ``compress_pt2e`` can perform weight compression relying solely on the pretrained weights. Data-Free Compression uses only the weight tensor statistics, with no activations observed at any point. It can be combined with the AWQ and Mixed Precision algorithms when richer behavior is needed without giving up the no-dataset workflow.
-
-.. code-block:: python
-
-    from nncf.experimental.torch.fx import compress_pt2e
-
-    compressed_model = compress_pt2e(exported_model, quantizer, awq=True, ratio=0.8)
-
-Mixed Precision algorithms
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Mixed Precision assigns different bit-widths (e.g. INT4 vs INT8) to individual layers based on their sensitivity, keeping more sensitive layers at higher precision while aggressively compressing the rest. NNCF supports several sensitivity-ranking criteria:
-
-- **Weight Quantization Error** - Data-free metric that measures the per-layer error introduced by quantizing the weights themselves, requiring no calibration data.
-- **Hessian** - Activation-aware metric that uses second-order information about the loss to estimate how much the model output changes when a layer's weights are perturbed by quantization.
-- **Mean Variance** and **Max Variance** - Activation-aware metrics that rank layers by the mean or maximum variance of their input activations, on the intuition that layers with more spread-out activations are harder to quantize.
-- **Mean Magnitude** - Activation-aware metric that ranks layers by the average magnitude of their input activations.
-
-.. code-block:: python
-    from nncf import SensitivityMetric
+    calibration_dataset = nncf.Dataset(calibration_loader, transform_fn) # Optional: For Data-free algorithms, calibration data is not required
     compressed_model = compress_pt2e(
         exported_model, quantizer, calibration_dataset, awq=True, scale_estimation=True, ratio=0.8, sensitivity_metric=SensitivityMetric.MAX_ACTIVATION_VARIANCE
     )
