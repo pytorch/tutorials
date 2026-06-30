@@ -164,6 +164,7 @@ Below is the list of essential parameters and their description:
         subgraph = nncf.Subgraph(inputs=['layer_1', 'layer_2'], outputs=['layer_3'])
         OpenVINOQuantizer(ignored_scope=nncf.IgnoredScope(subgraphs=[subgraph]))
 
+
 * ``target_device`` - defines the target device, the specificity of which will be taken into account during optimization. The following values are supported: ``ANY`` (default), ``CPU``, ``CPU_SPR``, ``GPU``, and ``NPU``.
 
     .. code-block:: python
