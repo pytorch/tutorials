@@ -319,3 +319,4 @@ Self CPU time total: 225.801ms
 # - `Profiler Usage Recipe <https://docs.pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`__
 # - `Profiling RPC-Based Workloads <https://pytorch.org/tutorials/recipes/distributed_rpc_profiling.html>`__
 # - `Profiler API Docs <https://pytorch.org/docs/stable/autograd.html?highlight=profiler#profiler>`__
+# - `Hugging Face PyTorch Profiler Blog Post <https://huggingface.co/blog/torch-profiler>`__
