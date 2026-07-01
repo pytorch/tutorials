@@ -312,7 +312,7 @@ Writing custom communication kernels in Python with CuTe DSL
 The operations used so far are prebuilt kernels that ship with
 PyTorch. Symmetric memory also lets you write your *own* communication
 kernels, and with the `CuTe DSL
-<https://docs.nvidia.com/cutlass/latest/cute_dsl_general/cute_dsl.html>`__
+<https://docs.nvidia.com/cutlass/latest/media/docs/pythonDSL/cute_dsl.html>`__
 (``nvidia-cutlass-dsl``) you can do it in Python. The key enabler is
 ``hdl.get_buffer(peer, shape, dtype)``: it returns a regular CUDA
 tensor whose data pointer is the mapped address of a *peer's*
@@ -514,6 +514,6 @@ For further reading:
 * `PyTorch Symmetric Memory documentation <https://docs.pytorch.org/docs/main/symmetric_memory.html>`__
 * `PyTorch SymmetricMemory deep dive on dev-discuss <https://dev-discuss.pytorch.org/t/pytorch-symmetricmemory-harnessing-nvlink-programmability-with-ease/2798>`__
 * `NCCL device API documentation <https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/deviceapi.html>`__
-* `CuTe DSL documentation <https://docs.nvidia.com/cutlass/latest/cute_dsl_general/cute_dsl.html>`__ and `distributed examples <https://github.com/NVIDIA/cutlass/tree/main/examples/python/CuTeDSL/cute/blackwell/kernel/distributed>`__
+* `CuTe DSL documentation <https://docs.nvidia.com/cutlass/latest/media/docs/pythonDSL/cute_dsl.html>`__ and `distributed examples <https://github.com/NVIDIA/cutlass/tree/main/examples/python/CuTeDSL/cute/blackwell/kernel/distributed>`__
 * `NVIDIA blog: Fusing Communication and Compute with the NCCL 2.28 Device API <https://developer.nvidia.com/blog/fusing-communication-and-compute-with-new-device-api-and-copy-engine-collectives-in-nvidia-nccl-2-28/>`__
 * `GPU-Initiated Networking for NCCL (paper) <https://arxiv.org/abs/2511.15076>`__
