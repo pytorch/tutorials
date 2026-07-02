@@ -16,8 +16,8 @@ GPU-Initiated Networking with NCCL and PyTorch Symmetric Memory
       * How to use one-sided put and signal operations between ranks
       * How to run device-initiated collectives such as
         ``one_shot_all_reduce``
-      * How to write a custom communication kernel in Python with the
-        CuTe DSL
+      * How to write custom communication kernels in Python with the
+        CuTe DSL, including GIN puts via nccl4py
 
    .. grid-item-card:: :octicon:`list-unordered;1em;` Prerequisites
       :class-card: card-prerequisites
@@ -27,8 +27,8 @@ GPU-Initiated Networking with NCCL and PyTorch Symmetric Memory
       * A host with two or more CUDA GPUs
       * For multi-node GIN: RDMA-capable NICs (ConnectX-4 or newer) with
         GPUDirect RDMA
-      * For the custom kernel section: ``nvidia-cutlass-dsl`` 4.5 or
-        later
+      * For the custom kernel sections: ``nvidia-cutlass-dsl`` 4.5 or
+        later, and ``nccl4py`` 0.3 or later for the GIN example
       * Familiarity with `PyTorch Distributed <https://docs.pytorch.org/tutorials/beginner/dist_overview.html>`__
 
 Introduction
@@ -460,42 +460,252 @@ Note the division of labor: PyTorch symmetric memory handles all the
 setup (allocation, window registration, peer mapping), and the CuTe
 DSL kernel is ordinary tile-based code — the only distributed aspect
 is that some of its input tensors happen to live on other GPUs.
-Custom Python kernels like this one can reach peers over NVLink or
-PCIe (the LSA path) within a node. Cross-node RDMA through GIN is not
-accessible from Python kernels today; that requires the C++ device
-API described in the next section.
+Kernels written this way reach peers with direct loads and stores
+(the LSA path), so they work over NVLink and PCIe within a node. To
+initiate *network* transfers from inside a Python kernel, you need the
+GIN device API, which the next section covers.
 
-Writing custom device kernels with GIN
---------------------------------------
+Calling GIN from Python kernels with nccl4py
+--------------------------------------------
 
-The operations above are host-visible entry points to device-initiated
-communication. The full power of GIN — issuing puts, gets, and signals
-from *inside your own CUDA kernel*, interleaved with computation — is
-exposed at the NCCL level through ``nccl_device.h``. A kernel obtains a
-``ncclGin`` object from a device communicator and calls primitives such
-as:
+`nccl4py <https://pypi.org/project/nccl4py/>`__, the official Python
+binding for NCCL, exposes the NCCL device API — including GIN — to
+CuTe DSL kernels through its ``nccl.core.device.cute`` module. This
+lets a Python kernel issue RDMA puts and signal waits directly,
+the same primitives a C++ kernel would use through ``nccl_device.h``.
 
-.. code:: cpp
+This path does not go through
+``torch.distributed._symmetric_memory``: you create a NCCL
+communicator with nccl4py, register windows on it yourself, and build
+a device communicator with GIN resources. nccl4py provides PyTorch
+interop, so the buffers can still be regular ``torch.Tensor`` objects:
+``nccl.torch.empty`` allocates a tensor from NCCL's allocator (a
+requirement for window registration), and ``register_window`` accepts
+it directly.
 
-    // NCCL device API (C++/CUDA), sketch only
-    ncclGin gin(devComm, /*context=*/0);
-    gin.put(team, peer, remoteWindow, dstOffset,
-            localWindow, srcOffset, bytes,
-            ncclGin_SignalInc{signalIndex});
-    gin.waitSignal(signalIndex, expectedValue);
-    gin.flush();
+The following example transfers a buffer from rank 0 to rank 1 with a
+single GIN put issued from inside a CuTe DSL kernel, then waits on the
+delivery signal on the receiving side. It is adapted from the
+`nccl4py CuTe DSL example
+<https://github.com/NVIDIA/nccl/blob/master/bindings/nccl4py/examples/cute/main.py>`__
+in the NCCL repository, with ``torch.distributed`` replacing MPI for
+the bootstrap. Install nccl4py with ``pip install nccl4py[cu12]`` (or
+``[cu13]``) and save the program as ``cute_gin_put.py``:
 
-PyTorch does not yet expose these device-side primitives in Python.
-Today they are the domain of C++/CUDA extension authors: you can obtain
-the NCCL communicator backing a process group, create a device
-communicator with GIN resources, and launch your own kernels against
-the symmetric memory windows that PyTorch registered. See the
-`NCCL device API documentation
+.. code:: python
+
+    # file: cute_gin_put.py
+    import os
+
+    import torch
+    import torch.distributed as dist
+
+    import cutlass
+    import cutlass.cute as cute
+    import nccl.core as nccl
+    import nccl.core.device.cute as nccl_cute
+
+    NUM_ELEMS = 1024 * 1024 // 8  # 1 MiB of int64
+    DST_RANK = 1
+    SIGNAL_ID = 1
+
+
+    @cute.kernel
+    def gin_put_kernel(dev_comm, send_win, recv_win):
+        dev_comm = nccl_cute.DevComm(dev_comm)
+        send_win = nccl_cute.Window(send_win)
+        recv_win = nccl_cute.Window(recv_win)
+        team = dev_comm.team_world
+        gin = dev_comm.gin(nccl_cute.GinBackendMask.ALL, 0)
+        coop = nccl_cute.cta()
+
+        send = send_win.tensor(cutlass.Int64, cute.make_layout(NUM_ELEMS))
+        recv = recv_win.tensor(cutlass.Int64, cute.make_layout(NUM_ELEMS))
+
+        if team.rank == 0:
+            # RDMA put issued by the GPU: write our send window into
+            # the peer's recv window and raise its signal on delivery.
+            gin.put(
+                team,
+                DST_RANK,
+                recv_win, recv,   # destination window + tensor (remote)
+                send_win, send,   # source window + tensor (local)
+                coop,
+                is_signal=True,
+                signal_id=SIGNAL_ID,
+                signal_op=0,
+                signal_op_arg=1,
+            )
+        if team.rank == DST_RANK:
+            # Block inside the kernel until the put has landed.
+            gin.wait_signal(coop, signal=SIGNAL_ID, least=1)
+
+
+    @cute.jit
+    def gin_put(dev_comm: cutlass.Int64,
+                send_win: cutlass.Int64,
+                recv_win: cutlass.Int64):
+        gin_put_kernel(dev_comm, send_win, recv_win).launch(
+            grid=[1, 1, 1], block=[32, 1, 1], cooperative=True
+        )
+
+
+    def main():
+        rank = int(os.environ["RANK"])
+        world_size = int(os.environ["WORLD_SIZE"])
+        local_rank = int(os.environ["LOCAL_RANK"])
+        torch.cuda.set_device(local_rank)
+
+        # A CPU process group, used only to share the NCCL unique id.
+        dist.init_process_group(backend="gloo")
+        uid_bytes = [bytes(nccl.get_unique_id()) if rank == 0 else None]
+        dist.broadcast_object_list(uid_bytes, src=0)
+        uid = nccl.UniqueId.from_bytes(uid_bytes[0])
+        comm = nccl.Communicator.init(
+            nranks=world_size, rank=rank, unique_id=uid
+        )
+
+        # NCCL-allocated torch tensors, registered as NCCL windows.
+        send_buf = nccl.torch.empty(NUM_ELEMS, dtype=torch.int64)
+        recv_buf = nccl.torch.empty(NUM_ELEMS, dtype=torch.int64)
+        if rank == 0:
+            send_buf.copy_(torch.arange(NUM_ELEMS))
+        else:
+            send_buf.zero_()
+        recv_buf.zero_()
+        torch.cuda.synchronize()
+
+        send_win = comm.register_window(send_buf)
+        recv_win = comm.register_window(recv_buf)
+
+        # Request GIN resources when creating the device communicator.
+        reqs = nccl.NCCLDevCommRequirements(
+            gin_connection_type=nccl.NcclGinConnectionType.FULL,
+            gin_signal_count=SIGNAL_ID + 1,
+        )
+        dev_comm = comm.create_dev_comm(requirements=reqs)
+
+        gin_put(dev_comm.ptr, send_win.handle, recv_win.handle)
+        torch.cuda.synchronize()
+
+        if rank == DST_RANK:
+            expected = torch.arange(NUM_ELEMS, device=recv_buf.device)
+            torch.testing.assert_close(recv_buf, expected)
+            print(f"rank {rank}: GIN put received correctly")
+
+        dev_comm.close()
+        send_win.close()
+        recv_win.close()
+        comm.destroy()
+        dist.destroy_process_group()
+
+
+    if __name__ == "__main__":
+        main()
+
+Run it with two ranks:
+
+.. code:: shell
+
+    torchrun --nnodes=1 --nproc_per_node=2 cute_gin_put.py
+
+You should see:
+
+.. code:: shell
+
+    rank 1: GIN put received correctly
+
+Unlike the LSA examples, the transfer here goes through the NIC even
+when both ranks share a machine, so the host must meet the GIN
+hardware requirements listed in the previous section. Compared to the
+symmetric memory path, this API is lower level: you manage the
+communicator, windows, signal budget
+(``gin_signal_count``), and synchronization yourself, but in exchange
+a Python kernel can interleave computation with network communication
+— the pattern behind MoE token dispatch and fused
+communication-compute kernels.
+
+Combining symmetric memory with nccl4py
+---------------------------------------
+
+The previous example created its own NCCL communicator, separate from
+the process group. You can also combine the two worlds: keep using
+symmetric memory for allocation and for the prebuilt
+``torch.ops.symm_mem`` operations, and use nccl4py to run custom GIN
+kernels on the *same* buffers and the *same* communicator.
+
+Two bridges make this work:
+
+1. ``ProcessGroupNCCL`` exposes its NCCL communicator as an opaque
+   pointer through ``_comm_ptr()``, and ``nccl.Communicator`` accepts
+   such a pointer in its constructor. This avoids creating and
+   bootstrapping a second communicator.
+2. Tensors from ``symm_mem.empty`` with the NCCL backend are allocated
+   with NCCL's allocator (``ncclMemAlloc``), which is exactly what
+   window registration requires, so they can be registered with
+   ``register_window`` directly.
+
+.. code:: python
+
+    import torch
+    import torch.distributed as dist
+    import torch.distributed._symmetric_memory as symm_mem
+    import nccl.core as nccl
+
+    device = torch.device("cuda", local_rank)
+    dist.init_process_group(backend="nccl", device_id=device)
+    symm_mem.set_backend("NCCL")
+    dist.all_reduce(torch.ones(1, device=device))
+
+    # Symmetric tensor: usable with torch.ops.symm_mem.* as usual.
+    t = symm_mem.empty(NUM_ELEMS, dtype=torch.int64, device=device)
+    hdl = symm_mem.rendezvous(t, group=dist.group.WORLD.group_name)
+
+    # Wrap the process group's existing NCCL communicator. Do NOT call
+    # destroy() on this wrapper -- the process group owns the comm.
+    pg_backend = dist.group.WORLD._get_backend(device)
+    comm = nccl.Communicator(pg_backend._comm_ptr())
+
+    # Register the symmetric tensor as a window and request GIN
+    # resources; from here the GIN kernel example above applies as is.
+    win = comm.register_window(t)
+    reqs = nccl.NCCLDevCommRequirements(
+        gin_connection_type=nccl.NcclGinConnectionType.FULL,
+        gin_signal_count=1,
+    )
+    dev_comm = comm.create_dev_comm(requirements=reqs)
+
+The same buffer is now reachable three ways: host-initiated
+collectives (``dist.all_reduce``), device-initiated symmetric memory
+operations (``torch.ops.symm_mem.*``), and your own CuTe DSL GIN
+kernels through the window handle.
+
+The reverse bridge also exists:
+``torch.distributed._symmetric_memory.register_external_nccl_comm``
+publishes a communicator created outside PyTorch (for example with
+nccl4py) into the symmetric memory registry under a group name, so
+``symm_mem.rendezvous`` can use it.
+
+A few warnings for this pattern:
+
+* ``_comm_ptr()`` is a private API, and collectives launched on the
+  communicator outside the process group are not monitored by
+  PyTorch's watchdog. The wrapper must not outlive or destroy the
+  process group's communicator.
+* ``register_window`` and ``create_dev_comm`` are collective calls:
+  every rank must make them in the same order.
+* Windows registered this way are separate from the window that
+  ``rendezvous`` registers internally; close them (``win.close()``,
+  ``dev_comm.close()``) before ``destroy_process_group``.
+
+For C++/CUDA extension authors, the same primitives are available
+natively through ``nccl_device.h`` (``ncclGin::put``, signals,
+barriers); see the `NCCL device API documentation
 <https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/deviceapi.html>`__
-for the complete device-side interface, and the
+for the complete interface, and the
 `kraken repository <https://github.com/meta-pytorch/kraken>`__ for
-examples of device-initiated communication kernels written against
-PyTorch symmetric memory.
+more examples of device-initiated communication kernels written
+against PyTorch symmetric memory.
 
 Conclusion
 ----------
@@ -504,10 +714,12 @@ In this tutorial, we used the NCCL backend of PyTorch symmetric memory
 to program GPU-initiated communication: we allocated symmetric tensors,
 established NCCL windows with ``rendezvous``, ran a fused
 device-initiated all-reduce, exchanged data with one-sided put and
-signal primitives, and wrote a custom all-reduce kernel in Python with
-the CuTe DSL. We also saw how the same code scales across nodes, where
-NCCL's GPU-Initiated Networking (GIN) services window operations with
-kernel-initiated RDMA.
+signal primitives, and wrote custom kernels in Python with the CuTe
+DSL — a peer load/store all-reduce over symmetric memory, and a GIN
+put issued from inside a kernel through nccl4py. We also saw how the
+symmetric memory code scales across nodes, where NCCL's GPU-Initiated
+Networking (GIN) services window operations with kernel-initiated
+RDMA.
 
 For further reading:
 
@@ -515,5 +727,6 @@ For further reading:
 * `PyTorch SymmetricMemory deep dive on dev-discuss <https://dev-discuss.pytorch.org/t/pytorch-symmetricmemory-harnessing-nvlink-programmability-with-ease/2798>`__
 * `NCCL device API documentation <https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/deviceapi.html>`__
 * `CuTe DSL documentation <https://docs.nvidia.com/cutlass/latest/media/docs/pythonDSL/cute_dsl.html>`__ and `distributed examples <https://github.com/NVIDIA/cutlass/tree/main/examples/python/CuTeDSL/cute/blackwell/kernel/distributed>`__
+* `nccl4py <https://pypi.org/project/nccl4py/>`__ and its `CuTe DSL device API examples <https://github.com/NVIDIA/nccl/tree/master/bindings/nccl4py/examples>`__
 * `NVIDIA blog: Fusing Communication and Compute with the NCCL 2.28 Device API <https://developer.nvidia.com/blog/fusing-communication-and-compute-with-new-device-api-and-copy-engine-collectives-in-nvidia-nccl-2-28/>`__
 * `GPU-Initiated Networking for NCCL (paper) <https://arxiv.org/abs/2511.15076>`__
