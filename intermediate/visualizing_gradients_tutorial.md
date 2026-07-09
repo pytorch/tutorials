@@ -134,7 +134,7 @@ Networks](https://arxiv.org/abs/1211.5063)
 
 %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: visualizing_gradients_tutorial.ipynb`](../_downloads/ee0bd22c8fd862ec4f59f792d8694771/visualizing_gradients_tutorial.ipynb)
 

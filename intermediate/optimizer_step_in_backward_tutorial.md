@@ -218,7 +218,7 @@ about memory snapshots, which are generally useful in memory optimization.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: optimizer_step_in_backward_tutorial.ipynb`](../_downloads/dfe0a5e2472fa9d26daaa0f82eefb5b6/optimizer_step_in_backward_tutorial.ipynb)
 

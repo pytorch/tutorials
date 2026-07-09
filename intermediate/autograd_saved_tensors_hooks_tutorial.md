@@ -197,7 +197,7 @@ tradeoff memory for compute.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: autograd_saved_tensors_hooks_tutorial.ipynb`](../_downloads/f688d6adc733eed7380d4c726b8e9643/autograd_saved_tensors_hooks_tutorial.ipynb)
 

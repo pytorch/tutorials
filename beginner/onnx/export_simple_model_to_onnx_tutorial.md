@@ -140,7 +140,7 @@ sit tight and have fun going through all of them to learn all there is about the
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: export_simple_model_to_onnx_tutorial.ipynb`](../../_downloads/8dd55b9d6d32d45fae2642c7ffbf454e/export_simple_model_to_onnx_tutorial.ipynb)
 

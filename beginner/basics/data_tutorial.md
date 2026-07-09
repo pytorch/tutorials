@@ -116,7 +116,7 @@ the data loading order, take a look at [Samplers](https://pytorch.org/docs/stabl
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: data_tutorial.ipynb`](../../_downloads/36608d2d57f623ba3a623e0c947a8c3e/data_tutorial.ipynb)
 

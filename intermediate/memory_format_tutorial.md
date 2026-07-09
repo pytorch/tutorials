@@ -458,7 +458,7 @@ how to use it for performance gains. For a practical example of accelerating
 vision models using channels last, see the post
 [here](https://pytorch.org/blog/accelerating-pytorch-vision-models-with-channels-last-on-cpu/).
 
-**Total running time of the script:** (0 minutes 0.341 seconds)
+**Total running time of the script:** (0 minutes 0.345 seconds)
 
 [`Download Jupyter notebook: memory_format_tutorial.ipynb`](../_downloads/f11c58c36c9b8a5daf09d3f9a792ef84/memory_format_tutorial.ipynb)
 
