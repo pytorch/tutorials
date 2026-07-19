@@ -272,7 +272,7 @@ the torchvision repository.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: torchvision_tutorial.ipynb`](../_downloads/4a542c9f39bedbfe7de5061767181d36/torchvision_tutorial.ipynb)
 

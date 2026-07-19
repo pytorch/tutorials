@@ -246,6 +246,7 @@ Read more about Profiler here:
 - [Profiler Usage Recipe](https://docs.pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
 - [Profiling RPC-Based Workloads](https://pytorch.org/tutorials/recipes/distributed_rpc_profiling.html)
 - [Profiler API Docs](https://pytorch.org/docs/stable/autograd.html?highlight=profiler#profiler)
+- [Hugging Face PyTorch Profiler Blog Post](https://huggingface.co/blog/torch-profiler)
 
 ```
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%

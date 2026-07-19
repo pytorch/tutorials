@@ -332,6 +332,7 @@ Take a look at the following recipes/tutorials to continue your learning:
 
 - [PyTorch Benchmark](https://pytorch.org/tutorials/recipes/recipes/benchmark.html)
 - [Visualizing models, data, and training with TensorBoard](https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html) tutorial
+- [Hugging Face PyTorch Profiler Blog Post](https://huggingface.co/blog/torch-profiler)
 
 ```
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%

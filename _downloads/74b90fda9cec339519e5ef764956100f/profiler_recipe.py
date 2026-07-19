@@ -480,4 +480,4 @@ with profile(
 #
 # - `PyTorch Benchmark <https://pytorch.org/tutorials/recipes/recipes/benchmark.html>`_
 # - `Visualizing models, data, and training with TensorBoard <https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html>`_ tutorial
-#
+# - `Hugging Face PyTorch Profiler Blog Post <https://huggingface.co/blog/torch-profiler>`__
