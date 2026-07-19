@@ -338,26 +338,26 @@ for iter in range(1, n_iters + 1):
 ```
 
 ```
-0m 9s (5000 5%) 3.0574
-0m 18s (10000 10%) 2.6778
-0m 28s (15000 15%) 2.7078
-0m 37s (20000 20%) 3.3906
-0m 47s (25000 25%) 2.1280
-0m 56s (30000 30%) 2.4465
-1m 5s (35000 35%) 3.2993
-1m 15s (40000 40%) 2.8823
-1m 24s (45000 45%) 2.4474
-1m 34s (50000 50%) 2.1390
-1m 43s (55000 55%) 2.1680
-1m 53s (60000 60%) 2.5084
-2m 2s (65000 65%) 2.4103
-2m 11s (70000 70%) 1.3111
-2m 21s (75000 75%) 2.1687
-2m 30s (80000 80%) 2.9880
-2m 40s (85000 85%) 3.0536
-2m 49s (90000 90%) 3.0326
-2m 58s (95000 95%) 2.2972
-3m 8s (100000 100%) 3.2064
+0m 10s (5000 5%) 2.8539
+0m 20s (10000 10%) 2.4192
+0m 30s (15000 15%) 2.4424
+0m 40s (20000 20%) 2.7341
+0m 50s (25000 25%) 3.2310
+1m 0s (30000 30%) 2.7654
+1m 10s (35000 35%) 2.6899
+1m 20s (40000 40%) 2.8630
+1m 30s (45000 45%) 2.1877
+1m 40s (50000 50%) 2.3743
+1m 50s (55000 55%) 2.5571
+2m 0s (60000 60%) 2.4198
+2m 10s (65000 65%) 2.3521
+2m 20s (70000 70%) 2.8527
+2m 30s (75000 75%) 2.0414
+2m 40s (80000 80%) 2.3637
+2m 50s (85000 85%) 2.5925
+3m 0s (90000 90%) 1.5167
+3m 10s (95000 95%) 3.1379
+3m 20s (100000 100%) 1.7870
 ```
 
 ### Plotting the Losses
@@ -375,7 +375,7 @@ plt.plot(all_losses)
 ![char rnn generation tutorial](../_images/sphx_glr_char_rnn_generation_tutorial_001.png)
 
 ```
-[<matplotlib.lines.Line2D object at 0x7f8256bdb8e0>]
+[<matplotlib.lines.Line2D object at 0x7f1276fe7b50>]
 ```
 
 ## Sampling the Network
@@ -440,18 +440,18 @@ samples('Chinese', 'CHI')
 ```
 
 ```
-Rovakov
-Uakinovek
-Sharikov
-Gerten
-Erenger
+Rourov
+Uantarov
+Sharakav
+Garer
+Eren
 Roure
-Sara
+Salana
 Para
-Allana
-Chan
+Allan
+Chang
 Han
-Iin
+Iun
 ```
 
 ## Exercises
@@ -468,7 +468,7 @@ choosing a start letter
 - Try the `nn.LSTM` and `nn.GRU` layers
 - Combine multiple of these RNNs as a higher level network
 
-**Total running time of the script:** (3 minutes 8.528 seconds)
+**Total running time of the script:** (3 minutes 20.513 seconds)
 
 [`Download Jupyter notebook: char_rnn_generation_tutorial.ipynb`](../_downloads/a75cfadf4fa84dd594874d4c53b62820/char_rnn_generation_tutorial.ipynb)
 
