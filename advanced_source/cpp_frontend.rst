@@ -1209,7 +1209,7 @@ optimizers are created, but before the training loop:
   torch::optim::Adam generator_optimizer(
       generator->parameters(), torch::optim::AdamOptions(2e-4).betas(std::make_tuple(0.5, 0.5)));
   torch::optim::Adam discriminator_optimizer(
-      discriminator->parameters(), torch::optim::AdamOptions(2e-4).betas(std::make_tuple(0.5, 0.5)));
+      discriminator->parameters(), torch::optim::AdamOptions(5e-4).betas(std::make_tuple(0.5, 0.5)));
 
   if (kRestoreFromCheckpoint) {
     torch::load(generator, "generator-checkpoint.pt");
