@@ -10,8 +10,8 @@
 | [Adversarial Example Generation](fgsm_tutorial.html#sphx-glr-beginner-fgsm-tutorial-py) (`fgsm_tutorial.py`) | 00:00.003 | 0.0 |
 | [Transfer Learning for Computer Vision Tutorial](transfer_learning_tutorial.html#sphx-glr-beginner-transfer-learning-tutorial-py) (`transfer_learning_tutorial.py`) | 00:00.003 | 0.0 |
 | [Writing Custom Datasets, DataLoaders and Transforms](data_loading_tutorial.html#sphx-glr-beginner-data-loading-tutorial-py) (`data_loading_tutorial.py`) | 00:00.002 | 0.0 |
-| [Distributed training at scale with PyTorch and Ray Train](distributed_training_with_ray_tutorial.html#sphx-glr-beginner-distributed-training-with-ray-tutorial-py) (`distributed_training_with_ray_tutorial.py`) | 00:00.002 | 0.0 |
 | [Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors](understanding_leaf_vs_nonleaf_tutorial.html#sphx-glr-beginner-understanding-leaf-vs-nonleaf-tutorial-py) (`understanding_leaf_vs_nonleaf_tutorial.py`) | 00:00.002 | 0.0 |
+| [Distributed training at scale with PyTorch and Ray Train](distributed_training_with_ray_tutorial.html#sphx-glr-beginner-distributed-training-with-ray-tutorial-py) (`distributed_training_with_ray_tutorial.py`) | 00:00.002 | 0.0 |
 | [What is torch.nn really?](nn_tutorial.html#sphx-glr-beginner-nn-tutorial-py) (`nn_tutorial.py`) | 00:00.002 | 0.0 |
 | [Serve PyTorch models at scale with Ray Serve](serving_tutorial.html#sphx-glr-beginner-serving-tutorial-py) (`serving_tutorial.py`) | 00:00.002 | 0.0 |
 | [Hyperparameter tuning using Ray Tune](hyperparameter_tuning_tutorial.html#sphx-glr-beginner-hyperparameter-tuning-tutorial-py) (`hyperparameter_tuning_tutorial.py`) | 00:00.002 | 0.0 |

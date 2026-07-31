@@ -69,7 +69,7 @@ call to the torch API (not just factory functions). If this
 is causing problems for you, please comment on
 [this issue](https://github.com/pytorch/pytorch/issues/92701)
 
-**Total running time of the script:** (0 minutes 0.305 seconds)
+**Total running time of the script:** (0 minutes 0.306 seconds)
 
 [`Download Jupyter notebook: changing_default_device.ipynb`](../../_downloads/f942955edbd28653c694b70c32b24ff2/changing_default_device.ipynb)
 
