@@ -116,7 +116,7 @@ for param in model.parameters():
 #
 # Setting gradient to ``None`` has a slightly different numerical behavior than
 # setting it to zero, for more details refer to the
-# `documentation <https://pytorch.org/docs/master/optim.html#torch.optim.Optimizer.zero_grad>`_.
+# `documentation <https://pytorch.org/docs/master/generated/torch.optim.Optimizer.zero_grad.html>`_.
 #
 # Alternatively, call ``model`` or
 # ``optimizer.zero_grad(set_to_none=True)``.
