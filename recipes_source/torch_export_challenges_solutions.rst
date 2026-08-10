@@ -1,5 +1,5 @@
-Demonstration of torch.export flow, common challenges and the solutions to address them
-=======================================================================================
+Understanding the ``torch.export`` Flow and Solutions to Common Challenges
+==========================================================================
 **Authors:** `Ankith Gunapal <https://github.com/agunapal>`__, `Jordi Ramon <https://github.com/JordiFB>`__, `Marcos Carranza <https://github.com/macarran>`__
 
 In the `Introduction to torch.export Tutorial <https://pytorch.org/tutorials/intermediate/torch_export_tutorial.html>`__ , we learned how to use `torch.export <https://pytorch.org/docs/stable/export.html>`__.
