@@ -39,10 +39,11 @@ Datasets & DataLoaders
 # Each example comprises a 28×28 grayscale image and an associated label from one of 10 classes.
 #
 # We load the `FashionMNIST Dataset <https://pytorch.org/vision/stable/datasets.html#fashion-mnist>`_ with the following parameters:
-#  - ``root`` is the path where the train/test data is stored,
-#  - ``train`` specifies training or test dataset,
-#  - ``download=True`` downloads the data from the internet if it's not available at ``root``.
-#  - ``transform`` and ``target_transform`` specify the feature and label transformations
+#
+# - ``root`` is the path where the train/test data is stored,
+# - ``train`` specifies training or test dataset,
+# - ``download=True`` downloads the data from the internet if it's not available at ``root``.
+# - ``transform`` and ``target_transform`` specify the feature and label transformations
 
 
 import torch
