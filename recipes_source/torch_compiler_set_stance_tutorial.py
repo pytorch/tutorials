@@ -110,9 +110,10 @@ except Exception as e:
 
 ######################################################################
 # Other stances include:
-#  - ``"default"``: The default stance, used for normal compilation.
-#  - ``"eager_on_recompile"``: Run code eagerly when a recompile is necessary. If there is cached compiled code valid for the input, it will still be used.
-#  - ``"fail_on_recompile"``: Raise an error when recompiling a function.
+#
+# - ``"default"``: The default stance, used for normal compilation.
+# - ``"eager_on_recompile"``: Run code eagerly when a recompile is necessary. If there is cached compiled code valid for the input, it will still be used.
+# - ``"fail_on_recompile"``: Raise an error when recompiling a function.
 #
 # See the ``torch.compiler.set_stance`` `doc page <https://pytorch.org/docs/main/generated/torch.compiler.set_stance.html#torch.compiler.set_stance>`__
 # for more stances and options. More stances/options may also be added in the future.

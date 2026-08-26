@@ -87,6 +87,7 @@ print(b.grad)
 
 ######################################################################
 # .. note::
+#
 #   - We can only obtain the ``grad`` properties for the leaf
 #     nodes of the computational graph, which have ``requires_grad`` property
 #     set to ``True``. For all other nodes in our graph, gradients will not be
@@ -130,9 +131,10 @@ print(z_det.requires_grad)
 
 ######################################################################
 # There are reasons you might want to disable gradient tracking:
-#   - To mark some parameters in your neural network as **frozen parameters**.
-#   - To **speed up computations** when you are only doing forward pass, because computations on tensors that do
-#     not track gradients would be more efficient.
+#
+# - To mark some parameters in your neural network as **frozen parameters**.
+# - To **speed up computations** when you are only doing forward pass, because computations on tensors that do
+#   not track gradients would be more efficient.
 
 
 ######################################################################

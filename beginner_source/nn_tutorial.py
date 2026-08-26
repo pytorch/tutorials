@@ -775,8 +775,9 @@ fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 # -----------------------------
 #
 # Our CNN is fairly concise, but it only works with MNIST, because:
-#  - It assumes the input is a 28\*28 long vector
-#  - It assumes that the final CNN grid size is 4\*4 (since that's the average pooling kernel size we used)
+#
+# - It assumes the input is a 28\*28 long vector
+# - It assumes that the final CNN grid size is 4\*4 (since that's the average pooling kernel size we used)
 #
 # Let's get rid of these two assumptions, so our model works with any 2d
 # single channel image. First, we can remove the initial Lambda layer by
@@ -881,18 +882,19 @@ fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 # ``torch.nn``, ``torch.optim``, ``Dataset``, and ``DataLoader``. So let's summarize
 # what we've seen:
 #
-#  - ``torch.nn``:
+# - ``torch.nn``:
 #
-#    + ``Module``: creates a callable which behaves like a function, but can also
-#      contain state(such as neural net layer weights). It knows what ``Parameter`` (s) it
-#      contains and can zero all their gradients, loop through them for weight updates, etc.
-#    + ``Parameter``: a wrapper for a tensor that tells a ``Module`` that it has weights
-#      that need updating during backprop. Only tensors with the `requires_grad` attribute set are updated
-#    + ``functional``: a module(usually imported into the ``F`` namespace by convention)
-#      which contains activation functions, loss functions, etc, as well as non-stateful
-#      versions of layers such as convolutional and linear layers.
-#  - ``torch.optim``: Contains optimizers such as ``SGD``, which update the weights
-#    of ``Parameter`` during the backward step
-#  - ``Dataset``: An abstract interface of objects with a ``__len__`` and a ``__getitem__``,
-#    including classes provided with Pytorch such as ``TensorDataset``
-#  - ``DataLoader``: Takes any ``Dataset`` and creates an iterator which returns batches of data.
+#   + ``Module``: creates a callable which behaves like a function, but can also
+#     contain state(such as neural net layer weights). It knows what ``Parameter`` (s) it
+#     contains and can zero all their gradients, loop through them for weight updates, etc.
+#   + ``Parameter``: a wrapper for a tensor that tells a ``Module`` that it has weights
+#     that need updating during backprop. Only tensors with the `requires_grad` attribute set are updated
+#   + ``functional``: a module(usually imported into the ``F`` namespace by convention)
+#     which contains activation functions, loss functions, etc, as well as non-stateful
+#     versions of layers such as convolutional and linear layers.
+#
+# - ``torch.optim``: Contains optimizers such as ``SGD``, which update the weights
+#   of ``Parameter`` during the backward step
+# - ``Dataset``: An abstract interface of objects with a ``__len__`` and a ``__getitem__``,
+#   including classes provided with Pytorch such as ``TensorDataset``
+# - ``DataLoader``: Takes any ``Dataset`` and creates an iterator which returns batches of data.
