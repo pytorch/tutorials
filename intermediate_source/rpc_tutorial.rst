@@ -33,7 +33,7 @@ paradigms. For example:
    data between observers and the trainer.
 2) Your model might be too large to fit in GPUs on a single machine, and hence
    would need a library to help split the model onto multiple machines. Or you
-   might be implementing a `parameter server <https://www.cs.cmu.edu/~muli/file/parameter_server_osdi14.pdf>`__
+   might be implementing a `parameter server <https://www.usenix.org/system/files/conference/osdi14/osdi14-paper-li_mu.pdf>`__
    training framework, where model parameters and trainers live on different
    machines.
 
