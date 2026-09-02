@@ -50,13 +50,6 @@ to production deployment.
    :tags: Model-Optimization,Best-Practice,Ax,TorchX,Ecosystem
 
 .. customcarditem::
-   :header: Performance Profiling in TensorBoard
-   :card_description: Learn how to use the TensorBoard plugin to profile and analyze your model's performance.
-   :image: _static/img/thumbnails/cropped/profiler.png
-   :link: intermediate/tensorboard_profiler_tutorial.html
-   :tags: Model-Optimization,Best-Practice,Profiling,TensorBoard,Ecosystem
-
-.. customcarditem::
    :header: Real Time Inference on Raspberry Pi 4
    :card_description: This tutorial covers how to run quantized and fused models on a Raspberry Pi 4 at 30 fps.
    :image: _static/img/thumbnails/cropped/realtime_rpi.png
@@ -88,7 +81,6 @@ to production deployment.
    beginner/hyperparameter_tuning_tutorial
    beginner/serving_tutorial
    intermediate/ax_multiobjective_nas_tutorial
-   intermediate/tensorboard_profiler_tutorial
    intermediate/realtime_rpi
    beginner/mosaic_memory_profiling_tutorial
    beginner/distributed_training_with_ray_tutorial

@@ -3,6 +3,7 @@ Welcome to PyTorch Tutorials
 
 **What's new in PyTorch tutorials?**
 
+* `Data Loading Optimization in PyTorch <https://docs.pytorch.org/tutorials/intermediate/intermediate_data_loading_tutorial.html>`__
 * `Distributed Training with Ray Train <https://docs.pytorch.org/tutorials/beginner/distributed_training_with_ray_tutorial.html>`__
 * `Serve PyTorch models at scale with Ray Serve <https://docs.pytorch.org/tutorials/beginner/serving_tutorial.html>`__
 * `Hyperparameter tuning using Ray Tune <https://docs.pytorch.org/tutorials/beginner/hyperparameter_tuning_tutorial.html>`__
@@ -102,6 +103,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/pinmem_nonblock.html
    :tags: Getting-Started
+
+.. customcarditem::
+   :header: Data Loading Optimization in PyTorch
+   :card_description: Optimize DataLoader configuration with num_workers, pin_memory, persistent_workers for maximum training throughput.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/intermediate_data_loading_tutorial.html
+   :tags: Getting-Started,Best-Practice
 
 .. customcarditem::
    :header: Understanding requires_grad, retain_grad, Leaf, and Non-leaf Tensors
@@ -402,7 +410,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Custom Python Operators
-   :card_description: Create Custom Operators in Python. Useful for black-boxing a Python function for use with torch.compile.
+   :card_description: Create Python custom operators with correct mutation behavior, fake kernels, autograd, and opcheck.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/python_custom_ops.html
    :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
@@ -508,11 +516,11 @@ Welcome to PyTorch Tutorials
    :tags: Model-Optimization,Best-Practice,Profiling
 
 .. customcarditem::
-   :header: Performance Profiling in TensorBoard
-   :card_description: Learn how to use the TensorBoard plugin to profile and analyze your model's performance.
+   :header: CUDA Graph Kernel Annotations and Profiling
+   :card_description: Learn how to annotate CUDA graph kernels for semantic profiling traces with custom visualization lanes.
    :image: _static/img/thumbnails/cropped/profiler.png
-   :link: intermediate/tensorboard_profiler_tutorial.html
-   :tags: Model-Optimization,Best-Practice,Profiling,TensorBoard
+   :link: advanced/cuda_graph_annotations_tutorial.html
+   :tags: Model-Optimization,Best-Practice,Profiling,CUDA
 
 .. customcarditem::
    :header: Hyperparameter Tuning Tutorial
@@ -722,6 +730,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/monarch_distributed_tutorial.html
    :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: Debugging Hangs with Flight Recorder Using TorchComms and Debug Server
+   :card_description: Diagnose hangs using the TorchComms Flight Recorder and Debug Server periodic dumps.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/debug_hangs_with_flight_recorder.html
+   :tags: Parallel-and-Distributed-Training,Debugging
 
 .. Edge
 
