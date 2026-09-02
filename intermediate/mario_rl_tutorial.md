@@ -232,7 +232,7 @@ to train an AI to play any of the games at the [OpenAI gym](https://gym.openai.c
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: mario_rl_tutorial.ipynb`](../_downloads/c195adbae0504b6504c93e0fd18235ce/mario_rl_tutorial.ipynb)
 

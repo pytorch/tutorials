@@ -414,7 +414,7 @@ know more.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: reinforcement_ppo.ipynb`](../_downloads/4065a985b933a4377d3c7d93557e2282/reinforcement_ppo.ipynb)
 

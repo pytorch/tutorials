@@ -1,6 +1,6 @@
 # Computation times
 
-**00:00.171** total execution time for 8 files **from unstable**:
+**00:00.172** total execution time for 8 files **from unstable**:
 
 | Example | Time | Mem (MB) |
 | --- | --- | --- |
