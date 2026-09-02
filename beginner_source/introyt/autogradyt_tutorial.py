@@ -490,7 +490,7 @@ x = torch.randn(2, 3, requires_grad=True)
 y = torch.rand(2, 3, requires_grad=True)
 z = torch.ones(2, 3, requires_grad=True)
 
-with torch.autograd.profiler.profile(use_cuda=run_on_gpu) as prf:
+with torch.autograd.profiler.profile(use_device="cuda" if run_on_gpu else None) as prf:
     for _ in range(1000):
         z = (z / x) * y
 
