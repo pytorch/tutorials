@@ -48,7 +48,7 @@ Captum:
    the review is an example of feature attribution.
 -  **Layer Attribution** examines the activity of a model’s hidden layer
    subsequent to a particular input. Examining the spatially-mapped
-   output of a convolutional layer in response to an input image in an
+   output of a convolutional layer in response to an input image is an
    example of layer attribution.
 -  **Neuron Attribution** is analagous to layer attribution, but focuses
    on the activity of a single neuron.
