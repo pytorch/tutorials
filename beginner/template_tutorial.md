@@ -72,7 +72,7 @@ Summarize the steps and concepts covered. Highlight key takeaways.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: template_tutorial.ipynb`](../_downloads/4355e2cef7d17548f1e25f97a62828c4/template_tutorial.ipynb)
 

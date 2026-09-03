@@ -668,7 +668,7 @@ in PyTorch!
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.004 seconds)
 
 [`Download Jupyter notebook: chatbot_tutorial.ipynb`](../_downloads/44a84f8c1764dbf61662d306ff9ed43a/chatbot_tutorial.ipynb)
 

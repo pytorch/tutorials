@@ -350,7 +350,7 @@ execution structure is critical for performance optimization.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: cuda_graph_annotations_tutorial.ipynb`](../_downloads/93c170f8ef9d2c0e3ebe2db9ba616e9f/cuda_graph_annotations_tutorial.ipynb)
 

@@ -1,10 +1,10 @@
 # Computation times
 
-**00:00.544** total execution time for 8 files **from beginner/introyt**:
+**00:00.557** total execution time for 8 files **from beginner/introyt**:
 
 | Example | Time | Mem (MB) |
 | --- | --- | --- |
-| sphx_glr_beginner_introyt_autogradyt_tutorial.py (`autogradyt_tutorial.py`) | 00:00.531 | 0.0 |
+| sphx_glr_beginner_introyt_autogradyt_tutorial.py (`autogradyt_tutorial.py`) | 00:00.543 | 0.0 |
 | sphx_glr_beginner_introyt_trainingyt.py (`trainingyt.py`) | 00:00.003 | 0.0 |
 | sphx_glr_beginner_introyt_introyt1_tutorial.py (`introyt1_tutorial.py`) | 00:00.003 | 0.0 |
 | sphx_glr_beginner_introyt_tensorboardyt_tutorial.py (`tensorboardyt_tutorial.py`) | 00:00.003 | 0.0 |

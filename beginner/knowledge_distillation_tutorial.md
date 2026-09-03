@@ -313,7 +313,7 @@ For more information, see:
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.004 seconds)
 
 [`Download Jupyter notebook: knowledge_distillation_tutorial.ipynb`](../_downloads/a19d8941b0ebb13c102e41c7e24bc5fb/knowledge_distillation_tutorial.ipynb)
 
