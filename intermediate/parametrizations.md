@@ -164,11 +164,7 @@ To see this, let's upgrade the Cayley parametrization to also support being init
 # Sample an orthogonal matrix with positive determinant
 ```
 
-This initialization step can be written more succinctly by sampling straight
-into `layer_orthogonal.weight`. The determinant correction is still needed:
-`nn.init.orthogonal_` samples from `O(3)`, and when `det(A) = -1` the
-matrix has an eigenvalue at `-1`, which makes the `A + I` that
-`CayleyMap.right_inverse` inverts singular.
+This initialization step can be written more succinctly as
 
 The name of this method comes from the fact that we would often expect
 that `forward(right_inverse(X)) == X`. This is a direct way of rewriting that
