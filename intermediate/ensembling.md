@@ -105,7 +105,7 @@ on GitHub.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: ensembling.ipynb`](../_downloads/1342193c7104875f1847417466d1417c/ensembling.ipynb)
 
