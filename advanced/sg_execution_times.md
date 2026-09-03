@@ -1,10 +1,10 @@
 # Computation times
 
-**00:03.039** total execution time for 10 files **from advanced**:
+**00:03.145** total execution time for 10 files **from advanced**:
 
 | Example | Time | Mem (MB) |
 | --- | --- | --- |
-| [Mutable Python Custom Operators](python_custom_ops_mutable.html#sphx-glr-advanced-python-custom-ops-mutable-py) (`python_custom_ops_mutable.py`) | 00:03.022 | 0.0 |
+| [Mutable Python Custom Operators](python_custom_ops_mutable.html#sphx-glr-advanced-python-custom-ops-mutable-py) (`python_custom_ops_mutable.py`) | 00:03.128 | 0.0 |
 | [Neural Transfer Using PyTorch](neural_style_tutorial.html#sphx-glr-advanced-neural-style-tutorial-py) (`neural_style_tutorial.py`) | 00:00.003 | 0.0 |
 | [TorchRL objectives: Coding a DDPG loss](coding_ddpg.html#sphx-glr-advanced-coding-ddpg-py) (`coding_ddpg.py`) | 00:00.003 | 0.0 |
 | [CUDA Graph Kernel Annotations and Profiling](cuda_graph_annotations_tutorial.html#sphx-glr-advanced-cuda-graph-annotations-tutorial-py) (`cuda_graph_annotations_tutorial.py`) | 00:00.002 | 0.0 |

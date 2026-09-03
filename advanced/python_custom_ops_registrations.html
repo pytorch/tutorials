@@ -6,7 +6,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta content="2022-07-20T23:02:43+00:00" property="article:modified_time"/>
-<title>Adding Training and Other Registrations to Python Custom Operators — PyTorch Tutorials 2.13.0+cu130 documentation</title>
+<title>Adding Training and Other Registrations to Python Custom Operators — PyTorch Tutorials 2.14.0+cu130 documentation</title>
 <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
@@ -34,7 +34,7 @@
 <link as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
 <link as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" rel="preload"/>
 <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../_static/documentation_options.js?v=6807fce0"></script>
+<script src="../_static/documentation_options.js?v=c11644e0"></script>
 <script src="../_static/doctools.js?v=888ff710"></script>
 <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
 <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
 <meta content="Adding Training and Other Registrations to Python Custom Operators - Documentation for PyTorch Tutorials, part of the PyTorch ecosystem." name="llm:description"/>
 <meta content="https://docs.pytorch.org/tutorials/llms.txt" name="llm:navigation-file"/>
 <meta content="https://docs.pytorch.org/tutorials/sitemap.xml" name="llm:sitemap"/>
-<meta content="v2.13.0+cu130" name="llm:version"/>
+<meta content="v2.14.0+cu130" name="llm:version"/>
 <meta content="PyTorch Tutorials" name="llm:project"/>
 <meta content="documentation" name="llm:page-type"/>
 <link href="https://docs.pytorch.org/tutorials/llms.txt" rel="alternate" title="LLM Navigation Guide" type="text/plain"/>
@@ -159,7 +159,7 @@
   fbq('track', 'PageView');
 </script>
 <script>
-  document.documentElement.setAttribute('data-version', 'v2.13.0+cu130');
+  document.documentElement.setAttribute('data-version', 'v2.14.0+cu130');
 </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView&amp;noscript=1" width="1"/>
@@ -356,7 +356,7 @@
 </a>
 </div>
 <div class="navbar-item desktop-only-version">
-<a class="version" href="../index.html">v2.13.0+cu130</a>
+<a class="version" href="../index.html">v2.14.0+cu130</a>
 </div>
 </div>
 <div class="navbar-header-items">
@@ -1406,7 +1406,7 @@ document.write(`
 <div class="sidebar-header-items sidebar-primary__section">
 <div class="sidebar-header-items__start">
 <div class="navbar-item">
-<a class="version" href="../index.html">v2.13.0+cu130</a>
+<a class="version" href="../index.html">v2.14.0+cu130</a>
 </div>
 </div>
 <div class="sidebar-header-items__center">
@@ -2916,7 +2916,7 @@ when a Tensor subclass or <code class="docutils literal notranslate"><span class
 <li><p><strong>Autocast:</strong> for C++/CUDA operators that should participate in autocast,
 add an autocast registration as described in the C++ custom operator guide.</p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.264 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.242 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-python-custom-ops-registrations-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/747f02f817c7eb24314dc1fca2e23ee3/python_custom_ops_registrations.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">python_custom_ops_registrations.ipynb</span></code></a></p>
@@ -3164,7 +3164,7 @@ add an autocast registration as described in the C++ custom operator guide.</p><
        "headline": "Adding Training and Other Registrations to Python Custom Operators",
        "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment.",
        "url": "/advanced/python_custom_ops_registrations.html",
-       "articleBody": "Note Go to the end to download the full example code. Adding Training and Other Registrations to Python Custom Operators# Start here after a base operator passes torch.library.opcheck: Functional Python Custom Operators Mutable Python Custom Operators Registrations do not change the base contract. After adding one, rerun torch.library.opcheck on representative inputs for that subsystem. Adding training support for NumPy sin# Use torch.library.register_autograd to add training support for an operator. Prefer this over directly using torch.autograd.Function; some compositions of autograd.Function with PyTorch operator registration APIs can lead to (and has led to) silent incorrectness when composed with torch.compile. If you don\u2019t need training support, there is no need to use torch.library.register_autograd. If you end up training with a custom_op that doesn\u2019t have an autograd registration, we\u2019ll raise an error message. This page uses the same numpy.sin operation as the functional and mutable pages so the only new concept is the autograd registration. import numpy as np import torch from torch import Tensor @torch.library.custom_op( \"mylib_training::numpy_sin\", mutates_args=(), device_types=\"cpu\", ) def numpy_sin(x: Tensor) -\u003e Tensor: result = torch.empty_like(x) np.sin(x.detach().numpy(), out=result.numpy()) return result @numpy_sin.register_fake def _(x): return torch.empty_like(x) The fake kernel must describe the same output metadata as the real kernel, including shape, strides, dtype, device, layout, and storage offset when relevant. Here the real kernel returns torch.empty_like(x), so the fake kernel does the same. The gradient formula for sin(x) is cos(x). The backward formula must be written in terms of PyTorch-understood operations or other custom operators. Do not directly use non-traceable Python or NumPy code from the backward formula. def numpy_sin_setup_context(ctx, inputs, output): (x,) = inputs ctx.save_for_backward(x) def numpy_sin_backward(ctx, grad_output): (x,) = ctx.saved_tensors return grad_output * x.cos() Register the backward formula and the context setup function: numpy_sin.register_autograd( numpy_sin_backward, setup_context=numpy_sin_setup_context, ) x = torch.randn(5, requires_grad=True) y = numpy_sin(x) y.sum().backward() torch.testing.assert_close(x.grad, x.detach().cos()) Testing autograd registration# opcheck verifies that autograd was registered in a supported way, but it does not prove that the gradient formula is mathematically correct. Use separate numerical tests for that, either manual ones or torch.autograd.gradcheck. gradcheck_input = torch.randn(3, dtype=torch.double, requires_grad=True) torch.autograd.gradcheck(numpy_sin, (gradcheck_input,)) examples = [ (torch.randn(5),), (torch.randn(0, 3),), (torch.randn(4, requires_grad=True),), (torch.randn(2, dtype=torch.double, requires_grad=True),), (torch.randn(2, 3).t(),), (torch.randn(8)[1:],), ] for example in examples: torch.library.opcheck(numpy_sin, example) Other registrations# Add these only when users need them. Multiple device kernels: pass device_types=\"cpu\" or device_types=\"cuda\" if the implementation only works on one device. Register device-specific kernels when devices need different code. ``torch.vmap``: register a vmap rule with torch.library.register_vmap when batching over the operator should do something different from a Python loop over the batch dimension. Tensor subclasses or modes: use torch.library.register_torch_dispatch when a Tensor subclass or TorchDispatchMode needs special behavior. Autocast: for C++/CUDA operators that should participate in autocast, add an autocast registration as described in the C++ custom operator guide. Total running time of the script: (0 minutes 1.264 seconds) Download Jupyter notebook: python_custom_ops_registrations.ipynb Download Python source code: python_custom_ops_registrations.py Download zipped: python_custom_ops_registrations.zip",
+       "articleBody": "Note Go to the end to download the full example code. Adding Training and Other Registrations to Python Custom Operators# Start here after a base operator passes torch.library.opcheck: Functional Python Custom Operators Mutable Python Custom Operators Registrations do not change the base contract. After adding one, rerun torch.library.opcheck on representative inputs for that subsystem. Adding training support for NumPy sin# Use torch.library.register_autograd to add training support for an operator. Prefer this over directly using torch.autograd.Function; some compositions of autograd.Function with PyTorch operator registration APIs can lead to (and has led to) silent incorrectness when composed with torch.compile. If you don\u2019t need training support, there is no need to use torch.library.register_autograd. If you end up training with a custom_op that doesn\u2019t have an autograd registration, we\u2019ll raise an error message. This page uses the same numpy.sin operation as the functional and mutable pages so the only new concept is the autograd registration. import numpy as np import torch from torch import Tensor @torch.library.custom_op( \"mylib_training::numpy_sin\", mutates_args=(), device_types=\"cpu\", ) def numpy_sin(x: Tensor) -\u003e Tensor: result = torch.empty_like(x) np.sin(x.detach().numpy(), out=result.numpy()) return result @numpy_sin.register_fake def _(x): return torch.empty_like(x) The fake kernel must describe the same output metadata as the real kernel, including shape, strides, dtype, device, layout, and storage offset when relevant. Here the real kernel returns torch.empty_like(x), so the fake kernel does the same. The gradient formula for sin(x) is cos(x). The backward formula must be written in terms of PyTorch-understood operations or other custom operators. Do not directly use non-traceable Python or NumPy code from the backward formula. def numpy_sin_setup_context(ctx, inputs, output): (x,) = inputs ctx.save_for_backward(x) def numpy_sin_backward(ctx, grad_output): (x,) = ctx.saved_tensors return grad_output * x.cos() Register the backward formula and the context setup function: numpy_sin.register_autograd( numpy_sin_backward, setup_context=numpy_sin_setup_context, ) x = torch.randn(5, requires_grad=True) y = numpy_sin(x) y.sum().backward() torch.testing.assert_close(x.grad, x.detach().cos()) Testing autograd registration# opcheck verifies that autograd was registered in a supported way, but it does not prove that the gradient formula is mathematically correct. Use separate numerical tests for that, either manual ones or torch.autograd.gradcheck. gradcheck_input = torch.randn(3, dtype=torch.double, requires_grad=True) torch.autograd.gradcheck(numpy_sin, (gradcheck_input,)) examples = [ (torch.randn(5),), (torch.randn(0, 3),), (torch.randn(4, requires_grad=True),), (torch.randn(2, dtype=torch.double, requires_grad=True),), (torch.randn(2, 3).t(),), (torch.randn(8)[1:],), ] for example in examples: torch.library.opcheck(numpy_sin, example) Other registrations# Add these only when users need them. Multiple device kernels: pass device_types=\"cpu\" or device_types=\"cuda\" if the implementation only works on one device. Register device-specific kernels when devices need different code. ``torch.vmap``: register a vmap rule with torch.library.register_vmap when batching over the operator should do something different from a Python loop over the batch dimension. Tensor subclasses or modes: use torch.library.register_torch_dispatch when a Tensor subclass or TorchDispatchMode needs special behavior. Autocast: for C++/CUDA operators that should participate in autocast, add an autocast registration as described in the C++ custom operator guide. Total running time of the script: (0 minutes 1.242 seconds) Download Jupyter notebook: python_custom_ops_registrations.ipynb Download Python source code: python_custom_ops_registrations.py Download zipped: python_custom_ops_registrations.zip",
        "author": {
          "@type": "Organization",
          "name": "PyTorch Contributors",
