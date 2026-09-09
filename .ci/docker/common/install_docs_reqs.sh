@@ -13,7 +13,9 @@ echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/source
 
 apt-get update
 apt-get install -y --no-install-recommends yarn
-yarn global add katex --prefix /usr/local
+# Pin katex: 0.18.5 switched to commander@^15, which requires Node >= 22.12
+# while this image installs Node 20, and yarn enforces engines strictly.
+yarn global add katex@0.18.4 --prefix /usr/local
 
 sudo apt-get -y install doxygen
 
