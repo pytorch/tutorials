@@ -59,7 +59,7 @@ Distributed Reinforcement Learning using RPC and RRef
 -----------------------------------------------------
 
 This section describes steps to build a toy distributed reinforcement learning
-model using RPC to solve CartPole-v1 from `OpenAI Gym <https://www.gymlibrary.dev/environments/classic_control/cart_pole/>`__.
+model using RPC to solve CartPole-v1 from `OpenAI Gym <https://gymnasium.farama.org/environments/classic_control/cart_pole/>`__.
 The policy code is mostly borrowed from the existing single-thread
 `example <https://github.com/pytorch/examples/blob/master/reinforcement_learning>`__
 as shown below. We will skip details of the ``Policy`` design, and focus on RPC
