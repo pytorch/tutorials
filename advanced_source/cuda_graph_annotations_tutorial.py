@@ -16,6 +16,7 @@ CUDA Graph Kernel Annotations and Profiling
        * How to profile annotated graphs
        * How to export traces with inline annotations and semantic kernel lanes
        * How to visualize graph execution with custom stream assignments
+       * How to use ``mark_stream`` to recover logical stream lanes
        * How to annotate communication collectives with the metadata
          (collective type, message size, group, rank) that eager NCCL
          traces expose but CUDA graphs drop
@@ -122,7 +123,7 @@ import torch.distributed as dist
 import torch.multiprocessing
 from torch.profiler import profile, ProfilerActivity
 from torch.cuda.graph_annotations import get_kernel_annotations, is_available, mark_kernels
-from torch.cuda._graph_annotations import get_stream_for_pg
+from torch.cuda._graph_annotations import get_stream_for_pg, mark_stream
 
 ###############################################################################
 # Building a Model
@@ -417,6 +418,74 @@ def main():
 # ============================================================
 
 ###############################################################################
+# Recording Logical Streams with ``mark_stream``
+# -----------------------------------------------
+#
+# When your computation already uses multiple CUDA streams, ``mark_stream``
+# switches to a stream and records a logical lane ID for its kernels. This
+# helper currently lives in the private ``torch.cuda._graph_annotations``
+# module. Use ``mark_kernels`` with an explicit ``stream`` field when you only
+# want to change the display layout, as in the transformer example above.
+#
+# The block below runs two independent projections on separate CUDA streams,
+# then combines their results. Each side stream waits for the current stream
+# inside its ``mark_stream`` scope. These waits make the side streams join the
+# capture before launching work. The current stream waits for both branches
+# before reading their outputs and ending capture. ``mark_stream`` does not
+# insert these dependencies for you.
+
+def build_multistream_block():
+    """Create two projections on separate annotated CUDA streams."""
+    x = torch.randn(1024, 1024, device="cuda")
+    left_weight = torch.randn_like(x)
+    right_weight = torch.randn_like(x)
+    left = torch.empty_like(x)
+    right = torch.empty_like(x)
+    left_stream = torch.cuda.Stream()
+    right_stream = torch.cuda.Stream()
+
+    def forward():
+        current_stream = torch.cuda.current_stream()
+        with mark_stream(left_stream, "left_projection"):
+            left_stream.wait_stream(current_stream)
+            torch.mm(x, left_weight, out=left)
+
+        with mark_stream(right_stream, "right_projection"):
+            right_stream.wait_stream(current_stream)
+            torch.mm(x, right_weight, out=right)
+
+        current_stream.wait_stream(left_stream)
+        current_stream.wait_stream(right_stream)
+        with mark_kernels("combine"):
+            return left + right
+
+    return forward
+
+###############################################################################
+# Reuse the capture and profiling helpers to export this graph. With
+# ``graph_lanes="all"``, the projections appear on distinct logical lanes
+# named ``left_projection`` and ``right_projection``, even if graph replay
+# schedules them on different hardware streams. The ``combine`` kernel goes
+# to the default lane, 7. Moved events retain ``args["original_stream"]``.
+#
+# Lane IDs are assigned automatically and may vary depending on which streams
+# have already been marked. Reusing the same stream reuses its lane ID. Passing
+# the current stream to ``mark_stream`` adds the label without assigning a new
+# lane. With ``graph_lanes="none"``, the original layout is preserved and the
+# recorded lane IDs appear in ``args["annotated_stream"]`` instead.
+
+def stream_annotation_demo():
+    """Capture and profile the two projections with logical stream lanes."""
+    model_fn = build_multistream_block()
+    graph, output = capture_graph_with_annotations(model_fn)
+    _, annotated_path = profile_graph(graph, "traces_streams")
+    return annotated_path
+
+###############################################################################
+# Run ``stream_annotation_demo()`` and open
+# ``traces_streams/trace_annotated.json.gz`` in https://ui.perfetto.dev/.
+
+###############################################################################
 # Annotating Communication Collectives
 # -------------------------------------
 #
@@ -666,6 +735,7 @@ def comm_annotation_demo():
 # Key takeaways:
 #
 # - Use ``mark_kernels()`` to label regions during graph capture
+# - Use ``mark_stream()`` to record logical lanes when switching CUDA streams
 # - Enable annotations with ``enable_annotations=True``
 # - Annotate communication collectives to recover the NCCL metadata
 #   (collective type, message size, group, rank) that CUDA graphs drop but
