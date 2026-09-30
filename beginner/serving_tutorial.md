@@ -190,7 +190,7 @@ examples](https://docs.ray.io/en/latest/serve/examples.html).
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: serving_tutorial.ipynb`](../_downloads/095f6a9fedd89af43ae07761382ef458/serving_tutorial.ipynb)
 
