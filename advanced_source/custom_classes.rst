@@ -228,4 +228,4 @@ As always, if you run into any problems or have questions, you can use our
 `forum <https://discuss.pytorch.org/>`_ or `GitHub issues
 <https://github.com/pytorch/pytorch/issues>`_ to get in touch. Also, our
 `frequently asked questions (FAQ) page
-<https://pytorch.org/cppdocs/notes/faq.html>`_ may have helpful information.
+<https://docs.pytorch.org/cppdocs/faq.html>`_ may have helpful information.
