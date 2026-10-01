@@ -19,7 +19,10 @@ The ``max-autotune`` mode for the Inductor CPU backend in ``torch.compile`` (`RF
 profiles multiple implementations of operations at compile time and selects the best-performing one,
 trading longer compilation times for improved runtime performance. This enhancement is particularly beneficial for GEMM-related operations.
 In the Inductor CPU backend, we’ve introduced a C++ template-based GEMM implementation as an alternative to the ATen-based approach that relies on oneDNN and MKL libraries.
-This is similar to the max-autotune mode on CUDA, where implementations from ATen, Triton, and CUTLASS are considered.
+This is similar to the max-autotune mode on CUDA, where implementations from ATen, Triton, CUTLASS, and CuteDSL are considered.
+The CuteDSL backend (``NVGEMM``) is opt-in and requires additional packages; see
+`Generating State-of-the-Art GEMMs with TorchInductor's CuteDSL backend <https://pytorch.org/blog/gemms-torchinductor-cutedsl-backend/>`_
+for setup instructions and benchmark results.
 
 We have covered most popular data types, including FP32, BF16, FP16, and INT8, with epilogue fusions for x86 CPUs.
 
