@@ -306,7 +306,13 @@ def run_training_ac(
 
     # Load model
     print(f"Loading GPT-2 (activation_checkpointing={activation_checkpointing})...")
-    model = GPT2LMHeadModel.from_pretrained("gpt2")
+    # Disable dropout to avoid PyTorch 2.11 checkpoint recomputation bug (#3774).
+    # _VF.dropout returns NULL without setting an exception during backward
+    # recomputation of GPT2Block. Dropout is irrelevant to memory profiling.
+    # Original: model = GPT2LMHeadModel.from_pretrained("gpt2")
+    model = GPT2LMHeadModel.from_pretrained(
+        "gpt2", resid_pdrop=0, attn_pdrop=0, embd_pdrop=0
+    )
 
     if activation_checkpointing:
         model.gradient_checkpointing_enable()
