@@ -1,0 +1,84 @@
+name: Tutorials Audit
+
+on:
+  schedule:
+    - cron: '0 0 15 * *'  # 15th of every month at midnight UTC
+  workflow_dispatch:       # manual trigger
+
+jobs:
+  audit:
+    if: github.repository == 'pytorch/tutorials'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read       # read repo files
+      actions: read        # needed to fetch build logs from previous workflow runs
+      issues: write        # needed to create/close issues
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install pyyaml requests
+
+      - name: Run audit
+        id: audit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python .github/scripts/audit_tutorials.py
+
+      - name: Create issue and close previous
+        if: steps.audit.outputs.found_issues == 'true'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const reportContent = fs.readFileSync('audit_report.md', 'utf8');
+            const label = 'tutorials-audit';
+            const title = `📋 Tutorials Audit Report — ${new Date().toISOString().split('T')[0]}`;
+
+            // Create the new issue first
+            const { data: newIssue } = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: reportContent,
+              labels: [label],
+            });
+            console.log(`Created new issue #${newIssue.number}`);
+
+            // Find and close previous audit issues
+            const { data: openIssues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: label,
+              state: 'open',
+              per_page: 10,
+            });
+
+            for (const issue of openIssues) {
+              if (issue.number === newIssue.number) continue;
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `Superseded by new audit report — see #${newIssue.number}`,
+              });
+
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed',
+                state_reason: 'completed',
+              });
+              console.log(`Closed previous issue #${issue.number}`);
+            }

@@ -1,0 +1,73 @@
+# Tutorials Audit Framework — Repo Configuration
+# This is the ONLY file that differs between repos when adopting the audit framework.
+# All other files (script, workflow, Claude skill) are config-driven and portable.
+
+repo:
+  owner: "pytorch"
+  name: "tutorials"
+
+# File discovery settings
+scan:
+  paths:
+    - "beginner_source/**/*.py"
+    - "beginner_source/**/*.rst"
+    - "intermediate_source/**/*.py"
+    - "intermediate_source/**/*.rst"
+    - "advanced_source/**/*.py"
+    - "advanced_source/**/*.rst"
+    - "recipes_source/**/*.py"
+    - "recipes_source/**/*.rst"
+    - "unstable_source/**/*.py"
+    - "unstable_source/**/*.rst"
+  extensions: [".py", ".rst"]
+  exclude_patterns:
+    - "template_tutorial.py"
+
+# Toggle individual audit passes on/off
+audits:
+  build_log_warnings: true
+  changelog_diff: true
+  orphaned_tutorials: true
+  security_patterns: true
+  staleness_check: true
+  dependency_health: true
+  template_compliance: true
+  index_consistency: true
+  build_health: true
+
+# Build log warning extraction settings
+build_logs:
+  workflow_name: "Build tutorials"
+  num_shards: 15
+  warning_patterns:
+    - "DeprecationWarning"
+    - "FutureWarning"
+    - "UserWarning.*deprecated"
+
+# PyTorch release changelog settings
+changelog:
+  source_repo: "pytorch/pytorch"
+  num_releases: 3
+  changelog_sections:
+    - "Deprecated"
+    - "Removed"
+    - "Breaking Changes"
+    - "Backwards Incompatible"
+  include_raw_text: true
+
+# Staleness check settings
+staleness:
+  review_data_url: "https://raw.githubusercontent.com/pytorch/tutorials/refs/heads/last-reviewed-data-json/tutorials-review-data.json"
+  warn_after_months: 6
+  critical_after_months: 12
+
+# Issue creation and lifecycle settings
+issue:
+  label: "tutorials-audit"
+  title_template: "Tutorials Audit Report — {date}"
+  trigger_claude: true
+  close_previous: true
+
+# Trend tracking settings
+trend_tracking:
+  enabled: true
