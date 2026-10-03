@@ -56,9 +56,9 @@ print(f"Using {device} device")
 # A common practice in neural networks is to normalize the input, which is done for multiple reasons,
 # including avoiding saturation in commonly used activation functions and increasing numerical stability.
 # Our normalization process consists of subtracting the mean and dividing by the standard deviation along each channel.
-# The tensors "mean=[0.485, 0.456, 0.406]" and "std=[0.229, 0.224, 0.225]" were already computed,
-# and they represent the mean and standard deviation of each channel in the
-# predefined subset of CIFAR-10 intended to be the training set.
+# The tensors "mean=[0.485, 0.456, 0.406]" and "std=[0.229, 0.224, 0.225]" are commonly used
+# normalization values. Note that these values correspond to ImageNet statistics rather than
+# statistics computed directly from the CIFAR-10 training set.
 # Notice how we use these values for the test set as well, without recomputing the mean and standard deviation from scratch.
 # This is because the network was trained on features produced by subtracting and dividing the numbers above, and we want to maintain consistency.
 # Furthermore, in real life, we would not be able to compute the mean and standard deviation of the test set since,
