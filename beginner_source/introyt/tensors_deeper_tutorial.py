@@ -277,7 +277,7 @@ print(dozens)
 ##########################################################################
 # It’s important to note here that all of the tensors in the previous code
 # cell were of identical shape. What happens when we try to perform a
-# binary operation on tensors if dissimilar shape?
+# binary operation on tensors of dissimilar shape?
 #
 # .. note::
 #    The following cell throws a run-time error. This is intentional.
