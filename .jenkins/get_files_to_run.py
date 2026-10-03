@@ -41,7 +41,7 @@ def calculate_shards(all_files: List[str], num_shards: int = 20) -> List[List[st
 
     all_other_files = all_files.copy()
     needs_multigpu = list(
-        filter(lambda x: get_needs_machine(x) == "linux.16xlarge.nvidia.gpu", all_files,)
+        filter(lambda x: get_needs_machine(x) == "multi-gpu", all_files,)
     )
     needs_a10g = list(
         filter(lambda x: get_needs_machine(x) == "linux.g5.4xlarge.nvidia.gpu", all_files,)
