@@ -110,6 +110,14 @@ jobs:
 
           docker exec -u ci-user -t "${container_name}" sh -c ".jenkins/build.sh"
 
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log-${{ matrix.shard }}
+          path: _build/build.log
+          if-no-files-found: ignore
+
       - name: Teardown Linux
         uses: pytorch/test-infra/.github/actions/teardown-linux@main
         if: always()
@@ -119,6 +127,9 @@ jobs:
     needs: worker
     runs-on: [self-hosted, linux.2xlarge]
     if: ${{ inputs.UPLOAD == 1 }}
+    permissions:
+      issues: write
+      contents: write
     environment: ${{ github.ref == 'refs/heads/main' && 'pytorchbot-env' || '' }}
     steps:
       - name: Setup SSH (Click me for login details)
@@ -148,6 +159,18 @@ jobs:
         with:
           docker-image: ${{ steps.calculate-docker-image.outputs.docker-image }}
 
+      - name: Download worker build logs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: build-log-*
+          path: _build/worker-logs
+
+      - name: Merge build logs
+        shell: bash
+        run: |
+          mkdir -p _build
+          cat _build/worker-logs/build-log-*/build.log > _build/build.log 2>/dev/null || true
+
       - name: Build
         shell: bash
         env:
@@ -158,6 +181,7 @@ jobs:
           JOB_TYPE: manager
           COMMIT_SOURCE: ${{ github.ref }}
           GITHUB_PYTORCHBOT_TOKEN: ${{ secrets.PYTORCHBOT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           USE_NIGHTLY: ${{ inputs.USE_NIGHTLY }}
         run: |
           set -ex
@@ -172,6 +196,7 @@ jobs:
             -e JOB_TYPE \
             -e COMMIT_SOURCE \
             -e GITHUB_PYTORCHBOT_TOKEN \
+            -e GITHUB_TOKEN \
             -e USE_NIGHTLY \
             --env-file="/tmp/github_env_${GITHUB_RUN_ID}" \
             --tty \
@@ -183,6 +208,26 @@ jobs:
           )
 
           docker exec -u ci-user -t "${container_name}" sh -c ".jenkins/build.sh"
+
+      - name: Generate API deprecation report
+        if: always()
+        shell: bash
+        run: |
+          python3 -m tools.deprecation_checker.api_report \
+            --build-log _build/build.log \
+            -o _build/api_report.md \
+            --create-issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Upload API deprecation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-deprecation-report
+          path: _build/api_report.md
+          if-no-files-found: ignore
 
       - name: Upload docs preview
         uses: seemethere/upload-artifact-s3@v5
