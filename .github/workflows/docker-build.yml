@@ -15,8 +15,15 @@ on:
 
 jobs:
   docker-build:
-    runs-on: [self-hosted, linux.2xlarge]
+    # BuildKit runs out of cluster on the OSDC BuildKit pool, so this runner only
+    # streams the (small) .ci/docker context and waits.
+    runs-on: mt-l-x86iavx512-8-64
+    container:
+      image: ghcr.io/actions/actions-runner:latest
     timeout-minutes: 240
+    permissions:
+      id-token: write
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -25,34 +32,39 @@ jobs:
     env:
       DOCKER_IMAGE: 308535385114.dkr.ecr.us-east-1.amazonaws.com/tutorials/${{ matrix.docker-image-name }}
     steps:
-      - name: Clean workspace
-        shell: bash
-        run: |
-          echo "${GITHUB_WORKSPACE}"
-          sudo rm -rf "${GITHUB_WORKSPACE}"
-          mkdir "${GITHUB_WORKSPACE}"
-
-      - name: Setup SSH (Click me for login details)
-        uses: pytorch/test-infra/.github/actions/setup-ssh@main
-        with:
-          github-secret: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup Linux
-        uses: pytorch/test-infra/.github/actions/setup-linux@main
-
-      - name: Build docker image
-        id: build-docker-image
-        uses: pytorch/test-infra/.github/actions/calculate-docker-image@main
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          docker-image-name: ${{ matrix.docker-image-name }}
-          push: true
+          role-to-assume: arn:aws:iam::308535385114:role/arc
+          aws-region: us-east-1
+          role-duration-seconds: 18000
 
-      - name: Teardown Linux
-        uses: pytorch/test-infra/.github/actions/teardown-linux@main
-        if: always()
+      # buildx forwards the client's registry auth to the remote builder, so the
+      # push at the end of build.sh authenticates with what this step writes.
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registries: "308535385114"
+
+      - name: Compute the image tag
+        id: tag
+        shell: bash
+        run: |
+          set -eux
+          git config --global --add safe.directory "${GITHUB_WORKSPACE}"
+          DOCKER_TAG=$(git rev-parse HEAD:.ci/docker)
+          echo "docker-image=${DOCKER_IMAGE}:${DOCKER_TAG}" >> "${GITHUB_OUTPUT}"
+
+      - name: Build and push to ECR
+        uses: pytorch/test-infra/.github/actions/docker-build-remote-buildkit@main
+        with:
+          command: |
+            cd .ci/docker
+            REMOTE_BUILDKIT=1 ./build.sh ${{ matrix.docker-image-name }} \
+              -t ${{ steps.tag.outputs.docker-image }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}
