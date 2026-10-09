@@ -143,7 +143,8 @@ from matplotlib.colors import LinearSegmentedColormap
 # now.
 # 
 
-model = models.resnet18(weights='IMAGENET1K_V1')
+weights = models.ResNet18_Weights.IMAGENET1K_V1
+model = models.resnet18(weights=weights)
 model = model.eval()
 
 
@@ -166,9 +167,10 @@ plt.show()
 # folder as well.
 # 
 
-# model expects 224x224 3-color image
+# The model's weights resize the shorter side to 256 pixels before
+# center-cropping to the expected 224x224 3-color image.
 transform = transforms.Compose([
- transforms.Resize(224),
+ transforms.Resize(256),
  transforms.CenterCrop(224),
  transforms.ToTensor()
 ])
