@@ -71,14 +71,14 @@ on imbalanced datasets.
 #
 # - ``get_dataset`` to load dataset, here we use CIFAR-10
 # - ``get_data_loader`` to create train (labeled and unlabeled) and test data
-# loaders, the train unlabeled loaders will provide both strong and weak
-# augmentation of unlabeled data
+#   loaders, the train unlabeled loaders will provide both strong and weak
+#   augmentation of unlabeled data
 # - ``get_net_builder`` to create a model, here we use pretrained ViT
 # - ``get_algorithm`` to create the semi-supervised learning algorithm,
-# here we use ``FreeMatch`` and ``SoftMatch``
+#   here we use ``FreeMatch`` and ``SoftMatch``
 # - ``get_config``: to get default configuration of the algorithm
 # - ``Trainer``: a Trainer class for training and evaluating the
-# algorithm on dataset
+#   algorithm on dataset
 # 
 # Note that a CUDA-enabled backend is required for training with the ``semilearn`` package.
 # See `Enabling CUDA in Google Colab <https://pytorch.org/tutorials/beginner/colab#enabling-cuda>`__ for instructions

@@ -42,9 +42,10 @@ serialization_config.save.storage_alignment = 4096
 
 ################################################################################
 # The steps involved in the process are as follows:
-#    * Write the checkpoint file without any actual data. This reserves the space on disk.
-#    * Read the offsets for the storage associated with each tensor in the checkpoint using ``FakeTensor``.
-#    * Use ``GDSFile`` to write the appropriate data at these offsets.
+#
+# * Write the checkpoint file without any actual data. This reserves the space on disk.
+# * Read the offsets for the storage associated with each tensor in the checkpoint using ``FakeTensor``.
+# * Use ``GDSFile`` to write the appropriate data at these offsets.
 # 
 # Given a state dictionary of tensors that are on the GPU, one can use the ``torch.serialization.skip_data`` context
 # manager to save a checkpoint that contains all relevant metadata except the storage bytes. For each ``torch.Storage``
