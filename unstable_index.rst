@@ -122,6 +122,13 @@ decide if we want to upgrade the level of commitment or to fail fast.
    :link: unstable/context_parallel.html
    :tags: Distributed, Context Parallel
 
+.. customcarditem::
+   :header: GPU-Initiated Networking with NCCL and PyTorch Symmetric Memory
+   :card_description: Program GPU-initiated communication with the NCCL backend of PyTorch symmetric memory
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: unstable/nccl_gin_tutorial.html
+   :tags: Distributed, Symmetric Memory, NCCL
+
 .. Integration
 .. customcarditem::
    :header: Out-of-tree extension autoloading in Python
@@ -150,6 +157,7 @@ decide if we want to upgrade the level of commitment or to fail fast.
 
    unstable/context_parallel
    unstable/flight_recorder_tutorial
+   unstable/nccl_gin_tutorial
    unstable/inductor_cpp_wrapper_tutorial
    unstable/inductor_windows
    unstable/vmap_recipe
