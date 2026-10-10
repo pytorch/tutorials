@@ -1,10 +1,13 @@
 name: Build tutorials
 
 on:
-  pull_request:
   push:
     branches:
       - main
+    # A fork PR gets no OIDC token to upload the preview, so a PR builds through
+    # the ciflow/docs label, which pushes this tag from the base repo
+    tags:
+      - ciflow/docs/*
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}-${{ github.event_name == 'schedule' }}
@@ -12,6 +15,9 @@ concurrency:
 
 jobs:
   build:
+    permissions:
+      id-token: write
+      contents: read
     uses: ./.github/workflows/_build-tutorials-base.yml
     secrets: inherit
     with:
