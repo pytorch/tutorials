@@ -1,0 +1,32 @@
+name: Claude PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  capture-pr:
+    if: github.repository == 'pytorch/tutorials' && !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      contents: read
+
+    steps:
+      - name: Validate and capture PR number
+        run: |
+          PR_NUM="${{ github.event.pull_request.number }}"
+          if [ -z "$PR_NUM" ] || ! [[ "$PR_NUM" =~ ^[0-9]+$ ]]; then
+            echo "::error::Invalid PR number: '$PR_NUM'"
+            exit 1
+          fi
+          echo "Capturing PR #${PR_NUM} for auto-review"
+          echo "$PR_NUM" > pr_number.txt
+
+      - name: Upload PR number artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-review-data
+          path: pr_number.txt
+          retention-days: 1
+          if-no-files-found: error
