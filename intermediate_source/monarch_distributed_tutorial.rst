@@ -40,7 +40,7 @@ Prerequisites
 We rely on a nightly build of Titan for this tutorial, so please ensure that other Torch libraries are tracking nightly builds:
 
 1. **Monarch nightly installed:**
-   `Install script <https://github.com/meta-pytorch/monarch/blob/main/scripts/install_nightly.py>`_
+   `Install instructions <https://meta-pytorch.org/monarch/installation.html>`_
 2. **TorchTitan nightly installed:**
    `TorchTitan install instructions <https://github.com/pytorch/torchtitan?tab=readme-ov-file#nightly-builds>`_
 3. **A valid Titan model config** and **tokenizer** in your working directory
