@@ -553,7 +553,7 @@ assert(str(benchmark.Compare(results)) == str(benchmark.Compare(round_tripped_re
 # cases for the benchmark.
 #
 
-from torch.utils.benchmark import Fuzzer, FuzzedParameter, FuzzedTensor, ParameterAlias
+from torch.utils.benchmark import Fuzzer, FuzzedParameter, FuzzedTensor
 
 # Generates random tensors with 128 to 10000000 elements and sizes k0 and k1 chosen from a
 # ``loguniform`` distribution in [1, 10000], 40% of which will be discontiguous on average.
