@@ -139,7 +139,10 @@ print(unicodeToAscii("O'Néàl"))
 # letter.
 #
 # I added a second linear layer ``o2o`` (after combining hidden and
-# output) to give it more muscle to work with. There's also a dropout
+# output) to give it more muscle to work with. The hidden state is also
+# passed through a ``tanh`` non-linearity before being carried to the
+# next time step, since otherwise it would just be a linear combination
+# of the previous hidden state and the current input. There's also a dropout
 # layer, which `randomly zeros parts of its
 # input <https://arxiv.org/abs/1207.0580>`__ with a given probability
 # (here 0.1) and is usually used to fuzz inputs to prevent overfitting.
@@ -162,12 +165,13 @@ class RNN(nn.Module):
         self.i2h = nn.Linear(n_categories + input_size + hidden_size, hidden_size)
         self.i2o = nn.Linear(n_categories + input_size + hidden_size, output_size)
         self.o2o = nn.Linear(hidden_size + output_size, output_size)
+        self.tanh = nn.Tanh()
         self.dropout = nn.Dropout(0.1)
         self.softmax = nn.LogSoftmax(dim=1)
 
     def forward(self, category, input, hidden):
         input_combined = torch.cat((category, input, hidden), 1)
-        hidden = self.i2h(input_combined)
+        hidden = self.tanh(self.i2h(input_combined))
         output = self.i2o(input_combined)
         output_combined = torch.cat((hidden, output), 1)
         output = self.o2o(output_combined)
