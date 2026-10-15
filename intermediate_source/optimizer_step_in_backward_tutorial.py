@@ -235,12 +235,13 @@ torch.cuda.memory._record_memory_history(enabled=None)
 #    :alt: snapshot.png loaded into CUDA Memory Visualizer
 #
 # Several major observations:
-#  1. There is no more optimizer step! Right...we fused that into the backward.
-#  2. Likewise, the backward drags longer and there are more random allocations
-#     for intermediates. This is expected, as the optimizer step requires 
-#     intermediates.
-#  3. Most importantly! The peak memory is lower! It is now ~4GB (which I
-#     hope maps closely to your earlier expectation). 
+#
+# 1. There is no more optimizer step! Right...we fused that into the backward.
+# 2. Likewise, the backward drags longer and there are more random allocations
+#    for intermediates. This is expected, as the optimizer step requires
+#    intermediates.
+# 3. Most importantly! The peak memory is lower! It is now ~4GB (which I
+#    hope maps closely to your earlier expectation).
 # 
 # Note that there is no longer any big chunk of memory allocated for the gradients
 # compared to before, accounting for ~1.2GB of memory savings. Instead, we've freed

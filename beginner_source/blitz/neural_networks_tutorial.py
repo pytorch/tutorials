@@ -130,27 +130,30 @@ out.backward(torch.randn(1, 10))
 # Before proceeding further, let's recap all the classes you’ve seen so far.
 #
 # **Recap:**
-#   -  ``torch.Tensor`` - A *multi-dimensional array* with support for autograd
-#      operations like ``backward()``. Also *holds the gradient* w.r.t. the
-#      tensor.
-#   -  ``nn.Module`` - Neural network module. *Convenient way of
-#      encapsulating parameters*, with helpers for moving them to GPU,
-#      exporting, loading, etc.
-#   -  ``nn.Parameter`` - A kind of Tensor, that is *automatically
-#      registered as a parameter when assigned as an attribute to a*
-#      ``Module``.
-#   -  ``autograd.Function`` - Implements *forward and backward definitions
-#      of an autograd operation*. Every ``Tensor`` operation creates at
-#      least a single ``Function`` node that connects to functions that
-#      created a ``Tensor`` and *encodes its history*.
+#
+# -  ``torch.Tensor`` - A *multi-dimensional array* with support for autograd
+#    operations like ``backward()``. Also *holds the gradient* w.r.t. the
+#    tensor.
+# -  ``nn.Module`` - Neural network module. *Convenient way of
+#    encapsulating parameters*, with helpers for moving them to GPU,
+#    exporting, loading, etc.
+# -  ``nn.Parameter`` - A kind of Tensor, that is *automatically
+#    registered as a parameter when assigned as an attribute to a*
+#    ``Module``.
+# -  ``autograd.Function`` - Implements *forward and backward definitions
+#    of an autograd operation*. Every ``Tensor`` operation creates at
+#    least a single ``Function`` node that connects to functions that
+#    created a ``Tensor`` and *encodes its history*.
 #
 # **At this point, we covered:**
-#   -  Defining a neural network
-#   -  Processing inputs and calling backward
+#
+# -  Defining a neural network
+# -  Processing inputs and calling backward
 #
 # **Still Left:**
-#   -  Computing the loss
-#   -  Updating the weights of the network
+#
+# -  Computing the loss
+# -  Updating the weights of the network
 #
 # Loss Function
 # -------------

@@ -72,10 +72,12 @@ inputs = torch.randn(5, 3, 224, 224)
 # a number of parameters, some of the most useful are:
 #
 # - ``activities`` - a list of activities to profile:
-#    - ``ProfilerActivity.CPU`` - PyTorch operators, TorchScript functions and
-#      user-defined code labels (see ``record_function`` below);
-#    - ``ProfilerActivity.CUDA`` - on-device CUDA kernels;
-#    - ``ProfilerActivity.XPU`` - on-device XPU kernels;
+#
+#   - ``ProfilerActivity.CPU`` - PyTorch operators, TorchScript functions and
+#     user-defined code labels (see ``record_function`` below);
+#   - ``ProfilerActivity.CUDA`` - on-device CUDA kernels;
+#   - ``ProfilerActivity.XPU`` - on-device XPU kernels;
+#
 # - ``record_shapes`` - whether to record shapes of the operator inputs;
 # - ``profile_memory`` - whether to report amount of memory consumed by
 #   model's Tensors;
