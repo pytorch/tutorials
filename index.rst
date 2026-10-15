@@ -91,6 +91,13 @@ Welcome to PyTorch Tutorials
    :tags: Getting-Started
 
 .. customcarditem::
+   :header: Option Pricing with PyTorch
+   :card_description: Use PyTorch tensors and autograd to implement Black-Scholes pricing, Monte Carlo simulation, and compute option Greeks via automatic differentiation.
+   :image: _static/img/thumbnails/cropped/options_pricing_with_pytorch_tutorial.png
+   :link: beginner/options_pricing_with_pytorch_tutorial.html
+   :tags: Getting-Started
+
+.. customcarditem::
    :header: Visualizing Models, Data, and Training with TensorBoard
    :card_description: Learn to use TensorBoard to visualize data and model training.
    :image: _static/img/thumbnails/cropped/visualizing-with-tensorboard.png
