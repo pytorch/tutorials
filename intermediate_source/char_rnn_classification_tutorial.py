@@ -316,7 +316,8 @@ def train(rnn, training_data, n_epoch = 10, n_batch_size = 64, report_every = 50
         # we cannot use dataloaders because each of our names is a different length
         batches = list(range(len(training_data)))
         random.shuffle(batches)
-        batches = np.array_split(batches, len(batches) //n_batch_size )
+        n_batches = (len(batches) + n_batch_size - 1) // n_batch_size
+        batches = np.array_split(batches, n_batches)
 
         for idx, batch in enumerate(batches):
             batch_loss = 0
