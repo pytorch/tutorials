@@ -15,7 +15,7 @@ Introduction
 
     This is an experimental feature, the quantization API is subject to change.
 
-This tutorial demonstrates how to use ``OpenVINOQuantizer`` from `Neural Network Compression Framework (NNCF) <https://github.com/openvinotoolkit/nncf/tree/develop>`_ in PyTorch 2 Export Quantization flow to generate a quantized model customized for the `OpenVINO torch.compile backend <https://docs.openvino.ai/2024/openvino-workflow/torch-compile.html>`_ and explains how to lower the quantized model into the `OpenVINO <https://docs.openvino.ai/2024/index.html>`_ representation.
+This tutorial demonstrates how to use ``OpenVINOQuantizer`` from `Executorch <https://github.com/pytorch/executorch/blob/main/backends/openvino/quantizer/quantizer.py>`_ in PyTorch 2 Export Quantization flow to generate a quantized model customized for the `OpenVINO torch.compile backend <https://docs.openvino.ai/2024/openvino-workflow/torch-compile.html>`_ and explains how to lower the quantized model into the `OpenVINO <https://docs.openvino.ai/2024/index.html>`_ representation.
 ``OpenVINOQuantizer`` unlocks the full potential of low-precision OpenVINO kernels due to the placement of quantizers designed specifically for the OpenVINO.
 
 The PyTorch 2 export quantization flow uses ``torch.export`` to capture the model into a graph and performs quantization transformations on top of the ATen graph.
@@ -118,7 +118,8 @@ After we capture the FX Module to be quantized, we will import the OpenVINOQuant
 
 .. code-block:: python
 
-    from nncf.experimental.torch.fx import OpenVINOQuantizer
+    from executorch.backends.openvino.quantizer import OpenVINOQuantizer
+    from executorch.backends.openvino.quantizer import QuantizationMode
 
     quantizer = OpenVINOQuantizer()
 
@@ -126,21 +127,20 @@ After we capture the FX Module to be quantized, we will import the OpenVINOQuant
 Below is the list of essential parameters and their description:
 
 
-* ``preset`` - defines quantization scheme for the model. Two types of presets are available:
+* ``mode`` - defines quantization scheme for the model. Multiple modes are supported:
 
-    * ``PERFORMANCE`` (default) - defines symmetric quantization of weights and activations
+    * ``INT8_SYM`` (default) - defines symmetric quantization of weights and activations.
 
-    * ``MIXED`` - weights are quantized with symmetric quantization and the activations are quantized with asymmetric quantization. This preset is recommended for models with non-ReLU and asymmetric activation functions, e.g. ELU, PReLU, GELU, etc.
+    * ``INT8_MIXED`` - weights are quantized with symmetric quantization and the activations are quantized with asymmetric quantization. This preset is recommended for models with non-ReLU and asymmetric activation functions, e.g. ELU, PReLU, GELU, etc.
 
-    .. code-block:: python
+    * ``INT8_TRANSFORMER`` - special quantization scheme to preserve accuracy after quantization of Transformer models (BERT, Llama, etc.). None is default, i.e. no specific scheme is defined.
 
-        OpenVINOQuantizer(preset=nncf.QuantizationPreset.MIXED)
-
-* ``model_type`` - used to specify quantization scheme required for specific type of the model. Transformer is the only supported special quantization scheme to preserve accuracy after quantization of Transformer models (BERT, Llama, etc.). None is default, i.e. no specific scheme is defined.
+    * ``INT8WO_SYM``, ``INT8WO_ASYM``, ``INT4WO_SYM``, ``INT4WO_ASYM`` - these are weights-only quantization schemes. They apply simple min-max quantization to model weights to INT8/INT4 with Symmetric and Asymmetric schemes.
 
     .. code-block:: python
 
-        OpenVINOQuantizer(model_type=nncf.ModelType.Transformer)
+        OpenVINOQuantizer(mode=QuantizationMode.INT8_SYM)
+
 
 * ``ignored_scope`` - this parameter can be used to exclude some layers from the quantization process to preserve the model accuracy.  For example, when you want to exclude the last layer of the model from quantization.  Below are some examples of how to use this parameter:
 
@@ -173,7 +173,7 @@ Below is the list of essential parameters and their description:
 
 For further details on `OpenVINOQuantizer` please see the `documentation <https://openvinotoolkit.github.io/nncf/autoapi/nncf/experimental/torch/fx/index.html#nncf.experimental.torch.fx.OpenVINOQuantizer>`_.
 
-After we import the backend-specific Quantizer, we will prepare the model for post-training quantization.
+After we import the backend-specific Quantizer, we will prepare the model for post-training quantization/weights-only quantization.
 ``prepare_pt2e`` folds BatchNorm operators into preceding Conv2d operators, and inserts observers in appropriate places in the model.
 
 .. code-block:: python
@@ -215,11 +215,17 @@ The optimized model is using low-level kernels designed specifically for Intel C
 This should significantly speed up inference time in comparison with the eager model.
 
 4. Optional: Improve quantized model metrics
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-NNCF implements advanced quantization algorithms like `SmoothQuant <https://arxiv.org/abs/2211.10438>`_ and `BiasCorrection <https://arxiv.org/abs/1906.04721>`_, which help
-to improve the quantized model metrics while minimizing the output discrepancies between the original and compressed models.
-These advanced NNCF algorithms can be accessed via the NNCF `quantize_pt2e` API:
+NNCF implements advanced quantization algorithms that help improve the metrics of a compressed model while minimizing the output discrepancies between the original and compressed models. These are accessed via the NNCF ``quantize_pt2e`` API for static activation and weights quantization, or ``compress_pt2e`` for weights-only quantization.
+
+Post Training Quantization
+""""""""""""""""""""""""""
+
+``quantize_pt2e`` can be applied on top of any ``torchao`` Quantizer to improve the accuracy of the quantized model. Key algorithms:
+
+- `SmoothQuant <https://arxiv.org/abs/2211.10438>`_ - Reduces activation quantization error by inserting smoothing scales before weighted layers, migrating quantization difficulty from hard-to-quantize activations onto the weights.
+- `BiasCorrection <https://arxiv.org/abs/1906.04721>`_ - Compares quantized and original layer outputs layer-by-layer and adjusts convolution biases to align them, compensating for the error introduced by quantization.
 
 .. code-block:: python
 
@@ -238,9 +244,35 @@ These advanced NNCF algorithms can be accessed via the NNCF `quantize_pt2e` API:
         exported_model, quantizer, calibration_dataset, smooth_quant=True, fast_bias_correction=False
     )
 
+Weights Only Compression
+"""""""""""""""""""""""""
 
-For further details, please see the `documentation <https://openvinotoolkit.github.io/nncf/autoapi/nncf/experimental/torch/fx/index.html#nncf.experimental.torch.fx.quantize_pt2e>`_
-and a complete `example on Resnet18 quantization <https://github.com/openvinotoolkit/nncf/blob/develop/examples/post_training_quantization/torch_fx/resnet18/README.md>`_.
+``compress_pt2e`` applies weight compression to a ``torch.fx.GraphModule``, targeting LLM deployment. The following activation-aware algorithms use a small calibration subset to capture activation statistics:
+
+- `AWQ <https://arxiv.org/abs/2306.00978>`_ - Activation-aware Weight Quantization that finds per-channel scales to minimize quantization error based on activation distributions.
+- `Scale Estimation <https://github.com/openvinotoolkit/nncf/blob/develop/src/nncf/quantization/algorithms/weight_compression/scale_estimation.py>`_ - Estimates scales to minimize the layer-wise output error for INT4 weight layers, iteratively refining the scales on a calibration subset.
+
+Mixed Precision algorithms
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+`Mixed Precision <https://github.com/openvinotoolkit/nncf/blob/develop/docs/usage/post_training_compression/weights_compression/Usage.md#mixed-precision-modes>`_ assigns different bit-widths (e.g. INT4 vs INT8) to individual layers based on their sensitivity, keeping more sensitive layers at higher precision while aggressively compressing the rest. NNCF supports several sensitivity-ranking criteria
+
+.. code-block:: python
+
+    from nncf.experimental.torch.fx import compress_pt2e
+
+    calibration_loader = torch.utils.data.DataLoader(...)
+
+    def transform_fn(data_item):
+        images, _ = data_item
+        return images
+
+    calibration_dataset = nncf.Dataset(calibration_loader, transform_fn) # Optional: For Data-free algorithms, calibration data is not required
+    compressed_model = compress_pt2e(
+        exported_model, quantizer, calibration_dataset, awq=True, scale_estimation=True, ratio=0.8, sensitivity_metric=SensitivityMetric.MAX_ACTIVATION_VARIANCE
+    )
+
+Checkout some `resnet <https://github.com/openvinotoolkit/nncf/blob/develop/examples/post_training_quantization/torch_fx/resnet18/README.md>`_, `llama <https://github.com/pytorch/executorch/tree/main/examples/openvino/llama>`_, `stable diffusion <https://github.com/pytorch/executorch/tree/main/examples/models/yolo26>`_ and `Yolo26 <https://github.com/pytorch/executorch/tree/main/examples/models/yolo26>`_ examples with this API.
 
 Conclusion
 ------------
