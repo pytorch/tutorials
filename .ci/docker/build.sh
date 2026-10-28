@@ -10,7 +10,7 @@ set -exu
 IMAGE_NAME="$1"
 shift
 
-export UBUNTU_VERSION="22.04"
+export UBUNTU_VERSION="24.04"
 export CUDA_VERSION="12.6.3"
 
 export BASE_IMAGE="nvidia/cuda:${CUDA_VERSION}-devel-ubuntu${UBUNTU_VERSION}"
