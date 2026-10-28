@@ -424,7 +424,7 @@ using point-to-point collectives.
        rank = dist.get_rank()
        size = dist.get_world_size()
        send_buff = send.clone()
-       recv_buff = send.clone()
+       recv_buff = recv.clone()
        accum = send.clone()
 
        left = ((rank - 1) + size) % size
