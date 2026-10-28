@@ -10,11 +10,12 @@ Tensors, and uses PyTorch autograd to compute gradients.
 
 
 A PyTorch Tensor represents a node in a computational graph. If ``x`` is a
-Tensor that has ``x.requires_grad=True`` then ``x.grad`` is another Tensor
-holding the gradient of ``x`` with respect to some scalar value.
+Tensor with ``x.requires_grad=True``, then after backpropagating from a scalar
+``loss``, ``x.grad`` is another Tensor storing the gradient of that scalar loss
+with respect to ``x``.
 """
+
 import torch
-import math
 
 # We want to be able to train our model on an `accelerator <https://pytorch.org/docs/stable/torch.html#accelerators>`__
 # such as CUDA, MPS, MTIA, or XPU. If the current accelerator is available, we will use it. Otherwise, we use the CPU.
@@ -27,8 +28,8 @@ torch.set_default_device(device)
 # Create Tensors to hold input and outputs.
 # By default, requires_grad=False, which indicates that we do not need to
 # compute gradients with respect to these Tensors during the backward pass.
-x = torch.linspace(-1, 1, 2000, dtype=dtype)
-y = torch.exp(x) # A Taylor expansion would be 1 + x + (1/2) x**2 + (1/3!) x**3 + ...
+x = torch.linspace(-torch.pi, torch.pi, 2000, dtype=dtype)
+y = torch.sin(x)
 
 # Create random Tensors for weights. For a third order polynomial, we need
 # 4 weights: y = a + b x + c x^2 + d x^3
@@ -39,9 +40,8 @@ b = torch.randn((), dtype=dtype, requires_grad=True)
 c = torch.randn((), dtype=dtype, requires_grad=True)
 d = torch.randn((), dtype=dtype, requires_grad=True)
 
-initial_loss = 1.
-learning_rate = 1e-5
-for t in range(5000):
+learning_rate = 1e-6
+for t in range(2000):
     # Forward pass: compute predicted y using operations on Tensors.
     y_pred = a + b * x + c * x ** 2 + d * x ** 3
 
@@ -50,7 +50,7 @@ for t in range(5000):
     # loss.item() gets the scalar value held in the loss.
     loss = (y_pred - y).pow(2).sum()
 
-    # Calculare initial loss, so we can report loss relative to it
+    # Calculate initial loss, so we can report loss relative to it
     if t==0:
         initial_loss=loss.item()
 
