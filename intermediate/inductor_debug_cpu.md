@@ -398,7 +398,7 @@ We show how to find the time-consuming hotspot with PyTorch Profiler and figure 
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: inductor_debug_cpu.ipynb`](../_downloads/57fbbe6265e9c97da47580b6e60037ac/inductor_debug_cpu.ipynb)
 

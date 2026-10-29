@@ -208,7 +208,7 @@ Finally, we can run the algorithm.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: neural_style_tutorial.ipynb`](../_downloads/cad5020cab595c3bf83a518b7e4d4125/neural_style_tutorial.ipynb)
 

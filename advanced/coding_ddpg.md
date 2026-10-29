@@ -544,7 +544,7 @@ To iterate further on this loss module we might consider:
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: coding_ddpg.ipynb`](../_downloads/e9ea08c1c8bbc809d69c69a6043d56ee/coding_ddpg.ipynb)
 

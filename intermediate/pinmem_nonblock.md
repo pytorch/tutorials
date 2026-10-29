@@ -381,7 +381,7 @@ what was discussed in this tutorial, check the following references:
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: pinmem_nonblock.ipynb`](../_downloads/6a760a243fcbf87fb3368be3d4d860ee/pinmem_nonblock.ipynb)
 

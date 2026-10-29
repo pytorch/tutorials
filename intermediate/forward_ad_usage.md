@@ -131,7 +131,7 @@ to the module.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: forward_ad_usage.ipynb`](../_downloads/31e117c487018c27130cd7b1fd3e3cad/forward_ad_usage.ipynb)
 
