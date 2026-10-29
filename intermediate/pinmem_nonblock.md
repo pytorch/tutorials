@@ -286,7 +286,7 @@ The key lies in the DataLoader's use of a separate thread to handle the transfer
 memory, thus preventing any blockage in the main thread.
 
 To illustrate this, we will use the TensorDict primitive from the homonymous library.
-When invoking [`to()`](https://docs.pytorch.org/tensordict/stable/reference/generated/tensordict.TensorDict.html#tensordict.TensorDict.to), the default behavior is to send tensors to the device asynchronously,
+When invoking [`to()`](https://docs.pytorch.org/tensordict/stable/reference/generated/tensordict.TensorDictBase.to.html#tensordict.TensorDictBase.to), the default behavior is to send tensors to the device asynchronously,
 followed by a single call to `torch.device.synchronize()` afterwards.
 
 Additionally, `TensorDict.to()` includes a `non_blocking_pin` option which initiates multiple threads to execute
@@ -381,7 +381,7 @@ what was discussed in this tutorial, check the following references:
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: pinmem_nonblock.ipynb`](../_downloads/6a760a243fcbf87fb3368be3d4d860ee/pinmem_nonblock.ipynb)
 

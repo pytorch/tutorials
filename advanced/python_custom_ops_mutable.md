@@ -89,6 +89,11 @@ def compiled_numpy_sin_out(x):
 torch.testing.assert_close(compiled_numpy_sin_out(x), x.sin())
 ```
 
+```
+/usr/local/lib/python3.12/dist-packages/triton/knobs.py:504: UserWarning: TRITON_DEFAULT_FP_FUSION is unset: defaulting to FP fusion ENABLED for backward compatibility in Triton 3.9. The default will change to DISABLED in Triton 3.10; set TRITON_DEFAULT_FP_FUSION=1 to keep fusion enabled or =0 to adopt the new default early and silence this warning.
+ warn_once(FP_FUSION_DEFAULT_WARNING)
+```
+
 ## PyTorch-style in-place and out= operators
 
 Starting in PyTorch 2.13, `torch.library.custom_op` supports tagged
@@ -173,7 +178,7 @@ for example in examples:
 For autograd, `torch.vmap`, or other subsystem behavior, continue to
 [Adding Training and Other Registrations to Python Custom Operators](python_custom_ops_registrations.html#python-custom-ops-registrations).
 
-**Total running time of the script:** (0 minutes 3.148 seconds)
+**Total running time of the script:** (0 minutes 3.092 seconds)
 
 [`Download Jupyter notebook: python_custom_ops_mutable.ipynb`](../_downloads/2ad45859ef46acfccc19a6cf604ed3bf/python_custom_ops_mutable.ipynb)
 

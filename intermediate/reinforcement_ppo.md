@@ -91,7 +91,7 @@ to configure our loss module.
 4. Next, we will create the replay buffer and data loader.
 5. Finally, we will run our training loop and analyze the results.
 
-Throughout this tutorial, we'll be using the `tensordict` library.
+Throughout this tutorial, we'll be using the [`tensordict`](https://docs.pytorch.org/tensordict/stable/reference/td.html#module-tensordict) library.
 [`TensorDict`](https://docs.pytorch.org/tensordict/stable/reference/generated/tensordict.TensorDict.html#tensordict.TensorDict) is the lingua franca of TorchRL: it helps us abstract
 what a module reads and writes and care less about the specific data
 description and more about the algorithm itself.

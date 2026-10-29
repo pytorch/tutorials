@@ -205,7 +205,7 @@ please check out [Optional: Data Parallelism](data_parallel_tutorial.html).
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: cifar10_tutorial.ipynb`](../../_downloads/4e865243430a47a00d551ca0579a6f6c/cifar10_tutorial.ipynb)
 
