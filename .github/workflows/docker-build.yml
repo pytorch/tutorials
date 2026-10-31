@@ -2,6 +2,8 @@ name: Docker Build
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1,4'  # 06:00 UTC every Monday and Thursday
   push:
     branches:
       - main
@@ -67,5 +69,5 @@ jobs:
               -t ${{ steps.tag.outputs.docker-image }}
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{ github.event_name == 'workflow_dispatch' }}-${{ github.event_name == 'schedule' }}
   cancel-in-progress: true
