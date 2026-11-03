@@ -54,4 +54,6 @@ redirects = {
     "unstable/skip_param_init.html": "https://docs.pytorch.org/tutorials/recipes/recipes/module_load_state_dict_tips.html",
     "unstable_source/backend_config_tutorial.rst": "../index.html",
     "prototype/maskedtensor_overview.html": "../unstable/maskedtensor_overview.html",
+    "beginner/basics/tensor_tutorial.html": "https://docs.pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html",
+    "beginner/basics/autograd_tutorial.html": "https://docs.pytorch.org/tutorials/beginner/basics/autogradqs_tutorial.html",
 }
