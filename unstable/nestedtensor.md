@@ -157,7 +157,7 @@ For more information, check out the docs for the
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: nestedtensor.ipynb`](../_downloads/0e22044ad9c3abd953c575aedd5e4595/nestedtensor.ipynb)
 

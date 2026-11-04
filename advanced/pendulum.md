@@ -468,7 +468,7 @@ to write custom transformations;
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: pendulum.ipynb`](../_downloads/8016e5cfa285bd92b9684c45552fffcc/pendulum.ipynb)
 

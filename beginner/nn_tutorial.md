@@ -466,7 +466,7 @@ what we've seen:
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: nn_tutorial.ipynb`](../_downloads/d9398fce39ca80dc4bb8b8ea55b575a8/nn_tutorial.ipynb)
 

@@ -107,7 +107,7 @@ Changes in the NumPy array reflects in the tensor.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: tensor_tutorial.ipynb`](../../_downloads/3dbbd6931d76adb0dc37d4e88b328852/tensor_tutorial.ipynb)
 

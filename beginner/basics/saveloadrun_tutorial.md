@@ -61,7 +61,7 @@ This approach uses Python [pickle](https://docs.python.org/3/library/pickle.html
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: saveloadrun_tutorial.ipynb`](../../_downloads/11f1adacb7d237f2041ce267ac38abb6/saveloadrun_tutorial.ipynb)
 

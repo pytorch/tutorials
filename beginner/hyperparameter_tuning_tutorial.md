@@ -358,7 +358,7 @@ examples](https://docs.ray.io/en/latest/tune/examples/index.html)
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: hyperparameter_tuning_tutorial.ipynb`](../_downloads/30bcc2970bf630097b13789b5cdcea48/hyperparameter_tuning_tutorial.ipynb)
 

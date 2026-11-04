@@ -44,7 +44,7 @@ plt.ion() # interactive mode
 ```
 
 ```
-<contextlib.ExitStack object at 0x7f68f8eb75f0>
+<contextlib.ExitStack object at 0x7fa4bb834950>
 ```
 
 ## Loading the data
@@ -78,17 +78,24 @@ test_loader = torch.utils.data.DataLoader(
 
 ```
 0%| | 0.00/9.91M [00:00<?, ?B/s]
- 16%|█▌ | 1.54M/9.91M [00:00<00:00, 14.3MB/s]
-100%|██████████| 9.91M/9.91M [00:00<00:00, 66.7MB/s]
+ 1%| | 65.5k/9.91M [00:00<00:18, 523kB/s]
+ 2%|▏ | 197k/9.91M [00:00<00:11, 830kB/s]
+ 5%|▌ | 524k/9.91M [00:00<00:05, 1.65MB/s]
+ 21%|██ | 2.06M/9.91M [00:00<00:01, 5.85MB/s]
+ 78%|███████▊ | 7.77M/9.91M [00:00<00:00, 20.2MB/s]
+100%|██████████| 9.91M/9.91M [00:00<00:00, 15.6MB/s]
 
  0%| | 0.00/28.9k [00:00<?, ?B/s]
-100%|██████████| 28.9k/28.9k [00:00<00:00, 2.98MB/s]
+100%|██████████| 28.9k/28.9k [00:00<00:00, 422kB/s]
 
  0%| | 0.00/1.65M [00:00<?, ?B/s]
-100%|██████████| 1.65M/1.65M [00:00<00:00, 20.1MB/s]
+ 6%|▌ | 98.3k/1.65M [00:00<00:01, 811kB/s]
+ 12%|█▏ | 197k/1.65M [00:00<00:01, 813kB/s]
+ 44%|████▎ | 721k/1.65M [00:00<00:00, 2.42MB/s]
+100%|██████████| 1.65M/1.65M [00:00<00:00, 3.89MB/s]
 
  0%| | 0.00/4.54k [00:00<?, ?B/s]
-100%|██████████| 4.54k/4.54k [00:00<00:00, 29.8MB/s]
+100%|██████████| 4.54k/4.54k [00:00<00:00, 16.8MB/s]
 ```
 
 ## Depicting spatial transformer networks
@@ -280,110 +287,110 @@ plt.show()
  grid = F.affine_grid(theta, x.size())
 /__w/tutorials/tutorials/pytorch/tutorials/intermediate_source/spatial_transformer_tutorial.py:131: UserWarning: Default grid_sample and affine_grid behavior has changed to align_corners=False since 1.3.0. Please specify align_corners=True if the old behavior is desired. See the documentation of grid_sample for details.
  x = F.grid_sample(x, grid)
-Train Epoch: 1 [0/60000 (0%)] Loss: 2.304758
-Train Epoch: 1 [32000/60000 (53%)] Loss: 0.914631
-/usr/local/lib/python3.12/dist-packages/torch/nn/functional.py:3236: UserWarning: size_average and reduce args will be deprecated, please use reduction='sum' instead.
+Train Epoch: 1 [0/60000 (0%)] Loss: 2.336624
+Train Epoch: 1 [32000/60000 (53%)] Loss: 1.075680
+/var/lib/ci-user/.local/lib/python3.12/site-packages/torch/nn/functional.py:3236: UserWarning: size_average and reduce args will be deprecated, please use reduction='sum' instead.
  reduction = _Reduction.legacy_get_string(size_average, reduce)
 
-Test set: Average loss: 0.2133, Accuracy: 9429/10000 (94%)
+Test set: Average loss: 0.2073, Accuracy: 9407/10000 (94%)
 
-Train Epoch: 2 [0/60000 (0%)] Loss: 0.512716
-Train Epoch: 2 [32000/60000 (53%)] Loss: 0.249913
+Train Epoch: 2 [0/60000 (0%)] Loss: 0.376179
+Train Epoch: 2 [32000/60000 (53%)] Loss: 0.219004
 
-Test set: Average loss: 0.1245, Accuracy: 9604/10000 (96%)
+Test set: Average loss: 0.1618, Accuracy: 9503/10000 (95%)
 
-Train Epoch: 3 [0/60000 (0%)] Loss: 0.378726
-Train Epoch: 3 [32000/60000 (53%)] Loss: 0.251929
+Train Epoch: 3 [0/60000 (0%)] Loss: 0.470198
+Train Epoch: 3 [32000/60000 (53%)] Loss: 0.307644
 
-Test set: Average loss: 0.0962, Accuracy: 9707/10000 (97%)
+Test set: Average loss: 0.0926, Accuracy: 9726/10000 (97%)
 
-Train Epoch: 4 [0/60000 (0%)] Loss: 0.207263
-Train Epoch: 4 [32000/60000 (53%)] Loss: 0.120656
+Train Epoch: 4 [0/60000 (0%)] Loss: 0.305977
+Train Epoch: 4 [32000/60000 (53%)] Loss: 0.161822
 
-Test set: Average loss: 0.0833, Accuracy: 9724/10000 (97%)
+Test set: Average loss: 0.0912, Accuracy: 9737/10000 (97%)
 
-Train Epoch: 5 [0/60000 (0%)] Loss: 0.278982
-Train Epoch: 5 [32000/60000 (53%)] Loss: 0.145636
+Train Epoch: 5 [0/60000 (0%)] Loss: 0.173277
+Train Epoch: 5 [32000/60000 (53%)] Loss: 0.148331
 
-Test set: Average loss: 0.0843, Accuracy: 9737/10000 (97%)
+Test set: Average loss: 0.0639, Accuracy: 9810/10000 (98%)
 
-Train Epoch: 6 [0/60000 (0%)] Loss: 0.368267
-Train Epoch: 6 [32000/60000 (53%)] Loss: 0.175050
+Train Epoch: 6 [0/60000 (0%)] Loss: 0.167790
+Train Epoch: 6 [32000/60000 (53%)] Loss: 0.101866
 
-Test set: Average loss: 0.0863, Accuracy: 9734/10000 (97%)
+Test set: Average loss: 0.0686, Accuracy: 9805/10000 (98%)
 
-Train Epoch: 7 [0/60000 (0%)] Loss: 0.089520
-Train Epoch: 7 [32000/60000 (53%)] Loss: 0.099340
+Train Epoch: 7 [0/60000 (0%)] Loss: 0.478242
+Train Epoch: 7 [32000/60000 (53%)] Loss: 0.041856
 
-Test set: Average loss: 0.0633, Accuracy: 9814/10000 (98%)
+Test set: Average loss: 0.0590, Accuracy: 9824/10000 (98%)
 
-Train Epoch: 8 [0/60000 (0%)] Loss: 0.225170
-Train Epoch: 8 [32000/60000 (53%)] Loss: 0.148483
+Train Epoch: 8 [0/60000 (0%)] Loss: 0.102916
+Train Epoch: 8 [32000/60000 (53%)] Loss: 0.535285
 
-Test set: Average loss: 0.0514, Accuracy: 9846/10000 (98%)
+Test set: Average loss: 0.0487, Accuracy: 9844/10000 (98%)
 
-Train Epoch: 9 [0/60000 (0%)] Loss: 0.086187
-Train Epoch: 9 [32000/60000 (53%)] Loss: 0.159657
+Train Epoch: 9 [0/60000 (0%)] Loss: 0.187716
+Train Epoch: 9 [32000/60000 (53%)] Loss: 0.154088
 
-Test set: Average loss: 0.0584, Accuracy: 9817/10000 (98%)
+Test set: Average loss: 0.0461, Accuracy: 9850/10000 (98%)
 
-Train Epoch: 10 [0/60000 (0%)] Loss: 0.167905
-Train Epoch: 10 [32000/60000 (53%)] Loss: 0.158481
+Train Epoch: 10 [0/60000 (0%)] Loss: 0.072426
+Train Epoch: 10 [32000/60000 (53%)] Loss: 0.257587
 
-Test set: Average loss: 0.0464, Accuracy: 9856/10000 (99%)
+Test set: Average loss: 0.0590, Accuracy: 9823/10000 (98%)
 
-Train Epoch: 11 [0/60000 (0%)] Loss: 0.226291
-Train Epoch: 11 [32000/60000 (53%)] Loss: 0.229056
+Train Epoch: 11 [0/60000 (0%)] Loss: 0.172788
+Train Epoch: 11 [32000/60000 (53%)] Loss: 0.203015
 
-Test set: Average loss: 0.0423, Accuracy: 9867/10000 (99%)
+Test set: Average loss: 0.0453, Accuracy: 9867/10000 (99%)
 
-Train Epoch: 12 [0/60000 (0%)] Loss: 0.189204
-Train Epoch: 12 [32000/60000 (53%)] Loss: 0.131266
+Train Epoch: 12 [0/60000 (0%)] Loss: 0.099641
+Train Epoch: 12 [32000/60000 (53%)] Loss: 0.080611
 
-Test set: Average loss: 0.0440, Accuracy: 9867/10000 (99%)
+Test set: Average loss: 0.0487, Accuracy: 9859/10000 (99%)
 
-Train Epoch: 13 [0/60000 (0%)] Loss: 0.312979
-Train Epoch: 13 [32000/60000 (53%)] Loss: 0.128082
+Train Epoch: 13 [0/60000 (0%)] Loss: 0.096336
+Train Epoch: 13 [32000/60000 (53%)] Loss: 0.116297
 
-Test set: Average loss: 0.0481, Accuracy: 9842/10000 (98%)
+Test set: Average loss: 0.0436, Accuracy: 9867/10000 (99%)
 
-Train Epoch: 14 [0/60000 (0%)] Loss: 0.069934
-Train Epoch: 14 [32000/60000 (53%)] Loss: 0.040659
+Train Epoch: 14 [0/60000 (0%)] Loss: 0.070649
+Train Epoch: 14 [32000/60000 (53%)] Loss: 0.021157
 
-Test set: Average loss: 0.0412, Accuracy: 9872/10000 (99%)
+Test set: Average loss: 0.0431, Accuracy: 9877/10000 (99%)
 
-Train Epoch: 15 [0/60000 (0%)] Loss: 0.139827
-Train Epoch: 15 [32000/60000 (53%)] Loss: 0.046993
+Train Epoch: 15 [0/60000 (0%)] Loss: 0.060870
+Train Epoch: 15 [32000/60000 (53%)] Loss: 0.201184
 
-Test set: Average loss: 0.0513, Accuracy: 9844/10000 (98%)
+Test set: Average loss: 0.0402, Accuracy: 9871/10000 (99%)
 
-Train Epoch: 16 [0/60000 (0%)] Loss: 0.043719
-Train Epoch: 16 [32000/60000 (53%)] Loss: 0.148192
+Train Epoch: 16 [0/60000 (0%)] Loss: 0.010040
+Train Epoch: 16 [32000/60000 (53%)] Loss: 0.180157
 
-Test set: Average loss: 0.0420, Accuracy: 9871/10000 (99%)
+Test set: Average loss: 0.0385, Accuracy: 9876/10000 (99%)
 
-Train Epoch: 17 [0/60000 (0%)] Loss: 0.035216
-Train Epoch: 17 [32000/60000 (53%)] Loss: 0.039975
+Train Epoch: 17 [0/60000 (0%)] Loss: 0.072763
+Train Epoch: 17 [32000/60000 (53%)] Loss: 0.294666
 
-Test set: Average loss: 0.0459, Accuracy: 9866/10000 (99%)
+Test set: Average loss: 0.0661, Accuracy: 9811/10000 (98%)
 
-Train Epoch: 18 [0/60000 (0%)] Loss: 0.098484
-Train Epoch: 18 [32000/60000 (53%)] Loss: 0.080079
+Train Epoch: 18 [0/60000 (0%)] Loss: 0.159775
+Train Epoch: 18 [32000/60000 (53%)] Loss: 0.104366
 
-Test set: Average loss: 0.0371, Accuracy: 9894/10000 (99%)
+Test set: Average loss: 0.0861, Accuracy: 9759/10000 (98%)
 
-Train Epoch: 19 [0/60000 (0%)] Loss: 0.054572
-Train Epoch: 19 [32000/60000 (53%)] Loss: 0.049911
+Train Epoch: 19 [0/60000 (0%)] Loss: 0.205394
+Train Epoch: 19 [32000/60000 (53%)] Loss: 0.049480
 
-Test set: Average loss: 0.0390, Accuracy: 9880/10000 (99%)
+Test set: Average loss: 0.0393, Accuracy: 9880/10000 (99%)
 
-Train Epoch: 20 [0/60000 (0%)] Loss: 0.030184
-Train Epoch: 20 [32000/60000 (53%)] Loss: 0.117400
+Train Epoch: 20 [0/60000 (0%)] Loss: 0.024478
+Train Epoch: 20 [32000/60000 (53%)] Loss: 0.042878
 
-Test set: Average loss: 0.0526, Accuracy: 9860/10000 (99%)
+Test set: Average loss: 0.0411, Accuracy: 9883/10000 (99%)
 ```
 
-**Total running time of the script:** (1 minutes 27.991 seconds)
+**Total running time of the script:** (1 minutes 29.494 seconds)
 
 [`Download Jupyter notebook: spatial_transformer_tutorial.ipynb`](../_downloads/a5513958454950ed22df8da4c47f6429/spatial_transformer_tutorial.ipynb)
 

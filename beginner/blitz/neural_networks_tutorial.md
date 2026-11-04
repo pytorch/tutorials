@@ -192,7 +192,7 @@ as explained in the Backprop section.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: neural_networks_tutorial.ipynb`](../../_downloads/c029676472d90691aa145c6fb97a61c3/neural_networks_tutorial.ipynb)
 

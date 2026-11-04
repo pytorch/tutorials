@@ -43,7 +43,7 @@ input and may have some trainable weights.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: polynomial_nn.ipynb`](../../_downloads/702a393951467ef6b030977e60a85afc/polynomial_nn.ipynb)
 

@@ -177,7 +177,7 @@ For more information, please check out
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: data_parallel_tutorial.ipynb`](../../_downloads/7f37028fb3517ca10f3388f4bb4889b8/data_parallel_tutorial.ipynb)
 

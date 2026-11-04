@@ -96,7 +96,7 @@ For more information, see: [torch.compiler.set_stance API documentation](https:/
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: torch_compiler_set_stance_tutorial.ipynb`](../_downloads/60868f136246d48ff6f18abf35fdf18e/torch_compiler_set_stance_tutorial.ipynb)
 

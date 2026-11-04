@@ -188,7 +188,7 @@ models.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: gpu_quantization_torchao_tutorial.ipynb`](../_downloads/2a01a02f305eaf9b4939c691e606407a/gpu_quantization_torchao_tutorial.ipynb)
 

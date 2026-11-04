@@ -196,7 +196,7 @@ learning, and more
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: trainingyt.ipynb`](../../_downloads/770632dd3941d2a51b831c52ded57aa2/trainingyt.ipynb)
 

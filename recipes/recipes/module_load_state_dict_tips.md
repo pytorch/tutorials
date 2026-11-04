@@ -112,7 +112,7 @@ be used to aid when loading a model from a checkpoint.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: module_load_state_dict_tips.ipynb`](../../_downloads/fcca435d443f10eec1be8769b2b3a010/module_load_state_dict_tips.ipynb)
 

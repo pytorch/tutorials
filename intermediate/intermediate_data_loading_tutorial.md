@@ -430,7 +430,7 @@ and performance is dependent on the specific workload.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: intermediate_data_loading_tutorial.ipynb`](../_downloads/7cb97784540ac52bd6ef181406fafb54/intermediate_data_loading_tutorial.ipynb)
 

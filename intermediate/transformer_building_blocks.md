@@ -337,7 +337,7 @@ which flexible and performant transformer layers can be implemented by users of 
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: transformer_building_blocks.ipynb`](../_downloads/e201125c39959609ca168c306995205c/transformer_building_blocks.ipynb)
 

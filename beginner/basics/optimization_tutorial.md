@@ -100,7 +100,7 @@ Feel free to increase the number of epochs to track the model's improving perfor
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: optimization_tutorial.ipynb`](../../_downloads/91d72708edab956d7293bb263e2ab53f/optimization_tutorial.ipynb)
 
