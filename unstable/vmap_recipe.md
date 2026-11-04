@@ -93,7 +93,7 @@ should be, but if you have ideas, please comment in
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: vmap_recipe.ipynb`](../_downloads/baac6b344671f1d23068ee2437262745/vmap_recipe.ipynb)
 

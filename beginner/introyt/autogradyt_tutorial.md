@@ -142,7 +142,7 @@ plt.plot(a.detach(), b.detach())
 ![autogradyt tutorial](../../_images/sphx_glr_autogradyt_tutorial_001.png)
 
 ```
-[<matplotlib.lines.Line2D object at 0x7fd508bb3b60>]
+[<matplotlib.lines.Line2D object at 0x7f68f9e9fa70>]
 ```
 
 Let's have a closer look at the tensor `b`. When we print it, we see
@@ -233,17 +233,17 @@ print(a.grad_fn)
 
 ```
 d:
-<AddBackward0 object at 0x7fd508b635b0>
-((<MulBackward0 object at 0x7fd508deff70>, 0), (None, 0))
-((<SinBackward0 object at 0x7fd508bf2500>, 0), (None, 0))
-((<AccumulateGrad object at 0x7fd508b63c70>, 0),)
+<AddBackward0 object at 0x7f68f093bb50>
+((<MulBackward0 object at 0x7f68f0945300>, 0), (None, 0))
+((<SinBackward0 object at 0x7f68f0944490>, 0), (None, 0))
+((<AccumulateGrad object at 0x7f68f093a6e0>, 0),)
 ()
 
 c:
-<MulBackward0 object at 0x7fd508deff70>
+<MulBackward0 object at 0x7f68f0945300>
 
 b:
-<SinBackward0 object at 0x7fd508bf2500>
+<SinBackward0 object at 0x7f68f0944490>
 
 a:
 None
@@ -268,7 +268,7 @@ tensor([ 2.0000e+00, 1.9319e+00, 1.7321e+00, 1.4142e+00, 1.0000e+00,
  -1.4142e+00, -1.0000e+00, -5.1764e-01, 2.3850e-08, 5.1764e-01,
  1.0000e+00, 1.4142e+00, 1.7321e+00, 1.9319e+00, 2.0000e+00])
 
-[<matplotlib.lines.Line2D object at 0x7fd50b50acc0>]
+[<matplotlib.lines.Line2D object at 0x7f68f353d670>]
 ```
 
 Recall the computation steps we took to get here:
@@ -339,8 +339,8 @@ print(model.layer2.weight.grad)
 ```
 
 ```
-tensor([-0.0848, -0.0226, -0.0777, 0.0933, 0.0228, 0.0492, -0.0157, 0.0324,
- 0.0909, -0.0821], grad_fn=<SliceBackward0>)
+tensor([-0.0729, 0.0327, -0.0291, 0.0868, 0.0580, 0.0436, 0.0948, -0.0022,
+ 0.0759, 0.0578], grad_fn=<SliceBackward0>)
 None
 ```
 
@@ -359,7 +359,7 @@ print(loss)
 ```
 
 ```
-tensor(147.1632, grad_fn=<SumBackward0>)
+tensor(210.4202, grad_fn=<SumBackward0>)
 ```
 
 Now, let's call `loss.backward()` and see what happens:
@@ -371,10 +371,10 @@ print(model.layer2.weight.grad[0][0:10])
 ```
 
 ```
-tensor([-0.0848, -0.0226, -0.0777, 0.0933, 0.0228, 0.0492, -0.0157, 0.0324,
- 0.0909, -0.0821], grad_fn=<SliceBackward0>)
-tensor([-2.9606, -1.2460, -5.6351, 0.7143, -0.9712, 1.1169, 0.5699, -1.9355,
- 2.4846, -0.4551])
+tensor([-0.0729, 0.0327, -0.0291, 0.0868, 0.0580, 0.0436, 0.0948, -0.0022,
+ 0.0759, 0.0578], grad_fn=<SliceBackward0>)
+tensor([ 4.0797, 3.2721, 2.8032, 0.6643, -1.0900, 2.6377, 2.7364, 1.1180,
+ 3.3890, 1.0433])
 ```
 
 We can see that the gradients have been computed for each learning
@@ -389,10 +389,10 @@ print(model.layer2.weight.grad[0][0:10])
 ```
 
 ```
-tensor([-0.0819, -0.0214, -0.0721, 0.0926, 0.0237, 0.0481, -0.0163, 0.0343,
- 0.0884, -0.0816], grad_fn=<SliceBackward0>)
-tensor([-2.9606, -1.2460, -5.6351, 0.7143, -0.9712, 1.1169, 0.5699, -1.9355,
- 2.4846, -0.4551])
+tensor([-0.0770, 0.0294, -0.0319, 0.0862, 0.0591, 0.0409, 0.0920, -0.0033,
+ 0.0725, 0.0567], grad_fn=<SliceBackward0>)
+tensor([ 4.0797, 3.2721, 2.8032, 0.6643, -1.0900, 2.6377, 2.7364, 1.1180,
+ 3.3890, 1.0433])
 ```
 
 You should see that `layer2`'s weights have changed.
@@ -418,10 +418,10 @@ print(model.layer2.weight.grad[0][0:10])
 ```
 
 ```
-tensor([-2.9606, -1.2460, -5.6351, 0.7143, -0.9712, 1.1169, 0.5699, -1.9355,
- 2.4846, -0.4551])
-tensor([ -1.6686, 4.5204, -26.7637, 11.7485, 6.7804, -0.2139, -0.2336,
- -7.5292, -5.0266, -0.2208])
+tensor([ 4.0797, 3.2721, 2.8032, 0.6643, -1.0900, 2.6377, 2.7364, 1.1180,
+ 3.3890, 1.0433])
+tensor([ 25.0878, 11.2951, 5.4707, 10.9985, -8.3104, -12.4639, 14.8858,
+ -7.0886, 2.0797, -3.9283])
 tensor([0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
 ```
 
@@ -540,8 +540,8 @@ print(y)
 ```
 
 ```
-tensor([0.6196, 0.7743, 0.9553, 0.1779, 0.2662], requires_grad=True)
-tensor([0.6196, 0.7743, 0.9553, 0.1779, 0.2662])
+tensor([0.6737, 0.6155, 0.0638, 0.2858, 0.3841], requires_grad=True)
+tensor([0.6737, 0.6155, 0.0638, 0.2858, 0.3841])
 ```
 
 We did this above when we wanted to graph some of our tensors. This is
@@ -599,11 +599,11 @@ print(prf.key_averages().table(sort_by="self_cpu_time_total"))
 ------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------
  Name Self CPU % Self CPU CPU total % CPU total CPU time avg Self CUDA Self CUDA % CUDA total CUDA time avg # of Calls
 ------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------
- aten::mul 51.02% 3.400ms 51.02% 3.400ms 3.400us 5.730ms 50.93% 5.730ms 5.730us 1000
- aten::div 48.98% 3.264ms 48.98% 3.264ms 3.264us 5.520ms 49.07% 5.520ms 5.520us 1000
+ aten::mul 50.41% 2.714ms 50.41% 2.714ms 2.714us 4.959ms 50.10% 4.959ms 4.959us 1000
+ aten::div 49.59% 2.670ms 49.59% 2.670ms 2.670us 4.940ms 49.90% 4.940ms 4.940us 1000
 ------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------
-Self CPU time total: 6.664ms
-Self CUDA time total: 11.250ms
+Self CPU time total: 5.384ms
+Self CUDA time total: 9.899ms
 ```
 
 The profiler can also label individual sub-blocks of code, break out the
@@ -683,7 +683,7 @@ print(y)
 ```
 
 ```
-tensor([529.1823, 750.2889, 720.9467], grad_fn=<MulBackward0>)
+tensor([ 243.5157, -147.5233, -1270.7712], grad_fn=<MulBackward0>)
 ```
 
 If we tried to call `y.backward()` now, we'd get a runtime error and a
@@ -700,7 +700,7 @@ print(x.grad)
 ```
 
 ```
-tensor([5.1200e+01, 5.1200e+02, 5.1200e-02])
+tensor([4.0960e+02, 4.0960e+03, 4.0960e-01])
 ```
 
 (Note that the output gradients are all related to powers of two - which
@@ -728,9 +728,9 @@ torch.autograd.functional.jacobian(exp_adder, inputs)
 ```
 
 ```
-(tensor([0.8011]), tensor([0.0904]))
+(tensor([0.1863]), tensor([0.4431]))
 
-(tensor([[4.4560]]), tensor([[3.]]))
+(tensor([[2.4096]]), tensor([[3.]]))
 ```
 
 If you look closely, the first output should equal \(2e^x\) (since
@@ -746,11 +746,11 @@ torch.autograd.functional.jacobian(exp_adder, inputs)
 ```
 
 ```
-(tensor([0.5258, 0.4734, 0.7601]), tensor([0.4420, 0.8661, 0.9940]))
+(tensor([0.9985, 0.7751, 0.4095]), tensor([0.9995, 0.8861, 0.5104]))
 
-(tensor([[3.3837, 0.0000, 0.0000],
- [0.0000, 3.2108, 0.0000],
- [0.0000, 0.0000, 4.2769]]), tensor([[3., 0., 0.],
+(tensor([[5.4282, 0.0000, 0.0000],
+ [0.0000, 4.3418, 0.0000],
+ [0.0000, 0.0000, 3.0122]]), tensor([[3., 0., 0.],
  [0., 3., 0.],
  [0., 0., 3.]]))
 ```
@@ -775,7 +775,7 @@ torch.autograd.functional.vjp(do_some_doubling, inputs, v=my_gradients)
 ```
 
 ```
-(tensor([-1557.0320, -276.4251, 1037.8961]), tensor([1.0240e+02, 1.0240e+03, 1.0240e-01]))
+(tensor([ -373.0632, -446.2516, -1000.9027]), tensor([5.1200e+01, 5.1200e+02, 5.1200e-02]))
 ```
 
 The `torch.autograd.functional.jvp()` method performs the same matrix
@@ -786,7 +786,7 @@ For more information, including performance notes on the [docs for the
 functional
 API](https://pytorch.org/docs/stable/autograd.html#functional-higher-level-api)
 
-**Total running time of the script:** (0 minutes 0.485 seconds)
+**Total running time of the script:** (0 minutes 0.572 seconds)
 
 [`Download Jupyter notebook: autogradyt_tutorial.ipynb`](../../_downloads/ed9d4f94afb79f7dada6742a06c486a5/autogradyt_tutorial.ipynb)
 
