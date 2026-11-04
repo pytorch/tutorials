@@ -424,8 +424,10 @@ config.cpp.enable_kernel_profile = True
 # We are able to get the profiling table and trace files.
 
 # bench.py
+import os
 from torch.profiler import profile, schedule, ProfilerActivity
 RESULT_DIR = "./prof_trace"
+os.makedirs(RESULT_DIR, exist_ok=True)
 my_schedule = schedule(
     skip_first=10,
     wait=5,
