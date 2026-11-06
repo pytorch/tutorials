@@ -14,7 +14,6 @@ PyTorch with each method having their advantages in certain use cases:
 - Fully Sharded Data Parallel (FSDP2)
 - Tensor Parallel (TP)
 - Device Mesh
-- Remote Procedure Call (RPC) distributed training
 - Monarch Framework
 - Custom Extensions
 
@@ -81,44 +80,6 @@ and how it can help with distributed training.
 Code
 
 [https://pytorch.org/tutorials/recipes/distributed_device_mesh.html?highlight=devicemesh](https://pytorch.org/tutorials/recipes/distributed_device_mesh.html?highlight=devicemesh)
-
-## Learn RPC
-
-Getting Started with Distributed RPC Framework
-
-This tutorial demonstrates how to get started with RPC-based distributed
-training.
-
-Code
-
-[https://pytorch.org/tutorials/intermediate/rpc_tutorial.html?utm_source=distr_landing&utm_medium=rpc_getting_started](https://pytorch.org/tutorials/intermediate/rpc_tutorial.html?utm_source=distr_landing&utm_medium=rpc_getting_started)
-
-Implementing a Parameter Server Using Distributed RPC Framework
-
-This tutorial walks you through a simple example of implementing a
-parameter server using PyTorch's Distributed RPC framework.
-
-Code
-
-[https://pytorch.org/tutorials/intermediate/rpc_param_server_tutorial.html?utm_source=distr_landing&utm_medium=rpc_param_server_tutorial](https://pytorch.org/tutorials/intermediate/rpc_param_server_tutorial.html?utm_source=distr_landing&utm_medium=rpc_param_server_tutorial)
-
-Implementing Batch RPC Processing Using Asynchronous Executions
-
-In this tutorial you will build batch-processing RPC applications
-with the @rpc.functions.async_execution decorator.
-
-Code
-
-[https://pytorch.org/tutorials/intermediate/rpc_async_execution.html?utm_source=distr_landing&utm_medium=rpc_async_execution](https://pytorch.org/tutorials/intermediate/rpc_async_execution.html?utm_source=distr_landing&utm_medium=rpc_async_execution)
-
-Combining Distributed DataParallel with Distributed RPC Framework
-
-In this tutorial you will learn how to combine distributed data
-parallelism with distributed model parallelism.
-
-Code
-
-[https://pytorch.org/tutorials/advanced/rpc_ddp_tutorial.html?utm_source=distr_landing&utm_medium=rpc_plus_ddp](https://pytorch.org/tutorials/advanced/rpc_ddp_tutorial.html?utm_source=distr_landing&utm_medium=rpc_plus_ddp)
 
 ## Learn Monarch
 

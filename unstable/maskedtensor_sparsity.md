@@ -53,7 +53,43 @@ The second method is easier to illustrate so we've shown that below, but for mor
 the approach, please read the Sparse COO Appendix.
 
 ```
+import torch
+from torch.masked import masked_tensor
+import warnings
+
 # Disable prototype warnings and such
+warnings.filterwarnings(action='ignore', category=UserWarning)
+
+values = torch.tensor([[0, 0, 3], [4, 0, 5]])
+mask = torch.tensor([[False, False, True], [False, False, True]])
+mt = masked_tensor(values, mask)
+sparse_coo_mt = mt.to_sparse_coo()
+
+print("mt:\n", mt)
+print("mt (sparse coo):\n", sparse_coo_mt)
+print("mt data (sparse coo):\n", sparse_coo_mt.get_data())
+```
+
+```
+mt:
+ MaskedTensor(
+ [
+ [ --, --, 3],
+ [ --, --, 5]
+ ]
+)
+mt (sparse coo):
+ MaskedTensor(
+ [
+ [ --, --, 3],
+ [ --, --, 5]
+ ]
+)
+mt data (sparse coo):
+ tensor(indices=tensor([[0, 1],
+ [2, 2]]),
+ values=tensor([3, 5]),
+ size=(2, 3), nnz=2, layout=torch.sparse_coo)
 ```
 
 ## Sparse CSR tensors
@@ -74,11 +110,45 @@ Of note, both sparse COO and CSR tensors are in a [beta](https://pytorch.org/doc
 
 By way of example:
 
+```
+mt_sparse_csr = mt.to_sparse_csr()
+
+print("mt (sparse csr):\n", mt_sparse_csr)
+print("mt data (sparse csr):\n", mt_sparse_csr.get_data())
+```
+
+```
+mt (sparse csr):
+ MaskedTensor(
+ [
+ [ --, --, 3],
+ [ --, --, 5]
+ ]
+)
+mt data (sparse csr):
+ tensor(crow_indices=tensor([0, 1, 2]),
+ col_indices=tensor([2, 2]),
+ values=tensor([3, 5]), size=(2, 3), nnz=2, layout=torch.sparse_csr)
+```
+
 ## Supported Operations
 
 ### Unary
 
 All [unary operators](https://pytorch.org/docs/master/masked.html#unary-operators) are supported, e.g.:
+
+```
+mt.sin()
+```
+
+```
+MaskedTensor(
+ [
+ [ --, --, 0.1411],
+ [ --, --, -0.9589]
+ ]
+)
+```
 
 ### Binary
 
@@ -88,9 +158,96 @@ find our [MaskedTensor: Advanced Semantics tutorial](https://pytorch.org/tutoria
 
 Please find an example below:
 
+```
+i = [[0, 1, 1],
+ [2, 0, 2]]
+v1 = [3, 4, 5]
+v2 = [20, 30, 40]
+m = torch.tensor([True, False, True])
+
+s1 = torch.sparse_coo_tensor(i, v1, (2, 3))
+s2 = torch.sparse_coo_tensor(i, v2, (2, 3))
+mask = torch.sparse_coo_tensor(i, m, (2, 3))
+
+mt1 = masked_tensor(s1, mask)
+mt2 = masked_tensor(s2, mask)
+
+print("mt1:\n", mt1)
+print("mt2:\n", mt2)
+```
+
+```
+mt1:
+ MaskedTensor(
+ [
+ [ --, --, 3],
+ [ --, --, 5]
+ ]
+)
+mt2:
+ MaskedTensor(
+ [
+ [ --, --, 20],
+ [ --, --, 40]
+ ]
+)
+```
+
+```
+print("torch.div(mt2, mt1):\n", torch.div(mt2, mt1))
+print("torch.mul(mt1, mt2):\n", torch.mul(mt1, mt2))
+```
+
+```
+torch.div(mt2, mt1):
+ MaskedTensor(
+ [
+ [ --, --, 6.6667],
+ [ --, --, 8.0000]
+ ]
+)
+torch.mul(mt1, mt2):
+ MaskedTensor(
+ [
+ [ --, --, 60],
+ [ --, --, 200]
+ ]
+)
+```
+
 ### Reductions
 
 Finally, [reductions](https://pytorch.org/docs/master/masked.html#reductions) are supported:
+
+```
+mt
+```
+
+```
+MaskedTensor(
+ [
+ [ --, --, 3],
+ [ --, --, 5]
+ ]
+)
+```
+
+```
+print("mt.sum():\n", mt.sum())
+print("mt.sum(dim=1):\n", mt.sum(dim=1))
+print("mt.amin():\n", mt.amin())
+```
+
+```
+mt.sum():
+ MaskedTensor(8, True)
+mt.sum(dim=1):
+ MaskedTensor(
+ [3, 5]
+)
+mt.amin():
+ MaskedTensor(3, True)
+```
 
 ### MaskedTensor Helper Methods
 
@@ -99,15 +256,76 @@ and identify the current layout:
 
 Setup:
 
+```
+v = [[3, 0, 0],
+ [0, 4, 5]]
+m = [[True, False, False],
+ [False, True, True]]
+
+mt = masked_tensor(torch.tensor(v), torch.tensor(m))
+mt
+```
+
+```
+MaskedTensor(
+ [
+ [3, --, --],
+ [ --, 4, 5]
+ ]
+)
+```
+
 `MaskedTensor.to_sparse_coo()` / `MaskedTensor.to_sparse_csr()` / `MaskedTensor.to_dense()`
 to help convert between the different layouts.
+
+```
+mt_sparse_coo = mt.to_sparse_coo()
+mt_sparse_csr = mt.to_sparse_csr()
+mt_dense = mt_sparse_coo.to_dense()
+```
 
 `MaskedTensor.is_sparse()` - this will check if the `MaskedTensor`'s layout
 matches any of the supported sparse layouts (currently COO and CSR).
 
+```
+print("mt_dense.is_sparse: ", mt_dense.is_sparse)
+print("mt_sparse_coo.is_sparse: ", mt_sparse_coo.is_sparse)
+print("mt_sparse_csr.is_sparse: ", mt_sparse_csr.is_sparse)
+```
+
+```
+mt_dense.is_sparse: False
+mt_sparse_coo.is_sparse: True
+mt_sparse_csr.is_sparse: True
+```
+
 `MaskedTensor.is_sparse_coo()`
 
+```
+print("mt_dense.is_sparse_coo(): ", mt_dense.is_sparse_coo())
+print("mt_sparse_coo.is_sparse_coo: ", mt_sparse_coo.is_sparse_coo())
+print("mt_sparse_csr.is_sparse_coo: ", mt_sparse_csr.is_sparse_coo())
+```
+
+```
+mt_dense.is_sparse_coo(): False
+mt_sparse_coo.is_sparse_coo: True
+mt_sparse_csr.is_sparse_coo: False
+```
+
 `MaskedTensor.is_sparse_csr()`
+
+```
+print("mt_dense.is_sparse_csr(): ", mt_dense.is_sparse_csr())
+print("mt_sparse_coo.is_sparse_csr: ", mt_sparse_coo.is_sparse_csr())
+print("mt_sparse_csr.is_sparse_csr: ", mt_sparse_csr.is_sparse_csr())
+```
+
+```
+mt_dense.is_sparse_csr(): False
+mt_sparse_coo.is_sparse_csr: False
+mt_sparse_csr.is_sparse_csr: True
+```
 
 ## Appendix
 
@@ -117,6 +335,36 @@ Recall in our original example, we created a `MaskedTensor`
 and then converted it to a sparse COO MaskedTensor with `MaskedTensor.to_sparse_coo()`.
 
 Alternatively, we can also construct a sparse COO MaskedTensor directly by passing in two sparse COO tensors:
+
+```
+values = torch.tensor([[0, 0, 3], [4, 0, 5]]).to_sparse()
+mask = torch.tensor([[False, False, True], [False, False, True]]).to_sparse()
+mt = masked_tensor(values, mask)
+
+print("values:\n", values)
+print("mask:\n", mask)
+print("mt:\n", mt)
+```
+
+```
+values:
+ tensor(indices=tensor([[0, 1, 1],
+ [2, 0, 2]]),
+ values=tensor([3, 4, 5]),
+ size=(2, 3), nnz=3, layout=torch.sparse_coo)
+mask:
+ tensor(indices=tensor([[0, 1],
+ [2, 2]]),
+ values=tensor([True, True]),
+ size=(2, 3), nnz=2, layout=torch.sparse_coo)
+mt:
+ MaskedTensor(
+ [
+ [ --, --, 3],
+ [ --, --, 5]
+ ]
+)
+```
 
 Instead of using [`torch.Tensor.to_sparse()`](https://docs.pytorch.org/docs/stable/generated/torch.Tensor.to_sparse.html#torch.Tensor.to_sparse), we can also create the sparse COO tensors directly,
 which brings us to a warning:
@@ -128,6 +376,40 @@ if the user does not specify the indices like in the above example,
 then the 0 values will be "unspecified" by default.
 
 Below, we explicitly specify the 0's:
+
+```
+i = [[0, 1, 1],
+ [2, 0, 2]]
+v = [3, 4, 5]
+m = torch.tensor([True, False, True])
+values = torch.sparse_coo_tensor(i, v, (2, 3))
+mask = torch.sparse_coo_tensor(i, m, (2, 3))
+mt2 = masked_tensor(values, mask)
+
+print("values:\n", values)
+print("mask:\n", mask)
+print("mt2:\n", mt2)
+```
+
+```
+values:
+ tensor(indices=tensor([[0, 1, 1],
+ [2, 0, 2]]),
+ values=tensor([3, 4, 5]),
+ size=(2, 3), nnz=3, layout=torch.sparse_coo)
+mask:
+ tensor(indices=tensor([[0, 1, 1],
+ [2, 0, 2]]),
+ values=tensor([ True, False, True]),
+ size=(2, 3), nnz=3, layout=torch.sparse_coo)
+mt2:
+ MaskedTensor(
+ [
+ [ --, --, 3],
+ [ --, --, 5]
+ ]
+)
+```
 
 Note that `mt` and `mt2` look identical on the surface, and in the vast majority of operations, will yield the same
 result. But this brings us to a detail on the implementation:
@@ -141,10 +423,57 @@ Therefore, under the hood, the data looks slightly different; `mt2` has the "4" 
 is completely without it. Their underlying data has different shapes,
 which would make operations like `mt + mt2` invalid.
 
+```
+print("mt data:\n", mt.get_data())
+print("mt2 data:\n", mt2.get_data())
+```
+
+```
+mt data:
+ tensor(indices=tensor([[0, 1],
+ [2, 2]]),
+ values=tensor([3, 5]),
+ size=(2, 3), nnz=2, layout=torch.sparse_coo)
+mt2 data:
+ tensor(indices=tensor([[0, 1, 1],
+ [2, 0, 2]]),
+ values=tensor([3, 4, 5]),
+ size=(2, 3), nnz=3, layout=torch.sparse_coo)
+```
+
 ### Sparse CSR Construction
 
 We can also construct a sparse CSR MaskedTensor using sparse CSR tensors,
 and like the example above, this results in a similar treatment under the hood.
+
+```
+crow_indices = torch.tensor([0, 2, 4])
+col_indices = torch.tensor([0, 1, 0, 1])
+values = torch.tensor([1, 2, 3, 4])
+mask_values = torch.tensor([True, False, False, True])
+
+csr = torch.sparse_csr_tensor(crow_indices, col_indices, values, dtype=torch.double)
+mask = torch.sparse_csr_tensor(crow_indices, col_indices, mask_values, dtype=torch.bool)
+mt = masked_tensor(csr, mask)
+
+print("mt:\n", mt)
+print("mt data:\n", mt.get_data())
+```
+
+```
+mt:
+ MaskedTensor(
+ [
+ [ 1.0000, --],
+ [ --, 4.0000]
+ ]
+)
+mt data:
+ tensor(crow_indices=tensor([0, 2, 4]),
+ col_indices=tensor([0, 1, 0, 1]),
+ values=tensor([1., 2., 3., 4.]), size=(2, 2), nnz=4,
+ dtype=torch.float64, layout=torch.sparse_csr)
+```
 
 ## Conclusion
 
@@ -160,11 +489,7 @@ To continue learning more, you can find our
 [Efficiently writing "sparse" semantics for Adagrad with MaskedTensor tutorial](https://pytorch.org/tutorials/prototype/maskedtensor_adagrad.html)
 to see an example of how MaskedTensor can simplify existing workflows with native masking semantics.
 
-```
-# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
-```
-
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.033 seconds)
 
 [`Download Jupyter notebook: maskedtensor_sparsity.ipynb`](../_downloads/0bfc601b4d08b8eb61463ae0c13808ac/maskedtensor_sparsity.ipynb)
 

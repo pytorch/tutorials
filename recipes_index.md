@@ -262,14 +262,6 @@ Distributed-Training
 
 ![](_static/img/thumbnails/cropped/profiler.png)](recipes/zero_redundancy_optimizer.html)
 
-[#### Direct Device-to-Device Communication with TensorPipe RPC
-
-How to use RPC with direct GPU-to-GPU communication.
-
-Distributed-Training
-
-![](_static/img/thumbnails/cropped/profiler.png)](recipes/cuda_rpc.html)
-
 [#### Getting Started with Distributed Checkpoint (DCP)
 
 Learn how to checkpoint distributed models with Distributed Checkpoint package.

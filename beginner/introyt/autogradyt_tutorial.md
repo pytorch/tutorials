@@ -104,12 +104,6 @@ to let us graph our results:
 
 ```
 # %matplotlib inline
-
-import torch
-
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-import math
 ```
 
 Next, we'll create an input tensor full of evenly spaced values on the
@@ -119,47 +113,11 @@ optional `requires_grad` option.) Setting this flag means that in
 every computation that follows, autograd will be accumulating the
 history of the computation in the output tensors of that computation.
 
-```
-a = torch.linspace(0.0, 2.0 * math.pi, steps=25, requires_grad=True)
-print(a)
-```
-
-```
-tensor([0.0000, 0.2618, 0.5236, 0.7854, 1.0472, 1.3090, 1.5708, 1.8326, 2.0944,
- 2.3562, 2.6180, 2.8798, 3.1416, 3.4034, 3.6652, 3.9270, 4.1888, 4.4506,
- 4.7124, 4.9742, 5.2360, 5.4978, 5.7596, 6.0214, 6.2832],
- requires_grad=True)
-```
-
 Next, we'll perform a computation, and plot its output in terms of its
 inputs:
 
-```
-b = torch.sin(a)
-plt.plot(a.detach(), b.detach())
-```
-
-![autogradyt tutorial](../../_images/sphx_glr_autogradyt_tutorial_001.png)
-
-```
-[<matplotlib.lines.Line2D object at 0x7fa4a34d7a70>]
-```
-
 Let's have a closer look at the tensor `b`. When we print it, we see
 an indicator that it is tracking its computation history:
-
-```
-print(b)
-```
-
-```
-tensor([ 0.0000e+00, 2.5882e-01, 5.0000e-01, 7.0711e-01, 8.6603e-01,
- 9.6593e-01, 1.0000e+00, 9.6593e-01, 8.6603e-01, 7.0711e-01,
- 5.0000e-01, 2.5882e-01, -8.7423e-08, -2.5882e-01, -5.0000e-01,
- -7.0711e-01, -8.6603e-01, -9.6593e-01, -1.0000e+00, -9.6593e-01,
- -8.6603e-01, -7.0711e-01, -5.0000e-01, -2.5882e-01, 1.7485e-07],
- grad_fn=<SinBackward0>)
-```
 
 This `grad_fn` gives us a hint that when we execute the
 backpropagation step and compute gradients, we'll need to compute the
@@ -167,42 +125,10 @@ derivative of \(\sin(x)\) for all this tensor's inputs.
 
 Let's perform some more computations:
 
-```
-c = 2 * b
-print(c)
-
-d = c + 1
-print(d)
-```
-
-```
-tensor([ 0.0000e+00, 5.1764e-01, 1.0000e+00, 1.4142e+00, 1.7321e+00,
- 1.9319e+00, 2.0000e+00, 1.9319e+00, 1.7321e+00, 1.4142e+00,
- 1.0000e+00, 5.1764e-01, -1.7485e-07, -5.1764e-01, -1.0000e+00,
- -1.4142e+00, -1.7321e+00, -1.9319e+00, -2.0000e+00, -1.9319e+00,
- -1.7321e+00, -1.4142e+00, -1.0000e+00, -5.1764e-01, 3.4969e-07],
- grad_fn=<MulBackward0>)
-tensor([ 1.0000e+00, 1.5176e+00, 2.0000e+00, 2.4142e+00, 2.7321e+00,
- 2.9319e+00, 3.0000e+00, 2.9319e+00, 2.7321e+00, 2.4142e+00,
- 2.0000e+00, 1.5176e+00, 1.0000e+00, 4.8236e-01, -3.5763e-07,
- -4.1421e-01, -7.3205e-01, -9.3185e-01, -1.0000e+00, -9.3185e-01,
- -7.3205e-01, -4.1421e-01, 4.7684e-07, 4.8236e-01, 1.0000e+00],
- grad_fn=<AddBackward0>)
-```
-
 Finally, let's compute a single-element output. When you call
 `.backward()` on a tensor with no arguments, it expects the calling
 tensor to contain only a single element, as is the case when computing a
 loss function.
-
-```
-out = d.sum()
-print(out)
-```
-
-```
-tensor(25., grad_fn=<SumBackward0>)
-```
 
 Each `grad_fn` stored with our tensors allows you to walk the
 computation all the way back to its inputs with its `next_functions`
@@ -211,65 +137,9 @@ shows us the gradient functions for all the prior tensors. Note that
 `a.grad_fn` is reported as `None`, indicating that this was an input
 to the function with no history of its own.
 
-```
-print("d:")
-print(d.grad_fn)
-print(d.grad_fn.next_functions)
-print(d.grad_fn.next_functions[0][0].next_functions)
-print(d.grad_fn.next_functions[0][0].next_functions[0][0].next_functions)
-print(
- d.grad_fn.next_functions[0][0]
- .next_functions[0][0]
- .next_functions[0][0]
- .next_functions
-)
-print("\nc:")
-print(c.grad_fn)
-print("\nb:")
-print(b.grad_fn)
-print("\na:")
-print(a.grad_fn)
-```
-
-```
-d:
-<AddBackward0 object at 0x7fa4ba0ea2c0>
-((<MulBackward0 object at 0x7fa4a34d6bc0>, 0), (None, 0))
-((<SinBackward0 object at 0x7fa4a34d6f80>, 0), (None, 0))
-((<AccumulateGrad object at 0x7fa4b82e03a0>, 0),)
-()
-
-c:
-<MulBackward0 object at 0x7fa4a34d6bc0>
-
-b:
-<SinBackward0 object at 0x7fa4a34d6f80>
-
-a:
-None
-```
-
 With all this machinery in place, how do we get derivatives out? You
 call the `backward()` method on the output, and check the input's
 `grad` property to inspect the gradients:
-
-```
-out.backward()
-print(a.grad)
-plt.plot(a.detach(), a.grad.detach())
-```
-
-![autogradyt tutorial](../../_images/sphx_glr_autogradyt_tutorial_002.png)
-
-```
-tensor([ 2.0000e+00, 1.9319e+00, 1.7321e+00, 1.4142e+00, 1.0000e+00,
- 5.1764e-01, -8.7423e-08, -5.1764e-01, -1.0000e+00, -1.4142e+00,
- -1.7321e+00, -1.9319e+00, -2.0000e+00, -1.9319e+00, -1.7321e+00,
- -1.4142e+00, -1.0000e+00, -5.1764e-01, 2.3850e-08, 5.1764e-01,
- 1.0000e+00, 1.4142e+00, 1.7321e+00, 1.9319e+00, 2.0000e+00])
-
-[<matplotlib.lines.Line2D object at 0x7fa4a32e5820>]
-```
 
 Recall the computation steps we took to get here:
 
@@ -298,33 +168,6 @@ it's used for its intended purpose? Let's define a small model and
 examine how it changes after a single training batch. First, define a
 few constants, our model, and some stand-ins for inputs and outputs:
 
-```
-BATCH_SIZE = 16
-DIM_IN = 1000
-HIDDEN_SIZE = 100
-DIM_OUT = 10
-
-class TinyModel(torch.nn.Module):
-
- def __init__(self):
- super(TinyModel, self).__init__()
-
- self.layer1 = torch.nn.Linear(DIM_IN, HIDDEN_SIZE)
- self.relu = torch.nn.ReLU()
- self.layer2 = torch.nn.Linear(HIDDEN_SIZE, DIM_OUT)
-
- def forward(self, x):
- x = self.layer1(x)
- x = self.relu(x)
- x = self.layer2(x)
- return x
-
-some_input = torch.randn(BATCH_SIZE, DIM_IN, requires_grad=False)
-ideal_output = torch.randn(BATCH_SIZE, DIM_OUT, requires_grad=False)
-
-model = TinyModel()
-```
-
 One thing you might notice is that we never specify
 `requires_grad=True` for the model's layers. Within a subclass of
 `torch.nn.Module`, it's assumed that we want to track gradients on the
@@ -333,67 +176,17 @@ layers' weights for learning.
 If we look at the layers of the model, we can examine the values of the
 weights, and verify that no gradients have been computed yet:
 
-```
-print(model.layer2.weight[0][0:10]) # just a small slice
-print(model.layer2.weight.grad)
-```
-
-```
-tensor([ 0.0283, -0.0262, -0.0205, -0.0819, -0.0953, -0.0812, 0.0398, -0.0861,
- 0.0914, -0.0735], grad_fn=<SliceBackward0>)
-None
-```
-
 Let's see how this changes when we run through one training batch. For a
 loss function, we'll just use the square of the Euclidean distance
 between our `prediction` and the `ideal_output`, and we'll use a
 basic stochastic gradient descent optimizer.
 
-```
-optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
-
-prediction = model(some_input)
-
-loss = (ideal_output - prediction).pow(2).sum()
-print(loss)
-```
-
-```
-tensor(174.5460, grad_fn=<SumBackward0>)
-```
-
 Now, let's call `loss.backward()` and see what happens:
-
-```
-loss.backward()
-print(model.layer2.weight[0][0:10])
-print(model.layer2.weight.grad[0][0:10])
-```
-
-```
-tensor([ 0.0283, -0.0262, -0.0205, -0.0819, -0.0953, -0.0812, 0.0398, -0.0861,
- 0.0914, -0.0735], grad_fn=<SliceBackward0>)
-tensor([-2.4848, -2.6005, -6.2329, -5.0508, -1.3885, -2.4931, -1.7170, -0.2702,
- -0.3569, -0.7597])
-```
 
 We can see that the gradients have been computed for each learning
 weight, but the weights remain unchanged, because we haven't run the
 optimizer yet. The optimizer is responsible for updating model weights
 based on the computed gradients.
-
-```
-optimizer.step()
-print(model.layer2.weight[0][0:10])
-print(model.layer2.weight.grad[0][0:10])
-```
-
-```
-tensor([ 0.0307, -0.0236, -0.0142, -0.0768, -0.0939, -0.0787, 0.0415, -0.0858,
- 0.0918, -0.0727], grad_fn=<SliceBackward0>)
-tensor([-2.4848, -2.6005, -6.2329, -5.0508, -1.3885, -2.4931, -1.7170, -0.2702,
- -0.3569, -0.7597])
-```
 
 You should see that `layer2`'s weights have changed.
 
@@ -401,29 +194,6 @@ One important thing about the process: After calling
 `optimizer.step()`, you need to call `optimizer.zero_grad()`, or
 else every time you run `loss.backward()`, the gradients on the
 learning weights will accumulate:
-
-```
-print(model.layer2.weight.grad[0][0:10])
-
-for i in range(0, 5):
- prediction = model(some_input)
- loss = (ideal_output - prediction).pow(2).sum()
- loss.backward()
-
-print(model.layer2.weight.grad[0][0:10])
-
-optimizer.zero_grad(set_to_none=False)
-
-print(model.layer2.weight.grad[0][0:10])
-```
-
-```
-tensor([-2.4848, -2.6005, -6.2329, -5.0508, -1.3885, -2.4931, -1.7170, -0.2702,
- -0.3569, -0.7597])
-tensor([-16.9107, -6.4901, -25.0334, -15.6699, -10.3234, -1.6851, -6.0494,
- 0.6417, 0.9558, -0.6801])
-tensor([0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
-```
 
 After running the cell above, you should see that after running
 `loss.backward()` multiple times, the magnitudes of most of the
@@ -440,27 +210,6 @@ depending on the situation.
 The simplest is to change the `requires_grad` flag on a tensor
 directly:
 
-```
-a = torch.ones(2, 3, requires_grad=True)
-print(a)
-
-b1 = 2 * a
-print(b1)
-
-a.requires_grad = False
-b2 = 2 * a
-print(b2)
-```
-
-```
-tensor([[1., 1., 1.],
- [1., 1., 1.]], requires_grad=True)
-tensor([[2., 2., 2.],
- [2., 2., 2.]], grad_fn=<MulBackward0>)
-tensor([[2., 2., 2.],
- [2., 2., 2.]])
-```
-
 In the cell above, we see that `b1` has a `grad_fn` (i.e., a traced
 computation history), which is what we expect, since it was derived from
 a tensor, `a`, that had autograd turned on. When we turn off autograd
@@ -470,57 +219,7 @@ longer tracked, as we see when we compute `b2`.
 If you only need autograd turned off temporarily, a better way is to use
 the `torch.no_grad()`:
 
-```
-a = torch.ones(2, 3, requires_grad=True) * 2
-b = torch.ones(2, 3, requires_grad=True) * 3
-
-c1 = a + b
-print(c1)
-
-with torch.no_grad():
- c2 = a + b
-
-print(c2)
-
-c3 = a * b
-print(c3)
-```
-
-```
-tensor([[5., 5., 5.],
- [5., 5., 5.]], grad_fn=<AddBackward0>)
-tensor([[5., 5., 5.],
- [5., 5., 5.]])
-tensor([[6., 6., 6.],
- [6., 6., 6.]], grad_fn=<MulBackward0>)
-```
-
 `torch.no_grad()` can also be used as a function or method decorator:
-
-```
-def add_tensors1(x, y):
- return x + y
-
-@torch.no_grad()
-def add_tensors2(x, y):
- return x + y
-
-a = torch.ones(2, 3, requires_grad=True) * 2
-b = torch.ones(2, 3, requires_grad=True) * 3
-
-c1 = add_tensors1(a, b)
-print(c1)
-
-c2 = add_tensors2(a, b)
-print(c2)
-```
-
-```
-tensor([[5., 5., 5.],
- [5., 5., 5.]], grad_fn=<AddBackward0>)
-tensor([[5., 5., 5.],
- [5., 5., 5.]])
-```
 
 There's a corresponding context manager, `torch.enable_grad()`, for
 turning autograd on when it isn't already. It may also be used as a
@@ -530,19 +229,6 @@ Finally, you may have a tensor that requires gradient tracking, but you
 want a copy that does not. For this we have the `Tensor` object's
 `detach()` method - it creates a copy of the tensor that is *detached*
 from the computation history:
-
-```
-x = torch.rand(5, requires_grad=True)
-y = x.detach()
-
-print(x)
-print(y)
-```
-
-```
-tensor([0.3315, 0.7931, 0.5090, 0.8229, 0.9028], requires_grad=True)
-tensor([0.3315, 0.7931, 0.5090, 0.8229, 0.9028])
-```
 
 We did this above when we wanted to graph some of our tensors. This is
 because `matplotlib` expects a NumPy array as input, and the implicit
@@ -576,35 +262,6 @@ Autograd tracks every step of your computation in detail. Such a
 computation history, combined with timing information, would make a
 handy profiler - and autograd has that feature baked in. Here's a quick
 example usage:
-
-```
-device = torch.device("cpu")
-run_on_gpu = False
-if torch.cuda.is_available():
- device = torch.device("cuda")
- run_on_gpu = True
-
-x = torch.randn(2, 3, requires_grad=True)
-y = torch.rand(2, 3, requires_grad=True)
-z = torch.ones(2, 3, requires_grad=True)
-
-with torch.autograd.profiler.profile(use_device="cuda" if run_on_gpu else None) as prf:
- for _ in range(1000):
- z = (z / x) * y
-
-print(prf.key_averages().table(sort_by="self_cpu_time_total"))
-```
-
-```
-------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------
- Name Self CPU % Self CPU CPU total % CPU total CPU time avg Self CUDA Self CUDA % CUDA total CUDA time avg # of Calls
-------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------
- aten::div 50.05% 3.071ms 50.05% 3.071ms 3.071us 5.289ms 49.06% 5.289ms 5.289us 1000
- aten::mul 49.95% 3.066ms 49.95% 3.066ms 3.066us 5.492ms 50.94% 5.492ms 5.492us 1000
-------------- ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------ ------------
-Self CPU time total: 6.137ms
-Self CUDA time total: 10.781ms
-```
 
 The profiler can also label individual sub-blocks of code, break out the
 data by input tensor shape, and export data as a Chrome tracing tools
@@ -672,36 +329,11 @@ vector input. This vector represents a set of gradients over the tensor,
 which are multiplied by the Jacobian of the autograd-traced tensor that
 precedes it. Let's try a specific example with a small vector:
 
-```
-x = torch.randn(3, requires_grad=True)
-
-y = x * 2
-while y.data.norm() < 1000:
- y = y * 2
-
-print(y)
-```
-
-```
-tensor([ 748.6033, -104.5842, -818.9763], grad_fn=<MulBackward0>)
-```
-
 If we tried to call `y.backward()` now, we'd get a runtime error and a
 message that gradients can only be *implicitly* computed for scalar
 outputs. For a multi-dimensional output, autograd expects us to provide
 gradients for those three outputs that it can multiply into the
 Jacobian:
-
-```
-v = torch.tensor([0.1, 1.0, 0.0001], dtype=torch.float) # stand-in for gradients
-y.backward(v)
-
-print(x.grad)
-```
-
-```
-tensor([1.0240e+02, 1.0240e+03, 1.0240e-01])
-```
 
 (Note that the output gradients are all related to powers of two - which
 we'd expect from a repeated doubling operation.)
@@ -718,42 +350,11 @@ for taking vector products with these matrices.
 Let's take the Jacobian of a simple function, evaluated for a 2
 single-element inputs:
 
-```
-def exp_adder(x, y):
- return 2 * x.exp() + 3 * y
-
-inputs = (torch.rand(1), torch.rand(1)) # arguments for the function
-print(inputs)
-torch.autograd.functional.jacobian(exp_adder, inputs)
-```
-
-```
-(tensor([0.1545]), tensor([0.3361]))
-
-(tensor([[2.3341]]), tensor([[3.]]))
-```
-
 If you look closely, the first output should equal \(2e^x\) (since
 the derivative of \(e^x\) is \(e^x\)), and the second value
 should be 3.
 
 You can, of course, do this with higher-order tensors:
-
-```
-inputs = (torch.rand(3), torch.rand(3)) # arguments for the function
-print(inputs)
-torch.autograd.functional.jacobian(exp_adder, inputs)
-```
-
-```
-(tensor([0.7890, 0.3994, 0.0183]), tensor([0.0775, 0.2953, 0.9145]))
-
-(tensor([[4.4026, 0.0000, 0.0000],
- [0.0000, 2.9820, 0.0000],
- [0.0000, 0.0000, 2.0369]]), tensor([[3., 0., 0.],
- [0., 3., 0.],
- [0., 0., 3.]]))
-```
 
 The `torch.autograd.functional.hessian()` method works identically
 (assuming your function is twice differentiable), but returns a matrix
@@ -761,22 +362,6 @@ of all second derivatives.
 
 There is also a function to directly compute the vector-Jacobian
 product, if you provide the vector:
-
-```
-def do_some_doubling(x):
- y = x * 2
- while y.data.norm() < 1000:
- y = y * 2
- return y
-
-inputs = torch.randn(3)
-my_gradients = torch.tensor([0.1, 1.0, 0.0001])
-torch.autograd.functional.vjp(do_some_doubling, inputs, v=my_gradients)
-```
-
-```
-(tensor([-439.0804, -411.2484, 957.0811]), tensor([5.1200e+01, 5.1200e+02, 5.1200e-02]))
-```
 
 The `torch.autograd.functional.jvp()` method performs the same matrix
 multiplication as `vjp()` with the operands reversed. The `vhp()`
@@ -786,7 +371,11 @@ For more information, including performance notes on the [docs for the
 functional
 API](https://pytorch.org/docs/stable/autograd.html#functional-higher-level-api)
 
-**Total running time of the script:** (0 minutes 0.588 seconds)
+```
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+```
+
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: autogradyt_tutorial.ipynb`](../../_downloads/ed9d4f94afb79f7dada6742a06c486a5/autogradyt_tutorial.ipynb)
 

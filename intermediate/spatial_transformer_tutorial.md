@@ -30,21 +30,6 @@ any existing CNN with very little modification.
 ```
 # License: BSD
 # Author: Ghassen Hamrouni
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-import torchvision
-from torchvision import datasets, transforms
-import matplotlib.pyplot as plt
-import numpy as np
-
-plt.ion() # interactive mode
-```
-
-```
-<contextlib.ExitStack object at 0x7fa4bb834950>
 ```
 
 ## Loading the data
@@ -54,48 +39,9 @@ standard convolutional network augmented with a spatial transformer
 network.
 
 ```
-from six.moves import urllib
-opener = urllib.request.build_opener()
-opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-urllib.request.install_opener(opener)
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 # Training dataset
-train_loader = torch.utils.data.DataLoader(
- datasets.MNIST(root='.', train=True, download=True,
- transform=transforms.Compose([
- transforms.ToTensor(),
- transforms.Normalize((0.1307,), (0.3081,))
- ])), batch_size=64, shuffle=True, num_workers=4)
+
 # Test dataset
-test_loader = torch.utils.data.DataLoader(
- datasets.MNIST(root='.', train=False, transform=transforms.Compose([
- transforms.ToTensor(),
- transforms.Normalize((0.1307,), (0.3081,))
- ])), batch_size=64, shuffle=True, num_workers=4)
-```
-
-```
-0%| | 0.00/9.91M [00:00<?, ?B/s]
- 1%| | 65.5k/9.91M [00:00<00:18, 523kB/s]
- 2%|▏ | 197k/9.91M [00:00<00:11, 830kB/s]
- 5%|▌ | 524k/9.91M [00:00<00:05, 1.65MB/s]
- 21%|██ | 2.06M/9.91M [00:00<00:01, 5.85MB/s]
- 78%|███████▊ | 7.77M/9.91M [00:00<00:00, 20.2MB/s]
-100%|██████████| 9.91M/9.91M [00:00<00:00, 15.6MB/s]
-
- 0%| | 0.00/28.9k [00:00<?, ?B/s]
-100%|██████████| 28.9k/28.9k [00:00<00:00, 422kB/s]
-
- 0%| | 0.00/1.65M [00:00<?, ?B/s]
- 6%|▌ | 98.3k/1.65M [00:00<00:01, 811kB/s]
- 12%|█▏ | 197k/1.65M [00:00<00:01, 813kB/s]
- 44%|████▎ | 721k/1.65M [00:00<00:00, 2.42MB/s]
-100%|██████████| 1.65M/1.65M [00:00<00:00, 3.89MB/s]
-
- 0%| | 0.00/4.54k [00:00<?, ?B/s]
-100%|██████████| 4.54k/4.54k [00:00<00:00, 16.8MB/s]
 ```
 
 ## Depicting spatial transformer networks
@@ -118,65 +64,6 @@ Note
 We need the latest version of PyTorch that contains
 affine_grid and grid_sample modules.
 
-```
-class Net(nn.Module):
- def __init__(self):
- super(Net, self).__init__()
- self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
- self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
- self.conv2_drop = nn.Dropout2d()
- self.fc1 = nn.Linear(320, 50)
- self.fc2 = nn.Linear(50, 10)
-
- # Spatial transformer localization-network
- self.localization = nn.Sequential(
- nn.Conv2d(1, 8, kernel_size=7),
- nn.MaxPool2d(2, stride=2),
- nn.ReLU(True),
- nn.Conv2d(8, 10, kernel_size=5),
- nn.MaxPool2d(2, stride=2),
- nn.ReLU(True)
- )
-
- # Regressor for the 3 * 2 affine matrix
- self.fc_loc = nn.Sequential(
- nn.Linear(10 * 3 * 3, 32),
- nn.ReLU(True),
- nn.Linear(32, 3 * 2)
- )
-
- # Initialize the weights/bias with identity transformation
- self.fc_loc[2].weight.data.zero_()
- self.fc_loc[2].bias.data.copy_(torch.tensor([1, 0, 0, 0, 1, 0], dtype=torch.float))
-
- # Spatial transformer network forward function
- def stn(self, x):
- xs = self.localization(x)
- xs = xs.view(-1, 10 * 3 * 3)
- theta = self.fc_loc(xs)
- theta = theta.view(-1, 2, 3)
-
- grid = F.affine_grid(theta, x.size())
- x = F.grid_sample(x, grid)
-
- return x
-
- def forward(self, x):
- # transform the input
- x = self.stn(x)
-
- # Perform the usual forward pass
- x = F.relu(F.max_pool2d(self.conv1(x), 2))
- x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
- x = x.view(-1, 320)
- x = F.relu(self.fc1(x))
- x = F.dropout(x, training=self.training)
- x = self.fc2(x)
- return F.log_softmax(x, dim=1)
-
-model = Net().to(device)
-```
-
 ## Training the model
 
 Now, let's use the SGD algorithm to train the model. The network is
@@ -184,45 +71,9 @@ learning the classification task in a supervised way. In the same time
 the model is learning STN automatically in an end-to-end fashion.
 
 ```
-optimizer = optim.SGD(model.parameters(), lr=0.01)
-
-def train(epoch):
- model.train()
- for batch_idx, (data, target) in enumerate(train_loader):
- data, target = data.to(device), target.to(device)
-
- optimizer.zero_grad()
- output = model(data)
- loss = F.nll_loss(output, target)
- loss.backward()
- optimizer.step()
- if batch_idx % 500 == 0:
- print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
- epoch, batch_idx * len(data), len(train_loader.dataset),
- 100. * batch_idx / len(train_loader), loss.item()))
 #
 # A simple test procedure to measure the STN performances on MNIST.
 #
-
-def test():
- with torch.no_grad():
- model.eval()
- test_loss = 0
- correct = 0
- for data, target in test_loader:
- data, target = data.to(device), target.to(device)
- output = model(data)
-
- # sum up batch loss
- test_loss += F.nll_loss(output, target, size_average=False).item()
- # get the index of the max log-probability
- pred = output.max(1, keepdim=True)[1]
- correct += pred.eq(target.view_as(pred)).sum().item()
-
- test_loss /= len(test_loader.dataset)
- print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'
- .format(test_loss, correct, len(test_loader.dataset),
- 100. * correct / len(test_loader.dataset)))
 ```
 
 ## Visualizing the STN results
@@ -234,163 +85,16 @@ We define a small helper function in order to visualize the
 transformations while training.
 
 ```
-def convert_image_np(inp):
- """Convert a Tensor to numpy image."""
- inp = inp.numpy().transpose((1, 2, 0))
- mean = np.array([0.485, 0.456, 0.406])
- std = np.array([0.229, 0.224, 0.225])
- inp = std * inp + mean
- inp = np.clip(inp, 0, 1)
- return inp
-
 # We want to visualize the output of the spatial transformers layer
 # after the training, we visualize a batch of input images and
 # the corresponding transformed batch using STN.
 
-def visualize_stn():
- with torch.no_grad():
- # Get a batch of training data
- data = next(iter(test_loader))[0].to(device)
-
- input_tensor = data.cpu()
- transformed_input_tensor = model.stn(data).cpu()
-
- in_grid = convert_image_np(
- torchvision.utils.make_grid(input_tensor))
-
- out_grid = convert_image_np(
- torchvision.utils.make_grid(transformed_input_tensor))
-
- # Plot the results side-by-side
- f, axarr = plt.subplots(1, 2)
- axarr[0].imshow(in_grid)
- axarr[0].set_title('Dataset Images')
-
- axarr[1].imshow(out_grid)
- axarr[1].set_title('Transformed Images')
-
-for epoch in range(1, 20 + 1):
- train(epoch)
- test()
-
 # Visualize the STN transformation on some input batch
-visualize_stn()
 
-plt.ioff()
-plt.show()
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-![Dataset Images, Transformed Images](../_images/sphx_glr_spatial_transformer_tutorial_001.png)
-
-```
-/__w/tutorials/tutorials/pytorch/tutorials/intermediate_source/spatial_transformer_tutorial.py:130: UserWarning: Default grid_sample and affine_grid behavior has changed to align_corners=False since 1.3.0. Please specify align_corners=True if the old behavior is desired. See the documentation of grid_sample for details.
- grid = F.affine_grid(theta, x.size())
-/__w/tutorials/tutorials/pytorch/tutorials/intermediate_source/spatial_transformer_tutorial.py:131: UserWarning: Default grid_sample and affine_grid behavior has changed to align_corners=False since 1.3.0. Please specify align_corners=True if the old behavior is desired. See the documentation of grid_sample for details.
- x = F.grid_sample(x, grid)
-Train Epoch: 1 [0/60000 (0%)] Loss: 2.336624
-Train Epoch: 1 [32000/60000 (53%)] Loss: 1.075680
-/var/lib/ci-user/.local/lib/python3.12/site-packages/torch/nn/functional.py:3236: UserWarning: size_average and reduce args will be deprecated, please use reduction='sum' instead.
- reduction = _Reduction.legacy_get_string(size_average, reduce)
-
-Test set: Average loss: 0.2073, Accuracy: 9407/10000 (94%)
-
-Train Epoch: 2 [0/60000 (0%)] Loss: 0.376179
-Train Epoch: 2 [32000/60000 (53%)] Loss: 0.219004
-
-Test set: Average loss: 0.1618, Accuracy: 9503/10000 (95%)
-
-Train Epoch: 3 [0/60000 (0%)] Loss: 0.470198
-Train Epoch: 3 [32000/60000 (53%)] Loss: 0.307644
-
-Test set: Average loss: 0.0926, Accuracy: 9726/10000 (97%)
-
-Train Epoch: 4 [0/60000 (0%)] Loss: 0.305977
-Train Epoch: 4 [32000/60000 (53%)] Loss: 0.161822
-
-Test set: Average loss: 0.0912, Accuracy: 9737/10000 (97%)
-
-Train Epoch: 5 [0/60000 (0%)] Loss: 0.173277
-Train Epoch: 5 [32000/60000 (53%)] Loss: 0.148331
-
-Test set: Average loss: 0.0639, Accuracy: 9810/10000 (98%)
-
-Train Epoch: 6 [0/60000 (0%)] Loss: 0.167790
-Train Epoch: 6 [32000/60000 (53%)] Loss: 0.101866
-
-Test set: Average loss: 0.0686, Accuracy: 9805/10000 (98%)
-
-Train Epoch: 7 [0/60000 (0%)] Loss: 0.478242
-Train Epoch: 7 [32000/60000 (53%)] Loss: 0.041856
-
-Test set: Average loss: 0.0590, Accuracy: 9824/10000 (98%)
-
-Train Epoch: 8 [0/60000 (0%)] Loss: 0.102916
-Train Epoch: 8 [32000/60000 (53%)] Loss: 0.535285
-
-Test set: Average loss: 0.0487, Accuracy: 9844/10000 (98%)
-
-Train Epoch: 9 [0/60000 (0%)] Loss: 0.187716
-Train Epoch: 9 [32000/60000 (53%)] Loss: 0.154088
-
-Test set: Average loss: 0.0461, Accuracy: 9850/10000 (98%)
-
-Train Epoch: 10 [0/60000 (0%)] Loss: 0.072426
-Train Epoch: 10 [32000/60000 (53%)] Loss: 0.257587
-
-Test set: Average loss: 0.0590, Accuracy: 9823/10000 (98%)
-
-Train Epoch: 11 [0/60000 (0%)] Loss: 0.172788
-Train Epoch: 11 [32000/60000 (53%)] Loss: 0.203015
-
-Test set: Average loss: 0.0453, Accuracy: 9867/10000 (99%)
-
-Train Epoch: 12 [0/60000 (0%)] Loss: 0.099641
-Train Epoch: 12 [32000/60000 (53%)] Loss: 0.080611
-
-Test set: Average loss: 0.0487, Accuracy: 9859/10000 (99%)
-
-Train Epoch: 13 [0/60000 (0%)] Loss: 0.096336
-Train Epoch: 13 [32000/60000 (53%)] Loss: 0.116297
-
-Test set: Average loss: 0.0436, Accuracy: 9867/10000 (99%)
-
-Train Epoch: 14 [0/60000 (0%)] Loss: 0.070649
-Train Epoch: 14 [32000/60000 (53%)] Loss: 0.021157
-
-Test set: Average loss: 0.0431, Accuracy: 9877/10000 (99%)
-
-Train Epoch: 15 [0/60000 (0%)] Loss: 0.060870
-Train Epoch: 15 [32000/60000 (53%)] Loss: 0.201184
-
-Test set: Average loss: 0.0402, Accuracy: 9871/10000 (99%)
-
-Train Epoch: 16 [0/60000 (0%)] Loss: 0.010040
-Train Epoch: 16 [32000/60000 (53%)] Loss: 0.180157
-
-Test set: Average loss: 0.0385, Accuracy: 9876/10000 (99%)
-
-Train Epoch: 17 [0/60000 (0%)] Loss: 0.072763
-Train Epoch: 17 [32000/60000 (53%)] Loss: 0.294666
-
-Test set: Average loss: 0.0661, Accuracy: 9811/10000 (98%)
-
-Train Epoch: 18 [0/60000 (0%)] Loss: 0.159775
-Train Epoch: 18 [32000/60000 (53%)] Loss: 0.104366
-
-Test set: Average loss: 0.0861, Accuracy: 9759/10000 (98%)
-
-Train Epoch: 19 [0/60000 (0%)] Loss: 0.205394
-Train Epoch: 19 [32000/60000 (53%)] Loss: 0.049480
-
-Test set: Average loss: 0.0393, Accuracy: 9880/10000 (99%)
-
-Train Epoch: 20 [0/60000 (0%)] Loss: 0.024478
-Train Epoch: 20 [32000/60000 (53%)] Loss: 0.042878
-
-Test set: Average loss: 0.0411, Accuracy: 9883/10000 (99%)
-```
-
-**Total running time of the script:** (1 minutes 29.494 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: spatial_transformer_tutorial.ipynb`](../_downloads/a5513958454950ed22df8da4c47f6429/spatial_transformer_tutorial.ipynb)
 

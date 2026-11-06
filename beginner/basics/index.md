@@ -52,11 +52,6 @@ Learn the Basics ||
 sphx_glr_beginner_basics_intro.py
 
 Learn the Basics ||
-![](../../_images/sphx_glr_saveloadrun_tutorial_thumb.png)
-
-sphx_glr_beginner_basics_saveloadrun_tutorial.py
-
-Learn the Basics ||
 ![](../../_images/sphx_glr_transforms_tutorial_thumb.png)
 
 sphx_glr_beginner_basics_transforms_tutorial.py
@@ -72,13 +67,18 @@ Learn the Basics ||
 sphx_glr_beginner_basics_data_tutorial.py
 
 Learn the Basics ||
+![](../../_images/sphx_glr_quickstart_tutorial_thumb.png)
+
+sphx_glr_beginner_basics_quickstart_tutorial.py
+
+Learn the Basics ||
 ![](../../_images/sphx_glr_tensorqs_tutorial_thumb.png)
 
 sphx_glr_beginner_basics_tensorqs_tutorial.py
 
 Learn the Basics ||
-![](../../_images/sphx_glr_quickstart_tutorial_thumb.png)
+![](../../_images/sphx_glr_saveloadrun_tutorial_thumb.png)
 
-sphx_glr_beginner_basics_quickstart_tutorial.py
+sphx_glr_beginner_basics_saveloadrun_tutorial.py
 
 Learn the Basics ||

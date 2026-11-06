@@ -146,7 +146,7 @@ The character embeddings will be the input to the character LSTM.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: sequence_models_tutorial.ipynb`](../../_downloads/5edaebfc06ec3968b8c1da100da2253d/sequence_models_tutorial.ipynb)
 

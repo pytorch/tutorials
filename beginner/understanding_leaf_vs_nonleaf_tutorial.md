@@ -277,7 +277,7 @@ mechanics](https://docs.pytorch.org/docs/stable/notes/autograd.html)
 
 %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: understanding_leaf_vs_nonleaf_tutorial.ipynb`](../_downloads/701f907342d551c22082a3564b0b8027/understanding_leaf_vs_nonleaf_tutorial.ipynb)
 

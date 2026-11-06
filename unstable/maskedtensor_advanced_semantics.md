@@ -86,7 +86,7 @@ If you have any thoughts on this, please [let us know](https://github.com/pytorc
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: maskedtensor_advanced_semantics.ipynb`](../_downloads/94b0affe6be3bca0c01d9418b03fbc4e/maskedtensor_advanced_semantics.ipynb)
 

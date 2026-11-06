@@ -106,7 +106,7 @@ at on GitHub.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: per_sample_grads.ipynb`](../_downloads/df89b8f78d7ed3520a0f632afae4a5b9/per_sample_grads.ipynb)
 

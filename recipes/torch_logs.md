@@ -60,7 +60,7 @@ For more information on torch.compile, see the [torch.compile tutorial](https://
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: torch_logs.ipynb`](../_downloads/41526f38c5c72d94f024660d73cef185/torch_logs.ipynb)
 

@@ -83,7 +83,7 @@ To add autograd, `torch.vmap`, or other subsystem support, continue to
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: python_custom_ops_functional.ipynb`](../_downloads/250aeb3d0973d836d22091de6347054e/python_custom_ops_functional.ipynb)
 

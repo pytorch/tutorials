@@ -241,7 +241,7 @@ The same exclusionary functionality is available as a context manager in
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: autograd_tutorial.ipynb`](../../_downloads/8eed7e178f8fa30798f280ea82ff468b/autograd_tutorial.ipynb)
 

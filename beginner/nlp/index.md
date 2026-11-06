@@ -43,11 +43,6 @@ Sequence Models and Long Short-Term Memory Networks
 Advanced: Making Dynamic Decisions and the Bi-LSTM CRF
 [https://pytorch.org/tutorials/beginner/nlp/advanced_tutorial.html](https://pytorch.org/tutorials/beginner/nlp/advanced_tutorial.html)
 
-![](../../_images/sphx_glr_advanced_tutorial_thumb.png)
-
-[Advanced: Making Dynamic Decisions and the Bi-LSTM CRF](advanced_tutorial.html#sphx-glr-beginner-nlp-advanced-tutorial-py)
-
-Advanced: Making Dynamic Decisions and the Bi-LSTM CRF
 ![](../../_images/sphx_glr_word_embeddings_tutorial_thumb.png)
 
 [Word Embeddings: Encoding Lexical Semantics](word_embeddings_tutorial.html#sphx-glr-beginner-nlp-word-embeddings-tutorial-py)
@@ -68,3 +63,8 @@ Deep Learning with PyTorch
 [Introduction to PyTorch](pytorch_tutorial.html#sphx-glr-beginner-nlp-pytorch-tutorial-py)
 
 Introduction to PyTorch
+![](../../_images/sphx_glr_advanced_tutorial_thumb.png)
+
+[Advanced: Making Dynamic Decisions and the Bi-LSTM CRF](advanced_tutorial.html#sphx-glr-beginner-nlp-advanced-tutorial-py)
+
+Advanced: Making Dynamic Decisions and the Bi-LSTM CRF

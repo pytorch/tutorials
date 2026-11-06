@@ -45,7 +45,7 @@ of calling torch function on every op invocation.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: torch_compile_torch_function_modes.ipynb`](../_downloads/d036a4d61563d6157e333f7e5b20b091/torch_compile_torch_function_modes.ipynb)
 

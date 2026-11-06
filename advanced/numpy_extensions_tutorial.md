@@ -54,7 +54,7 @@ The backward pass computes the gradient `wrt` the input and the gradient `wrt` t
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: numpy_extensions_tutorial.ipynb`](../_downloads/52d4aaa33601a2b3990ace6aa45546ce/numpy_extensions_tutorial.ipynb)
 

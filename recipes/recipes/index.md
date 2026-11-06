@@ -37,6 +37,11 @@ Reducing torch.compile cold start compilation time with regional compilation
 
 [https://pytorch.org/tutorials/recipes/regional_compilation.html](https://pytorch.org/tutorials/recipes/regional_compilation.html)
 
+![](../../_images/sphx_glr_changing_default_device_thumb.png)
+
+[Changing default device](changing_default_device.html#sphx-glr-recipes-recipes-changing-default-device-py)
+
+Changing default device
 ![](../../_images/sphx_glr_swap_tensors_thumb.png)
 
 [Extension points in nn.Module for load_state_dict and tensor subclasses](swap_tensors.html#sphx-glr-recipes-recipes-swap-tensors-py)
@@ -47,26 +52,21 @@ Extension points in nn.Module for load_state_dict and tensor subclasses
 [How to use TensorBoard with PyTorch](tensorboard_with_pytorch.html#sphx-glr-recipes-recipes-tensorboard-with-pytorch-py)
 
 How to use TensorBoard with PyTorch
-![](../../_images/sphx_glr_zeroing_out_gradients_thumb.png)
-
-[Zeroing out gradients in PyTorch](zeroing_out_gradients.html#sphx-glr-recipes-recipes-zeroing-out-gradients-py)
-
-Zeroing out gradients in PyTorch
 ![](../../_images/sphx_glr_warmstarting_model_using_parameters_from_a_different_model_thumb.png)
 
 [Warmstarting model using parameters from a different model in PyTorch](warmstarting_model_using_parameters_from_a_different_model.html#sphx-glr-recipes-recipes-warmstarting-model-using-parameters-from-a-different-model-py)
 
 Warmstarting model using parameters from a different model in PyTorch
-![](../../_images/sphx_glr_defining_a_neural_network_thumb.png)
-
-[Defining a Neural Network in PyTorch](defining_a_neural_network.html#sphx-glr-recipes-recipes-defining-a-neural-network-py)
-
-Defining a Neural Network in PyTorch
 ![](../../_images/sphx_glr_tuning_guide_thumb.png)
 
 [Performance Tuning Guide](tuning_guide.html#sphx-glr-recipes-recipes-tuning-guide-py)
 
 Performance Tuning Guide
+![](../../_images/sphx_glr_what_is_state_dict_thumb.png)
+
+[What is a state_dict in PyTorch](what_is_state_dict.html#sphx-glr-recipes-recipes-what-is-state-dict-py)
+
+What is a state_dict in PyTorch
 ![](../../_images/sphx_glr_reasoning_about_shapes_thumb.png)
 
 [Reasoning about Shapes in PyTorch](reasoning_about_shapes.html#sphx-glr-recipes-recipes-reasoning-about-shapes-py)
@@ -87,26 +87,26 @@ Model Interpretability using Captum
 [Tips for Loading an nn.Module from a Checkpoint](module_load_state_dict_tips.html#sphx-glr-recipes-recipes-module-load-state-dict-tips-py)
 
 Tips for Loading an nn.Module from a Checkpoint
-![](../../_images/sphx_glr_changing_default_device_thumb.png)
-
-[Changing default device](changing_default_device.html#sphx-glr-recipes-recipes-changing-default-device-py)
-
-Changing default device
 ![](../../_images/sphx_glr_amp_recipe_thumb.png)
 
 [Automatic Mixed Precision](amp_recipe.html#sphx-glr-recipes-recipes-amp-recipe-py)
 
 Automatic Mixed Precision
-![](../../_images/sphx_glr_what_is_state_dict_thumb.png)
-
-[What is a state_dict in PyTorch](what_is_state_dict.html#sphx-glr-recipes-recipes-what-is-state-dict-py)
-
-What is a state_dict in PyTorch
 ![](../../_images/sphx_glr_profiler_recipe_thumb.png)
 
 [PyTorch Profiler](profiler_recipe.html#sphx-glr-recipes-recipes-profiler-recipe-py)
 
 PyTorch Profiler
+![](../../_images/sphx_glr_defining_a_neural_network_thumb.png)
+
+[Defining a Neural Network in PyTorch](defining_a_neural_network.html#sphx-glr-recipes-recipes-defining-a-neural-network-py)
+
+Defining a Neural Network in PyTorch
+![](../../_images/sphx_glr_zeroing_out_gradients_thumb.png)
+
+[Zeroing out gradients in PyTorch](zeroing_out_gradients.html#sphx-glr-recipes-recipes-zeroing-out-gradients-py)
+
+Zeroing out gradients in PyTorch
 ![](../../_images/sphx_glr_benchmark_thumb.png)
 
 [SyntaxError](benchmark.html#sphx-glr-recipes-recipes-benchmark-py)

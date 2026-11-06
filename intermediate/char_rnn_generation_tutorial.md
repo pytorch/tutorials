@@ -83,53 +83,11 @@ name per line. We split lines into an array, convert Unicode to ASCII,
 and end up with a dictionary `{language: [names ...]}`.
 
 ```
-from io import open
-import glob
-import os
-import unicodedata
-import string
-
-all_letters = string.ascii_letters + " .,;'-"
-n_letters = len(all_letters) + 1 # Plus EOS marker
-
-def findFiles(path): return glob.glob(path)
-
 # Turn a Unicode string to plain ASCII, thanks to https://stackoverflow.com/a/518232/2809427
-def unicodeToAscii(s):
- return ''.join(
- c for c in unicodedata.normalize('NFD', s)
- if unicodedata.category(c) != 'Mn'
- and c in all_letters
- )
 
 # Read a file and split into lines
-def readLines(filename):
- with open(filename, encoding='utf-8') as some_file:
- return [unicodeToAscii(line.strip()) for line in some_file]
 
 # Build the category_lines dictionary, a list of lines per category
-category_lines = {}
-all_categories = []
-for filename in findFiles('data/names/*.txt'):
- category = os.path.splitext(os.path.basename(filename))[0]
- all_categories.append(category)
- lines = readLines(filename)
- category_lines[category] = lines
-
-n_categories = len(all_categories)
-
-if n_categories == 0:
- raise RuntimeError('Data not found. Make sure that you downloaded data '
- 'from https://download.pytorch.org/tutorial/data.zip and extract it to '
- 'the current directory.')
-
-print('# categories:', n_categories, all_categories)
-print(unicodeToAscii("O'Néàl"))
-```
-
-```
-# categories: 18 ['Arabic', 'Chinese', 'Czech', 'Dutch', 'English', 'French', 'German', 'Greek', 'Irish', 'Italian', 'Japanese', 'Korean', 'Polish', 'Portuguese', 'Russian', 'Scottish', 'Spanish', 'Vietnamese']
-O'Neal
 ```
 
 ## Creating the Network
@@ -153,35 +111,6 @@ chaos and increase sampling variety.
 
 ![](https://i.imgur.com/jzVrf7f.png)
 
-```
-import torch
-import torch.nn as nn
-
-class RNN(nn.Module):
- def __init__(self, input_size, hidden_size, output_size):
- super(RNN, self).__init__()
- self.hidden_size = hidden_size
-
- self.i2h = nn.Linear(n_categories + input_size + hidden_size, hidden_size)
- self.i2o = nn.Linear(n_categories + input_size + hidden_size, output_size)
- self.o2o = nn.Linear(hidden_size + output_size, output_size)
- self.dropout = nn.Dropout(0.1)
- self.softmax = nn.LogSoftmax(dim=1)
-
- def forward(self, category, input, hidden):
- input_combined = torch.cat((category, input, hidden), 1)
- hidden = self.i2h(input_combined)
- output = self.i2o(input_combined)
- output_combined = torch.cat((hidden, output), 1)
- output = self.o2o(output_combined)
- output = self.dropout(output)
- output = self.softmax(output)
- return output, hidden
-
- def initHidden(self):
- return torch.zeros(1, self.hidden_size)
-```
-
 ## Training
 
 ### Preparing for Training
@@ -189,17 +118,9 @@ class RNN(nn.Module):
 First of all, helper functions to get random pairs of (category, line):
 
 ```
-import random
-
 # Random item from a list
-def randomChoice(l):
- return l[random.randint(0, len(l) - 1)]
 
 # Get a random category and random line from that category
-def randomTrainingPair():
- category = randomChoice(all_categories)
- line = randomChoice(category_lines[category])
- return category, line
 ```
 
 For each timestep (that is, for each letter in a training word) the
@@ -224,25 +145,10 @@ of initial hidden state or some other strategy.
 
 ```
 # One-hot vector for category
-def categoryTensor(category):
- li = all_categories.index(category)
- tensor = torch.zeros(1, n_categories)
- tensor[0][li] = 1
- return tensor
 
 # One-hot matrix of first to last letters (not including EOS) for input
-def inputTensor(line):
- tensor = torch.zeros(len(line), 1, n_letters)
- for li in range(len(line)):
- letter = line[li]
- tensor[li][0][all_letters.find(letter)] = 1
- return tensor
 
 # ``LongTensor`` of second letter to end (EOS) for target
-def targetTensor(line):
- letter_indexes = [all_letters.find(line[li]) for li in range(1, len(line))]
- letter_indexes.append(n_letters - 1) # EOS
- return torch.LongTensor(letter_indexes)
 ```
 
 For convenience during training we'll make a `randomTrainingExample`
@@ -251,12 +157,6 @@ the required (category, input, target) tensors.
 
 ```
 # Make category, input, and target tensors from a random category, line pair
-def randomTrainingExample():
- category, line = randomTrainingPair()
- category_tensor = categoryTensor(category)
- input_line_tensor = inputTensor(line)
- target_line_tensor = targetTensor(line)
- return category_tensor, input_line_tensor, target_line_tensor
 ```
 
 ### Training the Network
@@ -268,115 +168,18 @@ every step.
 The magic of autograd allows you to simply sum these losses at each step
 and call backward at the end.
 
-```
-criterion = nn.NLLLoss()
-
-learning_rate = 0.0005
-
-def train(category_tensor, input_line_tensor, target_line_tensor):
- target_line_tensor.unsqueeze_(-1)
- hidden = rnn.initHidden()
-
- rnn.zero_grad()
-
- loss = torch.Tensor([0]) # you can also just simply use ``loss = 0``
-
- for i in range(input_line_tensor.size(0)):
- output, hidden = rnn(category_tensor, input_line_tensor[i], hidden)
- l = criterion(output, target_line_tensor[i])
- loss += l
-
- loss.backward()
-
- for p in rnn.parameters():
- p.data.add_(p.grad.data, alpha=-learning_rate)
-
- return output, loss.item() / input_line_tensor.size(0)
-```
-
 To keep track of how long training takes I am adding a
 `timeSince(timestamp)` function which returns a human readable string:
-
-```
-import time
-import math
-
-def timeSince(since):
- now = time.time()
- s = now - since
- m = math.floor(s / 60)
- s -= m * 60
- return '%dm %ds' % (m, s)
-```
 
 Training is business as usual - call train a bunch of times and wait a
 few minutes, printing the current time and loss every `print_every`
 examples, and keeping store of an average loss per `plot_every` examples
 in `all_losses` for plotting later.
 
-```
-rnn = RNN(n_letters, 128, n_letters)
-
-n_iters = 100000
-print_every = 5000
-plot_every = 500
-all_losses = []
-total_loss = 0 # Reset every ``plot_every`` ``iters``
-
-start = time.time()
-
-for iter in range(1, n_iters + 1):
- output, loss = train(*randomTrainingExample())
- total_loss += loss
-
- if iter % print_every == 0:
- print('%s (%d %d%%) %.4f' % (timeSince(start), iter, iter / n_iters * 100, loss))
-
- if iter % plot_every == 0:
- all_losses.append(total_loss / plot_every)
- total_loss = 0
-```
-
-```
-0m 8s (5000 5%) 2.9611
-0m 15s (10000 10%) 2.9091
-0m 23s (15000 15%) 2.9655
-0m 31s (20000 20%) 3.1212
-0m 39s (25000 25%) 3.1242
-0m 47s (30000 30%) 2.0920
-0m 55s (35000 35%) 2.7843
-1m 3s (40000 40%) 2.4540
-1m 11s (45000 45%) 3.0516
-1m 19s (50000 50%) 2.2080
-1m 27s (55000 55%) 2.7657
-1m 35s (60000 60%) 1.7350
-1m 43s (65000 65%) 2.3179
-1m 51s (70000 70%) 2.4015
-1m 59s (75000 75%) 2.2613
-2m 7s (80000 80%) 3.1353
-2m 15s (85000 85%) 1.1806
-2m 24s (90000 90%) 2.6721
-2m 32s (95000 95%) 2.4214
-2m 40s (100000 100%) 2.5203
-```
-
 ### Plotting the Losses
 
 Plotting the historical loss from all_losses shows the network
 learning:
-
-```
-import matplotlib.pyplot as plt
-
-plt.figure()
-plt.plot(all_losses)
-```
-
-![char rnn generation tutorial](../_images/sphx_glr_char_rnn_generation_tutorial_001.png)
-
-```
-[<matplotlib.lines.Line2D object at 0x7fa4bb5f1610>]
-```
 
 ## Sampling the Network
 
@@ -401,57 +204,9 @@ strategy would have been to include a "start of string" token in
 training and have the network choose its own starting letter.
 
 ```
-max_length = 20
-
 # Sample from a category and starting letter
-def sample(category, start_letter='A'):
- with torch.no_grad(): # no need to track history in sampling
- category_tensor = categoryTensor(category)
- input = inputTensor(start_letter)
- hidden = rnn.initHidden()
-
- output_name = start_letter
-
- for i in range(max_length):
- output, hidden = rnn(category_tensor, input[0], hidden)
- topv, topi = output.topk(1)
- topi = topi[0][0]
- if topi == n_letters - 1:
- break
- else:
- letter = all_letters[topi]
- output_name += letter
- input = inputTensor(letter)
-
- return output_name
 
 # Get multiple samples from one category and multiple starting letters
-def samples(category, start_letters='ABC'):
- for start_letter in start_letters:
- print(sample(category, start_letter))
-
-samples('Russian', 'RUS')
-
-samples('German', 'GER')
-
-samples('Spanish', 'SPA')
-
-samples('Chinese', 'CHI')
-```
-
-```
-Rovello
-Uovekov
-Shilov
-Ganger
-Eren
-Rong
-Santera
-Pare
-Allan
-Cha
-Hang
-Iun
 ```
 
 ## Exercises
@@ -468,7 +223,11 @@ choosing a start letter
 - Try the `nn.LSTM` and `nn.GRU` layers
 - Combine multiple of these RNNs as a higher level network
 
-**Total running time of the script:** (2 minutes 41.013 seconds)
+```
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+```
+
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: char_rnn_generation_tutorial.ipynb`](../_downloads/a75cfadf4fa84dd594874d4c53b62820/char_rnn_generation_tutorial.ipynb)
 
