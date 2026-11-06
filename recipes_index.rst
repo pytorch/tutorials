@@ -282,13 +282,6 @@ from our full-length tutorials.
    :tags: Distributed-Training
 
 .. customcarditem::
-   :header: Direct Device-to-Device Communication with TensorPipe RPC
-   :card_description: How to use RPC with direct GPU-to-GPU communication.
-   :image: _static/img/thumbnails/cropped/profiler.png
-   :link: recipes/cuda_rpc.html
-   :tags: Distributed-Training
-
-.. customcarditem::
    :header: Getting Started with Distributed Checkpoint (DCP)
    :card_description: Learn how to checkpoint distributed models with Distributed Checkpoint package.
    :image: _static/img/thumbnails/cropped/Getting-Started-with-DCP.png

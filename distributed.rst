@@ -15,7 +15,6 @@ PyTorch with each method having their advantages in certain use cases:
 * `Fully Sharded Data Parallel (FSDP2) <#learn-fsdp>`__
 * `Tensor Parallel (TP) <#learn-tp>`__
 * `Device Mesh <#device-mesh>`__
-* `Remote Procedure Call (RPC) distributed training <#learn-rpc>`__
 * `Monarch Framework <#learn-monarch>`__
 * `Custom Extensions <#custom-extensions>`__
 
@@ -111,55 +110,6 @@ Learn DeviceMesh
         +++
         :octicon:`code;1em` Code
 
-.. _learn-rpc:
-
-Learn RPC
----------
-
-.. grid:: 3
-
-     .. grid-item-card:: :octicon:`file-code;1em`
-        Getting Started with Distributed RPC Framework
-        :link: https://pytorch.org/tutorials/intermediate/rpc_tutorial.html?utm_source=distr_landing&utm_medium=rpc_getting_started
-        :link-type: url
-
-        This tutorial demonstrates how to get started with RPC-based distributed
-        training.
-        +++
-        :octicon:`code;1em` Code
-
-     .. grid-item-card:: :octicon:`file-code;1em`
-        Implementing a Parameter Server Using Distributed RPC Framework
-        :link: https://pytorch.org/tutorials/intermediate/rpc_param_server_tutorial.html?utm_source=distr_landing&utm_medium=rpc_param_server_tutorial
-        :link-type: url
-
-        This tutorial walks you through a simple example of implementing a
-        parameter server using PyTorch’s Distributed RPC framework.
-        +++
-        :octicon:`code;1em` Code
-
-     .. grid-item-card:: :octicon:`file-code;1em`
-        Implementing Batch RPC Processing Using Asynchronous Executions
-        :link: https://pytorch.org/tutorials/intermediate/rpc_async_execution.html?utm_source=distr_landing&utm_medium=rpc_async_execution
-        :link-type: url
-
-        In this tutorial you will build batch-processing RPC applications
-        with the @rpc.functions.async_execution decorator.
-        +++
-        :octicon:`code;1em` Code
-
-.. grid:: 3
-
-     .. grid-item-card:: :octicon:`file-code;1em`
-        Combining Distributed DataParallel with Distributed RPC Framework
-        :link: https://pytorch.org/tutorials/advanced/rpc_ddp_tutorial.html?utm_source=distr_landing&utm_medium=rpc_plus_ddp
-        :link-type: url
-
-        In this tutorial you will learn how to combine distributed data
-        parallelism with distributed model parallelism.
-        +++
-        :octicon:`code;1em` Code
-
 .. _learn-monarch:
 
 Learn Monarch
@@ -207,11 +157,7 @@ Custom Extensions
    intermediate/TP_tutorial
    intermediate/pipelining_tutorial
    intermediate/process_group_cpp_extension_tutorial
-   intermediate/rpc_tutorial
-   intermediate/rpc_param_server_tutorial
-   intermediate/rpc_async_execution
    intermediate/monarch_distributed_tutorial
    intermediate/debug_hangs_with_flight_recorder
-   advanced/rpc_ddp_tutorial
    advanced/generic_join
    beginner/distributed_training_with_ray_tutorial
