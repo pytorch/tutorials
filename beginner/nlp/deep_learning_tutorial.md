@@ -268,7 +268,7 @@ has to offer.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: deep_learning_tutorial.ipynb`](../../_downloads/dd1c511de656ab48216de2866264b28f/deep_learning_tutorial.ipynb)
 

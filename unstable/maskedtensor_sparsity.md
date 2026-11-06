@@ -489,7 +489,7 @@ To continue learning more, you can find our
 [Efficiently writing "sparse" semantics for Adagrad with MaskedTensor tutorial](https://pytorch.org/tutorials/prototype/maskedtensor_adagrad.html)
 to see an example of how MaskedTensor can simplify existing workflows with native masking semantics.
 
-**Total running time of the script:** (0 minutes 0.033 seconds)
+**Total running time of the script:** (0 minutes 0.034 seconds)
 
 [`Download Jupyter notebook: maskedtensor_sparsity.ipynb`](../_downloads/0bfc601b4d08b8eb61463ae0c13808ac/maskedtensor_sparsity.ipynb)
 

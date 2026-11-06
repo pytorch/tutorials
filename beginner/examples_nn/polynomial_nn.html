@@ -2798,27 +2798,27 @@ but raw autograd can be a bit too low-level for defining complex neural networks
 this is where the nn package can help. The nn package defines a set of Modules,
 which you can think of as a neural network layer that produces output from
 input and may have some trainable weights.</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>99 262.4331970214844
-199 181.0756378173828
-299 125.94625854492188
-399 88.54959106445312
-499 63.15431594848633
-599 45.889854431152344
-699 34.139774322509766
-799 26.13373374938965
-899 20.67253875732422
-999 16.942974090576172
-1099 14.393078804016113
-1199 12.647689819335938
-1299 11.451601028442383
-1399 10.631026268005371
-1499 10.067414283752441
-1599 9.67987060546875
-1699 9.413081169128418
-1799 9.22922134399414
-1899 9.102387428283691
-1999 9.014789581298828
-Result: y = -0.012414811179041862 + 0.8492074608802795 x + 0.0021417608950287104 x^2 + -0.09225882589817047 x^3
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>99 438.2936706542969
+199 298.3119201660156
+299 204.14010620117188
+399 140.7304229736328
+499 97.9952163696289
+599 69.16635131835938
+699 49.69972610473633
+799 36.541847229003906
+899 27.63916015625
+999 21.60928726196289
+1099 17.520828247070312
+1199 14.74579906463623
+1299 12.860149383544922
+1399 11.577380180358887
+1499 10.703784942626953
+1599 10.108160972595215
+1699 9.701594352722168
+1799 9.4237642288208
+1899 9.233692169189453
+1999 9.103492736816406
+Result: y = 0.013646543025970459 + 0.8460872769355774 x + -0.0023542563430964947 x^2 + -0.09181500971317291 x^3
 </pre></div>
 </div>
 <div class="line-block">
@@ -3112,7 +3112,7 @@ Result: y = -0.012414811179041862 + 0.8492074608802795 x + 0.0021417608950287104
        "headline": "PyTorch: nn",
        "description": "PyTorch Documentation. Explore PyTorch, an open-source machine learning library that accelerates the path from research prototyping to production deployment.",
        "url": "/beginner/examples_nn/polynomial_nn.html",
-       "articleBody": "Note Go to the end to download the full example code. PyTorch: nn# A third order polynomial, trained to predict \\(y=\\sin(x)\\) from \\(-\\pi\\) to \\(\\pi\\) by minimizing squared Euclidean distance. This implementation uses the nn package from PyTorch to build the network. PyTorch autograd makes it easy to define computational graphs and take gradients, but raw autograd can be a bit too low-level for defining complex neural networks; this is where the nn package can help. The nn package defines a set of Modules, which you can think of as a neural network layer that produces output from input and may have some trainable weights. 99 262.4331970214844 199 181.0756378173828 299 125.94625854492188 399 88.54959106445312 499 63.15431594848633 599 45.889854431152344 699 34.139774322509766 799 26.13373374938965 899 20.67253875732422 999 16.942974090576172 1099 14.393078804016113 1199 12.647689819335938 1299 11.451601028442383 1399 10.631026268005371 1499 10.067414283752441 1599 9.67987060546875 1699 9.413081169128418 1799 9.22922134399414 1899 9.102387428283691 1999 9.014789581298828 Result: y = -0.012414811179041862 + 0.8492074608802795 x + 0.0021417608950287104 x^2 + -0.09225882589817047 x^3 import torch import math # Create Tensors to hold input and outputs. x = torch.linspace(-math.pi, math.pi, 2000) y = torch.sin(x) # For this example, the output y is a linear function of (x, x^2, x^3), so # we can consider it as a linear layer neural network. Let\u0027s prepare the # tensor (x, x^2, x^3). p = torch.tensor([1, 2, 3]) xx = x.unsqueeze(-1).pow(p) # In the above code, x.unsqueeze(-1) has shape (2000, 1), and p has shape # (3,), for this case, broadcasting semantics will apply to obtain a tensor # of shape (2000, 3) # Use the nn package to define our model as a sequence of layers. nn.Sequential # is a Module which contains other Modules, and applies them in sequence to # produce its output. The Linear Module computes output from input using a # linear function, and holds internal Tensors for its weight and bias. # The Flatten layer flatens the output of the linear layer to a 1D tensor, # to match the shape of `y`. model = torch.nn.Sequential( torch.nn.Linear(3, 1), torch.nn.Flatten(0, 1) ) # The nn package also contains definitions of popular loss functions; in this # case we will use Mean Squared Error (MSE) as our loss function. loss_fn = torch.nn.MSELoss(reduction=\u0027sum\u0027) learning_rate = 1e-6 for t in range(2000): # Forward pass: compute predicted y by passing x to the model. Module objects # override the __call__ operator so you can call them like functions. When # doing so you pass a Tensor of input data to the Module and it produces # a Tensor of output data. y_pred = model(xx) # Compute and print loss. We pass Tensors containing the predicted and true # values of y, and the loss function returns a Tensor containing the # loss. loss = loss_fn(y_pred, y) if t % 100 == 99: print(t, loss.item()) # Zero the gradients before running the backward pass. model.zero_grad() # Backward pass: compute gradient of the loss with respect to all the learnable # parameters of the model. Internally, the parameters of each Module are stored # in Tensors with requires_grad=True, so this call will compute gradients for # all learnable parameters in the model. loss.backward() # Update the weights using gradient descent. Each parameter is a Tensor, so # we can access its gradients like we did before. with torch.no_grad(): for param in model.parameters(): param -= learning_rate * param.grad # You can access the first layer of `model` like accessing the first item of a list linear_layer = model[0] # For linear layer, its parameters are stored as `weight` and `bias`. print(f\u0027Result: y = {linear_layer.bias.item()} + {linear_layer.weight[:, 0].item()} x + {linear_layer.weight[:, 1].item()} x^2 + {linear_layer.weight[:, 2].item()} x^3\u0027) Total running time of the script: (0 minutes 0.486 seconds) Download Jupyter notebook: polynomial_nn.ipynb Download Python source code: polynomial_nn.py Download zipped: polynomial_nn.zip",
+       "articleBody": "Note Go to the end to download the full example code. PyTorch: nn# A third order polynomial, trained to predict \\(y=\\sin(x)\\) from \\(-\\pi\\) to \\(\\pi\\) by minimizing squared Euclidean distance. This implementation uses the nn package from PyTorch to build the network. PyTorch autograd makes it easy to define computational graphs and take gradients, but raw autograd can be a bit too low-level for defining complex neural networks; this is where the nn package can help. The nn package defines a set of Modules, which you can think of as a neural network layer that produces output from input and may have some trainable weights. 99 438.2936706542969 199 298.3119201660156 299 204.14010620117188 399 140.7304229736328 499 97.9952163696289 599 69.16635131835938 699 49.69972610473633 799 36.541847229003906 899 27.63916015625 999 21.60928726196289 1099 17.520828247070312 1199 14.74579906463623 1299 12.860149383544922 1399 11.577380180358887 1499 10.703784942626953 1599 10.108160972595215 1699 9.701594352722168 1799 9.4237642288208 1899 9.233692169189453 1999 9.103492736816406 Result: y = 0.013646543025970459 + 0.8460872769355774 x + -0.0023542563430964947 x^2 + -0.09181500971317291 x^3 import torch import math # Create Tensors to hold input and outputs. x = torch.linspace(-math.pi, math.pi, 2000) y = torch.sin(x) # For this example, the output y is a linear function of (x, x^2, x^3), so # we can consider it as a linear layer neural network. Let\u0027s prepare the # tensor (x, x^2, x^3). p = torch.tensor([1, 2, 3]) xx = x.unsqueeze(-1).pow(p) # In the above code, x.unsqueeze(-1) has shape (2000, 1), and p has shape # (3,), for this case, broadcasting semantics will apply to obtain a tensor # of shape (2000, 3) # Use the nn package to define our model as a sequence of layers. nn.Sequential # is a Module which contains other Modules, and applies them in sequence to # produce its output. The Linear Module computes output from input using a # linear function, and holds internal Tensors for its weight and bias. # The Flatten layer flatens the output of the linear layer to a 1D tensor, # to match the shape of `y`. model = torch.nn.Sequential( torch.nn.Linear(3, 1), torch.nn.Flatten(0, 1) ) # The nn package also contains definitions of popular loss functions; in this # case we will use Mean Squared Error (MSE) as our loss function. loss_fn = torch.nn.MSELoss(reduction=\u0027sum\u0027) learning_rate = 1e-6 for t in range(2000): # Forward pass: compute predicted y by passing x to the model. Module objects # override the __call__ operator so you can call them like functions. When # doing so you pass a Tensor of input data to the Module and it produces # a Tensor of output data. y_pred = model(xx) # Compute and print loss. We pass Tensors containing the predicted and true # values of y, and the loss function returns a Tensor containing the # loss. loss = loss_fn(y_pred, y) if t % 100 == 99: print(t, loss.item()) # Zero the gradients before running the backward pass. model.zero_grad() # Backward pass: compute gradient of the loss with respect to all the learnable # parameters of the model. Internally, the parameters of each Module are stored # in Tensors with requires_grad=True, so this call will compute gradients for # all learnable parameters in the model. loss.backward() # Update the weights using gradient descent. Each parameter is a Tensor, so # we can access its gradients like we did before. with torch.no_grad(): for param in model.parameters(): param -= learning_rate * param.grad # You can access the first layer of `model` like accessing the first item of a list linear_layer = model[0] # For linear layer, its parameters are stored as `weight` and `bias`. print(f\u0027Result: y = {linear_layer.bias.item()} + {linear_layer.weight[:, 0].item()} x + {linear_layer.weight[:, 1].item()} x^2 + {linear_layer.weight[:, 2].item()} x^3\u0027) Total running time of the script: (0 minutes 0.486 seconds) Download Jupyter notebook: polynomial_nn.ipynb Download Python source code: polynomial_nn.py Download zipped: polynomial_nn.zip",
        "author": {
          "@type": "Organization",
          "name": "PyTorch Contributors",

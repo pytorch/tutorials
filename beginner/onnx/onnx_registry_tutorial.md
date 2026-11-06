@@ -380,7 +380,7 @@ sit tight and have fun going through all of them to learn all there is about the
 2. [Extending the ONNX exporter operator support](onnx_registry_tutorial.html)
 3. [Export a model with control flow to ONNX](export_control_flow_model_to_onnx_tutorial.html)
 
-**Total running time of the script:** (0 minutes 2.511 seconds)
+**Total running time of the script:** (0 minutes 2.453 seconds)
 
 [`Download Jupyter notebook: onnx_registry_tutorial.ipynb`](../../_downloads/0bd6b9a8e47e1d64e4d20ef356a6095d/onnx_registry_tutorial.ipynb)
 

@@ -252,7 +252,7 @@ vs working on one attack at a time in the above for each `epsilon test()` loop.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.002 seconds)
+**Total running time of the script:** (0 minutes 0.003 seconds)
 
 [`Download Jupyter notebook: fgsm_tutorial.ipynb`](../_downloads/56c122e1c18e5e07666673e900acaed5/fgsm_tutorial.ipynb)
 

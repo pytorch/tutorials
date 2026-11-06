@@ -37,18 +37,18 @@ torch.save(model.state_dict(), 'model_weights.pth')
 Downloading: "https://download.pytorch.org/models/vgg16-397923af.pth" to /var/lib/ci-user/.cache/torch/hub/checkpoints/vgg16-397923af.pth
 
  0%| | 0.00/528M [00:00<?, ?B/s]
- 7%|▋ | 35.1M/528M [00:00<00:01, 368MB/s]
- 16%|█▌ | 85.2M/528M [00:00<00:01, 460MB/s]
- 24%|██▍ | 129M/528M [00:00<00:00, 440MB/s]
- 34%|███▍ | 178M/528M [00:00<00:00, 469MB/s]
- 43%|████▎ | 229M/528M [00:00<00:00, 489MB/s]
- 52%|█████▏ | 276M/528M [00:00<00:00, 435MB/s]
- 62%|██████▏ | 325M/528M [00:00<00:00, 458MB/s]
- 71%|███████ | 374M/528M [00:00<00:00, 477MB/s]
- 80%|████████ | 424M/528M [00:00<00:00, 490MB/s]
- 90%|████████▉ | 473M/528M [00:01<00:00, 498MB/s]
- 99%|█████████▉| 523M/528M [00:01<00:00, 504MB/s]
-100%|██████████| 528M/528M [00:01<00:00, 478MB/s]
+ 9%|▊ | 45.8M/528M [00:00<00:01, 478MB/s]
+ 17%|█▋ | 91.4M/528M [00:00<00:01, 435MB/s]
+ 26%|██▌ | 138M/528M [00:00<00:00, 458MB/s]
+ 34%|███▍ | 182M/528M [00:00<00:00, 446MB/s]
+ 45%|████▍ | 235M/528M [00:00<00:00, 484MB/s]
+ 53%|█████▎ | 281M/528M [00:00<00:00, 460MB/s]
+ 62%|██████▏ | 326M/528M [00:00<00:00, 456MB/s]
+ 71%|███████ | 372M/528M [00:00<00:00, 467MB/s]
+ 79%|███████▉ | 417M/528M [00:00<00:00, 457MB/s]
+ 87%|████████▋ | 461M/528M [00:01<00:00, 448MB/s]
+ 96%|█████████▌| 507M/528M [00:01<00:00, 458MB/s]
+100%|██████████| 528M/528M [00:01<00:00, 460MB/s]
 ```
 
 To load model weights, you need to create an instance of the same model first, and then load the parameters
@@ -147,7 +147,7 @@ This approach uses Python [pickle](https://docs.python.org/3/library/pickle.html
 - [Saving and Loading a General Checkpoint in PyTorch](https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_a_general_checkpoint.html)
 - [Tips for loading an nn.Module from a checkpoint](https://pytorch.org/tutorials/recipes/recipes/module_load_state_dict_tips.html?highlight=loading%20nn%20module%20from%20checkpoint)
 
-**Total running time of the script:** (0 minutes 4.288 seconds)
+**Total running time of the script:** (0 minutes 4.322 seconds)
 
 [`Download Jupyter notebook: saveloadrun_tutorial.ipynb`](../../_downloads/11f1adacb7d237f2041ce267ac38abb6/saveloadrun_tutorial.ipynb)
 

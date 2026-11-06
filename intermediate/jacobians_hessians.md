@@ -182,7 +182,7 @@ instead compose reverse-mode AD with reverse-mode AD:
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: jacobians_hessians.ipynb`](../_downloads/748f25c58a5ac0f57235c618e51c869b/jacobians_hessians.ipynb)
 

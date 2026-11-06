@@ -133,7 +133,7 @@ torch.manual_seed(1)
 ```
 
 ```
-<torch._C.Generator object at 0x7f0773ba5cb0>
+<torch._C.Generator object at 0x7f811bb7dcb0>
 ```
 
 Helper functions to make the code more readable.
@@ -385,7 +385,7 @@ much less straightforward.
 
 Pick up some real data and do a comparison!
 
-**Total running time of the script:** (0 minutes 4.745 seconds)
+**Total running time of the script:** (0 minutes 4.796 seconds)
 
 [`Download Jupyter notebook: advanced_tutorial.ipynb`](../../_downloads/99fdc80b1d3c74fcdb1432b4e7df20f7/advanced_tutorial.ipynb)
 

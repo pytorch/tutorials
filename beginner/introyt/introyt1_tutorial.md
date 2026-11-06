@@ -347,7 +347,7 @@ demonstrates that some general learning did happen in the model.
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: introyt1_tutorial.ipynb`](../../_downloads/3195443a0ced3cabc0ad643537bdb5cd/introyt1_tutorial.ipynb)
 

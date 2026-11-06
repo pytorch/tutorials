@@ -378,17 +378,16 @@ test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
 ```
 0%| | 0.00/9.91M [00:00<?, ?B/s]
- 17%|█▋ | 1.67M/9.91M [00:00<00:00, 16.0MB/s]
-100%|██████████| 9.91M/9.91M [00:00<00:00, 70.7MB/s]
+100%|██████████| 9.91M/9.91M [00:00<00:00, 133MB/s]
 
  0%| | 0.00/28.9k [00:00<?, ?B/s]
-100%|██████████| 28.9k/28.9k [00:00<00:00, 2.49MB/s]
+100%|██████████| 28.9k/28.9k [00:00<00:00, 145MB/s]
 
  0%| | 0.00/1.65M [00:00<?, ?B/s]
-100%|██████████| 1.65M/1.65M [00:00<00:00, 22.3MB/s]
+100%|██████████| 1.65M/1.65M [00:00<00:00, 213MB/s]
 
  0%| | 0.00/4.54k [00:00<?, ?B/s]
-100%|██████████| 4.54k/4.54k [00:00<00:00, 18.7MB/s]
+100%|██████████| 4.54k/4.54k [00:00<00:00, 42.1MB/s]
 ```
 
 ## A Comparison of Memory Usage
@@ -457,22 +456,22 @@ Train Epoch: 0 [57344/60000 (93%)] Loss: 0.709096
 Test set: Average loss: 0.3756, Accuracy: 8940/10000 (89%)
 
 Train Epoch: 0 [0/60000 (0%)] Loss: 2.349131
-Train Epoch: 0 [4096/60000 (7%)] Loss: 7.946166
-Train Epoch: 0 [8192/60000 (13%)] Loss: 3.233144
-Train Epoch: 0 [12288/60000 (20%)] Loss: 2.598850
-Train Epoch: 0 [16384/60000 (27%)] Loss: 1.939225
-Train Epoch: 0 [20480/60000 (33%)] Loss: 2.493680
-Train Epoch: 0 [24576/60000 (40%)] Loss: 1.980076
-Train Epoch: 0 [28672/60000 (47%)] Loss: 1.621299
-Train Epoch: 0 [32768/60000 (53%)] Loss: 1.306406
-Train Epoch: 0 [36864/60000 (60%)] Loss: 1.216101
-Train Epoch: 0 [40960/60000 (67%)] Loss: 1.254735
-Train Epoch: 0 [45056/60000 (73%)] Loss: 1.168844
-Train Epoch: 0 [49152/60000 (80%)] Loss: 0.981020
-Train Epoch: 0 [53248/60000 (87%)] Loss: 0.878346
-Train Epoch: 0 [57344/60000 (93%)] Loss: 0.756458
+Train Epoch: 0 [4096/60000 (7%)] Loss: 7.946165
+Train Epoch: 0 [8192/60000 (13%)] Loss: 3.233142
+Train Epoch: 0 [12288/60000 (20%)] Loss: 2.598841
+Train Epoch: 0 [16384/60000 (27%)] Loss: 1.939221
+Train Epoch: 0 [20480/60000 (33%)] Loss: 2.493690
+Train Epoch: 0 [24576/60000 (40%)] Loss: 1.980061
+Train Epoch: 0 [28672/60000 (47%)] Loss: 1.621284
+Train Epoch: 0 [32768/60000 (53%)] Loss: 1.305416
+Train Epoch: 0 [36864/60000 (60%)] Loss: 1.215334
+Train Epoch: 0 [40960/60000 (67%)] Loss: 1.255003
+Train Epoch: 0 [45056/60000 (73%)] Loss: 1.164613
+Train Epoch: 0 [49152/60000 (80%)] Loss: 0.989293
+Train Epoch: 0 [53248/60000 (87%)] Loss: 0.887355
+Train Epoch: 0 [57344/60000 (93%)] Loss: 0.760727
 
-Test set: Average loss: 0.5724, Accuracy: 8357/10000 (84%)
+Test set: Average loss: 0.5749, Accuracy: 8353/10000 (84%)
 
 cuDNN version: 92600
 
@@ -482,7 +481,7 @@ Memory allocated at end of forward pass:
 fused: 0.57GB, unfused: 0.95GB
 ```
 
-**Total running time of the script:** (0 minutes 18.310 seconds)
+**Total running time of the script:** (0 minutes 18.278 seconds)
 
 [`Download Jupyter notebook: custom_function_conv_bn_tutorial.ipynb`](../_downloads/e42651bf8aa9a118fc1867c909799393/custom_function_conv_bn_tutorial.ipynb)
 

@@ -203,7 +203,7 @@ We hope that you will give `torch.compile` a try!
 # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 ```
 
-**Total running time of the script:** (0 minutes 0.003 seconds)
+**Total running time of the script:** (0 minutes 0.002 seconds)
 
 [`Download Jupyter notebook: torch_compile_tutorial.ipynb`](../_downloads/96ad88eb476f41a5403dcdade086afb8/torch_compile_tutorial.ipynb)
 
