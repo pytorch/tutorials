@@ -65,6 +65,17 @@ batch_size = 64
 train_dataloader = DataLoader(training_data, batch_size=batch_size)
 test_dataloader = DataLoader(test_data, batch_size=batch_size)
 
+
+######################################################################
+# Each batch of images has shape ``[N, C, H, W]``:
+#
+# - ``N`` is the number of images in the batch.
+# - ``C`` is the number of image channels.
+# - ``H`` and ``W`` are the image height and width respectively.
+#
+# FashionMNIST images have one grayscale channel and are 28 by 28 pixels.
+# The labels tensor contains one class index for each image.
+
 for X, y in test_dataloader:
     print(f"Shape of X [N, C, H, W]: {X.shape}")
     print(f"Shape of y: {y.shape} {y.dtype}")
