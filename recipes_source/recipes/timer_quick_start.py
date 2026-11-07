@@ -14,14 +14,15 @@ For a more comprehensive performance tuning tutorial, see
 
 
 **Contents:**
-    1. `Defining a Timer <#defining-a-timer>`__
-    2. `Wall time: Timer.blocked_autorange(...) <#wall-time-timer-blocked-autorange>`__
-    3. `C++ snippets <#c-snippets>`__
-    4. `Instruction counts: Timer.collect_callgrind(...) <#instruction-counts-timer-collect-callgrind>`__
-    5. `Instruction counts: Delving deeper <#instruction-counts-delving-deeper>`__
-    6. `A/B testing with Callgrind <#a-b-testing-with-callgrind>`__
-    7. `Wrapping up <#wrapping-up>`__
-    8. `Footnotes <#footnotes>`__
+
+1. `Defining a Timer <#defining-a-timer>`__
+2. `Wall time: Timer.blocked_autorange(...) <#wall-time-timer-blocked-autorange>`__
+3. `C++ snippets <#c-snippets>`__
+4. `Instruction counts: Timer.collect_callgrind(...) <#instruction-counts-timer-collect-callgrind>`__
+5. `Instruction counts: Delving deeper <#instruction-counts-delving-deeper>`__
+6. `A/B testing with Callgrind <#a-b-testing-with-callgrind>`__
+7. `Wrapping up <#wrapping-up>`__
+8. `Footnotes <#footnotes>`__
 """
 
 
