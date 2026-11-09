@@ -28,7 +28,7 @@ torch.set_default_device(device)
 # By default, requires_grad=False, which indicates that we do not need to
 # compute gradients with respect to these Tensors during the backward pass.
 x = torch.linspace(-1, 1, 2000, dtype=dtype)
-y = torch.exp(x) # A Taylor expansion would be 1 + x + (1/2) x**2 + (1/3!) x**3 + ...
+y = torch.sin(x)
 
 # Create random Tensors for weights. For a third order polynomial, we need
 # 4 weights: y = a + b x + c x^2 + d x^3
