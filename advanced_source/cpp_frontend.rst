@@ -384,7 +384,7 @@ to register a module like ``torch::nn::Linear``:
   You can find the full list of available built-in modules like
   ``torch::nn::Linear``, ``torch::nn::Dropout`` or ``torch::nn::Conv2d`` in the
   documentation of the ``torch::nn`` namespace `here
-  <https://pytorch.org/cppdocs/api/namespace_torch__nn.html>`_.
+  <https://docs.pytorch.org/cppdocs/api/nn/index.html>`_.
 
 One subtlety about the above code is why the submodule was created in the
 constructor's initializer list, while the parameter was created inside the
@@ -470,7 +470,7 @@ which we can execute again to see the output:
 .. note::
 
   `The documentation
-  <https://pytorch.org/cppdocs/api/classtorch_1_1nn_1_1_module.html#exhale-class-classtorch-1-1nn-1-1-module>`_
+  <https://docs.pytorch.org/cppdocs/api/nn/index.html#_CPPv4N5torch2nn6ModuleE>`_
   for ``torch::nn::Module`` contains the full list of methods that operate on
   the module hierarchy.
 
@@ -503,7 +503,7 @@ At this point, we know how to define a module in C++, register parameters,
 register submodules, traverse the module hierarchy via methods like
 ``parameters()`` and finally run the module's ``forward()`` method. While there
 are many more methods, classes and topics to devour in the C++ API, I will refer
-you to `docs <https://pytorch.org/cppdocs/api/namespace_torch__nn.html>`_ for
+you to `docs <https://docs.pytorch.org/cppdocs/api/nn/index.html>`_ for
 the full menu. We'll also touch upon some more concepts as we implement the
 DCGAN model and end-to-end training pipeline in just a second. Before we do so,
 let me briefly touch upon the *ownership model* the C++ frontend provides for
@@ -974,7 +974,7 @@ we use implement the `Adam <https://arxiv.org/pdf/1412.6980.pdf>`_ algorithm:
 
 	As of this writing, the C++ frontend provides optimizers implementing Adagrad,
 	Adam, LBFGS, RMSprop and SGD. The `docs
-	<https://pytorch.org/cppdocs/api/namespace_torch__optim.html>`_ have the
+	<https://docs.pytorch.org/cppdocs/api/optim/index.html>`_ have the
 	up-to-date list.
 
 Next, we need to update our training loop. We'll add an outer loop to exhaust
@@ -1310,7 +1310,7 @@ frontend. A machine learning library like PyTorch by necessity has a very broad
 and extensive API. As such, there are many concepts we did not have time or
 space to discuss here. However, I encourage you to try out the API, and consult
 `our documentation <https://pytorch.org/cppdocs/>`_ and in particular the
-`Library API <https://pytorch.org/cppdocs/api/library_root.html>`_ section when
+`Library API <https://docs.pytorch.org/cppdocs/api/library/index.html>`_ section when
 you get stuck. Also, remember that you can expect the C++ frontend to follow the
 design and semantics of the Python frontend whenever we could make this
 possible, so you can leverage this fact to increase your learning rate.
