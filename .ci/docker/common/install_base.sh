@@ -10,7 +10,7 @@ install_ubuntu() {
   apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
-    cmake=3.22* \
+    cmake \
     curl \
     git \
     wget \

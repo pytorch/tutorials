@@ -668,38 +668,10 @@ Welcome to PyTorch Tutorials
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
-   :header: Getting Started with Distributed RPC Framework
-   :card_description: Learn how to build distributed training using the torch.distributed.rpc package.
-   :image: _static/img/thumbnails/cropped/Getting Started with Distributed-RPC-Framework.png
-   :link: intermediate/rpc_tutorial.html
-   :tags: Parallel-and-Distributed-Training
-
-.. customcarditem::
-   :header: Implementing a Parameter Server Using Distributed RPC Framework
-   :card_description: Walk through a through a simple example of implementing a parameter server using PyTorch’s Distributed RPC framework.
-   :image: _static/img/thumbnails/cropped/Implementing-a-Parameter-Server-Using-Distributed-RPC-Framework.png
-   :link: intermediate/rpc_param_server_tutorial.html
-   :tags: Parallel-and-Distributed-Training
-
-.. customcarditem::
    :header: Introduction to Distributed Pipeline Parallelism
    :card_description: Demonstrate how to implement pipeline parallelism using torch.distributed.pipelining
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/pipelining_tutorial.html
-   :tags: Parallel-and-Distributed-Training
-
-.. customcarditem::
-   :header: Implementing Batch RPC Processing Using Asynchronous Executions
-   :card_description: Learn how to use rpc.functions.async_execution to implement batch RPC
-   :image: _static/img/thumbnails/cropped/Implementing-Batch-RPC-Processing-Using-Asynchronous-Executions.png
-   :link: intermediate/rpc_async_execution.html
-   :tags: Parallel-and-Distributed-Training
-
-.. customcarditem::
-   :header: Combining Distributed DataParallel with Distributed RPC Framework
-   :card_description: Walk through a through a simple example of how to combine distributed data parallelism with distributed model parallelism.
-   :image: _static/img/thumbnails/cropped/Combining-Distributed-DataParallel-with-Distributed-RPC-Framework.png
-   :link: advanced/rpc_ddp_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
