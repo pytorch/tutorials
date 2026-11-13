@@ -377,6 +377,15 @@ plt.plot(all_losses)
 # -  Return the final name
 #
 # .. note::
+#    ``rnn`` is still in training mode here, so the dropout layer stays
+#    active while sampling. ``torch.no_grad()`` only turns off gradient
+#    tracking; it does not turn off dropout. This is what makes the samples
+#    vary from run to run even though we always pick the top letter. To get
+#    the same name every time for a given category and starting letter,
+#    call ``rnn.eval()`` before sampling (and ``rnn.train()`` before training
+#    again).
+#
+# .. note::
 #    Rather than having to give it a starting letter, another
 #    strategy would have been to include a "start of string" token in
 #    training and have the network choose its own starting letter.
