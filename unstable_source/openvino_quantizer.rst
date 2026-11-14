@@ -27,7 +27,7 @@ The quantization flow mainly includes four steps:
 - Step 1: Capture the FX Graph from the eager Model based on the `torch export mechanism <https://docs.pytorch.org/docs/stable/user_guide/torch_compiler/export.html>`_.
 - Step 2: Apply the PyTorch 2 Export Quantization flow with OpenVINOQuantizer based on the captured FX Graph.
 - Step 3: Lower the quantized model into OpenVINO representation with the `torch.compile <https://docs.openvino.ai/2024/openvino-workflow/torch-compile.html>`_ API.
-- Optional step 4: : Improve quantized model metrics via `quantize_pt2e <https://openvinotoolkit.github.io/nncf/autoapi/nncf/experimental/torch/fx/index.html#nncf.experimental.torch.fx.quantize_pt2e>`_ method.
+- Optional step 4: : Improve quantized model metrics via `quantize_pt2e <https://docs.pytorch.org/ao/stable/pt2e_quantization/pt2e_quant_openvino_inductor.html>`_ method.
 
 The high-level architecture of this flow could look like this:
 
@@ -171,7 +171,7 @@ Below is the list of essential parameters and their description:
 
         OpenVINOQuantizer(target_device=nncf.TargetDevice.CPU)
 
-For further details on `OpenVINOQuantizer` please see the `documentation <https://openvinotoolkit.github.io/nncf/autoapi/nncf/experimental/torch/fx/index.html#nncf.experimental.torch.fx.OpenVINOQuantizer>`_.
+For further details on `OpenVINOQuantizer` please see the `documentation <https://docs.pytorch.org/ao/stable/pt2e_quantization/pt2e_quant_openvino_inductor.html>`_.
 
 After we import the backend-specific Quantizer, we will prepare the model for post-training quantization.
 ``prepare_pt2e`` folds BatchNorm operators into preceding Conv2d operators, and inserts observers in appropriate places in the model.
@@ -239,7 +239,7 @@ These advanced NNCF algorithms can be accessed via the NNCF `quantize_pt2e` API:
     )
 
 
-For further details, please see the `documentation <https://openvinotoolkit.github.io/nncf/autoapi/nncf/experimental/torch/fx/index.html#nncf.experimental.torch.fx.quantize_pt2e>`_
+For further details, please see the `documentation <https://docs.pytorch.org/ao/stable/pt2e_quantization/pt2e_quant_openvino_inductor.html>`_
 and a complete `example on Resnet18 quantization <https://github.com/openvinotoolkit/nncf/blob/develop/examples/post_training_quantization/torch_fx/resnet18/README.md>`_.
 
 Conclusion
