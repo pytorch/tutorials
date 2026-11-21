@@ -247,8 +247,9 @@ integrated_gradients = IntegratedGradients(model)
 attributions_ig = integrated_gradients.attribute(input_img, target=pred_label_idx, n_steps=200)
 
 # Show the original image for comparison
-_ = viz.visualize_image_attr(None, np.transpose(transformed_img.squeeze().cpu().detach().numpy(), (1,2,0)),
-                      method="original_image", title="Original Image")
+orig_img_np = np.transpose(transformed_img.squeeze().cpu().detach().numpy(), (1, 2, 0))
+_ = viz.visualize_image_attr(orig_img_np, orig_img_np,
+                             method="original_image", title="Original Image")
 
 default_cmap = LinearSegmentedColormap.from_list('custom blue', 
                                                  [(0, '#ffffff'),
