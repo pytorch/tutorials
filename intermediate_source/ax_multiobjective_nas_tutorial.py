@@ -103,7 +103,7 @@ def trainer(
 # Setting up the Runner
 # ---------------------
 #
-# Ax’s `Runner <https://ax.dev/api/core.html#ax.core.runner.Runner>`__
+# Ax’s `Runner <https://ax.readthedocs.io/en/0.5.0/core.html#ax.core.runner.Runner>`__
 # abstraction allows writing interfaces to various backends.
 # Ax already comes with Runner for TorchX, and so we just need to
 # configure it. For the purpose of this tutorial we run jobs locally
@@ -210,14 +210,14 @@ search_space = SearchSpace(
 # Setting up Metrics
 # ------------------
 #
-# Ax has the concept of a `Metric <https://ax.dev/api/core.html#metric>`__
+# Ax has the concept of a `Metric <https://ax.readthedocs.io/en/0.5.0/core.html#metric>`__
 # that defines properties of outcomes and how observations are obtained
 # for these outcomes. This allows e.g. encoding how data is fetched from
 # some distributed execution backend and post-processed before being
 # passed as input to Ax.
 #
 # In this tutorial we will use
-# `multi-objective optimization <https://ax.dev/tutorials/multiobjective_optimization.html>`__
+# `multi-objective optimization <https://ax.dev/docs/0.5.0/tutorials/multiobjective_optimization/>`__
 # with the goal of maximizing the validation accuracy and minimizing
 # the number of model parameters. The latter represents a simple proxy
 # of model latency, which is hard to estimate accurately for small ML
@@ -228,7 +228,7 @@ search_space = SearchSpace(
 # fashion locally and write the results to the ``log_dir`` based on the trial
 # index (see the ``trainer()`` function above). We will define a metric
 # class that is aware of that logging directory. By subclassing
-# `TensorboardCurveMetric <https://ax.dev/api/metrics.html?highlight=tensorboardcurvemetric#ax.metrics.tensorboard.TensorboardCurveMetric>`__
+# `TensorboardMetric <https://ax.readthedocs.io/en/0.5.0/metrics.html#ax.metrics.tensorboard.TensorboardMetric>`__
 # we get the logic to read and parse the TensorBoard logs for free.
 #
 
@@ -281,7 +281,7 @@ model_num_params = MyTensorboardMetric(
 # -------------------------------------
 #
 # The way to tell Ax what it should optimize is by means of an
-# `OptimizationConfig <https://ax.dev/api/core.html#module-ax.core.optimization_config>`__.
+# `OptimizationConfig <https://ax.readthedocs.io/en/0.5.0/core.html#module-ax.core.optimization_config>`__.
 # Here we use a ``MultiObjectiveOptimizationConfig`` as we will
 # be performing multi-objective optimization.
 #
@@ -314,14 +314,14 @@ opt_config = MultiObjectiveOptimizationConfig(
 # Creating the Ax Experiment
 # --------------------------
 #
-# In Ax, the `Experiment <https://ax.dev/api/core.html#ax.core.experiment.Experiment>`__
+# In Ax, the `Experiment <https://ax.readthedocs.io/en/0.5.0/core.html#ax.core.experiment.Experiment>`__
 # object is the object that stores all the information about the problem
 # setup.
 #
 # .. tip:
 #   ``Experiment`` objects can be serialized to JSON or stored to a
 #   database backend such as MySQL in order to persist and be available
-#   to load on different machines. See the the `Ax Docs <https://ax.dev/docs/storage.html>`__
+#   to load on different machines. See the `Ax Docs <https://ax.dev/docs/0.5.0/storage>`__
 #   on the storage functionality for details.
 #
 
@@ -338,10 +338,10 @@ experiment = Experiment(
 # Choosing the Generation Strategy
 # --------------------------------
 #
-# A `GenerationStrategy <https://ax.dev/api/modelbridge.html#ax.modelbridge.generation_strategy.GenerationStrategy>`__
+# A `GenerationStrategy <https://ax.readthedocs.io/en/0.5.0/modelbridge.html#ax.modelbridge.generation_strategy.GenerationStrategy>`__
 # is the abstract representation of how we would like to perform the
 # optimization. While this can be customized (if you’d like to do so, see
-# `this tutorial <https://ax.dev/tutorials/generation_strategy.html>`__),
+# `this tutorial <https://ax.dev/docs/0.5.0/tutorials/generation_strategy/>`__),
 # in most cases Ax can automatically determine an appropriate strategy
 # based on the search space, optimization config, and the total number
 # of trials we want to run.
@@ -371,7 +371,7 @@ gs = choose_generation_strategy(
 # and retrieve results. In the case of this tutorial, it is simply reading
 # and parsing the locally saved logs. In a remote execution setting,
 # it would call APIs. The following illustration from the Ax
-# `Scheduler tutorial <https://ax.dev/tutorials/scheduler.html>`__
+# `Scheduler tutorial <https://ax.dev/docs/0.5.0/tutorials/scheduler/>`__
 # summarizes how the Scheduler interacts with external systems used to run
 # trial evaluations:
 #
@@ -444,7 +444,7 @@ df.head(10)
 #   Ax uses Plotly to produce interactive plots, which allow you to
 #   do things like zoom, crop, or hover in order to view details
 #   of components of the plot. Try it out, and take a look at the
-#   `visualization tutorial <https://ax.dev/tutorials/visualizations.html>`__
+#   `visualization tutorial <https://ax.dev/docs/0.5.0/tutorials/visualizations/>`__
 #   if you'd like to learn more).
 #
 # The final optimization results are shown in the figure below where
