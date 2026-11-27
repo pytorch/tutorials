@@ -1,13 +1,11 @@
 # PyTorch Tutorials
 
 
-All the tutorials are now presented as sphinx style documentation at:
-
-## [https://pytorch.org/tutorials](https://pytorch.org/tutorials)
+All the tutorials are now presented as sphinx style documentation on the official [PyTorch Tutorials website](https://pytorch.org/tutorials)
 
 # Asking a question
 
-If you have a question about a tutorial, post in https://dev-discuss.pytorch.org/ rather than creating an issue in this repo. Your question will be answered much faster on the dev-discuss forum.
+If you have a question about a tutorial, post in the [PyTorch Dev Discussions forum](https://dev-discuss.pytorch.org/) rather than creating an issue in this repo. Your question will be answered much faster on the dev-discuss forum.
 
 # Submitting an issue
 
